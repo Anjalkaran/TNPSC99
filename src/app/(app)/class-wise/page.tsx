@@ -1,12 +1,19 @@
+'use client';
 import Link from "next/link";
 import Image from "next/image";
-import { tests } from "@/lib/data";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { collection, query, where } from "firebase/firestore";
+import type { Test } from "@/lib/types";
 
 export default function ClassWiseTestsPage() {
-  const classTests = tests.filter((test) => test.category === 'class');
+  const firestore = useFirestore();
+  const testsCollection = useMemoFirebase(() => collection(firestore, 'tests'), [firestore]);
+  const classTestsQuery = useMemoFirebase(() => testsCollection && query(testsCollection, where('category', '==', 'class')), [testsCollection]);
+
+  const { data: classTests, isLoading } = useCollection<Test>(classTestsQuery);
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
@@ -15,7 +22,9 @@ export default function ClassWiseTestsPage() {
         <p className="text-muted-foreground mt-2">கல்வி வகுப்பு தரங்களின்படி ஒழுங்கமைக்கப்பட்ட தேர்வுகள்.</p>
       </div>
       
-      {classTests.length > 0 ? (
+      {isLoading && <p>Loading tests...</p>}
+
+      {!isLoading && classTests && classTests.length > 0 ? (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {classTests.map((test) => (
             <Card key={test.slug} className="flex flex-col overflow-hidden hover:shadow-lg transition-shadow duration-300">
@@ -32,7 +41,7 @@ export default function ClassWiseTestsPage() {
                 <CardDescription>{test.description}</CardDescription>
               </CardHeader>
               <CardContent className="flex-grow">
-                <p className="text-sm text-muted-foreground">{test.questions.length} கேள்விகள்</p>
+                <p className="text-sm text-muted-foreground">{test.questionIds.length} கேள்விகள்</p>
               </CardContent>
               <CardFooter>
                 <Button asChild className="w-full" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
@@ -45,7 +54,7 @@ export default function ClassWiseTestsPage() {
           ))}
         </div>
       ) : (
-        <div className="text-center py-16">
+        !isLoading && <div className="text-center py-16">
           <p className="text-muted-foreground">தற்போது வகுப்பு வாரியான தேர்வுகள் எதுவும் இல்லை.</p>
         </div>
       )}

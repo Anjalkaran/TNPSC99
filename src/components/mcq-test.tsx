@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState } from 'react';
 import type { Test } from '@/lib/types';
@@ -11,21 +11,22 @@ import { ArrowLeft, ArrowRight, CheckCircle2, XCircle, RotateCw } from 'lucide-r
 import Link from 'next/link';
 
 export function McqTest({ test }: { test: Test }) {
+  const questions = test.questions || [];
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<string[]>(Array(test.questions.length).fill(''));
+  const [answers, setAnswers] = useState<number[]>(Array(questions.length).fill(-1));
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [score, setScore] = useState(0);
 
   const handleAnswerChange = (value: string) => {
     const newAnswers = [...answers];
-    newAnswers[currentQuestionIndex] = value;
+    newAnswers[currentQuestionIndex] = parseInt(value, 10);
     setAnswers(newAnswers);
   };
 
   const handleSubmit = () => {
     let calculatedScore = 0;
-    test.questions.forEach((q, index) => {
-      if (q.correctAnswer === answers[index]) {
+    questions.forEach((q, index) => {
+      if (q.correctAnswerIndex === answers[index]) {
         calculatedScore++;
       }
     });
@@ -35,16 +36,34 @@ export function McqTest({ test }: { test: Test }) {
 
   const handleTryAgain = () => {
     setCurrentQuestionIndex(0);
-    setAnswers(Array(test.questions.length).fill(''));
+    setAnswers(Array(questions.length).fill(-1));
     setIsSubmitted(false);
     setScore(0);
   };
 
-  const progress = ((currentQuestionIndex + 1) / test.questions.length) * 100;
-  const currentQuestion = test.questions[currentQuestionIndex];
+  if (questions.length === 0) {
+    return (
+      <Card className="w-full max-w-2xl">
+        <CardHeader>
+          <CardTitle>{test.title}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p>No questions available for this test yet.</p>
+        </CardContent>
+        <CardFooter>
+          <Button asChild variant="outline">
+            <Link href="/">Back to Home</Link>
+          </Button>
+        </CardFooter>
+      </Card>
+    );
+  }
+
+  const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+  const currentQuestion = questions[currentQuestionIndex];
 
   if (isSubmitted) {
-    const scorePercentage = (score / test.questions.length) * 100;
+    const scorePercentage = (score / questions.length) * 100;
     return (
       <Card className="w-full max-w-2xl text-center">
         <CardHeader>
@@ -53,21 +72,21 @@ export function McqTest({ test }: { test: Test }) {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="text-5xl font-bold" style={{ color: 'hsl(var(--accent))' }}>
-            {score} / {test.questions.length}
+            {score} / {questions.length}
           </div>
           <div className="w-full">
             <Progress value={scorePercentage} className="h-4" />
             <p className="text-sm text-muted-foreground mt-2">{scorePercentage.toFixed(0)}% சரி</p>
           </div>
           <div className="space-y-4 max-h-60 overflow-y-auto p-4 border rounded-md">
-            {test.questions.map((q, index) => (
+            {questions.map((q, index) => (
               <div key={q.id} className="text-left p-2 rounded-md bg-muted/50">
                 <p className="font-semibold flex items-center gap-2">
-                  {answers[index] === q.correctAnswer ? <CheckCircle2 className="text-green-500"/> : <XCircle className="text-red-500"/>}
-                  {q.question}
+                  {answers[index] === q.correctAnswerIndex ? <CheckCircle2 className="text-green-500"/> : <XCircle className="text-red-500"/>}
+                  {q.text}
                 </p>
-                <p className="text-sm pl-8">உங்கள் பதில்: <span className={answers[index] === q.correctAnswer ? 'text-green-600' : 'text-red-600'}>{answers[index] || 'பதிலளிக்கப்படவில்லை'}</span></p>
-                <p className="text-sm pl-8">சரியான பதில்: <span className="text-green-600">{q.correctAnswer}</span></p>
+                <p className="text-sm pl-8">உங்கள் பதில்: <span className={answers[index] === q.correctAnswerIndex ? 'text-green-600' : 'text-red-600'}>{answers[index] !== -1 ? q.answerOptions[answers[index]] : 'பதிலளிக்கப்படவில்லை'}</span></p>
+                <p className="text-sm pl-8">சரியான பதில்: <span className="text-green-600">{q.answerOptions[q.correctAnswerIndex]}</span></p>
               </div>
             ))}
           </div>
@@ -89,16 +108,16 @@ export function McqTest({ test }: { test: Test }) {
     <Card className="w-full max-w-2xl">
       <CardHeader>
         <CardTitle>{test.title}</CardTitle>
-        <CardDescription>கேள்வி {currentQuestionIndex + 1} / {test.questions.length}</CardDescription>
+        <CardDescription>கேள்வி {currentQuestionIndex + 1} / {questions.length}</CardDescription>
         <Progress value={progress} className="mt-2" />
       </CardHeader>
       <CardContent className="py-6">
-        <p className="font-semibold text-lg mb-6">{currentQuestion.question}</p>
-        <RadioGroup value={answers[currentQuestionIndex]} onValueChange={handleAnswerChange}>
+        <p className="font-semibold text-lg mb-6">{currentQuestion.text}</p>
+        <RadioGroup value={answers[currentQuestionIndex]?.toString()} onValueChange={handleAnswerChange}>
           <div className="space-y-4">
-            {currentQuestion.options.map((option) => (
+            {currentQuestion.answerOptions.map((option, index) => (
               <Label key={option} className="flex items-center space-x-3 p-4 border rounded-lg has-[:checked]:bg-primary/20 has-[:checked]:border-primary transition-colors cursor-pointer">
-                <RadioGroupItem value={option} id={option} />
+                <RadioGroupItem value={index.toString()} id={option} />
                 <span>{option}</span>
               </Label>
             ))}
@@ -114,7 +133,7 @@ export function McqTest({ test }: { test: Test }) {
           <ArrowLeft className="mr-2 h-4 w-4" />
           முந்தைய
         </Button>
-        {currentQuestionIndex < test.questions.length - 1 ? (
+        {currentQuestionIndex < questions.length - 1 ? (
           <Button onClick={() => setCurrentQuestionIndex(currentQuestionIndex + 1)}>
             அடுத்தது
             <ArrowRight className="ml-2 h-4 w-4" />
