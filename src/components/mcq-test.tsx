@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { Test } from '@/lib/types';
+import type { Test, UserTestAttempt } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -9,6 +9,12 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft, ArrowRight, CheckCircle2, XCircle, RotateCw } from 'lucide-react';
 import Link from 'next/link';
+import { useAuth, useFirestore } from '@/firebase';
+import { addDoc, collection } from 'firebase/firestore';
+import { useToast } from '@/hooks/use-toast';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
+
 
 export function McqTest({ test }: { test: Test }) {
   const questions = test.questions || [];
@@ -17,13 +23,17 @@ export function McqTest({ test }: { test: Test }) {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [score, setScore] = useState(0);
 
+  const auth = useAuth();
+  const firestore = useFirestore();
+  const { toast } = useToast();
+
   const handleAnswerChange = (value: string) => {
     const newAnswers = [...answers];
     newAnswers[currentQuestionIndex] = parseInt(value, 10);
     setAnswers(newAnswers);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     let calculatedScore = 0;
     questions.forEach((q, index) => {
       if (q.correctAnswerIndex === answers[index]) {
@@ -32,6 +42,44 @@ export function McqTest({ test }: { test: Test }) {
     });
     setScore(calculatedScore);
     setIsSubmitted(true);
+
+    if (auth.currentUser) {
+      try {
+        const testAttempt: Omit<UserTestAttempt, 'id'> = {
+          userId: auth.currentUser.uid,
+          testId: test.id,
+          testTitle: test.title,
+          attemptDate: new Date().toISOString(),
+          score: calculatedScore,
+          answers: answers,
+        };
+        const attemptsCollectionRef = collection(firestore, `users/${auth.currentUser.uid}/testAttempts`);
+        
+        addDoc(attemptsCollectionRef, testAttempt)
+            .catch(error => {
+                errorEmitter.emit(
+                'permission-error',
+                new FirestorePermissionError({
+                    path: attemptsCollectionRef.path,
+                    operation: 'create',
+                    requestResourceData: testAttempt,
+                })
+                )
+            });
+
+        toast({
+          title: "தேர்வு சமர்ப்பிக்கப்பட்டது",
+          description: "உங்கள் மதிப்பெண் சேமிக்கப்பட்டது.",
+        })
+      } catch (error) {
+        console.error("Error saving test attempt: ", error);
+        toast({
+          variant: "destructive",
+          title: "பிழை",
+          description: "உங்கள் தேர்வு முடிவுகளைச் சேமிப்பதில் பிழை ஏற்பட்டது.",
+        })
+      }
+    }
   };
 
   const handleTryAgain = () => {
@@ -48,11 +96,11 @@ export function McqTest({ test }: { test: Test }) {
           <CardTitle>{test.title}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p>No questions available for this test yet.</p>
+          <p>இந்தத் தேர்வுக்கு இன்னும் கேள்விகள் இல்லை.</p>
         </CardContent>
         <CardFooter>
           <Button asChild variant="outline">
-            <Link href="/">Back to Home</Link>
+            <Link href="/">முகப்புக்குத் திரும்பு</Link>
           </Button>
         </CardFooter>
       </Card>
@@ -139,7 +187,7 @@ export function McqTest({ test }: { test: Test }) {
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         ) : (
-          <Button onClick={handleSubmit} style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
+          <Button onClick={handleSubmit} style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }} disabled={!auth.currentUser}>
             சமர்ப்பிக்கவும்
           </Button>
         )}

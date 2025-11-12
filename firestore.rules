@@ -2,118 +2,89 @@
  * @file Firestore Security Rules for TNPSC Ace Application
  * @description This ruleset enforces a user-ownership model for user profiles and test attempts,
  *              while allowing public read access to subjects, classes, questions, and tests.
- *              Data validation is limited to ensuring ownership and relational integrity.
+ *              Admin users have write access to core content collections.
  *
  * Data Structure:
- * - /users/{userId}: Stores user profiles, accessible only by the user themselves.
- * - /subjects/{subjectId}: Stores subject information, publicly readable.
- * - /classes/{classId}: Stores class information, publicly readable.
- * - /questions/{questionId}: Stores question data, publicly readable.
- * - /tests/{testId}: Stores test data, publicly readable.
- * - /users/{userId}/testAttempts/{testAttemptId}: Stores user's test attempts, accessible only by the user themselves.
+ * - /users/{userId}: Stores user profiles, accessible only by the user themselves. Admins can read any profile.
+ * - /subjects/{subjectId}: Stores subject information, publicly readable. Writable by admins.
+ * - /classes/{classId}: Stores class information, publicly readable. Writable by admins.
+ * - /questions/{questionId}: Stores question data, publicly readable. Writable by admins.
+ * - /tests/{testId}: Stores test data, publicly readable. Writable by admins.
+ * - /users/{userId}/testAttempts/{testAttemptId}: Stores user's test attempts, accessible by the user and admins.
  *
  * Key Security Decisions:
  * - Users can only read and write their own profiles and test attempts.
- * - Subjects, classes, questions, and tests are publicly readable but writes are denied. In a real application,
- *   writes to these collections would be restricted to administrative users.
- * - No user listing is allowed.
+ * - Admins can read all user data and write to content collections.
+ * - Subjects, classes, questions, and tests are publicly readable.
+ * - No user listing is allowed for non-admins.
  *
  * Denormalization for Authorization:
- * - UserTestAttempt documents have a `userId` field that is validated against the path `/users/{userId}` to enforce ownership.
+ * - UserTestAttempt documents have a `userId` field validated against the path `/users/{userId}`.
+ * - Admin status is determined by an `isAdmin` field in the user's document.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    /**
-     * @description Allows users to read and write their own user profile data.
-     * @path /users/{userId}
-     * @allow (create, update, get, delete, list) if request.auth.uid == userId
-     * @deny (create, update, delete, list) if request.auth.uid != userId
-     * @principle Enforces document ownership for writes; restricts access to a user's own data tree.
-     */
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+
+    function isAdmin() {
+      // Check if the requesting user is an admin by looking at their user document
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+
     match /users/{userId} {
-      // function isSignedIn() {
-        // return request.auth != null;
-      // }
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
+      // Users can read their own profile, admins can read any profile
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin(); // Only admins can list users
 
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
-      }
-
-      allow get: if isOwner(userId);
-      allow list: if false; // No user listing
-
+      // Users can create their own profile
       allow create: if isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      // Users can update their own profile, ensuring they don't grant themselves admin rights
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id && (!('isAdmin' in request.resource.data) || request.resource.data.isAdmin == resource.data.isAdmin);
+      // Users can delete their own profile
       allow delete: if isExistingOwner(userId);
 
-      /**
-       * @description Allows users to read and write their own test attempts.
-       * @path /users/{userId}/testAttempts/{testAttemptId}
-       * @allow (create, update, get, delete, list) if request.auth.uid == userId
-       * @deny (create, update, delete, list) if request.auth.uid != userId
-       * @principle Enforces document ownership for writes; restricts access to a user's own data tree.
-       */
       match /testAttempts/{testAttemptId} {
-        allow get: if isOwner(userId);
-        allow list: if isOwner(userId);
+        // Owner or admin can get a specific test attempt
+        allow get: if isOwner(userId) || isAdmin();
+        // Owner or admin can list test attempts for a user
+        allow list: if isOwner(userId) || isAdmin();
 
+        // Owner can create their own test attempt
         allow create: if isOwner(userId) && request.resource.data.userId == userId;
+        // Owner can update their own test attempt
         allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+        // Owner can delete their own test attempt
         allow delete: if isExistingOwner(userId);
       }
     }
 
-    /**
-     * @description Allows public read access to subjects. Write access is denied.
-     * @path /subjects/{subjectId}
-     * @allow (get, list) if true
-     * @deny (create, update, delete) always
-     * @principle Allows public read access; restricts write access.
-     */
     match /subjects/{subjectId} {
       allow get, list: if true;
-      allow create, update, delete: if false; // TODO: Restrict to admin users in production
+      allow create, update, delete: if isAdmin();
     }
 
-    /**
-     * @description Allows public read access to classes. Write access is denied.
-     * @path /classes/{classId}
-     * @allow (get, list) if true
-     * @deny (create, update, delete) always
-     * @principle Allows public read access; restricts write access.
-     */
     match /classes/{classId} {
       allow get, list: if true;
-      allow create, update, delete: if false; // TODO: Restrict to admin users in production
+      allow create, update, delete: if isAdmin();
     }
 
-    /**
-     * @description Allows public read access to questions. Write access is denied.
-     * @path /questions/{questionId}
-     * @allow (get, list) if true
-     * @deny (create, update, delete) always
-     * @principle Allows public read access; restricts write access.
-     */
     match /questions/{questionId} {
       allow get, list: if true;
-      allow create, update, delete: if false; // TODO: Restrict to admin users in production
+      allow create, update, delete: if isAdmin();
     }
 
-    /**
-     * @description Allows public read access to tests. Write access is denied.
-     * @path /tests/{testId}
-     * @allow (get, list) if true
-     * @deny (create, update, delete) always
-     * @principle Allows public read access; restricts write access.
-     */
     match /tests/{testId} {
       allow get, list: if true;
-      allow create, update, delete: if false; // TODO: Restrict to admin users in production
+      allow create, update, delete: if isAdmin();
     }
   }
 }

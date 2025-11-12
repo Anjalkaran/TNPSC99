@@ -23,6 +23,10 @@
           "type": "string",
           "description": "Date and time the user registered.",
           "format": "date-time"
+        },
+        "isAdmin": {
+          "type": "boolean",
+          "description": "Indicates if the user has administrative privileges."
         }
       },
       "required": [
@@ -218,8 +222,7 @@
   },
   "auth": {
     "providers": [
-      "password",
-      "anonymous"
+      "password"
     ]
   },
   "firestore": {
@@ -328,4 +331,3 @@
     "reasoning": "The Firestore structure is designed to support the TNPSC Ace application, focusing on class-wise, subject-wise, and previous year MCQ tests. The design emphasizes authorization independence, clarity, and scalability.  We are using path-based ownership for user data and a membership map approach for collaborative data. The key collections are `users`, `subjects`, `classes`, `questions`, `tests`, and `userTestAttempts`. User-specific data is stored under `/users/{userId}`. Questions are organized under subjects and classes enabling efficient querying and filtering of questions. Tests are designed to have many-to-many relationships with questions using the `questionIds` array. User attempts are stored separately, linking back to users and tests. This structure allows for efficient score tracking and personalized insights."
   }
 }
-    
