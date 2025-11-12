@@ -44,6 +44,8 @@ const questions = [
     { id: 'q11', text: 'பின்வருவனவற்றில் எது தமிழ்நாட்டின் பாரம்பரிய நடன வடிவம்?', subjectId: 'history', classId: '12', answerOptions: ['கதக்', 'குச்சிப்புடி', 'பரதநாட்டியம்', 'மோகினியாட்டம்'], correctAnswerIndex: 2 },
     { id: 'q12', text: 'சங்க இலக்கியம் எந்த மொழியில் எழுதப்பட்டது?', subjectId: 'tamil', classId: '12', answerOptions: ['சமஸ்கிருதம்', 'பாளி', 'தமிழ்', 'தெலுங்கு'], correctAnswerIndex: 2 },
     { id: 'q13', text: 'இந்திய அரசியலமைப்பின் தந்தை என்று யார் அழைக்கப்படுகிறார்?', subjectId: 'polity', classId: '12', answerOptions: ['மகாத்மா காந்தி', 'ஜவஹர்லால் நேரு', 'டாக்டர். பி. ஆர். அம்பேத்கர்', 'சர்தார் வல்லபாய் படேல்'], correctAnswerIndex: 2 },
+    { id: 'q14', text: 'கீழடியில் நடத்தப்பட்ட தொல்பொருள் ஆய்வுகள் எந்த நாகரிகத்துடன் தொடர்புடையவை?', subjectId: 'history', classId: '10', answerOptions: ['சிந்து சமவெளி நாகரிகம்', 'சங்க கால நாகரிகம்', 'மௌரியப் பேரரசு', 'குப்தப் பேரரசு'], correctAnswerIndex: 1 },
+    { id: 'q15', text: 'திருக்குறளை எழுதியவர் யார்?', subjectId: 'tamil', classId: '10', answerOptions: ['கம்பர்', 'திருவள்ளுவர்', 'ஔவையார்', 'பாரதியார்'], correctAnswerIndex: 1 },
 ];
 
 const tests = [
@@ -100,6 +102,15 @@ const tests = [
     description: '2022 TNPSC குரூப் II தேர்வின் முறையைப் பற்றி அறிந்து கொள்ளுங்கள்.',
     image: findImage('previous-year'),
     questionIds: ['q12', 'q13'],
+  },
+  {
+    id: 'tnpsc-2021-group-4',
+    slug: 'tnpsc-2021-group-4',
+    title: '2021 TNPSC குரூப் IV',
+    category: 'previous',
+    description: '2021 TNPSC குரூப் IV தேர்வில் இருந்து கேள்விகளுடன் உங்கள் அறிவை சோதிக்கவும்.',
+    image: findImage('previous-year'),
+    questionIds: ['q14', 'q15'],
   },
 ];
 
