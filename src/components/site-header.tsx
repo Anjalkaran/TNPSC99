@@ -4,9 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 const navLinks = [
-  { href: '/class-wise', label: 'Class-wise Tests' },
-  { href: '/subject-wise', label: 'Subject-wise Tests' },
-  { href: '/previous-year', label: 'Previous Year Papers' },
+  { href: '/class-wise', label: 'வகுப்பு வாரியான தேர்வுகள்' },
+  { href: '/subject-wise', label: 'பாடம் வாரியான தேர்வுகள்' },
+  { href: '/previous-year', label: 'முந்தைய ஆண்டு தாள்கள்' },
 ];
 
 export function SiteHeader() {
@@ -15,7 +15,7 @@ export function SiteHeader() {
       <div className="container flex h-16 items-center justify-between px-4 md:px-6">
         <Link href="/" className="flex items-center gap-2">
           <BookOpenCheck className="h-6 w-6 text-primary" />
-          <span className="font-bold text-lg">TNPSC Ace</span>
+          <span className="font-bold text-lg">TNPSC ఏస్</span>
         </Link>
         <nav className="hidden md:flex items-center gap-6 text-sm">
           {navLinks.map((link) => (
@@ -29,14 +29,14 @@ export function SiteHeader() {
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon">
                 <Menu className="h-6 w-6" />
-                <span className="sr-only">Toggle Menu</span>
+                <span className="sr-only">பட்டி</span>
               </Button>
             </SheetTrigger>
             <SheetContent side="left">
               <nav className="grid gap-6 text-lg font-medium mt-8">
                 <Link href="/" className="flex items-center gap-2 mb-4 text-xl">
                   <BookOpenCheck className="h-7 w-7 text-primary" />
-                  <span className="font-bold">TNPSC Ace</span>
+                  <span className="font-bold">TNPSC ఏస్</span>
                 </Link>
                 {navLinks.map((link) => (
                   <Link key={link.href} href={link.href} className="text-muted-foreground hover:text-foreground">

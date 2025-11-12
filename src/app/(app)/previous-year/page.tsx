@@ -11,8 +11,8 @@ export default function PreviousYearPapersPage() {
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
       <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold">Previous Year Papers</h1>
-        <p className="text-muted-foreground mt-2">Get familiar with the exam pattern with past papers.</p>
+        <h1 className="text-3xl md:text-4xl font-bold">முந்தைய ஆண்டு தாள்கள்</h1>
+        <p className="text-muted-foreground mt-2">கடந்த காலத் தாள்களுடன் தேர்வு முறையைப் பற்றி அறிந்து கொள்ளுங்கள்.</p>
       </div>
 
       {previousYearTests.length > 0 ? (
@@ -32,12 +32,12 @@ export default function PreviousYearPapersPage() {
                 <CardDescription>{test.description}</CardDescription>
               </CardHeader>
               <CardContent className="flex-grow">
-                <p className="text-sm text-muted-foreground">{test.questions.length} questions</p>
+                <p className="text-sm text-muted-foreground">{test.questions.length} கேள்விகள்</p>
               </CardContent>
               <CardFooter>
                 <Button asChild className="w-full" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
                   <Link href={`/test/${test.slug}`}>
-                    Start Test <ArrowRight className="ml-2 h-4 w-4" />
+                    தேர்வைத் தொடங்கவும் <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
               </CardFooter>
@@ -46,7 +46,7 @@ export default function PreviousYearPapersPage() {
         </div>
       ) : (
         <div className="text-center py-16">
-          <p className="text-muted-foreground">No previous year papers available at the moment.</p>
+          <p className="text-muted-foreground">தற்போது முந்தைய ஆண்டு தாள்கள் எதுவும் இல்லை.</p>
         </div>
       )}
     </div>

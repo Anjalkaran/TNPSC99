@@ -48,8 +48,8 @@ export function McqTest({ test }: { test: Test }) {
     return (
       <Card className="w-full max-w-2xl text-center">
         <CardHeader>
-          <CardTitle className="text-3xl">Test Complete!</CardTitle>
-          <CardDescription>You have completed the {test.title} test.</CardDescription>
+          <CardTitle className="text-3xl">தேர்வு முடிந்தது!</CardTitle>
+          <CardDescription>நீங்கள் {test.title} தேர்வை முடித்துவிட்டீர்கள்.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="text-5xl font-bold" style={{ color: 'hsl(var(--accent))' }}>
@@ -57,7 +57,7 @@ export function McqTest({ test }: { test: Test }) {
           </div>
           <div className="w-full">
             <Progress value={scorePercentage} className="h-4" />
-            <p className="text-sm text-muted-foreground mt-2">{scorePercentage.toFixed(0)}% Correct</p>
+            <p className="text-sm text-muted-foreground mt-2">{scorePercentage.toFixed(0)}% சரி</p>
           </div>
           <div className="space-y-4 max-h-60 overflow-y-auto p-4 border rounded-md">
             {test.questions.map((q, index) => (
@@ -66,8 +66,8 @@ export function McqTest({ test }: { test: Test }) {
                   {answers[index] === q.correctAnswer ? <CheckCircle2 className="text-green-500"/> : <XCircle className="text-red-500"/>}
                   {q.question}
                 </p>
-                <p className="text-sm pl-8">Your answer: <span className={answers[index] === q.correctAnswer ? 'text-green-600' : 'text-red-600'}>{answers[index] || 'Not answered'}</span></p>
-                <p className="text-sm pl-8">Correct answer: <span className="text-green-600">{q.correctAnswer}</span></p>
+                <p className="text-sm pl-8">உங்கள் பதில்: <span className={answers[index] === q.correctAnswer ? 'text-green-600' : 'text-red-600'}>{answers[index] || 'பதிலளிக்கப்படவில்லை'}</span></p>
+                <p className="text-sm pl-8">சரியான பதில்: <span className="text-green-600">{q.correctAnswer}</span></p>
               </div>
             ))}
           </div>
@@ -75,10 +75,10 @@ export function McqTest({ test }: { test: Test }) {
         <CardFooter className="flex-col sm:flex-row gap-4">
           <Button onClick={handleTryAgain} className="w-full sm:w-auto">
             <RotateCw className="mr-2 h-4 w-4" />
-            Try Again
+            மீண்டும் முயற்சிக்கவும்
           </Button>
           <Button asChild variant="outline" className="w-full sm:w-auto">
-            <Link href="/">Back to Dashboard</Link>
+            <Link href="/">முகப்புக்குத் திரும்பு</Link>
           </Button>
         </CardFooter>
       </Card>
@@ -89,7 +89,7 @@ export function McqTest({ test }: { test: Test }) {
     <Card className="w-full max-w-2xl">
       <CardHeader>
         <CardTitle>{test.title}</CardTitle>
-        <CardDescription>Question {currentQuestionIndex + 1} of {test.questions.length}</CardDescription>
+        <CardDescription>கேள்வி {currentQuestionIndex + 1} / {test.questions.length}</CardDescription>
         <Progress value={progress} className="mt-2" />
       </CardHeader>
       <CardContent className="py-6">
@@ -112,16 +112,16 @@ export function McqTest({ test }: { test: Test }) {
           disabled={currentQuestionIndex === 0}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Previous
+          முந்தைய
         </Button>
         {currentQuestionIndex < test.questions.length - 1 ? (
           <Button onClick={() => setCurrentQuestionIndex(currentQuestionIndex + 1)}>
-            Next
+            அடுத்தது
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         ) : (
           <Button onClick={handleSubmit} style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
-            Submit
+            சமர்ப்பிக்கவும்
           </Button>
         )}
       </CardFooter>

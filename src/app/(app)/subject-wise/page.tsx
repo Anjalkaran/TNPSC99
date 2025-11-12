@@ -11,8 +11,8 @@ export default function SubjectWiseTestsPage() {
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
       <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold">Subject-wise Tests</h1>
-        <p className="text-muted-foreground mt-2">Focus your preparation on specific subjects.</p>
+        <h1 className="text-3xl md:text-4xl font-bold">பாடம் வாரியான தேர்வுகள்</h1>
+        <p className="text-muted-foreground mt-2">குறிப்பிட்ட பாடங்களில் உங்கள் தயாரிப்பை மையப்படுத்துங்கள்.</p>
       </div>
       
       {subjectTests.length > 0 ? (
@@ -32,12 +32,12 @@ export default function SubjectWiseTestsPage() {
                 <CardDescription>{test.description}</CardDescription>
               </CardHeader>
               <CardContent className="flex-grow">
-                <p className="text-sm text-muted-foreground">{test.questions.length} questions</p>
+                <p className="text-sm text-muted-foreground">{test.questions.length} கேள்விகள்</p>
               </CardContent>
               <CardFooter>
                 <Button asChild className="w-full" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
                   <Link href={`/test/${test.slug}`}>
-                    Start Test <ArrowRight className="ml-2 h-4 w-4" />
+                    தேர்வைத் தொடங்கவும் <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
               </CardFooter>
@@ -46,7 +46,7 @@ export default function SubjectWiseTestsPage() {
         </div>
       ) : (
         <div className="text-center py-16">
-          <p className="text-muted-foreground">No subject-wise tests available at the moment.</p>
+          <p className="text-muted-foreground">தற்போது பாடம் வாரியான தேர்வுகள் எதுவும் இல்லை.</p>
         </div>
       )}
     </div>

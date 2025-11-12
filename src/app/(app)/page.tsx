@@ -7,22 +7,22 @@ import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 const categories = [
   {
-    title: 'Class-wise Tests',
-    description: 'Practice tests organized by academic class standards.',
+    title: 'வகுப்பு வாரியான தேர்வுகள்',
+    description: 'கல்வி வகுப்பு தரங்களின்படி ஒழுங்கமைக்கப்பட்ட பயிற்சித் தேர்வுகள்.',
     href: '/class-wise',
     icon: <Library className="h-8 w-8 text-primary" />,
     image: PlaceHolderImages.find(img => img.id === 'class-wise')!,
   },
   {
-    title: 'Subject-wise Tests',
-    description: 'Focus your preparation on specific subjects.',
+    title: 'பாடம் வாரியான தேர்வுகள்',
+    description: 'குறிப்பிட்ட பாடங்களில் உங்கள் தயாரிப்பை மையப்படுத்துங்கள்.',
     href: '/subject-wise',
     icon: <BookCopy className="h-8 w-8 text-primary" />,
     image: PlaceHolderImages.find(img => img.id === 'subject-wise')!,
   },
   {
-    title: 'Previous Year Papers',
-    description: 'Get familiar with the exam pattern with past papers.',
+    title: 'முந்தைய ஆண்டு தாள்கள்',
+    description: 'கடந்த காலத் தாள்களுடன் தேர்வு முறையைப் பற்றி அறிந்து கொள்ளுங்கள்.',
     href: '/previous-year',
     icon: <Archive className="h-8 w-8 text-primary" />,
     image: PlaceHolderImages.find(img => img.id === 'previous-year')!,
@@ -34,10 +34,10 @@ export default function DashboardPage() {
     <div className="container mx-auto px-4 py-8 md:py-12">
       <section className="text-center mb-12 md:mb-16">
         <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
-          Master the TNPSC Exams
+          TNPSC தேர்வுகளில் தேர்ச்சி பெறுங்கள்
         </h1>
         <p className="max-w-2xl mx-auto text-lg text-muted-foreground">
-          Your ultimate destination for TNPSC exam preparation. Access a vast library of MCQs and track your progress to ace the test.
+          TNPSC தேர்வு தயாரிப்புக்கான உங்கள் இறுதி இலக்கு. MCQ களின் பரந்த நூலகத்தை அணுகி, தேர்வில் வெற்றிபெற உங்கள் முன்னேற்றத்தைக் கண்காணிக்கவும்.
         </p>
       </section>
 
@@ -52,7 +52,7 @@ export default function DashboardPage() {
               <p className="text-muted-foreground mb-4">{category.description}</p>
               <Button asChild className="w-full" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
                 <Link href={category.href}>
-                  View Tests <ArrowRight className="ml-2 h-4 w-4" />
+                  தேர்வுகளைக் காண்க <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
             </CardContent>

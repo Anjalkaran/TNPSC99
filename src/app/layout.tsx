@@ -6,8 +6,8 @@ import { Toaster } from '@/components/ui/toaster';
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
-  title: 'TNPSC Ace',
-  description: 'Your partner for TNPSC exam preparation. Practice with class-wise, subject-wise, and previous year MCQs.',
+  title: 'TNPSC ஏஸ்',
+  description: 'TNPSC தேர்வு தயாரிப்புக்கான உங்கள் கூட்டாளி. வகுப்பு வாரியாக, பாடம் வாரியாக மற்றும் முந்தைய ஆண்டு MCQ களுடன் பயிற்சி செய்யுங்கள்.',
 };
 
 export default function RootLayout({
@@ -16,7 +16,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="ta" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
