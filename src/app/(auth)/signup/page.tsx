@@ -84,7 +84,7 @@ export default function SignupPage() {
         username: values.username,
         email: values.email,
         registrationDate: new Date().toISOString(),
-        isAdmin: false, // Default user is not an admin
+        isAdmin: values.email === 'admin@thervumaiyam.in',
       };
 
       const userDocRef = doc(firestore, 'users', newUser.uid);
