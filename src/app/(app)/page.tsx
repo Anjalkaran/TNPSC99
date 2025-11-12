@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight, BookCopy, Library, Archive } from 'lucide-react';
+import { ArrowRight, BookCopy, Library, Archive, LogIn, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -40,6 +40,20 @@ export default function DashboardPage() {
           நூலகத்தை அணுகி, தேர்வில் வெற்றிபெற உங்கள் முன்னேற்றத்தைக்
           கண்காணிக்கவும்.
         </p>
+        <div className="mt-8 flex justify-center gap-4">
+            <Button asChild size="lg">
+                <Link href="/login">
+                    <LogIn className="mr-2 h-5 w-5" />
+                    உள்நுழைக
+                </Link>
+            </Button>
+            <Button asChild variant="outline" size="lg">
+                <Link href="/signup">
+                    <UserPlus className="mr-2 h-5 w-5" />
+                    பதிவு செய்க
+                </Link>
+            </Button>
+        </div>
       </section>
 
       <section className="grid md:grid-cols-3 gap-8">
