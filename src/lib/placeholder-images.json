@@ -1,3 +1,22 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "class-wise",
+      "description": "Illustration for Class-wise tests category",
+      "imageUrl": "https://images.unsplash.com/photo-1728743264687-d96fbda27a88?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8Y2xhc3Nyb29tJTIwYm9va3N8ZW58MHx8fHwxNzYyOTU0OTI2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "classroom books"
+    },
+    {
+      "id": "subject-wise",
+      "description": "Illustration for Subject-wise tests category",
+      "imageUrl": "https://images.unsplash.com/photo-1597309685382-fdcdccf38ef8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxzY2llbmNlJTIwaGlzdG9yeXxlbnwwfHx8fDE3NjI5NTQ5MjZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "science history"
+    },
+    {
+      "id": "previous-year",
+      "description": "Illustration for Previous Year papers category",
+      "imageUrl": "https://images.unsplash.com/photo-1631345949051-a9e41ca58e90?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxhcmNoaXZlJTIwcGFwZXJ8ZW58MHx8fHwxNzYyOTU0OTI2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "archive paper"
+    }
+  ]
 }
