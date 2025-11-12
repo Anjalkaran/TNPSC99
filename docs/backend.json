@@ -1,0 +1,330 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the TNPSC Ace application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User entity."
+        },
+        "username": {
+          "type": "string",
+          "description": "User's username."
+        },
+        "email": {
+          "type": "string",
+          "description": "User's email address.",
+          "format": "email"
+        },
+        "registrationDate": {
+          "type": "string",
+          "description": "Date and time the user registered.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "username",
+        "email",
+        "registrationDate"
+      ]
+    },
+    "Subject": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Subject",
+      "type": "object",
+      "description": "Represents a subject in the TNPSC exam syllabus.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Subject entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the subject (e.g., History, Geography)."
+        },
+        "description": {
+          "type": "string",
+          "description": "A brief description of the subject."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description"
+      ]
+    },
+    "Class": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Class",
+      "type": "object",
+      "description": "Represents an academic class (e.g., Class 6, Class 7).",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Class entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the class (e.g., Class 6, Class 7)."
+        },
+        "description": {
+          "type": "string",
+          "description": "A brief description of the class."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description"
+      ]
+    },
+    "Question": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Question",
+      "type": "object",
+      "description": "Represents a question in an MCQ test.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Question entity."
+        },
+        "text": {
+          "type": "string",
+          "description": "The text of the question."
+        },
+        "subjectId": {
+          "type": "string",
+          "description": "Reference to Subject. (Relationship: Subject 1:N Question)"
+        },
+        "classId": {
+          "type": "string",
+          "description": "Reference to Class. (Relationship: Class 1:N Question)"
+        },
+        "correctAnswerIndex": {
+          "type": "number",
+          "description": "The index of the correct answer within the answer options array."
+        },
+        "answerOptions": {
+          "type": "array",
+          "description": "Array of possible answers for the question.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "text",
+        "subjectId",
+        "classId",
+        "correctAnswerIndex",
+        "answerOptions"
+      ]
+    },
+    "Test": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Test",
+      "type": "object",
+      "description": "Represents a test (Subject-wise, Class-wise or Previous Year).",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Test entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the test (e.g., 'History Class 6 Test')."
+        },
+        "description": {
+          "type": "string",
+          "description": "A brief description of the test."
+        },
+        "subjectId": {
+          "type": "string",
+          "description": "Reference to Subject.  (Relationship: Subject 1:N Test) Nullable if it's a Previous Year Paper."
+        },
+        "classId": {
+          "type": "string",
+          "description": "Reference to Class. (Relationship: Class 1:N Test) Nullable if it's a Previous Year Paper."
+        },
+        "isPreviousYearPaper": {
+          "type": "boolean",
+          "description": "Indicates if the test is a previous year question paper."
+        },
+        "questionIds": {
+          "type": "array",
+          "description": "References to Questions. (Relationship: Test N:N Question)",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "isPreviousYearPaper",
+        "questionIds"
+      ]
+    },
+    "UserTestAttempt": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserTestAttempt",
+      "type": "object",
+      "description": "Represents a user's attempt at a particular test.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the UserTestAttempt entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N UserTestAttempt)"
+        },
+        "testId": {
+          "type": "string",
+          "description": "Reference to Test. (Relationship: Test 1:N UserTestAttempt)"
+        },
+        "attemptDate": {
+          "type": "string",
+          "description": "Date and time the test was attempted.",
+          "format": "date-time"
+        },
+        "score": {
+          "type": "number",
+          "description": "The user's score on the test."
+        },
+        "answers": {
+          "type": "array",
+          "description": "Array of user's answers; each entry corresponds to the index of the question.",
+          "items": {
+            "type": "number"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "testId",
+        "attemptDate",
+        "score",
+        "answers"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profiles. Uses path-based ownership.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/subjects/{subjectId}",
+        "definition": {
+          "entityName": "Subject",
+          "schema": {
+            "$ref": "#/backend/entities/Subject"
+          },
+          "description": "Stores subjects for the TNPSC exam.",
+          "params": [
+            {
+              "name": "subjectId",
+              "description": "The unique identifier of the subject."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/classes/{classId}",
+        "definition": {
+          "entityName": "Class",
+          "schema": {
+            "$ref": "#/backend/entities/Class"
+          },
+          "description": "Stores academic classes.",
+          "params": [
+            {
+              "name": "classId",
+              "description": "The unique identifier of the class."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/questions/{questionId}",
+        "definition": {
+          "entityName": "Question",
+          "schema": {
+            "$ref": "#/backend/entities/Question"
+          },
+          "description": "Stores questions for the MCQ tests.",
+          "params": [
+            {
+              "name": "questionId",
+              "description": "The unique identifier of the question."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/tests/{testId}",
+        "definition": {
+          "entityName": "Test",
+          "schema": {
+            "$ref": "#/backend/entities/Test"
+          },
+          "description": "Stores tests, including subject-wise, class-wise, and previous year papers.",
+          "params": [
+            {
+              "name": "testId",
+              "description": "The unique identifier of the test."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/testAttempts/{testAttemptId}",
+        "definition": {
+          "entityName": "UserTestAttempt",
+          "schema": {
+            "$ref": "#/backend/entities/UserTestAttempt"
+          },
+          "description": "Stores user attempts at tests, enabling score tracking. Uses path-based ownership.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "testAttemptId",
+              "description": "The unique identifier of the test attempt."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to support the TNPSC Ace application, focusing on class-wise, subject-wise, and previous year MCQ tests. The design emphasizes authorization independence, clarity, and scalability.  We are using path-based ownership for user data and a membership map approach for collaborative data. The key collections are `users`, `subjects`, `classes`, `questions`, `tests`, and `userTestAttempts`. User-specific data is stored under `/users/{userId}`. Questions are organized under subjects and classes enabling efficient querying and filtering of questions. Tests are designed to have many-to-many relationships with questions using the `questionIds` array. User attempts are stored separately, linking back to users and tests. This structure allows for efficient score tracking and personalized insights. The use of dedicated collections for each entity simplifies security rules and data management."
+  }
+}
