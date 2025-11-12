@@ -78,6 +78,7 @@ const tests = [
     description: '6 ஆம் வகுப்பு தமிழ் பாடத்திட்டத்திலிருந்து கேள்விகள்.',
     image: findImage('class-wise'),
     questionIds: ['q16'],
+    classId: '6',
   },
   {
     id: 'class-6-science',
@@ -87,6 +88,7 @@ const tests = [
     description: '6 ஆம் வகுப்பு அறிவியல் பாடத்திட்டத்திலிருந்து கேள்விகள்.',
     image: findImage('class-wise'),
     questionIds: ['q17'],
+    classId: '6',
   },
   {
     id: 'class-6-social',
@@ -96,6 +98,7 @@ const tests = [
     description: '6 ஆம் வகுப்பு சமூக அறிவியல் பாடத்திட்டத்திலிருந்து கேள்விகள்.',
     image: findImage('class-wise'),
     questionIds: ['q18'],
+    classId: '6',
   },
   {
     id: 'class-7-tamil',
@@ -105,6 +108,7 @@ const tests = [
     description: '7 ஆம் வகுப்பு தமிழ் பாடத்திட்டத்திலிருந்து கேள்விகள்.',
     image: findImage('class-wise'),
     questionIds: ['q19'],
+    classId: '7',
   },
   {
     id: 'class-7-science',
@@ -114,6 +118,7 @@ const tests = [
     description: '7 ஆம் வகுப்பு அறிவியல் பாடத்திட்டத்திலிருந்து கேள்விகள்.',
     image: findImage('class-wise'),
     questionIds: ['q20'],
+    classId: '7',
   },
    {
     id: 'class-7-social',
@@ -123,6 +128,7 @@ const tests = [
     description: '7 ஆம் வகுப்பு சமூக அறிவியல் பாடத்திட்டத்திலிருந்து கேள்விகள்.',
     image: findImage('class-wise'),
     questionIds: ['q21'],
+    classId: '7',
   },
   {
     id: 'class-8-tamil',
@@ -132,6 +138,7 @@ const tests = [
     description: '8 ஆம் வகுப்பு தமிழ் பாடத்திட்டத்திலிருந்து கேள்விகள்.',
     image: findImage('class-wise'),
     questionIds: ['q22'],
+    classId: '8',
   },
   {
     id: 'class-8-science',
@@ -141,6 +148,7 @@ const tests = [
     description: '8 ஆம் வகுப்பு அறிவியல் பாடத்திட்டத்திலிருந்து கேள்விகள்.',
     image: findImage('class-wise'),
     questionIds: ['q23'],
+    classId: '8',
   },
    {
     id: 'class-8-social',
@@ -150,6 +158,7 @@ const tests = [
     description: '8 ஆம் வகுப்பு சமூக அறிவியல் பாடத்திட்டத்திலிருந்து கேள்விகள்.',
     image: findImage('class-wise'),
     questionIds: ['q24'],
+    classId: '8',
   },
     {
     id: 'class-9-tamil',
@@ -159,6 +168,7 @@ const tests = [
     description: '9 ஆம் வகுப்பு தமிழ் பாடத்திட்டத்திலிருந்து கேள்விகள்.',
     image: findImage('class-wise'),
     questionIds: ['q25'],
+    classId: '9',
   },
   {
     id: 'class-9-science',
@@ -168,6 +178,7 @@ const tests = [
     description: '9 ஆம் வகுப்பு அறிவியல் பாடத்திட்டத்திலிருந்து கேள்விகள்.',
     image: findImage('class-wise'),
     questionIds: ['q26'],
+    classId: '9',
   },
    {
     id: 'class-9-social',
@@ -177,6 +188,7 @@ const tests = [
     description: '9 ஆம் வகுப்பு சமூக அறிவியல் பாடத்திட்டத்திலிருந்து கேள்விகள்.',
     image: findImage('class-wise'),
     questionIds: ['q27'],
+    classId: '9',
   },
   {
     id: 'class-10-science',
@@ -186,6 +198,7 @@ const tests = [
     description: '10 ஆம் வகுப்பு அறிவியல் பாடத்திட்டத்தின் முக்கிய संकल्पనைகள் குறித்த உங்கள் அறிவை சோதிக்கவும்.',
     image: findImage('class-wise'),
     questionIds: ['q1', 'q2', 'q3'],
+    classId: '10',
   },
   {
     id: 'class-12-maths',
@@ -195,6 +208,7 @@ const tests = [
     description: '12 ஆம் வகுப்பு கணித பாடத்திட்டத்தில் இருந்து கேள்விகளுடன் உங்களை நீங்களே சோதித்துக் கொள்ளுங்கள்.',
     image: findImage('class-wise'),
     questionIds: ['q4', 'q5'],
+    classId: '12',
   },
   {
     id: 'indian-history',
