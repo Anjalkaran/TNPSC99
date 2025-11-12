@@ -17,13 +17,27 @@ const findImage = (id: string) => {
 };
 
 const subjects = [
-    { id: 'science', name: 'Science', description: 'General Science' },
+    { id: 'general-science', name: 'General Science', description: 'General Science' },
+    { id: 'geography', name: 'Geography', description: 'Geography' },
+    { id: 'history-culture-inm', name: 'History, Culture of India, and Indian National Movement', description: 'History, Culture of India, and Indian National Movement' },
+    { id: 'indian-polity', name: 'Indian Polity', description: 'Indian Polity' },
+    { id: 'indian-economy-dev-admin', name: 'Indian Economy and Development Administration in Tamil Nadu', description: 'Indian Economy and Development Administration in Tamil Nadu' },
+    { id: 'history-culture-heritage-tn', name: 'History, Culture, Heritage, and Socio-Political Movements of Tamil Nadu', description: 'History, Culture, Heritage, and Socio-Political Movements of Tamil Nadu' },
+    { id: 'aptitude', name: 'Aptitude', description: 'Aptitude' },
+    { id: 'reasoning', name: 'Reasoning', description: 'Reasoning' },
+    { id: 'tamil-grammar', name: 'தமிழ் இலக்கணம்', description: 'Tamil Grammar' },
+    { id: 'tamil-vocabulary', name: 'தமிழ் சொல்லகராதி', description: 'Tamil Vocabulary' },
+    { id: 'tamil-writing-skills', name: 'தமிழ் எழுதும் திறன்', description: 'Tamil Writing Skills' },
+    { id: 'tamil-technical-terms', name: 'தமிழ் கலைச் சொற்கள்', description: 'Tamil Technical Terms' },
+    { id: 'tamil-comprehension', name: 'தமிழ் வாசித்தல் – புரிந்து கொள்ளும் திறன்', description: 'Tamil Reading Comprehension' },
+    { id: 'tamil-translation', name: 'தமிழ் எளிய மொழி பெயர்ப்பு', description: 'Tamil Simple Translation' },
+    { id: 'tamil-literature', name: 'இலக்கியம், தமிழ் அறிஞர்களும், தமிழ்த்தொண்டும்', description: 'Tamil Literature' },
     { id: 'maths', name: 'Maths', description: 'General Maths' },
     { id: 'history', name: 'History', description: 'Indian History' },
-    { id: 'geography', name: 'Geography', description: 'World Geography' },
     { id: 'polity', name: 'Polity', description: 'Indian Polity' },
     { id: 'tamil', name: 'Tamil', description: 'Tamil Language' },
     { id: 'social-science', name: 'Social Science', description: 'Social Science' },
+    { id: 'science', name: 'Science', description: 'General Science' },
 ];
 
 const classes = [
@@ -67,6 +81,11 @@ const questions = [
     { id: 'q25', text: 'யாப்பு இலக்கணத்தில் உள்ள உறுப்புகள் எத்தனை?', subjectId: 'tamil', classId: '9', answerOptions: ['நான்கு', 'ஐந்து', 'ஆறு', 'ஏழு'], correctAnswerIndex: 2 },
     { id: 'q26', text: 'மரபியலின் தந்தை என்று அழைக்கப்படுபவர் யார்?', subjectId: 'science', classId: '9', answerOptions: ['சார்லஸ் டார்வின்', 'கிரிகோர் மெண்டல்', 'ஆல்பர்ட் ஐன்ஸ்டீன்', 'ஐசக் நியூட்டன்'], correctAnswerIndex: 1 },
     { id: 'q27', text: 'பிரெஞ்சுப் புரட்சி எந்த ஆண்டு தொடங்கியது?', subjectId: 'social-science', classId: '9', answerOptions: ['1776', '1789', '1804', '1815'], correctAnswerIndex: 1 },
+    // Group IV questions
+    { id: 'q28', text: 'Nature of Universe relates to which subject?', subjectId: 'general-science', classId: '10', answerOptions: ['Physics', 'Chemistry', 'Biology', 'Geology'], correctAnswerIndex: 0 },
+    { id: 'q29', text: 'What is the highest common factor (HCF) of 12 and 18?', subjectId: 'aptitude', classId: '10', answerOptions: ['2', '3', '6', '12'], correctAnswerIndex: 2 },
+    { id "q30", text: "எதிர்ச்செயலைக் கண்டறிக: 'உயர்வு'", subjectId: "tamil-vocabulary", classId: "10", answerOptions: ["தாழ்வு", "மேன்மை", "சிறப்பு", "மிகுதி"], correctAnswerIndex: 0 },
+
 ];
 
 const tests = [
@@ -201,6 +220,26 @@ const tests = [
     classId: '10',
   },
   {
+    id: 'class-10-tamil',
+    slug: 'class-10-tamil',
+    title: 'வகுப்பு 10 - தமிழ்',
+    category: 'class',
+    description: '10 ஆம் வகுப்பு தமிழ் பாடத்திட்டத்திலிருந்து கேள்விகள்.',
+    image: findImage('class-wise'),
+    questionIds: ['q15'],
+    classId: '10',
+  },
+    {
+    id: 'class-10-social',
+    slug: 'class-10-social',
+    title: 'வகுப்பு 10 - சமூக அறிவியல்',
+    category: 'class',
+    description: '10 ஆம் வகுப்பு சமூக அறிவியல் பாடத்திட்டத்திலிருந்து கேள்விகள்.',
+    image: findImage('class-wise'),
+    questionIds: ['q14'],
+    classId: '10',
+  },
+  {
     id: 'class-12-maths',
     slug: 'class-12-maths',
     title: 'வகுப்பு 12 - கணிதம்',
@@ -253,7 +292,34 @@ const tests = [
     category: 'previous',
     description: '2021 TNPSC குரூப் IV தேர்வில் இருந்து கேள்விகளுடன் உங்கள் அறிவை சோதிக்கவும்.',
     image: findImage('previous-year'),
-    questionIds: ['q14', 'q15'],
+    questionIds: ['q14', 'q15', 'q28', 'q29', 'q30'],
+  },
+  {
+    id: 'group4-general-science',
+    slug: 'group4-general-science',
+    title: 'குரூப் IV - பொது அறிவியல்',
+    category: 'subject',
+    description: 'TNPSC குரூப் IV பொது அறிவியல் பாடத்திட்டத்தின் அடிப்படையில் கேள்விகள்.',
+    image: findImage('subject-wise'),
+    questionIds: ['q28'],
+  },
+  {
+    id: 'group4-aptitude',
+    slug: 'group4-aptitude',
+    title: 'குரூப் IV - திறனறிவு',
+    category: 'subject',
+    description: 'TNPSC குரூப் IV திறனறிவு பாடத்திட்டத்தின் அடிப்படையில் கேள்விகள்.',
+    image: findImage('subject-wise'),
+    questionIds: ['q29'],
+  },
+  {
+    id: 'group4-tamil-eligibility',
+    slug: 'group4-tamil-eligibility',
+    title: 'குரூப் IV - தமிழ் தகுதி',
+    category: 'subject',
+    description: 'TNPSC குரூப் IV தமிழ் தகுதி மற்றும் மதிப்பீட்டுத் தேர்வு பாடத்திட்டத்தின் அடிப்படையில் கேள்விகள்.',
+    image: findImage('subject-wise'),
+    questionIds: ['q30'],
   },
 ];
 
@@ -297,3 +363,5 @@ export async function seedDatabase() {
     console.error('Error seeding database:', error);
   }
 }
+
+    
