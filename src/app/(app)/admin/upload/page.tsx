@@ -1,18 +1,20 @@
 'use client';
 
 import { useState } from 'react';
-import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import {
   writeBatch,
   collection,
   doc,
   runTransaction,
+  deleteDoc
 } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -30,6 +32,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { Edit, Trash, View } from 'lucide-react';
+import Link from 'next/link';
 
 
 const jsonStructureExample = `[
@@ -62,6 +77,94 @@ const findImage = (id: string) => {
     }
     return image;
 };
+
+function ExistingTestsList() {
+    const { t } = useTranslation();
+    const firestore = useFirestore();
+    const { toast } = useToast();
+    const testsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'tests') : null, [firestore]);
+    const { data: tests, isLoading } = useCollection<Test>(testsCollection);
+
+    const handleDelete = async (testId: string) => {
+        if (!firestore) return;
+        const testDocRef = doc(firestore, 'tests', testId);
+        try {
+            await deleteDoc(testDocRef);
+            toast({
+                title: t('Test Deleted'),
+                description: t('The test has been successfully deleted.'),
+            });
+        } catch (error) {
+            console.error("Error deleting test: ", error);
+            toast({
+                variant: 'destructive',
+                title: t('Error Deleting Test'),
+                description: t('There was a problem deleting the test.'),
+            });
+        }
+    };
+
+    if (isLoading) return <p>{t('Loading tests...')}...</p>
+    
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>{t('Existing Question Banks')}</CardTitle>
+                 <CardDescription>{t('View, edit, or delete your existing question banks.')}</CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {tests && tests.length > 0 ? (
+                     <>
+                        {tests.map(test => (
+                            <Card key={test.id}>
+                                <CardHeader>
+                                    <CardTitle className="text-lg">{test.title}</CardTitle>
+                                    <CardDescription>{test.questionIds.length} {t('questions')}</CardDescription>
+                                </CardHeader>
+                                <CardFooter className="flex gap-2">
+                                     <Button asChild variant="outline" size="sm">
+                                        <Link href={`/test/${test.slug}`}>
+                                            <View className="mr-2 h-4 w-4" />
+                                            {t('View')}
+                                        </Link>
+                                    </Button>
+                                    <Button asChild variant="outline" size="sm">
+                                        <Link href={`/admin/upload/${test.slug}/edit`}>
+                                            <Edit className="mr-2 h-4 w-4" />
+                                            {t('edit')}
+                                        </Link>
+                                    </Button>
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="destructive" size="sm">
+                                                <Trash className="mr-2 h-4 w-4" />
+                                                {t('delete')}
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>{t('confirm_deletion_title')}</AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    {t('This will permanently delete the test, but not the questions themselves.')}
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                                                <AlertDialogAction onClick={() => handleDelete(test.id)}>{t('delete')}</AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </CardFooter>
+                            </Card>
+                        ))}
+                    </>
+                ) : (
+                    <p className="text-muted-foreground col-span-full">{t('No question banks created yet.')}</p>
+                )}
+            </CardContent>
+        </Card>
+    );
+}
 
 export default function UploadMcqPage() {
   const [jsonInput, setJsonInput] = useState('');
@@ -137,14 +240,17 @@ export default function UploadMcqPage() {
       if (!firestore) throw new Error('Firestore is not initialized');
 
       const batch = writeBatch(firestore);
-      const questionsCollection = collection(firestore, 'questions');
-      const testsCollection = collection(firestore, 'tests');
+      const questionsCollectionRef = collection(firestore, 'questions');
+      const testsCollectionRef = collection(firestore, 'tests');
+      
+      const selectedSubject = subjects?.find(s => s.id === selectedSubjectId);
+      const selectedClass = classes?.find(c => c.id === selectedClassId);
 
       const newQuestionIds: string[] = [];
 
       // Add new questions to batch with selected class and subject
       questions.forEach(q => {
-          const questionRef = doc(questionsCollection); // Auto-generate ID
+          const questionRef = doc(questionsCollectionRef); // Auto-generate ID
           const questionData: QuestionInput = {
               ...q,
               classId: selectedClassId,
@@ -156,9 +262,9 @@ export default function UploadMcqPage() {
       });
 
       // Find or create test and update it
-      const testTitle = `${t('class')} ${selectedClassId} - ${selectedSubjectId}`;
+      const testTitle = `${selectedClass?.name || 'Class'} - ${selectedSubject?.name || 'Subject'}`;
       const testSlug = createSlug(testTitle);
-      const testRef = doc(testsCollection, testSlug);
+      const testRef = doc(testsCollectionRef, testSlug);
 
       await runTransaction(firestore, async (transaction) => {
           const testDoc = await transaction.get(testRef);
@@ -168,7 +274,7 @@ export default function UploadMcqPage() {
                   id: testSlug,
                   slug: testSlug,
                   title: testTitle,
-                  description: t('test_for_class_subject', {classId: selectedClassId, subjectId: selectedSubjectId}),
+                  description: t('test_for_class_subject', {classId: selectedClass?.name || selectedClassId, subjectId: selectedSubject?.name || selectedSubjectId}),
                   category: 'class',
                   image: findImage('class-wise'),
                   questionIds: newQuestionIds,
@@ -206,7 +312,7 @@ export default function UploadMcqPage() {
   };
 
   return (
-    <div className="container mx-auto p-4 sm:p-6 md:p-8">
+    <div className="container mx-auto p-4 sm:p-6 md:p-8 space-y-8">
       <Card className="w-full max-w-4xl mx-auto">
         <CardHeader>
           <CardTitle>{t('upload_class_wise_mcqs')}</CardTitle>
@@ -217,10 +323,10 @@ export default function UploadMcqPage() {
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-                <Label>Select Class</Label>
+                <Label>{t('Select Class')}</Label>
                 <Select onValueChange={setSelectedClassId} value={selectedClassId} disabled={classesLoading}>
                     <SelectTrigger>
-                        <SelectValue placeholder="Select a class..." />
+                        <SelectValue placeholder={t('Select a class...')} />
                     </SelectTrigger>
                     <SelectContent>
                         {classes?.map(cls => <SelectItem key={cls.id} value={cls.id}>{cls.name}</SelectItem>)}
@@ -228,10 +334,10 @@ export default function UploadMcqPage() {
                 </Select>
             </div>
              <div className="space-y-2">
-                <Label>Select Subject</Label>
+                <Label>{t('Select Subject')}</Label>
                 <Select onValueChange={setSelectedSubjectId} value={selectedSubjectId} disabled={subjectsLoading}>
                     <SelectTrigger>
-                        <SelectValue placeholder="Select a subject..." />
+                        <SelectValue placeholder={t('Select a subject...')} />
                     </SelectTrigger>
                     <SelectContent>
                         {subjects?.map(sub => <SelectItem key={sub.id} value={sub.id}>{sub.name}</SelectItem>)}
@@ -277,6 +383,8 @@ export default function UploadMcqPage() {
           </div>
         </CardContent>
       </Card>
+      
+      <ExistingTestsList />
     </div>
   );
 }

@@ -100,5 +100,21 @@
     "subject_updated_success_title": "Subject Updated",
     "subject_updated_success_desc": "The subject '{{subjectName}}' has been successfully updated.",
     "subject_update_error_title": "Error Updating Subject",
-    "subject_update_error_desc": "There was a problem updating the subject."
+    "subject_update_error_desc": "There was a problem updating the subject.",
+    "Select Class": "Select Class",
+    "Select a class...": "Select a class...",
+    "Select Subject": "Select Subject",
+    "Select a subject...": "Select a subject...",
+    "Existing Question Banks": "Existing Question Banks",
+    "View, edit, or delete your existing question banks.": "View, edit, or delete your existing question banks.",
+    "questions": "questions",
+    "View": "View",
+    "This will permanently delete the test, but not the questions themselves.": "This will permanently delete the test, but not the questions themselves.",
+    "No question banks created yet.": "No question banks created yet.",
+    "Test Deleted": "Test Deleted",
+    "The test has been successfully deleted.": "The test has been successfully deleted.",
+    "Error Deleting Test": "Error Deleting Test",
+    "There was a problem deleting the test.": "There was a problem deleting the test.",
+    "Loading tests...": "Loading tests...",
+    "Edit Question Bank": "Edit Question Bank"
 }

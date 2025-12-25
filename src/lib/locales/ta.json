@@ -100,5 +100,21 @@
     "subject_updated_success_title": "பாடம் புதுப்பிக்கப்பட்டது",
     "subject_updated_success_desc": "'{{subjectName}}' என்ற பாடம் வெற்றிகரமாக புதுப்பிக்கப்பட்டது.",
     "subject_update_error_title": "பாடத்தைப் புதுப்பிப்பதில் பிழை",
-    "subject_update_error_desc": "பாடத்தைப் புதுப்பிக்கும்போது ஒரு சிக்கல் ஏற்பட்டது."
+    "subject_update_error_desc": "பாடத்தைப் புதுப்பிக்கும்போது ஒரு சிக்கல் ஏற்பட்டது.",
+    "Select Class": "வகுப்பைத் தேர்ந்தெடுக்கவும்",
+    "Select a class...": "ஒரு வகுப்பைத் தேர்ந்தெடுக்கவும்...",
+    "Select Subject": "பாடத்தைத் தேர்ந்தெடுக்கவும்",
+    "Select a subject...": "ஒரு பாடத்தைத் தேர்ந்தெடுக்கவும்...",
+    "Existing Question Banks": "இருக்கும் கேள்வி வங்கிகள்",
+    "View, edit, or delete your existing question banks.": "உங்களின் தற்போதைய கேள்வி வங்கிகளைக் காணலாம், திருத்தலாம் அல்லது நீக்கலாம்.",
+    "questions": "கேள்விகள்",
+    "View": "காண்க",
+    "This will permanently delete the test, but not the questions themselves.": "இது தேர்வை நிரந்தரமாக நீக்கும், ஆனால் கேள்விகளை அல்ல.",
+    "No question banks created yet.": "கேள்வி வங்கிகள் இன்னும் உருவாக்கப்படவில்லை.",
+    "Test Deleted": "தேர்வு நீக்கப்பட்டது",
+    "The test has been successfully deleted.": "தேர்வு வெற்றிகரமாக நீக்கப்பட்டது.",
+    "Error Deleting Test": "தேர்வை நீக்குவதில் பிழை",
+    "There was a problem deleting the test.": "தேர்வை நீக்கும்போது ஒரு சிக்கல் ஏற்பட்டது.",
+    "Loading tests...": "தேர்வுகளை ஏற்றுகிறது...",
+    "Edit Question Bank": "கேள்வி வங்கியைத் திருத்து"
 }
