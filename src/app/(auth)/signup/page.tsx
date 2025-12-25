@@ -22,7 +22,10 @@ import {
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { useAuth, useUser } from '@/firebase';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import {
+  createUserWithEmailAndPassword,
+  updateProfile,
+} from 'firebase/auth';
 import { doc, setDoc, getFirestore } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -79,6 +82,9 @@ export default function SignupPage() {
       );
       const newUser = userCredential.user;
 
+      // Also update the user's auth profile
+      await updateProfile(newUser, { displayName: values.username });
+
       const userProfile: UserProfile = {
         id: newUser.uid,
         username: values.username,
@@ -88,18 +94,17 @@ export default function SignupPage() {
       };
 
       const userDocRef = doc(firestore, 'users', newUser.uid);
-      
-      setDoc(userDocRef, userProfile)
-        .catch(error => {
-            errorEmitter.emit(
-            'permission-error',
-            new FirestorePermissionError({
-                path: userDocRef.path,
-                operation: 'create',
-                requestResourceData: userProfile,
-            })
-            )
-        });
+
+      setDoc(userDocRef, userProfile).catch((error) => {
+        errorEmitter.emit(
+          'permission-error',
+          new FirestorePermissionError({
+            path: userDocRef.path,
+            operation: 'create',
+            requestResourceData: userProfile,
+          })
+        );
+      });
 
       toast({
         title: 'கணக்கு உருவாக்கப்பட்டது',
