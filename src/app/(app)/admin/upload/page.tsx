@@ -27,6 +27,7 @@ import { useRouter } from 'next/navigation';
 import { useDoc, useMemoFirebase } from '@/firebase';
 import type { UserProfile } from '@/lib/types';
 import { useEffect } from 'react';
+import { useTranslation } from '@/hooks/use-translation';
 
 const jsonStructureExample = `[
   {
@@ -68,6 +69,7 @@ export default function UploadMcqPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
   const router = useRouter();
+  const { t } = useTranslation();
 
   const { user, isUserLoading } = useUser();
   const userProfileRef = useMemoFirebase(
@@ -101,8 +103,8 @@ export default function UploadMcqPage() {
     if (!jsonInput.trim()) {
       toast({
         variant: 'destructive',
-        title: 'JSON உள்ளீடு தேவை',
-        description: 'தயவுசெய்து JSON தரவை உள்ளிடவும் அல்லது ஒரு கோப்பைப் பதிவேற்றவும்.',
+        title: t('json_input_required_title'),
+        description: t('json_input_required_desc'),
       });
       return;
     }
@@ -122,7 +124,7 @@ export default function UploadMcqPage() {
     } catch (error: any) {
       toast({
         variant: 'destructive',
-        title: 'தவறான JSON வடிவம்',
+        title: t('invalid_json_format_title'),
         description: error.message || 'The provided JSON is not valid.',
       });
       return;
@@ -161,7 +163,7 @@ export default function UploadMcqPage() {
         });
 
         // Find or create test and update it
-        const testTitle = `வகுப்பு ${classId} - ${subjectId}`;
+        const testTitle = `${t('class')} ${classId} - ${subjectId}`;
         const testSlug = createSlug(testTitle);
         const testRef = doc(testsCollection, testSlug);
 
@@ -175,7 +177,7 @@ export default function UploadMcqPage() {
                     id: testSlug,
                     slug: testSlug,
                     title: testTitle,
-                    description: `${classId} ஆம் வகுப்பு ${subjectId} பாடத்திற்கான தேர்வு.`,
+                    description: t('test_for_class_subject', {classId, subjectId}),
                     category: 'class',
                     image: findImage('class-wise'), // Or choose dynamically
                     questionIds: newQuestionIds,
@@ -195,17 +197,17 @@ export default function UploadMcqPage() {
       await batch.commit();
 
       toast({
-        title: 'வெற்றிகரமாக பதிவேற்றப்பட்டது!',
-        description: `${questions.length} கேள்விகள் சேர்க்கப்பட்டு, தொடர்புடைய தேர்வுகள் புதுப்பிக்கப்பட்டன.`,
+        title: t('upload_successful_title'),
+        description: t('upload_successful_desc', { count: questions.length }),
       });
       setJsonInput('');
     } catch (error: any) {
       console.error('Error uploading questions:', error);
       toast({
         variant: 'destructive',
-        title: 'பதிவேற்றத்தில் பிழை',
+        title: t('upload_error_title'),
         description:
-          error.message || 'கேள்விகளைச் சேமிப்பதில் ஒரு பிழை ஏற்பட்டது.',
+          error.message || t('upload_error_desc'),
       });
     } finally {
       setIsSubmitting(false);
@@ -224,24 +226,24 @@ export default function UploadMcqPage() {
     <div className="container mx-auto p-4 sm:p-6 md:p-8">
       <Card className="w-full max-w-4xl mx-auto">
         <CardHeader>
-          <CardTitle>வகுப்பு வாரியாக MCQ களைப் பதிவேற்றவும்</CardTitle>
+          <CardTitle>{t('upload_class_wise_mcqs')}</CardTitle>
           <CardDescription>
-            JSON தரவைப் பதிவேற்றுவதன் மூலம் புதிய கேள்விகளை மொத்தமாகச் சேர்க்கவும். கேள்விகள் தானாகவே வகுப்பு மற்றும் பாடத்தின்படி குழுவாக்கப்பட்டு, சோதனைகள் உருவாக்கப்படும் அல்லது புதுப்பிக்கப்படும்.
+            {t('upload_class_wise_mcqs_desc')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
-              <Label htmlFor="json-input">JSON தரவு</Label>
+              <Label htmlFor="json-input">{t('json_data')}</Label>
               <Textarea
                 id="json-input"
-                placeholder="JSON தரவை இங்கே ஒட்டவும்..."
+                placeholder={t('json_data_placeholder')}
                 value={jsonInput}
                 onChange={(e) => setJsonInput(e.target.value)}
                 className="h-72 font-mono text-sm"
               />
               <div className="space-y-2">
-                <Label htmlFor="json-file">அல்லது ஒரு கோப்பைப் பதிவேற்றவும்</Label>
+                <Label htmlFor="json-file">{t('or_upload_file')}</Label>
                 <Input
                   id="json-file"
                   type="file"
@@ -251,7 +253,7 @@ export default function UploadMcqPage() {
               </div>
             </div>
             <div className="space-y-4">
-              <Label>எதிர்பார்க்கப்படும் JSON கட்டமைப்பு</Label>
+              <Label>{t('expected_json_structure')}</Label>
               <Card className="bg-muted/50">
                 <CardContent className="p-4">
                   <pre className="text-xs font-mono overflow-auto max-h-80">
@@ -263,7 +265,7 @@ export default function UploadMcqPage() {
           </div>
           <div>
             <Button onClick={handleSubmit} disabled={isSubmitting}>
-              {isSubmitting ? 'சமர்ப்பிக்கிறது...' : 'கேள்விகளைச் சமர்ப்பிக்கவும்'}
+              {isSubmitting ? t('submitting') : t('submit_questions')}
             </Button>
           </div>
         </CardContent>
