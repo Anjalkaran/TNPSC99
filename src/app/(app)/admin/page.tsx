@@ -95,22 +95,31 @@ export default function AdminPage() {
   );
   const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
 
+  // We need to wait for both user and profile to be loaded before checking for admin
+  const isAuthenticating = isUserLoading || isProfileLoading;
+
   useEffect(() => {
-    if (!isUserLoading && !isProfileLoading) {
+    // Only run the check when authentication is fully resolved
+    if (!isAuthenticating) {
+      // If there's no user or the user is not an admin, redirect
       if (!user || !userProfile?.isAdmin) {
-        router.push('/');
+        router.replace('/');
       }
     }
-  }, [user, isUserLoading, userProfile, isProfileLoading, router]);
+  }, [isAuthenticating, user, userProfile, router]);
 
-  if (isUserLoading || isProfileLoading) {
-    return <div className="container mx-auto p-4">Loading...</div>;
+  // Show a loading state while we verify the user
+  if (isAuthenticating) {
+    return <div className="container mx-auto p-4">Verifying access...</div>;
   }
 
+  // If after loading, the user is not an admin, they will be redirected.
+  // We can show an explicit message, but the redirect should be fast.
   if (!userProfile?.isAdmin) {
-    return <div className="container mx-auto p-4">You are not authorized to view this page.</div>;
+    return <div className="container mx-auto p-4">Redirecting...</div>;
   }
 
+  // Render the admin content only if the user is an admin
   return (
     <div className="container mx-auto p-4 sm:p-6 md:p-8">
         <div className="flex justify-between items-center mb-6">
