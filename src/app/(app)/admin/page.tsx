@@ -95,7 +95,6 @@ export default function AdminPage() {
         { value: 'study-material', label: t('study_material'), icon: <BookOpen /> },
         { value: 'mcq-bank', label: t('mcq_bank'), icon: <IconMcqBank /> },
         { value: 'question-bank', label: t('question_bank'), icon: <IconQuestionBank /> },
-        { value: 'reasoning-bank', label: t('reasoning_bank'), icon: <BrainCircuit /> },
         { value: 'live-test', label: t('live_test'), icon: <Trophy /> },
         { value: 'analytics', label: t('analytics'), icon: <BarChart /> },
     ];
@@ -108,7 +107,7 @@ export default function AdminPage() {
         </div>
         
         <Tabs defaultValue="user-management" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2 h-auto bg-transparent p-0">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2 h-auto bg-transparent p-0">
                 {adminTabs.map(tab => (
                      <TabsTrigger key={tab.value} value={tab.value} asChild>
                          <Card className="cursor-pointer data-[state=active]:border-primary data-[state=active]:ring-2 data-[state=active]:ring-primary">
