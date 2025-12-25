@@ -1,12 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { useFirestore, useUser } from '@/firebase';
+import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import {
   writeBatch,
   collection,
   doc,
-  serverTimestamp,
   runTransaction,
 } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
@@ -21,26 +20,26 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import type { Question, Test, QuestionInput } from '@/lib/types';
+import type { Question, Test, QuestionInput, Subject, Class } from '@/lib/types';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { useRouter } from 'next/navigation';
-import { useDoc, useMemoFirebase } from '@/firebase';
-import type { UserProfile } from '@/lib/types';
-import { useEffect } from 'react';
 import { useTranslation } from '@/hooks/use-translation';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+
 
 const jsonStructureExample = `[
   {
     "text": "Your question text here?",
-    "subjectId": "science",
-    "classId": "6",
     "answerOptions": ["Option A", "Option B", "Option C", "Option D"],
     "correctAnswerIndex": 0
   },
   {
-    "text": "Another question for the same class and subject?",
-    "subjectId": "science",
-    "classId": "6",
+    "text": "Another question?",
     "answerOptions": ["Yes", "No"],
     "correctAnswerIndex": 1
   }
@@ -66,12 +65,18 @@ const findImage = (id: string) => {
 export default function UploadMcqPage() {
   const [jsonInput, setJsonInput] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedClassId, setSelectedClassId] = useState<string>('');
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string>('');
+
   const firestore = useFirestore();
   const { toast } = useToast();
-  const router = useRouter();
   const { t } = useTranslation();
 
-  const { user, isUserLoading } = useUser();
+  const subjectsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'subjects') : null, [firestore]);
+  const { data: subjects, isLoading: subjectsLoading } = useCollection<Subject>(subjectsCollection);
+
+  const classesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'classes') : null, [firestore]);
+  const { data: classes, isLoading: classesLoading } = useCollection<Class>(classesCollection);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -86,6 +91,15 @@ export default function UploadMcqPage() {
   };
 
   const handleSubmit = async () => {
+    if (!selectedClassId || !selectedSubjectId) {
+      toast({
+        variant: 'destructive',
+        title: 'Selection Required',
+        description: 'Please select a class and a subject before submitting.',
+      });
+      return;
+    }
+
     if (!jsonInput.trim()) {
       toast({
         variant: 'destructive',
@@ -95,7 +109,7 @@ export default function UploadMcqPage() {
       return;
     }
 
-    let questions: QuestionInput[];
+    let questions: Omit<QuestionInput, 'classId' | 'subjectId'>[];
     try {
       questions = JSON.parse(jsonInput);
       // Basic validation
@@ -103,8 +117,8 @@ export default function UploadMcqPage() {
         throw new Error('JSON must be a non-empty array of questions.');
       }
       for(const q of questions) {
-        if (!q.text || !q.subjectId || !q.classId || !q.answerOptions || q.correctAnswerIndex === undefined) {
-            throw new Error('Each question object must have text, subjectId, classId, answerOptions, and correctAnswerIndex.');
+        if (!q.text || !q.answerOptions || q.correctAnswerIndex === undefined) {
+            throw new Error('Each question object must have text, answerOptions, and correctAnswerIndex.');
         }
       }
     } catch (error: any) {
@@ -120,66 +134,53 @@ export default function UploadMcqPage() {
 
     try {
       if (!firestore) throw new Error('Firestore is not initialized');
-      
-      // Group questions by classId and subjectId
-      const groupedQuestions = questions.reduce((acc, q) => {
-        const key = `${q.classId}-${q.subjectId}`;
-        if (!acc[key]) {
-          acc[key] = [];
-        }
-        acc[key].push(q);
-        return acc;
-      }, {} as Record<string, QuestionInput[]>);
-
 
       const batch = writeBatch(firestore);
       const questionsCollection = collection(firestore, 'questions');
       const testsCollection = collection(firestore, 'tests');
 
-      for (const key in groupedQuestions) {
-        const [classId, subjectId] = key.split('-');
-        const questionsInGroup = groupedQuestions[key];
-        const newQuestionIds: string[] = [];
+      const newQuestionIds: string[] = [];
 
-        // Add new questions to batch
-        questionsInGroup.forEach(q => {
-            const questionRef = doc(questionsCollection); // Auto-generate ID
-            batch.set(questionRef, q);
-            newQuestionIds.push(questionRef.id);
-        });
+      // Add new questions to batch with selected class and subject
+      questions.forEach(q => {
+          const questionRef = doc(questionsCollection); // Auto-generate ID
+          const questionData: QuestionInput = {
+              ...q,
+              classId: selectedClassId,
+              subjectId: selectedSubjectId
+          };
+          batch.set(questionRef, questionData);
+          newQuestionIds.push(questionRef.id);
+      });
 
-        // Find or create test and update it
-        const testTitle = `${t('class')} ${classId} - ${subjectId}`;
-        const testSlug = createSlug(testTitle);
-        const testRef = doc(testsCollection, testSlug);
+      // Find or create test and update it
+      const testTitle = `${t('class')} ${selectedClassId} - ${selectedSubjectId}`;
+      const testSlug = createSlug(testTitle);
+      const testRef = doc(testsCollection, testSlug);
 
-        // We need to run a transaction to safely read-then-write the test document
-        await runTransaction(firestore, async (transaction) => {
-            const testDoc = await transaction.get(testRef);
+      await runTransaction(firestore, async (transaction) => {
+          const testDoc = await transaction.get(testRef);
 
-            if (!testDoc.exists()) {
-                // Create new test
-                const newTest: Test = {
-                    id: testSlug,
-                    slug: testSlug,
-                    title: testTitle,
-                    description: t('test_for_class_subject', {classId, subjectId}),
-                    category: 'class',
-                    image: findImage('class-wise'), // Or choose dynamically
-                    questionIds: newQuestionIds,
-                    classId: classId,
-                    subjectId: subjectId,
-                };
-                transaction.set(testRef, newTest);
-            } else {
-                // Update existing test
-                const existingQuestionIds = testDoc.data().questionIds || [];
-                const updatedQuestionIds = [...new Set([...existingQuestionIds, ...newQuestionIds])];
-                transaction.update(testRef, { questionIds: updatedQuestionIds });
-            }
-        });
-      }
-
+          if (!testDoc.exists()) {
+              const newTest: Test = {
+                  id: testSlug,
+                  slug: testSlug,
+                  title: testTitle,
+                  description: t('test_for_class_subject', {classId: selectedClassId, subjectId: selectedSubjectId}),
+                  category: 'class',
+                  image: findImage('class-wise'),
+                  questionIds: newQuestionIds,
+                  classId: selectedClassId,
+                  subjectId: selectedSubjectId,
+              };
+              transaction.set(testRef, newTest);
+          } else {
+              const existingQuestionIds = testDoc.data().questionIds || [];
+              const updatedQuestionIds = [...new Set([...existingQuestionIds, ...newQuestionIds])];
+              transaction.update(testRef, { questionIds: updatedQuestionIds });
+          }
+      });
+      
       await batch.commit();
 
       toast({
@@ -187,6 +188,8 @@ export default function UploadMcqPage() {
         description: t('upload_successful_desc', { count: questions.length }),
       });
       setJsonInput('');
+      setSelectedClassId('');
+      setSelectedSubjectId('');
     } catch (error: any) {
       console.error('Error uploading questions:', error);
       toast({
@@ -210,6 +213,30 @@ export default function UploadMcqPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+                <Label>Select Class</Label>
+                <Select onValueChange={setSelectedClassId} value={selectedClassId} disabled={classesLoading}>
+                    <SelectTrigger>
+                        <SelectValue placeholder="Select a class..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {classes?.map(cls => <SelectItem key={cls.id} value={cls.id}>{cls.name}</SelectItem>)}
+                    </SelectContent>
+                </Select>
+            </div>
+             <div className="space-y-2">
+                <Label>Select Subject</Label>
+                <Select onValueChange={setSelectedSubjectId} value={selectedSubjectId} disabled={subjectsLoading}>
+                    <SelectTrigger>
+                        <SelectValue placeholder="Select a subject..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {subjects?.map(sub => <SelectItem key={sub.id} value={sub.id}>{sub.name}</SelectItem>)}
+                    </SelectContent>
+                </Select>
+            </div>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <Label htmlFor="json-input">{t('json_data')}</Label>
@@ -242,7 +269,7 @@ export default function UploadMcqPage() {
             </div>
           </div>
           <div>
-            <Button onClick={handleSubmit} disabled={isSubmitting}>
+            <Button onClick={handleSubmit} disabled={isSubmitting || !selectedClassId || !selectedSubjectId}>
               {isSubmitting ? t('submitting') : t('submit_questions')}
             </Button>
           </div>
