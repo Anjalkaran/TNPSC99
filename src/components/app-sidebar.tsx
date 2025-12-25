@@ -27,7 +27,7 @@ import {
   BookOpenCheck
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
-import { useAuth, useUser, useDoc, useMemoFirebase } from '@/firebase';
+import { useAuth, useUser, useDoc, useMemoFirebase, useFirestore } from '@/firebase';
 import type { UserProfile } from '@/lib/types';
 import { doc } from 'firebase/firestore';
 import { Button } from './ui/button';
@@ -53,7 +53,7 @@ export function AppSidebar() {
   const pathname = usePathname();
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
-  const firestore = auth.app ? doc(auth.app, 'dummy').firestore : null;
+  const firestore = useFirestore();
 
   const userProfileRef = useMemoFirebase(
     () => (user && firestore ? doc(firestore, 'users', user.uid) : null),
