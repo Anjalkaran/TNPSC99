@@ -236,10 +236,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
             </div>
              <AlertDialog>
                 <AlertDialogTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                        <LogOut className="h-5 w-5 text-destructive" />
-                        <span className="sr-only">Exit Test</span>
-                    </Button>
+                    <Button variant="link" className="text-destructive">வெளியேறு</Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                     <AlertDialogHeader>
