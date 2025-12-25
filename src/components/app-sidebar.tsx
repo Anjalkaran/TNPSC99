@@ -42,24 +42,26 @@ export function AppSidebar() {
   const firestore = useFirestore();
   const { t } = useTranslation();
 
-  const sidebarLinks = [
-      { href: '/dashboard', label: t('dashboard'), icon: LayoutDashboard },
-      { href: '/online-tests', label: t('online_tests'), icon: FilePenLine },
-      { href: '/study-material', label: t('study_material'), icon: BookOpen },
-      { href: '/ask-your-doubt', label: t('ask_your_doubt'), icon: HelpCircle },
-      { href: '/profile', label: t('profile'), icon: User },
-      { href: '/exam-history', label: t('exam_history'), icon: History },
-      { href: '/performance', label: t('performance'), icon: BarChart2 },
-      { href: '/leaderboard', label: t('leaderboard'), icon: Award },
-      { href: '/feedback', label: t('feedback'), icon: Star },
-      { href: '/whatsapp-support', label: t('whatsapp_support'), icon: MessageSquare },
-  ];
-
   const userProfileRef = useMemoFirebase(
     () => (user && firestore ? doc(firestore, 'users', user.uid) : null),
     [user, firestore]
   );
   const { data: userProfile } = useDoc<UserProfile>(userProfileRef);
+
+  const allSidebarLinks = [
+      { href: '/dashboard', label: t('dashboard'), icon: LayoutDashboard },
+      { href: '/online-tests', label: t('online_tests'), icon: FilePenLine },
+      { href: '/study-material', label: t('study_material'), icon: BookOpen, adminOnly: true },
+      { href: '/ask-your-doubt', label: t('ask_your_doubt'), icon: HelpCircle, adminOnly: true },
+      { href: '/profile', label: t('profile'), icon: User },
+      { href: '/exam-history', label: t('exam_history'), icon: History },
+      { href: '/performance', label: t('performance'), icon: BarChart2 },
+      { href: '/leaderboard', label: t('leaderboard'), icon: Award },
+      { href: '/feedback', label: t('feedback'), icon: Star, adminOnly: true },
+      { href: '/whatsapp-support', label: t('whatsapp_support'), icon: MessageSquare, adminOnly: true },
+  ];
+
+  const sidebarLinks = allSidebarLinks.filter(link => !link.adminOnly || userProfile?.isAdmin);
 
   const handleLogout = async () => {
     await signOut(auth);
