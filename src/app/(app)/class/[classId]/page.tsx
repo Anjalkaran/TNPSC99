@@ -10,22 +10,27 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { useFirestore } from '@/firebase';
 import type { Test, Subject, Class } from '@/lib/types';
 import { useParams, useRouter } from 'next/navigation';
 import { useMemo, useState, useEffect } from 'react';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
+import { useToast } from '@/hooks/use-toast';
 
 export default function GenerateMcqPage() {
   const { classId } = useParams();
   const router = useRouter();
   const firestore = useFirestore();
+  const { toast } = useToast();
 
   const [subjects, setSubjects] = useState<{ id: string; name: string }[]>([]);
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const [className, setClassName] = useState('');
   const [testSlug, setTestSlug] = useState<string | null>(null);
+  const [totalQuestions, setTotalQuestions] = useState<number | null>(null);
+  const [questionLimit, setQuestionLimit] = useState<number | string>('');
 
   const classIdString = useMemo(() => (Array.isArray(classId) ? classId[0] : classId), [classId]);
 
@@ -57,7 +62,7 @@ export default function GenerateMcqPage() {
             if(subjectIds.length > 0) {
                  // 4. Fetch the subject details
                 const subjectsRef = collection(firestore, 'subjects');
-                const subjectsQuery = query(subjectsRef, where('id', 'in', subjectIds));
+                const subjectsQuery = query(subjectsRef, where('__name__', 'in', subjectIds));
                 const subjectsSnapshot = await getDocs(subjectsQuery);
                 const subjectsData = subjectsSnapshot.docs.map(d => d.data() as Subject);
                 setSubjects(subjectsData);
@@ -77,6 +82,8 @@ export default function GenerateMcqPage() {
       const findTest = async () => {
           if (!firestore || !classIdString || !selectedSubjectId) {
               setTestSlug(null);
+              setTotalQuestions(null);
+              setQuestionLimit('');
               return;
           };
 
@@ -90,10 +97,15 @@ export default function GenerateMcqPage() {
           
           const querySnapshot = await getDocs(q);
           if (!querySnapshot.empty) {
-              // Assuming one test per class/subject combo for this logic
-              setTestSlug(querySnapshot.docs[0].data().slug);
+              const testData = querySnapshot.docs[0].data() as Test;
+              setTestSlug(testData.slug);
+              const questionsCount = testData.questionIds?.length || 0;
+              setTotalQuestions(questionsCount);
+              setQuestionLimit(questionsCount > 0 ? String(Math.min(questionsCount, 25)) : ''); // Default to 25 or total, whichever is smaller
           } else {
               setTestSlug(null);
+              setTotalQuestions(null);
+              setQuestionLimit('');
           }
       };
 
@@ -102,9 +114,26 @@ export default function GenerateMcqPage() {
   }, [firestore, classIdString, selectedSubjectId]);
 
   const handleStartExam = () => {
-    if (testSlug) {
-      router.push(`/test/${testSlug}`);
+    if (!testSlug) return;
+    const limit = Number(questionLimit);
+    if (isNaN(limit) || limit <= 0) {
+        toast({
+            variant: 'destructive',
+            title: "Invalid Number",
+            description: "Please enter a valid number of questions to attempt.",
+        });
+        return;
     }
+    if (totalQuestions !== null && limit > totalQuestions) {
+         toast({
+            variant: 'destructive',
+            title: "Too Many Questions",
+            description: `You can only attempt up to ${totalQuestions} questions.`,
+        });
+        return;
+    }
+    
+    router.push(`/test/${testSlug}?limit=${limit}`);
   };
 
   const pageTitle = isLoading ? "Loading..." : `Start Test for ${className}`;
@@ -121,25 +150,42 @@ export default function GenerateMcqPage() {
                 {isLoading ? (
                     <p>Loading subjects...</p>
                 ) : subjects.length > 0 ? (
-                    <div className="space-y-2">
-                        <Label htmlFor="subject-select">Subject</Label>
-                        <Select onValueChange={setSelectedSubjectId} value={selectedSubjectId}>
-                            <SelectTrigger id="subject-select">
-                                <SelectValue placeholder="Select a subject..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {subjects.map(subject => (
-                                    <SelectItem key={subject.id} value={subject.id}>{subject.name}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="subject-select">Subject</Label>
+                            <Select onValueChange={setSelectedSubjectId} value={selectedSubjectId}>
+                                <SelectTrigger id="subject-select">
+                                    <SelectValue placeholder="Select a subject..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {subjects.map(subject => (
+                                        <SelectItem key={subject.id} value={subject.id}>{subject.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        {selectedSubjectId && totalQuestions !== null && (
+                             <div className="space-y-2">
+                                <Label htmlFor="question-limit">Number of Questions to Attempt</Label>
+                                <Input 
+                                    id="question-limit"
+                                    type="number"
+                                    value={questionLimit}
+                                    onChange={(e) => setQuestionLimit(e.target.value)}
+                                    placeholder={`Up to ${totalQuestions} available`}
+                                    max={totalQuestions}
+                                    min="1"
+                                />
+                                {totalQuestions > 0 && <p className="text-sm text-muted-foreground">{totalQuestions} questions available in this topic.</p>}
+                            </div>
+                        )}
                     </div>
                 ) : (
                     <p className="text-muted-foreground text-center">No subjects with available tests for this class.</p>
                 )}
                  <Button 
                     onClick={handleStartExam} 
-                    disabled={!selectedSubjectId || !testSlug || isLoading}
+                    disabled={!selectedSubjectId || !testSlug || isLoading || !questionLimit}
                     className="w-full"
                  >
                     Start Exam

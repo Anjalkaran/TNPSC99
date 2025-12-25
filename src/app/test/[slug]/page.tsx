@@ -1,6 +1,6 @@
 'use client';
 import { McqTest } from '@/components/mcq-test';
-import { notFound, useParams } from 'next/navigation';
+import { notFound, useParams, useSearchParams } from 'next/navigation';
 import { useUser, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
@@ -19,6 +19,7 @@ function shuffleArray<T>(array: T[]): T[] {
 
 export default function TestPage() {
   const { slug } = useParams();
+  const searchParams = useSearchParams();
   const { user } = useUser();
   const firestore = useFirestore();
   const [test, setTest] = useState<Test | null>(null);
@@ -88,14 +89,24 @@ export default function TestPage() {
       }
       
       // Shuffle the questions for the current session
-      testData.questions = shuffleArray(filteredQuestions);
+      const shuffledQuestions = shuffleArray(filteredQuestions);
+
+      // Limit the number of questions if a limit is specified in the URL
+      const limitParam = searchParams.get('limit');
+      const limit = limitParam ? parseInt(limitParam, 10) : null;
+      if (limit && !isNaN(limit) && limit > 0) {
+        testData.questions = shuffledQuestions.slice(0, limit);
+      } else {
+        testData.questions = shuffledQuestions;
+      }
+
 
       setTest(testData);
       setIsLoading(false);
     };
 
     fetchTest();
-  }, [firestore, slug, user]);
+  }, [firestore, slug, user, searchParams]);
 
   if (isLoading) {
     return <div>Loading...</div>;
