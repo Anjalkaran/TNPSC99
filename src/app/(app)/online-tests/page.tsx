@@ -8,11 +8,6 @@ import { useTranslation } from "@/hooks/use-translation";
 // Static data for class cards
 const staticClasses = [
     { id: '6', name: 'வகுப்பு 6' },
-    { id: '7', name: 'வகுப்பு 7' },
-    { id: '8', name: 'வகுப்பு 8' },
-    { id: '9', name: 'வகுப்பு 9' },
-    { id: '10', name: 'வகுப்பு 10' },
-    { id: '12', name: 'வகுப்பு 12' },
 ];
 
 
@@ -22,7 +17,7 @@ export default function OnlineTestsPage() {
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
       <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold">{t('class_wise_tests')}</h1>
+        <h1 className="text-3xl md:text-4xl font-bold">{t('online_tests')}</h1>
         <p className="text-muted-foreground mt-2">கல்வி வகுப்பு தரங்களின்படி ஒழுங்கமைக்கப்பட்ட தேர்வுகள்.</p>
       </div>
       
