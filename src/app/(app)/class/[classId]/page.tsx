@@ -7,7 +7,7 @@ import { useFirestore } from "@/firebase";
 import type { Test, Subject, Class } from "@/lib/types";
 import { useParams } from "next/navigation";
 import { useMemo, useState, useEffect } from "react";
-import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, getDoc, collectionGroup } from "firebase/firestore";
 
 export default function ClassPage() {
   const { classId } = useParams();
@@ -24,61 +24,59 @@ export default function ClassPage() {
     const fetchSubjectsAndTests = async () => {
       setIsLoading(true);
       try {
-        // 1. Fetch the class name
+        // 1. Fetch the class name for the page title
         const classDocRef = doc(firestore, 'classes', classIdString);
         const classSnap = await getDoc(classDocRef);
         if (classSnap.exists()) {
             const classData = classSnap.data() as Class;
             setClassName(classData.name);
         } else {
-            console.warn(`Class with id ${classIdString} not found.`);
-            setClassName(`வகுப்பு ${classIdString}`); // Fallback
+            setClassName(`Class ${classIdString}`); // Fallback
         }
 
-        // 2. Find all tests for this classId
-        const testsCollectionRef = collection(firestore, 'tests');
-        const classTestsQuery = query(testsCollectionRef, where('classId', '==', classIdString));
+        // 2. Find all tests that belong to this class
+        const testsRef = collection(firestore, 'tests');
+        const testsQuery = query(testsRef, where('classId', '==', classIdString));
+        const testSnapshots = await getDocs(testsQuery);
+        const testsForClass = testSnapshots.docs.map(d => d.data() as Test);
         
-        const querySnapshot = await getDocs(classTestsQuery);
-        const classTests = querySnapshot.docs.map(doc => doc.data() as Test);
-
-        if (classTests.length === 0) {
-          setSubjects([]);
-          setIsLoading(false);
-          return;
+        if (testsForClass.length === 0) {
+            setSubjects([]);
+            setIsLoading(false);
+            return;
         }
-        
-        // 3. Get unique subjectIds from these tests
-        const subjectIds = [...new Set(classTests.map(test => test.subjectId).filter(Boolean) as string[])];
+
+        // 3. From these tests, get the unique subject IDs
+        const subjectIds = [...new Set(testsForClass.map(t => t.subjectId).filter(Boolean) as string[])];
 
         if (subjectIds.length === 0) {
             setSubjects([]);
             setIsLoading(false);
             return;
         }
-
-        // 4. Fetch the subject documents for those IDs
-        const subjectsCollectionRef = collection(firestore, 'subjects');
-        // Firestore 'in' queries are limited to 30 elements. If you expect more subjects, this needs pagination.
-        const subjectsQuery = query(subjectsCollectionRef, where('id', 'in', subjectIds));
         
+        // 4. Fetch the details for those subjects
+        const subjectsRef = collection(firestore, 'subjects');
+        // Firestore's 'in' query can handle up to 30 items. If more subjects per class are expected, pagination would be needed here.
+        const subjectsQuery = query(subjectsRef, where('id', 'in', subjectIds));
         const subjectsSnapshot = await getDocs(subjectsQuery);
-        const subjectsData = subjectsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Subject));
 
-        // 5. Map subjects and count tests for each
-        const subjectsWithTestCounts = subjectsData.map(subject => {
-          const testCount = classTests.filter(test => test.subjectId === subject.id).length;
-          return {
-            id: subject.id,
-            name: subject.name,
-            testCount: testCount,
-          };
-        }).filter(s => s.testCount > 0); // Only show subjects that actually have tests
+        const subjectsData = subjectsSnapshot.docs.map(d => d.data() as Subject);
 
-        setSubjects(subjectsWithTestCounts);
+        // 5. Count how many tests each subject has *for this specific class*
+        const subjectsWithCounts = subjectsData.map(subject => {
+            const count = testsForClass.filter(t => t.subjectId === subject.id).length;
+            return {
+                id: subject.id,
+                name: subject.name,
+                testCount: count
+            }
+        }).filter(s => s.testCount > 0); // Only show subjects that have tests in this class
+
+        setSubjects(subjectsWithCounts);
+
       } catch (error) {
         console.error("Error fetching class subjects:", error);
-        // Optionally set an error state to show in the UI
       } finally {
         setIsLoading(false);
       }
