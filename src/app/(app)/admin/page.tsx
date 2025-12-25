@@ -96,24 +96,22 @@ export default function AdminPage() {
   const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
 
   useEffect(() => {
-    // Only run logic once all loading is complete.
-    const isDoneLoading = !isUserLoading && !isProfileLoading;
-
-    if (isDoneLoading) {
-      // After loading, if there's no user or the profile isn't an admin, redirect.
+    // This effect should only handle redirection once the final state is known.
+    if (!isUserLoading && !isProfileLoading) {
+      // If loading is complete and there's no user or the user is not an admin, redirect.
       if (!user || !userProfile?.isAdmin) {
         router.replace('/');
       }
     }
   }, [user, userProfile, isUserLoading, isProfileLoading, router]);
-
-  // Unified loading state: Show a loading screen while we verify the user
+  
+  // While we wait for auth and profile data, show a clear loading state.
+  // This is the key change: we do not proceed until both are resolved.
   if (isUserLoading || isProfileLoading) {
     return <div className="container mx-auto p-4">Verifying access...</div>;
   }
-
-  // If we're done loading and the profile is an admin, render the page.
-  // This check prevents a flicker of the admin content for non-admin users before redirection.
+  
+  // After loading, if the user is finally determined to be an admin, render the page.
   if (user && userProfile?.isAdmin) {
     return (
       <div className="container mx-auto p-4 sm:p-6 md:p-8">
@@ -131,7 +129,7 @@ export default function AdminPage() {
     );
   }
   
-  // If the user is not an admin after loading, they are about to be redirected.
-  // We can show a simple message or null. This state should only be visible for a fraction of a second.
+  // If we're done loading but the user is not an admin, they are about to be redirected.
+  // This state is briefly visible while the useEffect for redirection kicks in.
   return <div className="container mx-auto p-4">Redirecting...</div>;
 }
