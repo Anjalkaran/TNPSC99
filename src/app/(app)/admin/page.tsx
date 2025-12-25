@@ -1,8 +1,7 @@
 'use client';
-import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, doc, getDocs } from 'firebase/firestore';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useFirestore, useCollection } from '@/firebase';
+import { collection, getDocs } from 'firebase/firestore';
+import { useMemo, useEffect, useState } from 'react';
 import type { UserProfile, UserTestAttempt } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -10,6 +9,8 @@ import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Upload } from 'lucide-react';
+import { withAdminAuth } from '@/components/withAdminAuth';
+import { useMemoFirebase } from '@/firebase/provider';
 
 function AllUsersList() {
     const firestore = useFirestore();
@@ -124,54 +125,22 @@ function AllUserAttempts() {
 
 }
 
-export default function AdminPage() {
-  const { user, isUserLoading } = useUser();
-  const router = useRouter();
-  const firestore = useFirestore();
-
-  const userProfileRef = useMemoFirebase(
-    () => (user && firestore ? doc(firestore, 'users', user.uid) : null),
-    [user, firestore]
+function AdminPage() {
+  return (
+    <div className="container mx-auto p-4 sm:p-6 md:p-8 space-y-8">
+        <div className="flex justify-between items-center mb-6">
+            <h1 className="text-3xl font-bold">நிர்வாக குழு</h1>
+            <Button asChild>
+                <Link href="/admin/upload">
+                    <Upload className="mr-2 h-4 w-4" />
+                    MCQ களைப் பதிவேற்றவும்
+                </Link>
+            </Button>
+        </div>
+      <AllUsersList />
+      <AllUserAttempts />
+    </div>
   );
-  const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
-
-  const isDataReady = !isUserLoading && !isProfileLoading;
-
-  useEffect(() => {
-    // Only perform redirection logic once all data is ready.
-    if (isDataReady) {
-      // If, after loading, there's no user or the user is not an admin, redirect.
-      if (!user || !userProfile?.isAdmin) {
-        router.replace('/');
-      }
-    }
-  }, [isDataReady, user, userProfile, router]);
-  
-  // While any data is loading, show a clear loading message and prevent any other rendering.
-  if (!isDataReady) {
-    return <div className="container mx-auto p-4">அணுகலைச் சரிபார்க்கிறது...</div>;
-  }
-  
-  // Only render the admin content if the user is authenticated AND a confirmed admin.
-  if (user && userProfile?.isAdmin) {
-    return (
-      <div className="container mx-auto p-4 sm:p-6 md:p-8 space-y-8">
-          <div className="flex justify-between items-center mb-6">
-              <h1 className="text-3xl font-bold">நிர்வாக குழு</h1>
-              <Button asChild>
-                  <Link href="/admin/upload">
-                      <Upload className="mr-2 h-4 w-4" />
-                      MCQ களைப் பதிவேற்றவும்
-                  </Link>
-              </Button>
-          </div>
-        <AllUsersList />
-        <AllUserAttempts />
-      </div>
-    );
-  }
-  
-  // If the logic falls through (e.g., user is not admin after loading),
-  // this will show a message just before the useEffect redirects.
-  return <div className="container mx-auto p-4">அனுமதியற்றது. திருப்பி விடப்படுகிறது...</div>;
 }
+
+export default withAdminAuth(AdminPage);
