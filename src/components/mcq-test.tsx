@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, ArrowRight, CheckCircle2, XCircle, RotateCw } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, XCircle, RotateCw, LogOut } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth, useFirestore } from '@/firebase';
 import { addDoc, collection } from 'firebase/firestore';
@@ -16,6 +16,17 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { cn } from '@/lib/utils';
 import { Badge } from './ui/badge';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 
 export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Test, totalQuestions: number, answeredQuestions: number }) {
@@ -48,62 +59,78 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
     setCurrentQuestionIndex(currentQuestionIndex - 1);
   };
 
-  const handleSubmit = async () => {
+  const processAndSaveAttempt = async (isExiting: boolean) => {
+    const questionsToScore = isExiting ? questions.slice(0, currentQuestionIndex + 1) : questions;
+    const answersToScore = isExiting ? answers.slice(0, currentQuestionIndex + 1) : answers;
+
     let calculatedScore = 0;
     const correctlyAnsweredQuestionIds: string[] = [];
     const incorrectlyAnsweredQuestionIds: string[] = [];
 
-    questions.forEach((q, index) => {
-      if (q.correctAnswerIndex === answers[index]) {
-        calculatedScore++;
-        correctlyAnsweredQuestionIds.push(q.id);
-      } else if (answers[index] !== undefined) {
-        incorrectlyAnsweredQuestionIds.push(q.id);
-      }
+    questionsToScore.forEach((q, index) => {
+        const answerIndex = answersToScore[index];
+        if (answerIndex !== undefined) {
+             if (q.correctAnswerIndex === answerIndex) {
+                calculatedScore++;
+                correctlyAnsweredQuestionIds.push(q.id);
+            } else {
+                incorrectlyAnsweredQuestionIds.push(q.id);
+            }
+        }
     });
     setScore(calculatedScore);
-    setIsSubmitted(true);
+    setIsSubmitted(true); // Show results screen
 
-    if (auth.currentUser) {
-      try {
-        const testAttempt: Omit<UserTestAttempt, 'id'> = {
-          userId: auth.currentUser.uid,
-          testId: test.id,
-          testTitle: test.title,
-          attemptDate: new Date().toISOString(),
-          score: calculatedScore,
-          answers: answers.map(a => a ?? -1),
-          correctlyAnsweredQuestionIds,
-          incorrectlyAnsweredQuestionIds,
-        };
-        const attemptsCollectionRef = collection(firestore, `users/${auth.currentUser.uid}/testAttempts`);
-        
-        addDoc(attemptsCollectionRef, testAttempt)
-            .catch(error => {
-                errorEmitter.emit(
-                'permission-error',
-                new FirestorePermissionError({
-                    path: attemptsCollectionRef.path,
-                    operation: 'create',
-                    requestResourceData: testAttempt,
-                })
-                )
-            });
+    if (auth.currentUser && (correctlyAnsweredQuestionIds.length > 0 || incorrectlyAnsweredQuestionIds.length > 0)) {
+        try {
+            const testAttempt: Omit<UserTestAttempt, 'id'> = {
+                userId: auth.currentUser.uid,
+                testId: test.id,
+                testTitle: test.title,
+                attemptDate: new Date().toISOString(),
+                score: calculatedScore,
+                answers: answersToScore.map(a => a ?? -1),
+                correctlyAnsweredQuestionIds,
+                incorrectlyAnsweredQuestionIds,
+            };
+            const attemptsCollectionRef = collection(firestore, `users/${auth.currentUser.uid}/testAttempts`);
+            
+            addDoc(attemptsCollectionRef, testAttempt)
+                .catch(error => {
+                    errorEmitter.emit(
+                    'permission-error',
+                    new FirestorePermissionError({
+                        path: attemptsCollectionRef.path,
+                        operation: 'create',
+                        requestResourceData: testAttempt,
+                    })
+                    )
+                });
 
-        toast({
-          title: "தேர்வு சமர்ப்பிக்கப்பட்டது",
-          description: "உங்கள் மதிப்பெண் சேமிக்கப்பட்டது.",
-        })
-      } catch (error) {
-        console.error("Error saving test attempt: ", error);
-        toast({
-          variant: "destructive",
-          title: "பிழை",
-          description: "உங்கள் தேர்வு முடிவுகளைச் சேமிப்பதில் பிழை ஏற்பட்டது.",
-        })
-      }
+            toast({
+            title: "தேர்வு சமர்ப்பிக்கப்பட்டது",
+            description: "உங்கள் மதிப்பெண் சேமிக்கப்பட்டது.",
+            })
+        } catch (error) {
+            console.error("Error saving test attempt: ", error);
+            toast({
+            variant: "destructive",
+            title: "பிழை",
+            description: "உங்கள் தேர்வு முடிவுகளைச் சேமிப்பதில் பிழை ஏற்பட்டது.",
+            })
+        }
     }
   };
+
+
+  const handleSubmit = async () => {
+    processAndSaveAttempt(false);
+  };
+
+  const handleExit = async () => {
+    processAndSaveAttempt(true);
+  };
+
 
   const handleTryAgain = () => {
     setCurrentQuestionIndex(0);
@@ -146,9 +173,11 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
   const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
   const currentQuestion = questions[currentQuestionIndex];
   const userAnswer = answers[currentQuestionIndex];
+  
+  const questionsInThisSession = isSubmitted ? answers.filter(a => a !== undefined).length : questions.length;
+  const scorePercentage = (score / questionsInThisSession) * 100;
 
   if (isSubmitted) {
-    const scorePercentage = (score / questions.length) * 100;
     return (
       <Card className="w-full max-w-2xl text-center">
         <CardHeader>
@@ -157,7 +186,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="text-5xl font-bold" style={{ color: 'hsl(var(--accent))' }}>
-            {score} / {questions.length}
+            {score} / {questionsInThisSession}
           </div>
           <div className="w-full">
             <Progress value={scorePercentage} className="h-4" />
@@ -167,7 +196,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
             மொத்த முன்னேற்றம்: {answeredQuestions + score} / {totalQuestions} கேள்விகள் சரியாக பதிலளிக்கப்பட்டுள்ளன
           </Badge>
           <div className="space-y-4 max-h-60 overflow-y-auto p-4 border rounded-md">
-            {questions.map((q, index) => (
+            {questions.slice(0, questionsInThisSession).map((q, index) => (
               <div key={q.id} className="text-left p-2 rounded-md bg-muted/50">
                 <p className="font-semibold flex items-center gap-2">
                   {answers[index] === q.correctAnswerIndex ? <CheckCircle2 className="text-green-500"/> : <XCircle className="text-red-500"/>}
@@ -195,14 +224,38 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
   return (
     <Card className="w-full max-w-2xl">
       <CardHeader>
-        <CardTitle>{test.title}</CardTitle>
-        <div className="flex justify-between items-center text-sm text-muted-foreground">
-          <span>கேள்வி {currentQuestionIndex + 1} / {questions.length}</span>
-           <Badge variant="outline">
-            முன்னேற்றம்: {answeredQuestions} / {totalQuestions}
-          </Badge>
+        <div className='flex justify-between items-start'>
+            <div>
+                <CardTitle>{test.title}</CardTitle>
+                <div className="flex items-center text-sm text-muted-foreground mt-2 gap-4">
+                    <span>கேள்வி {currentQuestionIndex + 1} / {questions.length}</span>
+                    <Badge variant="outline">
+                        முன்னேற்றம்: {answeredQuestions} / {totalQuestions}
+                    </Badge>
+                </div>
+            </div>
+             <AlertDialog>
+                <AlertDialogTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                        <LogOut className="h-5 w-5 text-destructive" />
+                        <span className="sr-only">Exit Test</span>
+                    </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>தேர்விலிருந்து வெளியேற விரும்புகிறீர்களா?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                           உங்கள் தற்போதைய முன்னேற்றம் சேமிக்கப்படும், உங்கள் மதிப்பெண் இதுவரை நீங்கள் பதிலளித்த கேள்விகளுக்குக் கணக்கிடப்படும்.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>தொடரவும்</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleExit} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">வெளியேறு</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
-        <Progress value={progress} className="mt-2" />
+        <Progress value={progress} className="mt-4" />
       </CardHeader>
       <CardContent className="py-6">
         <p className="font-semibold text-lg mb-6">{currentQuestion.text}</p>
