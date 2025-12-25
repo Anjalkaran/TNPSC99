@@ -5,8 +5,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useState } from 'react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { addDoc, collection } from 'firebase/firestore';
-import type { Subject } from '@/lib/types';
+import { addDoc, collection, doc, setDoc } from 'firebase/firestore';
+import type { Subject, Class } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -91,16 +91,21 @@ export default function TopicManagementPage() {
 
     try {
       // Create subject
-      const subjectsCollection = collection(firestore, 'subjects');
-      await addDoc(subjectsCollection, {
+      const subjectsCollectionRef = collection(firestore, 'subjects');
+      await addDoc(subjectsCollectionRef, {
           id: subjectId,
           name: values.subjectName,
           description: values.subjectDescription || ''
       });
 
-      // Optionally, create or update class if it doesn't exist
-      // This part depends on whether you have a separate `classes` collection to manage
-      // For now, we are creating subjects with class/subject IDs
+      // Create class document if it doesn't exist
+      const classDocRef = doc(firestore, 'classes', classId);
+      await setDoc(classDocRef, {
+        id: classId,
+        name: finalClassName,
+        description: `Content for ${finalClassName}`
+      }, { merge: true });
+
 
       toast({
         title: t('subject_created_success_title'),
