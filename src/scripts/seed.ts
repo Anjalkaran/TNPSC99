@@ -41,12 +41,12 @@ const subjects = [
 ];
 
 const classes = [
-    { id: '6', name: 'Class 6', description: '6th Standard' },
-    { id: '7', name: 'Class 7', description: '7th Standard' },
-    { id: '8', name: 'Class 8', description: '8th Standard' },
-    { id: '9', name: 'Class 9', description: '9th Standard' },
-    { id: '10', name: 'Class 10', description: '10th Standard' },
-    { id: '12', name: 'Class 12', description: '12th Standard' },
+    { id: '6', name: 'வகுப்பு 6', description: '6th Standard' },
+    { id: '7', name: 'வகுப்பு 7', description: '7th Standard' },
+    { id: '8', name: 'வகுப்பு 8', description: '8th Standard' },
+    { id: '9', name: 'வகுப்பு 9', description: '9th Standard' },
+    { id: '10', name: 'வகுப்பு 10', description: '10th Standard' },
+    { id: '12', name: 'வகுப்பு 12', description: '12th Standard' },
 ];
 
 const questions = [
@@ -84,7 +84,7 @@ const questions = [
     // Group IV questions
     { id: 'q28', text: 'Nature of Universe relates to which subject?', subjectId: 'general-science', classId: '10', answerOptions: ['Physics', 'Chemistry', 'Biology', 'Geology'], correctAnswerIndex: 0 },
     { id: 'q29', text: 'What is the highest common factor (HCF) of 12 and 18?', subjectId: 'aptitude', classId: '10', answerOptions: ['2', '3', '6', '12'], correctAnswerIndex: 2 },
-    { id "q30", text: "எதிர்ச்செயலைக் கண்டறிக: 'உயர்வு'", subjectId: "tamil-vocabulary", classId: "10", answerOptions: ["தாழ்வு", "மேன்மை", "சிறப்பு", "மிகுதி"], correctAnswerIndex: 0 },
+    { id: 'q30', text: "எதிர்ச்செயலைக் கண்டறிக: 'உயர்வு'", subjectId: "tamil-vocabulary", classId: "10", answerOptions: ["தாழ்வு", "மேன்மை", "சிறப்பு", "மிகுதி"], correctAnswerIndex: 0 },
 
 ];
 
@@ -98,6 +98,7 @@ const tests = [
     image: findImage('class-wise'),
     questionIds: ['q16'],
     classId: '6',
+    subjectId: 'tamil',
   },
   {
     id: 'class-6-science',
@@ -108,6 +109,7 @@ const tests = [
     image: findImage('class-wise'),
     questionIds: ['q17'],
     classId: '6',
+    subjectId: 'science',
   },
   {
     id: 'class-6-social',
@@ -118,6 +120,7 @@ const tests = [
     image: findImage('class-wise'),
     questionIds: ['q18'],
     classId: '6',
+    subjectId: 'social-science',
   },
   {
     id: 'class-7-tamil',
@@ -128,6 +131,7 @@ const tests = [
     image: findImage('class-wise'),
     questionIds: ['q19'],
     classId: '7',
+    subjectId: 'tamil',
   },
   {
     id: 'class-7-science',
@@ -138,6 +142,7 @@ const tests = [
     image: findImage('class-wise'),
     questionIds: ['q20'],
     classId: '7',
+    subjectId: 'science',
   },
    {
     id: 'class-7-social',
@@ -148,6 +153,7 @@ const tests = [
     image: findImage('class-wise'),
     questionIds: ['q21'],
     classId: '7',
+    subjectId: 'social-science',
   },
   {
     id: 'class-8-tamil',
@@ -158,6 +164,7 @@ const tests = [
     image: findImage('class-wise'),
     questionIds: ['q22'],
     classId: '8',
+    subjectId: 'tamil',
   },
   {
     id: 'class-8-science',
@@ -168,6 +175,7 @@ const tests = [
     image: findImage('class-wise'),
     questionIds: ['q23'],
     classId: '8',
+    subjectId: 'science',
   },
    {
     id: 'class-8-social',
@@ -178,6 +186,7 @@ const tests = [
     image: findImage('class-wise'),
     questionIds: ['q24'],
     classId: '8',
+    subjectId: 'social-science',
   },
     {
     id: 'class-9-tamil',
@@ -188,6 +197,7 @@ const tests = [
     image: findImage('class-wise'),
     questionIds: ['q25'],
     classId: '9',
+    subjectId: 'tamil',
   },
   {
     id: 'class-9-science',
@@ -198,6 +208,7 @@ const tests = [
     image: findImage('class-wise'),
     questionIds: ['q26'],
     classId: '9',
+    subjectId: 'science',
   },
    {
     id: 'class-9-social',
@@ -208,16 +219,18 @@ const tests = [
     image: findImage('class-wise'),
     questionIds: ['q27'],
     classId: '9',
+    subjectId: 'social-science',
   },
   {
     id: 'class-10-science',
     slug: 'class-10-science',
     title: 'வகுப்பு 10 - அறிவியல்',
     category: 'class',
-    description: '10 ஆம் வகுப்பு அறிவியல் பாடத்திட்டத்தின் முக்கிய संकल्पనைகள் குறித்த உங்கள் அறிவை சோதிக்கவும்.',
+    description: '10 ஆம் வகுப்பு அறிவியல் பாடத்திட்டத்தின் முக்கிய संकल्पனைகள் குறித்த உங்கள் அறிவை சோதிக்கவும்.',
     image: findImage('class-wise'),
     questionIds: ['q1', 'q2', 'q3'],
     classId: '10',
+    subjectId: 'science',
   },
   {
     id: 'class-10-tamil',
@@ -228,6 +241,7 @@ const tests = [
     image: findImage('class-wise'),
     questionIds: ['q15'],
     classId: '10',
+    subjectId: 'tamil',
   },
     {
     id: 'class-10-social',
@@ -238,6 +252,7 @@ const tests = [
     image: findImage('class-wise'),
     questionIds: ['q14'],
     classId: '10',
+    subjectId: 'social-science',
   },
   {
     id: 'class-12-maths',
@@ -248,6 +263,7 @@ const tests = [
     image: findImage('class-wise'),
     questionIds: ['q4', 'q5'],
     classId: '12',
+    subjectId: 'maths',
   },
   {
     id: 'indian-history',
@@ -257,6 +273,7 @@ const tests = [
     description: 'இந்த சவாலான கேள்விகளுடன் இந்தியாவின் வளமான வரலாற்றை ஆராயுங்கள்.',
     image: findImage('subject-wise'),
     questionIds: ['q6', 'q7'],
+    subjectId: 'history',
   },
   {
     id: 'geography',
@@ -266,6 +283,7 @@ const tests = [
     description: 'உலகம் முழுவதிலுமிருந்து உங்கள் புவியியல் அறிவை சோதிக்கவும்.',
     image: findImage('subject-wise'),
     questionIds: ['q8', 'q9'],
+    subjectId: 'geography',
   },
   {
     id: 'tnpsc-2023-group-1',
@@ -302,6 +320,7 @@ const tests = [
     description: 'TNPSC குரூப் IV பொது அறிவியல் பாடத்திட்டத்தின் அடிப்படையில் கேள்விகள்.',
     image: findImage('subject-wise'),
     questionIds: ['q28'],
+    subjectId: 'general-science',
   },
   {
     id: 'group4-aptitude',
@@ -311,6 +330,7 @@ const tests = [
     description: 'TNPSC குரூப் IV திறனறிவு பாடத்திட்டத்தின் அடிப்படையில் கேள்விகள்.',
     image: findImage('subject-wise'),
     questionIds: ['q29'],
+    subjectId: 'aptitude',
   },
   {
     id: 'group4-tamil-eligibility',
@@ -320,6 +340,7 @@ const tests = [
     description: 'TNPSC குரூப் IV தமிழ் தகுதி மற்றும் மதிப்பீட்டுத் தேர்வு பாடத்திட்டத்தின் அடிப்படையில் கேள்விகள்.',
     image: findImage('subject-wise'),
     questionIds: ['q30'],
+    subjectId: 'tamil',
   },
 ];
 
@@ -364,4 +385,5 @@ export async function seedDatabase() {
   }
 }
 
+    
     
