@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { Test, UserTestAttempt } from '@/lib/types';
+import type { Test, UserTestAttempt, Score } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -9,7 +9,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft, ArrowRight, CheckCircle2, XCircle, RotateCw, LogOut } from 'lucide-react';
 import Link from 'next/link';
-import { useAuth, useFirestore } from '@/firebase';
+import { useAuth, useFirestore, useUser } from '@/firebase';
 import { addDoc, collection } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -37,7 +37,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
   const [score, setScore] = useState(0);
   const [isAnswered, setIsAnswered] = useState(false);
 
-  const auth = useAuth();
+  const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
 
@@ -81,10 +81,10 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
     setScore(calculatedScore);
     setIsSubmitted(true); // Show results screen
 
-    if (auth.currentUser && (correctlyAnsweredQuestionIds.length > 0 || incorrectlyAnsweredQuestionIds.length > 0)) {
+    if (user && (correctlyAnsweredQuestionIds.length > 0 || incorrectlyAnsweredQuestionIds.length > 0)) {
         try {
             const testAttempt: Omit<UserTestAttempt, 'id'> = {
-                userId: auth.currentUser.uid,
+                userId: user.uid,
                 testId: test.id,
                 testTitle: test.title,
                 attemptDate: new Date().toISOString(),
@@ -93,7 +93,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
                 correctlyAnsweredQuestionIds,
                 incorrectlyAnsweredQuestionIds,
             };
-            const attemptsCollectionRef = collection(firestore, `users/${auth.currentUser.uid}/testAttempts`);
+            const attemptsCollectionRef = collection(firestore, `users/${user.uid}/testAttempts`);
             
             addDoc(attemptsCollectionRef, testAttempt)
                 .catch(error => {
@@ -106,6 +106,28 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
                     })
                     )
                 });
+            
+             // Also add a record to the public 'scores' collection for the leaderboard
+            const scoreData: Omit<Score, 'id'> = {
+              userId: user.uid,
+              username: user.displayName || 'Anonymous',
+              score: calculatedScore,
+              testId: test.id,
+              testTitle: test.title,
+              createdAt: new Date().toISOString(),
+            };
+            const scoresCollectionRef = collection(firestore, `scores`);
+            addDoc(scoresCollectionRef, scoreData).catch(error => {
+                errorEmitter.emit(
+                'permission-error',
+                new FirestorePermissionError({
+                    path: scoresCollectionRef.path,
+                    operation: 'create',
+                    requestResourceData: scoreData,
+                })
+                )
+            });
+
 
             toast({
             title: "தேர்வு சமர்ப்பிக்கப்பட்டது",

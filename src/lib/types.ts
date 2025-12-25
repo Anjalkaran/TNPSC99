@@ -61,3 +61,13 @@ export interface UserTestAttempt {
   correctlyAnsweredQuestionIds?: string[];
   incorrectlyAnsweredQuestionIds?: string[];
 }
+
+export interface Score {
+  id?: string;
+  userId: string;
+  username: string;
+  score: number;
+  testId: string;
+  testTitle: string;
+  createdAt: string;
+}

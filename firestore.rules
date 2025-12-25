@@ -11,16 +11,14 @@
  * - /questions/{questionId}: Stores question data, publicly readable. Writable by admins.
  * - /tests/{testId}: Stores test data, publicly readable. Writable by admins.
  * - /users/{userId}/testAttempts/{testAttemptId}: Stores user's test attempts, accessible by the user and admins.
+ * - /scores/{scoreId}: Publicly readable leaderboard scores. Writable only by the user who owns the score.
  *
  * Key Security Decisions:
  * - Users can only read and write their own profiles and test attempts.
  * - Admins can read all user data and write to content collections.
  * - Subjects, classes, questions, and tests are publicly readable.
+ * - Leaderboard scores are public, but can only be created by the user associated with the score.
  * - No user listing is allowed for non-admins.
- *
- * Denormalization for Authorization:
- * - UserTestAttempt documents have a `userId` field validated against the path `/users/{userId}`.
- * - Admin status is determined by an `isAdmin` field in the user's document.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -65,6 +63,15 @@ service cloud.firestore {
         // Owner can delete their own test attempt
         allow delete: if isExistingOwner(userId);
       }
+    }
+    
+    match /scores/{scoreId} {
+      // Leaderboard is public
+      allow get, list: if true;
+      // Users can only create their own scores
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      // Scores cannot be updated or deleted by clients
+      allow update, delete: if false;
     }
 
     match /subjects/{subjectId} {
