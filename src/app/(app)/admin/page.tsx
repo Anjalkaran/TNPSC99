@@ -135,23 +135,24 @@ export default function AdminPage() {
   );
   const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
 
-  // This effect handles redirection logic once all data is loaded.
+  const isDataReady = !isUserLoading && !isProfileLoading;
+
   useEffect(() => {
-    // Only run redirection logic when BOTH user and profile loading are complete.
-    if (!isUserLoading && !isProfileLoading) {
-      // If, after loading, there is no user or the user is not an admin, redirect.
+    // Only perform redirection logic once all data is ready.
+    if (isDataReady) {
+      // If, after loading, there's no user or the user is not an admin, redirect.
       if (!user || !userProfile?.isAdmin) {
         router.replace('/');
       }
     }
-  }, [user, userProfile, isUserLoading, isProfileLoading, router]);
+  }, [isDataReady, user, userProfile, router]);
   
   // While any data is loading, show a clear loading message and prevent any other rendering.
-  if (isUserLoading || isProfileLoading) {
+  if (!isDataReady) {
     return <div className="container mx-auto p-4">அணுகலைச் சரிபார்க்கிறது...</div>;
   }
   
-  // Only render the admin content if the user is a confirmed admin.
+  // Only render the admin content if the user is authenticated AND a confirmed admin.
   if (user && userProfile?.isAdmin) {
     return (
       <div className="container mx-auto p-4 sm:p-6 md:p-8 space-y-8">
@@ -170,7 +171,7 @@ export default function AdminPage() {
     );
   }
   
-  // If the logic somehow falls through (e.g., user is not admin after loading),
-  // this will show a message before the useEffect redirects.
-  return <div className="container mx-auto p-4">திருப்பி விடப்படுகிறது...</div>;
+  // If the logic falls through (e.g., user is not admin after loading),
+  // this will show a message just before the useEffect redirects.
+  return <div className="container mx-auto p-4">அனுமதியற்றது. திருப்பி விடப்படுகிறது...</div>;
 }
