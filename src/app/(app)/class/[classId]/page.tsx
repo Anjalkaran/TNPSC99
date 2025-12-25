@@ -4,65 +4,70 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, BookOpen } from "lucide-react";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection, query, where } from "firebase/firestore";
+import { collection, query, where, getDocs } from "firebase/firestore";
 import type { Test, Subject } from "@/lib/types";
 import { useParams } from "next/navigation";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 
 export default function ClassPage() {
   const { classId } = useParams();
   const firestore = useFirestore();
+  const [subjects, setSubjects] = useState<{ id: string; name: string; tests: Test[] }[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const classIdString = useMemo(() => Array.isArray(classId) ? classId[0] : classId, [classId]);
 
-  const testsCollection = useMemoFirebase(() => collection(firestore, 'tests'), [firestore]);
+  useEffect(() => {
+    if (!firestore || !classIdString) return;
 
-  const classTestsQuery = useMemoFirebase(() => {
-    if (!testsCollection || !classIdString) return null;
-    return query(
-      testsCollection, 
-      where('classId', '==', classIdString)
-    );
-  }, [testsCollection, classIdString]);
+    const fetchSubjectsAndTests = async () => {
+      setIsLoading(true);
+      
+      const testsCollection = collection(firestore, 'tests');
+      const classTestsQuery = query(testsCollection, where('classId', '==', classIdString));
+      
+      const querySnapshot = await getDocs(classTestsQuery);
+      const classTests = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Test[];
 
-  const { data: classTests, isLoading: testsLoading } = useCollection<Test>(classTestsQuery);
-
-  const subjectsCollection = useMemoFirebase(() => collection(firestore, 'subjects'), [firestore]);
-  const subjectsQuery = useMemoFirebase(() => {
-      if(!subjectsCollection) return null;
-      // For now, let's assume we can query all subjects and filter client-side.
-      // This could be optimized if we had a classId on subjects.
-      return query(subjectsCollection);
-  }, [subjectsCollection]);
-
-  const { data: allSubjects, isLoading: subjectsLoading } = useCollection<Subject>(subjectsQuery);
-
-  const subjects = useMemo(() => {
-    if (testsLoading || subjectsLoading) return []; // Wait for data to load
-    if (!classTests || !allSubjects) return [];
-    
-    const subjectMap = new Map<string, { name: string, tests: Test[], id: string }>();
-
-    classTests.forEach(test => {
-      if (test.subjectId) {
-        if (!subjectMap.has(test.subjectId)) {
-           const subjectInfo = allSubjects.find(s => s.id === test.subjectId);
-           subjectMap.set(test.subjectId, { 
-               name: subjectInfo?.name || test.subjectId, 
-               tests: [], 
-               id: test.subjectId 
-            });
-        }
-        subjectMap.get(test.subjectId)!.tests.push(test);
+      if (classTests.length === 0) {
+        setSubjects([]);
+        setIsLoading(false);
+        return;
       }
-    });
+      
+      const subjectIds = [...new Set(classTests.map(test => test.subjectId).filter(Boolean) as string[])];
 
-    return Array.from(subjectMap.values());
+      if (subjectIds.length === 0) {
+          setSubjects([]);
+          setIsLoading(false);
+          return;
+      }
 
-  }, [classTests, allSubjects, testsLoading, subjectsLoading]);
+      const subjectsCollection = collection(firestore, 'subjects');
+      const subjectsQuery = query(subjectsCollection, where('id', 'in', subjectIds));
+      
+      const subjectsSnapshot = await getDocs(subjectsQuery);
+      const subjectsData = subjectsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Subject[];
+
+      const subjectsWithTests = subjectsData.map(subject => {
+        const testsForSubject = classTests.filter(test => test.subjectId === subject.id);
+        return {
+          id: subject.id,
+          name: subject.name,
+          tests: testsForSubject,
+        };
+      });
+
+      setSubjects(subjectsWithTests);
+      setIsLoading(false);
+    };
+
+    fetchSubjectsAndTests();
+
+  }, [firestore, classIdString]);
+
 
   const className = classIdString ? `வகுப்பு ${classIdString}` : "வகுப்பு";
-  const isLoading = testsLoading || subjectsLoading;
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
