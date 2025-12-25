@@ -102,7 +102,7 @@ export default function AdminPage() {
         { value: 'user-management', label: t('user_management'), icon: <Shield /> },
         { value: 'topic-management', label: t('topic_management'), icon: <IconTopicManagement />, link: '/admin/topics'},
         { value: 'study-material', label: t('study_material'), icon: <BookOpen /> },
-        { value: 'mcq-bank', label: t('mcq_bank'), icon: <IconMcqBank /> },
+        { value: 'mcq-bank', label: t('mcq_bank'), icon: <IconMcqBank />, link: '/admin/upload' },
         { value: 'question-bank', label: t('question_bank'), icon: <IconQuestionBank /> },
         { value: 'live-test', label: t('live_test'), icon: <Trophy /> },
         { value: 'analytics', label: t('analytics'), icon: <BarChart /> },

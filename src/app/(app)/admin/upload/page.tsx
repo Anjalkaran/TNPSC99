@@ -72,20 +72,6 @@ export default function UploadMcqPage() {
   const { t } = useTranslation();
 
   const { user, isUserLoading } = useUser();
-  const userProfileRef = useMemoFirebase(
-    () => (user && firestore ? doc(firestore, 'users', user.uid) : null),
-    [user, firestore]
-  );
-  const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
-
-  useEffect(() => {
-    if (!isUserLoading && !isProfileLoading) {
-      if (!user || !userProfile?.isAdmin) {
-        router.push('/');
-      }
-    }
-  }, [user, isUserLoading, userProfile, isProfileLoading, router]);
-
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -213,14 +199,6 @@ export default function UploadMcqPage() {
       setIsSubmitting(false);
     }
   };
-
-  if (isUserLoading || isProfileLoading) {
-    return <div className="container mx-auto p-4">Loading...</div>;
-  }
-
-  if (!userProfile?.isAdmin) {
-    return <div className="container mx-auto p-4">You are not authorized to view this page.</div>;
-  }
 
   return (
     <div className="container mx-auto p-4 sm:p-6 md:p-8">
