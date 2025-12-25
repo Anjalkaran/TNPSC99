@@ -149,19 +149,17 @@ export default function TopicManagementPage() {
     setEditingSubject(subject);
     form.setValue('subjectName', subject.name);
     form.setValue('subjectDescription', subject.description);
-    form.setValue('className', 'other'); // Cannot determine class from subject alone, default to prevent validation errors
-    form.setValue('customClassName', 'N/A - Editing Subject Name/Description');
-    setShowCustomClass(true);
-    form.control.getFieldState('className').disable();
-    form.control.getFieldState('customClassName').disable();
+    // When editing, we don't know the class, so we can't pre-fill it.
+    // The class fields are disabled to only allow editing of subject name and description.
+    form.setValue('className', '');
+    form.setValue('customClassName', '');
+    setShowCustomClass(false);
   };
 
   const resetForm = () => {
     form.reset();
     setEditingSubject(null);
     setShowCustomClass(false);
-    form.control.getFieldState('className').enable();
-    form.control.getFieldState('customClassName').enable();
   }
 
   const onSubmit: SubmitHandler<ClassSubjectFormValues> = async (values) => {
@@ -258,7 +256,7 @@ export default function TopicManagementPage() {
                             field.onChange(value);
                             setShowCustomClass(value === 'other');
                         }} 
-                        defaultValue={field.value}
+                        value={field.value}
                         disabled={!!editingSubject}
                       >
                         <FormControl>
