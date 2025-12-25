@@ -24,7 +24,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { useUser } from '@/firebase';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import type { UserProfile } from '@/lib/types';
 
 const categories = [
   {
@@ -51,12 +53,21 @@ const categories = [
 
 export default function DashboardPage() {
   const { user } = useUser();
+  const firestore = useFirestore();
+
+  const userProfileRef = useMemoFirebase(
+    () => (user && firestore ? doc(firestore, 'users', user.uid) : null),
+    [user, firestore]
+  );
+  const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
+
+  const welcomeName = isProfileLoading ? '...' : userProfile?.username || 'பயனர்';
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
       <section className="text-center mb-12 md:mb-16">
         <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
-          வணக்கம், {user?.displayName || 'பயனர்'}!
+          வணக்கம், {welcomeName}!
         </h1>
         <p className="max-w-2xl mx-auto text-lg text-muted-foreground">
           TNPSC தேர்வு தயாரிப்புக்கான உங்கள் இறுதி இலக்கு. MCQ களின் பரந்த
