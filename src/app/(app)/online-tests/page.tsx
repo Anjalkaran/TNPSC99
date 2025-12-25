@@ -6,10 +6,13 @@ import { ArrowRight, BookText } from "lucide-react";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, query, orderBy } from "firebase/firestore";
 import type { Class } from "@/lib/types";
+import { useTranslation } from "@/hooks/use-translation";
 
 export default function OnlineTestsPage() {
   const firestore = useFirestore();
-  const classesCollection = useMemoFirebase(() => collection(firestore, 'classes'), [firestore]);
+  const { t } = useTranslation();
+
+  const classesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'classes') : null, [firestore]);
   const classesQuery = useMemoFirebase(() => classesCollection && query(classesCollection, orderBy('id')), [classesCollection]);
 
   const { data: classes, isLoading } = useCollection<Class>(classesQuery);
@@ -17,8 +20,8 @@ export default function OnlineTestsPage() {
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
       <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold">ஆன்லைன் தேர்வுகள்</h1>
-        <p className="text-muted-foreground mt-2">உங்கள் வகுப்பைத் தேர்ந்தெடுத்து தேர்வுகளைத் தொடங்குங்கள்.</p>
+        <h1 className="text-3xl md:text-4xl font-bold">{t('online_tests')}</h1>
+        <p className="text-muted-foreground mt-2">{t('welcome_subtitle')}</p>
       </div>
       
       {isLoading && <p>Loading classes...</p>}
@@ -34,7 +37,7 @@ export default function OnlineTestsPage() {
               <CardContent className="flex-grow flex flex-col justify-end">
                 <Button asChild className="w-full mt-4" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
                   <Link href={`/class/${cls.id}`}>
-                    பாடங்களைக் காண்க <ArrowRight className="ml-2 h-4 w-4" />
+                    {t('view_tests')} <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
               </CardContent>
@@ -43,7 +46,7 @@ export default function OnlineTestsPage() {
         </div>
       ) : (
         !isLoading && <div className="text-center py-16">
-          <p className="text-muted-foreground">தற்போது வகுப்புகள் எதுவும் இல்லை.</p>
+          <p className="text-muted-foreground">There are no classes available at the moment.</p>
         </div>
       )}
     </div>
