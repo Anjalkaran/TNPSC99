@@ -36,7 +36,8 @@ const jsonStructureExample = `[
   {
     "text": "Your question text here?",
     "answerOptions": ["Option A", "Option B", "Option C", "Option D"],
-    "correctAnswerIndex": 0
+    "correctAnswerIndex": 0,
+    "reference": "Source or hint for the question (optional)"
   },
   {
     "text": "Another question?",
@@ -147,7 +148,8 @@ export default function UploadMcqPage() {
           const questionData: QuestionInput = {
               ...q,
               classId: selectedClassId,
-              subjectId: selectedSubjectId
+              subjectId: selectedSubjectId,
+              reference: q.reference || ''
           };
           batch.set(questionRef, questionData);
           newQuestionIds.push(questionRef.id);

@@ -1,3 +1,4 @@
+'use client';
 import type { ImagePlaceholder } from './placeholder-images';
 import { DocumentData, DocumentReference } from 'firebase/firestore';
 
@@ -8,6 +9,7 @@ export interface Question {
   classId: string;
   correctAnswerIndex: number;
   answerOptions: string[];
+  reference?: string;
 }
 
 // Type for uploading questions, ID is optional as it will be generated.

@@ -126,6 +126,10 @@
           "items": {
             "type": "string"
           }
+        },
+        "reference": {
+          "type": "string",
+          "description": "A reference or source for the question."
         }
       },
       "required": [
