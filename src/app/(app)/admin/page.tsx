@@ -2,7 +2,7 @@
 import { useFirestore, useCollection } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import { useEffect, useState, useMemo } from 'react';
-import type { UserProfile, UserTestAttempt } from '@/lib/types';
+import type { UserProfile } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -11,6 +11,8 @@ import { Search, Shield, BookOpen, FileQuestion, BarChart, Trophy, FileText, Bra
 import { useMemoFirebase } from '@/firebase/provider';
 import { useTranslation } from '@/hooks/use-translation';
 import { IconMcqBank, IconQuestionBank, IconTopicManagement } from '@/components/icons';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 
 function UserManagementTab() {
@@ -77,11 +79,18 @@ function UserManagementTab() {
     )
 }
 
-function PlaceholderTab({ title }: { title: string }) {
+function PlaceholderTab({ title, link }: { title: string, link?: string }) {
     const { t } = useTranslation();
     return (
-        <div className="flex items-center justify-center h-64">
-            <p className="text-muted-foreground">{t(title as any)} - {t('coming_soon')}</p>
+        <div className="flex flex-col items-center justify-center h-64 gap-4">
+            <p className="text-muted-foreground">{t(title as any)}</p>
+            {link ? (
+                 <Button asChild>
+                    <Link href={link}>{t('manage')} {t(title as any)}</Link>
+                </Button>
+            ) : (
+                <p className="text-sm text-muted-foreground">{t('coming_soon')}</p>
+            )}
         </div>
     );
 }
@@ -91,7 +100,7 @@ export default function AdminPage() {
 
     const adminTabs = [
         { value: 'user-management', label: t('user_management'), icon: <Shield /> },
-        { value: 'topic-management', label: t('topic_management'), icon: <IconTopicManagement /> },
+        { value: 'topic-management', label: t('topic_management'), icon: <IconTopicManagement />, link: '/admin/topics'},
         { value: 'study-material', label: t('study_material'), icon: <BookOpen /> },
         { value: 'mcq-bank', label: t('mcq_bank'), icon: <IconMcqBank /> },
         { value: 'question-bank', label: t('question_bank'), icon: <IconQuestionBank /> },
@@ -124,7 +133,7 @@ export default function AdminPage() {
             </TabsContent>
             {adminTabs.slice(1).map(tab => (
                  <TabsContent key={tab.value} value={tab.value} className="mt-6">
-                    <PlaceholderTab title={tab.label} />
+                    <PlaceholderTab title={tab.label} link={tab.link}/>
                 </TabsContent>
             ))}
         </Tabs>

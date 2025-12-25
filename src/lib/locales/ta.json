@@ -76,5 +76,20 @@
     "upload_error_title": "பதிவேற்றத்தில் பிழை",
     "upload_error_desc": "கேள்விகளைச் சேமிப்பதில் ஒரு பிழை ஏற்பட்டது.",
     "class": "வகுப்பு",
-    "test_for_class_subject": "{{classId}} ஆம் வகுப்பு {{subjectId}} பாடத்திற்கான தேர்வு."
+    "test_for_class_subject": "{{classId}} ஆம் வகுப்பு {{subjectId}} பாடத்திற்கான தேர்வு.",
+    "manage": "நிர்வகி",
+    "manage_topics": "தலைப்புகளை நிர்வகி",
+    "create_new_topic": "புதிய தலைப்பை உருவாக்கவும்",
+    "topic_name": "தலைப்பின் பெயர்",
+    "topic_description": "தலைப்பு விளக்கம்",
+    "create_topic": "தலைப்பை உருவாக்கு",
+    "existing_topics": "இருக்கும் தலைப்புகள்",
+    "topic_name_placeholder": "எ.கா., பொது அறிவியல்",
+    "topic_description_placeholder": "தலைப்பைப் பற்றிய ஒரு சிறு விளக்கம்",
+    "no_topics_yet": "இன்னும் தலைப்புகள் எதுவும் உருவாக்கப்படவில்லை.",
+    "creating_topic": "தலைப்பு உருவாக்கப்படுகிறது...",
+    "topic_created_success_title": "தலைப்பு உருவாக்கப்பட்டது!",
+    "topic_created_success_desc": "'{{name}}' என்ற தலைப்பு வெற்றிகரமாக உருவாக்கப்பட்டது.",
+    "topic_creation_error_title": "தலைப்பை உருவாக்குவதில் பிழை",
+    "topic_creation_error_desc": "தலைப்பை உருவாக்கும்போது ஒரு சிக்கல் ஏற்பட்டது."
 }

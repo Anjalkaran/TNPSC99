@@ -76,5 +76,20 @@
     "upload_error_title": "Error Uploading",
     "upload_error_desc": "An error occurred while saving the questions.",
     "class": "Class",
-    "test_for_class_subject": "Test for Class {{classId}} for subject {{subjectId}}."
+    "test_for_class_subject": "Test for Class {{classId}} for subject {{subjectId}}.",
+    "manage": "Manage",
+    "manage_topics": "Manage Topics",
+    "create_new_topic": "Create a new topic",
+    "topic_name": "Topic Name",
+    "topic_description": "Topic Description",
+    "create_topic": "Create Topic",
+    "existing_topics": "Existing Topics",
+    "topic_name_placeholder": "e.g., General Science",
+    "topic_description_placeholder": "A brief description of the topic",
+    "no_topics_yet": "No topics have been created yet.",
+    "creating_topic": "Creating topic...",
+    "topic_created_success_title": "Topic Created!",
+    "topic_created_success_desc": "The topic '{{name}}' has been successfully created.",
+    "topic_creation_error_title": "Error Creating Topic",
+    "topic_creation_error_desc": "There was a problem creating the topic."
 }
