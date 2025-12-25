@@ -1,61 +1,43 @@
 'use client';
 import { useUser, useFirestore, useDoc, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, doc, getFirestore } from 'firebase/firestore';
+import { collection, doc, getDocs } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import type { UserProfile, UserTestAttempt } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { format } from 'date-fns';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { Upload } from 'lucide-react';
 
 function AllUserAttempts() {
     const firestore = useFirestore();
-    const [allAttempts, setAllAttempts] = useState<UserTestAttempt[]>([]);
+    const [allAttempts, setAllAttempts] = useState<(UserTestAttempt & { userEmail?: string })[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const usersCollection = useMemoFirebase(() => collection(firestore, 'users'), [firestore]);
+    const usersCollection = useMemoFirebase(() => firestore ? collection(firestore, 'users') : null, [firestore]);
     const { data: users, isLoading: usersLoading } = useCollection<UserProfile>(usersCollection);
 
     useEffect(() => {
-        if (!users) return;
-
-        const fetchAttempts = async () => {
-            setLoading(true);
-            const attemptsPromises = users.map(async (user) => {
-                const attemptsRef = collection(firestore, `users/${user.id}/testAttempts`);
-                const { data: attempts } = await new Promise<any>(resolve => {
-                    const { data, isLoading } = useCollection(attemptsRef);
-                    if(!isLoading) resolve({data, isLoading});
-                });
-                return attempts ? attempts.map(att => ({ ...att, userEmail: user.email })) : [];
-            });
-            const attemptsArrays = await Promise.all(attemptsPromises);
-            const flattenedAttempts = attemptsArrays.flat();
-            setAllAttempts(flattenedAttempts);
-            setLoading(false);
-        };
-        // This is a simplified approach. In a real app with many users,
-        // you would paginate this data or use a collection group query.
         const fetchAllAttempts = async () => {
-            setLoading(true);
-            if (!users) {
+            if (!firestore || !users) {
               setLoading(false);
               return;
             }
         
-            const allUserAttempts: UserTestAttempt[] = [];
+            setLoading(true);
+            const allUserAttempts: (UserTestAttempt & { userEmail?: string })[] = [];
         
             for (const user of users) {
               const attemptsRef = collection(firestore, 'users', user.id, 'testAttempts');
-              // This is not a hook call, but a one-time fetch
-              const { getDocs } = await import('firebase/firestore');
               const attemptsSnapshot = await getDocs(attemptsRef);
               attemptsSnapshot.forEach((doc) => {
                 allUserAttempts.push({ 
                   id: doc.id,
-                  ...doc.data(),
+                  ...(doc.data() as UserTestAttempt),
                   userEmail: user.email
-                } as UserTestAttempt);
+                });
               });
             }
         
@@ -108,7 +90,7 @@ export default function AdminPage() {
   const firestore = useFirestore();
 
   const userProfileRef = useMemoFirebase(
-    () => (user ? doc(firestore, 'users', user.uid) : null),
+    () => (user && firestore ? doc(firestore, 'users', user.uid) : null),
     [user, firestore]
   );
   const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
@@ -131,7 +113,15 @@ export default function AdminPage() {
 
   return (
     <div className="container mx-auto p-4 sm:p-6 md:p-8">
-      <h1 className="text-3xl font-bold mb-6">நிர்வாக குழு</h1>
+        <div className="flex justify-between items-center mb-6">
+            <h1 className="text-3xl font-bold">நிர்வாக குழு</h1>
+            <Button asChild>
+                <Link href="/admin/upload">
+                    <Upload className="mr-2 h-4 w-4" />
+                    MCQ களைப் பதிவேற்றவும்
+                </Link>
+            </Button>
+        </div>
       <AllUserAttempts />
     </div>
   );

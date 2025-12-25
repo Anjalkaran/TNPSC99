@@ -10,6 +10,9 @@ export interface Question {
   answerOptions: string[];
 }
 
+// Type for uploading questions, ID is optional as it will be generated.
+export type QuestionInput = Omit<Question, 'id'>;
+
 export interface Test {
   id: string;
   slug: string;
@@ -19,6 +22,8 @@ export interface Test {
   image: ImagePlaceholder;
   questionIds: string[];
   questions?: Question[];
+  classId?: string; // Added for class-wise tests
+  subjectId?: string; // Added for subject-wise tests
 }
 
 export interface Subject {
@@ -49,5 +54,4 @@ export interface UserTestAttempt {
   score: number;
   answers: number[];
   testTitle?: string;
-  userEmail?: string;
 }
