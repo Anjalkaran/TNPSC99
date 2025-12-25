@@ -4,7 +4,7 @@ import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useState, useEffect } from 'react';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase, useDoc } from '@/firebase';
 import { addDoc, collection, doc, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
 import type { Subject, Class } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -197,6 +197,17 @@ export default function TopicManagementPage() {
     const subjectId = createSlug(values.subjectName);
     const classId = createSlug(finalClassName);
 
+    const classMapping: { [key: string]: string } = {
+        "Class V": "5",
+        "Class VI": "6",
+        "Class VII": "7",
+        "Class VIII": "8",
+        "Class IX": "9",
+        "Class X": "10",
+    };
+    const finalClassId = classMapping[finalClassName] || classId;
+
+
     try {
       const subjectDocRef = doc(firestore, 'subjects', subjectId);
       await setDoc(subjectDocRef, {
@@ -205,9 +216,9 @@ export default function TopicManagementPage() {
           description: values.subjectDescription || ''
       });
 
-      const classDocRef = doc(firestore, 'classes', classId);
+      const classDocRef = doc(firestore, 'classes', finalClassId);
       await setDoc(classDocRef, {
-        id: classId,
+        id: finalClassId,
         name: finalClassName,
         description: `Content for ${finalClassName}`
       }, { merge: true });

@@ -41,12 +41,13 @@ const subjects = [
 ];
 
 const classes = [
-    { id: '6', name: 'வகுப்பு 6', description: '6th Standard' },
-    { id: '7', name: 'வகுப்பு 7', description: '7th Standard' },
-    { id: '8', name: 'வகுப்பு 8', description: '8th Standard' },
-    { id: '9', name: 'வகுப்பு 9', description: '9th Standard' },
-    { id: '10', name: 'வகுப்பு 10', description: '10th Standard' },
-    { id: '12', name: 'வகுப்பு 12', description: '12th Standard' },
+    { id: '5', name: 'Class V', description: '5th Standard' },
+    { id: '6', name: 'Class VI', description: '6th Standard' },
+    { id: '7', name: 'Class VII', description: '7th Standard' },
+    { id: '8', name: 'Class VIII', description: '8th Standard' },
+    { id: '9', name: 'Class IX', description: '9th Standard' },
+    { id: '10', name: 'Class X', description: '10th Standard' },
+    { id: '12', name: 'Class XII', description: '12th Standard' },
 ];
 
 const questions = [

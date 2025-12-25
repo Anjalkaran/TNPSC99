@@ -4,16 +4,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, BookOpen } from "lucide-react";
 import { useFirestore } from "@/firebase";
-import type { Test, Subject } from "@/lib/types";
+import type { Test, Subject, Class } from "@/lib/types";
 import { useParams } from "next/navigation";
 import { useMemo, useState, useEffect } from "react";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 
 export default function ClassPage() {
   const { classId } = useParams();
   const firestore = useFirestore();
   const [subjects, setSubjects] = useState<{ id: string; name: string; testCount: number }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [className, setClassName] = useState('');
 
   const classIdString = useMemo(() => Array.isArray(classId) ? classId[0] : classId, [classId]);
 
@@ -23,6 +24,18 @@ export default function ClassPage() {
     const fetchSubjectsAndTests = async () => {
       setIsLoading(true);
       try {
+        // 1. Fetch the class name
+        const classDocRef = doc(firestore, 'classes', classIdString);
+        const classSnap = await getDoc(classDocRef);
+        if (classSnap.exists()) {
+            const classData = classSnap.data() as Class;
+            setClassName(classData.name);
+        } else {
+            console.warn(`Class with id ${classIdString} not found.`);
+            setClassName(`வகுப்பு ${classIdString}`); // Fallback
+        }
+
+        // 2. Find all tests for this classId
         const testsCollectionRef = collection(firestore, 'tests');
         const classTestsQuery = query(testsCollectionRef, where('classId', '==', classIdString));
         
@@ -35,6 +48,7 @@ export default function ClassPage() {
           return;
         }
         
+        // 3. Get unique subjectIds from these tests
         const subjectIds = [...new Set(classTests.map(test => test.subjectId).filter(Boolean) as string[])];
 
         if (subjectIds.length === 0) {
@@ -43,6 +57,7 @@ export default function ClassPage() {
             return;
         }
 
+        // 4. Fetch the subject documents for those IDs
         const subjectsCollectionRef = collection(firestore, 'subjects');
         // Firestore 'in' queries are limited to 30 elements. If you expect more subjects, this needs pagination.
         const subjectsQuery = query(subjectsCollectionRef, where('id', 'in', subjectIds));
@@ -50,6 +65,7 @@ export default function ClassPage() {
         const subjectsSnapshot = await getDocs(subjectsQuery);
         const subjectsData = subjectsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Subject));
 
+        // 5. Map subjects and count tests for each
         const subjectsWithTestCounts = subjectsData.map(subject => {
           const testCount = classTests.filter(test => test.subjectId === subject.id).length;
           return {
@@ -72,14 +88,14 @@ export default function ClassPage() {
 
   }, [firestore, classIdString]);
 
-
-  const className = classIdString ? `வகுப்பு ${classIdString}` : "வகுப்பு";
+  const pageTitle = className ? `${className} பாடங்கள்` : "பாடங்கள் ஏற்றப்படுகின்றன...";
+  const pageDescription = className ? `${className} பாடத்திட்டத்தின் அடிப்படையில் தேர்வுகள்.` : "";
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
       <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold">{className} பாடங்கள்</h1>
-        <p className="text-muted-foreground mt-2">{className} பாடத்திட்டத்தின் அடிப்படையில் தேர்வுகள்.</p>
+        <h1 className="text-3xl md:text-4xl font-bold">{pageTitle}</h1>
+        <p className="text-muted-foreground mt-2">{pageDescription}</p>
       </div>
       
       {isLoading && <p>பாடங்கள் ஏற்றப்படுகின்றன...</p>}

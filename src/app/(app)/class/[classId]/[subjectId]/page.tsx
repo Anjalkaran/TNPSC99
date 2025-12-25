@@ -5,20 +5,25 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection, query, where } from "firebase/firestore";
-import type { Test } from "@/lib/types";
+import { collection, query, where, getDoc, doc } from "firebase/firestore";
+import type { Test, Subject, Class } from "@/lib/types";
 import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function SubjectTestsPage() {
   const { classId, subjectId } = useParams();
   const firestore = useFirestore();
 
+  const [pageTitle, setPageTitle] = useState('');
+  const [pageDescription, setPageDescription] = useState('');
+
+  const classIdString = Array.isArray(classId) ? classId[0] : classId;
+  const subjectIdString = Array.isArray(subjectId) ? subjectId[0] : subjectId;
+
   const testsCollection = useMemoFirebase(() => collection(firestore, 'tests'), [firestore]);
 
   const subjectTestsQuery = useMemoFirebase(() => {
-    if (!testsCollection || !classId || !subjectId) return null;
-    const classIdString = Array.isArray(classId) ? classId[0] : classId;
-    const subjectIdString = Array.isArray(subjectId) ? subjectId[0] : subjectId;
+    if (!testsCollection || !classIdString || !subjectIdString) return null;
     
     return query(
       testsCollection, 
@@ -26,18 +31,44 @@ export default function SubjectTestsPage() {
       where('subjectId', '==', subjectIdString),
       where('category', '==', 'class')
     );
-  }, [testsCollection, classId, subjectId]);
+  }, [testsCollection, classIdString, subjectIdString]);
 
   const { data: subjectTests, isLoading } = useCollection<Test>(subjectTestsQuery);
 
-  const subjectName = subjectId ? (Array.isArray(subjectId) ? subjectId[0] : subjectId) : "Subject";
-  const className = classId ? `வகுப்பு ${classId}` : "வகுப்பு";
+  useEffect(() => {
+    async function fetchMetadata() {
+        if (!firestore) return;
+        let className = `வகுப்பு ${classIdString}`;
+        let subjectName = subjectIdString;
+
+        try {
+            const classDocRef = doc(firestore, 'classes', classIdString);
+            const classSnap = await getDoc(classDocRef);
+            if (classSnap.exists()) {
+                className = (classSnap.data() as Class).name;
+            }
+        } catch (e) { console.error("Failed to fetch class name", e)}
+
+        try {
+            const subjectDocRef = doc(firestore, 'subjects', subjectIdString);
+            const subjectSnap = await getDoc(subjectDocRef);
+            if(subjectSnap.exists()){
+                subjectName = (subjectSnap.data() as Subject).name;
+            }
+        } catch (e) { console.error("Failed to fetch subject name", e)}
+
+
+        setPageTitle(`${className} - ${subjectName}`);
+        setPageDescription(`இந்த பாடத்திற்கான தேர்வுகள் கீழே பட்டியலிடப்பட்டுள்ளன.`);
+    }
+    fetchMetadata();
+  }, [firestore, classIdString, subjectIdString]);
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
       <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold">{className} - {subjectName}</h1>
-        <p className="text-muted-foreground mt-2">இந்த பாடத்திற்கான தேர்வுகள் கீழே பட்டியலிடப்பட்டுள்ளன.</p>
+        <h1 className="text-3xl md:text-4xl font-bold">{isLoading ? 'Loading...' : pageTitle}</h1>
+        <p className="text-muted-foreground mt-2">{pageDescription}</p>
       </div>
       
       {isLoading && <p>Loading tests...</p>}
