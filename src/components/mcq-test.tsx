@@ -14,6 +14,7 @@ import { addDoc, collection } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { cn } from '@/lib/utils';
 
 
 export function McqTest({ test }: { test: Test }) {
@@ -22,15 +23,28 @@ export function McqTest({ test }: { test: Test }) {
   const [answers, setAnswers] = useState<number[]>(Array(questions.length).fill(-1));
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [score, setScore] = useState(0);
+  const [isAnswered, setIsAnswered] = useState(false);
 
   const auth = useAuth();
   const firestore = useFirestore();
   const { toast } = useToast();
 
   const handleAnswerChange = (value: string) => {
+    if (isAnswered) return; // Don't allow changing answer after it's been revealed
     const newAnswers = [...answers];
     newAnswers[currentQuestionIndex] = parseInt(value, 10);
     setAnswers(newAnswers);
+    setIsAnswered(true);
+  };
+
+  const handleNext = () => {
+    setIsAnswered(false);
+    setCurrentQuestionIndex(currentQuestionIndex + 1);
+  };
+  
+  const handlePrevious = () => {
+    setIsAnswered(true); // When going back, we should show the answered state
+    setCurrentQuestionIndex(currentQuestionIndex - 1);
   };
 
   const handleSubmit = async () => {
@@ -87,6 +101,7 @@ export function McqTest({ test }: { test: Test }) {
     setAnswers(Array(questions.length).fill(-1));
     setIsSubmitted(false);
     setScore(0);
+    setIsAnswered(false);
   };
 
   if (questions.length === 0) {
@@ -109,6 +124,7 @@ export function McqTest({ test }: { test: Test }) {
 
   const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
   const currentQuestion = questions[currentQuestionIndex];
+  const userAnswer = answers[currentQuestionIndex];
 
   if (isSubmitted) {
     const scorePercentage = (score / questions.length) * 100;
@@ -161,33 +177,52 @@ export function McqTest({ test }: { test: Test }) {
       </CardHeader>
       <CardContent className="py-6">
         <p className="font-semibold text-lg mb-6">{currentQuestion.text}</p>
-        <RadioGroup value={answers[currentQuestionIndex]?.toString()} onValueChange={handleAnswerChange}>
+        <RadioGroup value={answers[currentQuestionIndex]?.toString()} onValueChange={handleAnswerChange} disabled={isAnswered}>
           <div className="space-y-4">
-            {currentQuestion.answerOptions.map((option, index) => (
-              <Label key={option} className="flex items-center space-x-3 p-4 border rounded-lg has-[:checked]:bg-primary/20 has-[:checked]:border-primary transition-colors cursor-pointer">
+            {currentQuestion.answerOptions.map((option, index) => {
+              const isCorrect = index === currentQuestion.correctAnswerIndex;
+              const isSelected = index === userAnswer;
+
+              const getOptionClass = () => {
+                if (!isAnswered) return 'border-border has-[:checked]:bg-primary/20 has-[:checked]:border-primary';
+                if (isCorrect) return 'border-green-500 bg-green-100 dark:bg-green-900';
+                if (isSelected && !isCorrect) return 'border-red-500 bg-red-100 dark:bg-red-900';
+                return 'border-border';
+              };
+              
+              return (
+              <Label key={option} className={cn("flex items-center space-x-3 p-4 border rounded-lg transition-colors cursor-pointer", getOptionClass())}>
                 <RadioGroupItem value={index.toString()} id={option} />
                 <span>{option}</span>
+                {isAnswered && isCorrect && <CheckCircle2 className="ml-auto text-green-600"/>}
+                {isAnswered && isSelected && !isCorrect && <XCircle className="ml-auto text-red-600"/>}
               </Label>
-            ))}
+            )})}
           </div>
         </RadioGroup>
+        {isAnswered && currentQuestion.reference && (
+          <div className="mt-4 p-4 bg-muted/50 rounded-lg">
+            <p className="text-sm font-semibold">குறிப்பு</p>
+            <p className="text-sm text-muted-foreground">{currentQuestion.reference}</p>
+          </div>
+        )}
       </CardContent>
       <CardFooter className="flex justify-between">
         <Button
           variant="outline"
-          onClick={() => setCurrentQuestionIndex(currentQuestionIndex - 1)}
+          onClick={handlePrevious}
           disabled={currentQuestionIndex === 0}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           முந்தைய
         </Button>
         {currentQuestionIndex < questions.length - 1 ? (
-          <Button onClick={() => setCurrentQuestionIndex(currentQuestionIndex + 1)}>
+          <Button onClick={handleNext} disabled={!isAnswered}>
             அடுத்தது
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         ) : (
-          <Button onClick={handleSubmit} style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }} disabled={!auth.currentUser}>
+          <Button onClick={handleSubmit} style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }} disabled={!isAnswered}>
             சமர்ப்பிக்கவும்
           </Button>
         )}
