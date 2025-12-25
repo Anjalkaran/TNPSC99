@@ -10,6 +10,8 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/app-sidebar';
+import { LanguageSwitcher } from '@/components/language-switcher';
+import { useTranslation } from '@/hooks/use-translation';
 
 export default function AppLayout({
   children,
@@ -19,6 +21,7 @@ export default function AppLayout({
   const { user, isUserLoading } = useUser();
   const router = useRouter();
   const pathname = usePathname();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -43,6 +46,12 @@ export default function AppLayout({
     );
   }
 
+  const getPageTitle = () => {
+    const segment = pathname.split('/').pop()?.replace('-', ' ') || 'dashboard';
+    // Use translation key that matches the segment
+    return t(segment as any);
+  }
+
   return (
     <SidebarProvider>
       <Sidebar>
@@ -51,7 +60,10 @@ export default function AppLayout({
       <SidebarInset>
         <header className="flex h-14 items-center gap-4 border-b bg-card px-4 md:px-6 sticky top-0 z-40">
           <SidebarTrigger className="md:hidden" />
-          <h1 className="text-lg font-semibold md:text-xl capitalize">{pathname.split('/').pop()?.replace('-', ' ') || 'Dashboard'}</h1>
+          <div className="flex-1">
+            <h1 className="text-lg font-semibold md:text-xl capitalize">{getPageTitle()}</h1>
+          </div>
+          <LanguageSwitcher />
         </header>
         <main className="flex-1 p-4 sm:p-6 bg-background">{children}</main>
       </SidebarInset>

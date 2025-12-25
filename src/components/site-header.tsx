@@ -22,12 +22,15 @@ import { signOut } from 'firebase/auth';
 import { useDoc, useMemoFirebase } from '@/firebase';
 import { doc, getFirestore } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
+import { useTranslation } from '@/hooks/use-translation';
+import { LanguageSwitcher } from './language-switcher';
 
 
 function UserNav() {
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
   const firestore = getFirestore(auth.app);
+  const { t } = useTranslation();
 
   const userProfileRef = useMemoFirebase(
     () => (user ? doc(firestore, 'users', user.uid) : null),
@@ -52,10 +55,10 @@ function UserNav() {
     return (
       <div className="flex items-center gap-2">
         <Button asChild variant="ghost">
-          <Link href="/login">உள்நுழைக</Link>
+          <Link href="/login">{t('login')}</Link>
         </Button>
         <Button asChild>
-          <Link href="/signup">பதிவு செய்க</Link>
+          <Link href="/signup">{t('sign_up')}</Link>
         </Button>
       </div>
     );
@@ -79,21 +82,21 @@ function UserNav() {
         <DropdownMenuItem asChild>
           <Link href="/profile">
             <UserIcon className="mr-2 h-4 w-4" />
-            <span>சுயவிவரம்</span>
+            <span>{t('profile')}</span>
           </Link>
         </DropdownMenuItem>
         {userProfile?.isAdmin && (
            <DropdownMenuItem asChild>
            <Link href="/admin">
              <LayoutDashboard className="mr-2 h-4 w-4" />
-             <span>நிர்வாகம்</span>
+             <span>{t('admin')}</span>
            </Link>
          </DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout}>
           <LogOut className="mr-2 h-4 w-4" />
-          <span>வெளியேறு</span>
+          <span>{t('logout')}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -101,14 +104,16 @@ function UserNav() {
 }
 
 export function SiteHeader() {
+  const { t } = useTranslation();
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-card shadow-sm">
       <div className="container flex h-16 items-center justify-between px-4 md:px-6">
         <Link href="/" className="flex items-center gap-2">
           <BookOpenCheck className="h-6 w-6 text-primary" />
-          <span className="font-bold text-lg">TNPSC ஏஸ்</span>
+          <span className="font-bold text-lg">{t('app_title')}</span>
         </Link>
         <div className="flex items-center gap-4">
+            <LanguageSwitcher />
             <UserNav />
         </div>
       </div>

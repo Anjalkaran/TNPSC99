@@ -5,17 +5,6 @@ import {
   BookCopy,
   Library,
   Archive,
-  LayoutDashboard,
-  Shield,
-  Edit,
-  BookOpen,
-  HelpCircle,
-  User,
-  History,
-  BarChart2,
-  Award,
-  Star,
-  MessageSquare,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,33 +16,13 @@ import {
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
+import { useTranslation } from '@/hooks/use-translation';
 
-const categories = [
-  {
-    title: 'வகுப்பு வாரியான தேர்வுகள்',
-    description:
-      'கல்வி வகுப்பு தரங்களின்படி ஒழுங்கமைக்கப்பட்ட பயிற்சித் தேர்வுகள்.',
-    href: '/class-wise',
-    icon: <Library className="h-8 w-8 text-primary" />,
-  },
-  {
-    title: 'பாடம் வாரியான தேர்வுகள்',
-    description: 'குறிப்பிட்ட பாடங்களில் உங்கள் தயாரிப்பை மையப்படுத்துங்கள்.',
-    href: '/subject-wise',
-    icon: <BookCopy className="h-8 w-8 text-primary" />,
-  },
-  {
-    title: 'முந்தைய ஆண்டு தாள்கள்',
-    description:
-      'கடந்த காலத் தாள்களுடன் தேர்வு முறையைப் பற்றி அறிந்து கொள்ளுங்கள்.',
-    href: '/previous-year',
-    icon: <Archive className="h-8 w-8 text-primary" />,
-  },
-];
 
 export default function DashboardPage() {
   const { user } = useUser();
   const firestore = useFirestore();
+  const { t } = useTranslation();
 
   const userProfileRef = useMemoFirebase(
     () => (user && firestore ? doc(firestore, 'users', user.uid) : null),
@@ -61,18 +30,37 @@ export default function DashboardPage() {
   );
   const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
 
-  const welcomeName = isProfileLoading ? '...' : userProfile?.username || 'பயனர்';
+  const welcomeName = isProfileLoading ? '...' : userProfile?.username || t('user');
+
+  const categories = [
+    {
+      title: t('class_wise_tests'),
+      description: t('class_wise_tests_desc'),
+      href: '/class-wise',
+      icon: <Library className="h-8 w-8 text-primary" />,
+    },
+    {
+      title: t('subject_wise_tests'),
+      description: t('subject_wise_tests_desc'),
+      href: '/subject-wise',
+      icon: <BookCopy className="h-8 w-8 text-primary" />,
+    },
+    {
+      title: t('previous_year_papers'),
+      description: t('previous_year_papers_desc'),
+      href: '/previous-year',
+      icon: <Archive className="h-8 w-8 text-primary" />,
+    },
+  ];
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
       <section className="text-center mb-12 md:mb-16">
         <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
-          வணக்கம், {welcomeName}!
+          {t('welcome_message', { name: welcomeName })}
         </h1>
         <p className="max-w-2xl mx-auto text-lg text-muted-foreground">
-          TNPSC தேர்வு தயாரிப்புக்கான உங்கள் இறுதி இலக்கு. MCQ களின் பரந்த
-          நூலகத்தை அணுகி, தேர்வில் வெற்றிபெற உங்கள் முன்னேற்றத்தைக்
-          கண்காணிக்கவும்.
+          {t('welcome_subtitle')}
         </p>
       </section>
 
@@ -99,7 +87,7 @@ export default function DashboardPage() {
                 }}
               >
                 <Link href={category.href}>
-                  தேர்வுகளைக் காண்க <ArrowRight className="ml-2 h-4 w-4" />
+                  {t('view_tests')} <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
             </CardContent>
