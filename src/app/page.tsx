@@ -2,39 +2,30 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, BookCopy, Library, Archive, LogIn, UserPlus, User } from 'lucide-react';
+import { ArrowRight, LogIn, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { SiteHeader } from '@/components/site-header';
+import { useRouter } from 'next/navigation';
 import { useUser } from '@/firebase';
-
-const categories = [
-  {
-    title: 'வகுப்பு வாரியான தேர்வுகள்',
-    description: 'கல்வி வகுப்பு தரங்களின்படி ஒழுங்கமைக்கப்பட்ட பயிற்சித் தேர்வுகள்.',
-    href: '/class-wise',
-    icon: <Library className="h-8 w-8 text-primary" />,
-    image: PlaceHolderImages.find((img) => img.id === 'class-wise')!,
-  },
-  {
-    title: 'பாடம் வாரியான தேர்வுகள்',
-    description: 'குறிப்பிட்ட பாடங்களில் உங்கள் தயாரிப்பை மையப்படுத்துங்கள்.',
-    href: '/subject-wise',
-    icon: <BookCopy className="h-8 w-8 text-primary" />,
-    image: PlaceHolderImages.find((img) => img.id === 'subject-wise')!,
-  },
-  {
-    title: 'முந்தைய ஆண்டு தாள்கள்',
-    description: 'கடந்த காலத் தாள்களுடன் தேர்வு முறையைப் பற்றி அறிந்து கொள்ளுங்கள்.',
-    href: '/previous-year',
-    icon: <Archive className="h-8 w-8 text-primary" />,
-    image: PlaceHolderImages.find((img) => img.id === 'previous-year')!,
-  },
-];
+import { useEffect } from 'react';
 
 export default function PublicHomePage() {
   const { user, isUserLoading } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if(!isUserLoading && user) {
+        router.push('/dashboard');
+    }
+  }, [user, isUserLoading, router]);
+
+  if(isUserLoading || user) {
+    return (
+        <div className="flex min-h-screen items-center justify-center">
+          Loading...
+        </div>
+      );
+  }
 
   return (
     <div className="relative flex min-h-screen flex-col">
@@ -51,17 +42,7 @@ export default function PublicHomePage() {
               கண்காணிக்கவும்.
             </p>
             <div className="mt-8 flex justify-center gap-4">
-              {isUserLoading ? (
-                <div className="h-12 w-48 animate-pulse rounded-md bg-muted" />
-              ) : user ? (
-                <Button asChild size="lg">
-                  <Link href="/profile">
-                    <User className="mr-2 h-5 w-5" />
-                    சுயவிவரத்திற்குச் செல்லவும்
-                  </Link>
-                </Button>
-              ) : (
-                <>
+                  <>
                   <Button asChild size="lg">
                     <Link href="/login">
                       <LogIn className="mr-2 h-5 w-5" />
@@ -75,39 +56,17 @@ export default function PublicHomePage() {
                     </Link>
                   </Button>
                 </>
-              )}
             </div>
           </section>
 
-          <section className="grid md:grid-cols-3 gap-8">
-            {categories.map((category) => (
-              <Card
-                key={category.title}
-                className="flex flex-col overflow-hidden hover:shadow-xl transition-shadow duration-300"
-              >
-                <CardHeader className="flex flex-row items-center gap-4 pb-2">
-                  {category.icon}
-                  <CardTitle className="text-xl">{category.title}</CardTitle>
-                </CardHeader>
-                <CardContent className="flex-grow flex flex-col justify-between">
-                  <p className="text-muted-foreground mb-4">
-                    {category.description}
-                  </p>
-                  <Button
-                    asChild
-                    className="w-full"
-                    style={{
-                      backgroundColor: 'hsl(var(--accent))',
-                      color: 'hsl(var(--accent-foreground))',
-                    }}
-                  >
-                    <Link href={category.href}>
-                      தேர்வுகளைக் காண்க <ArrowRight className="ml-2 h-4 w-4" />
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+          <section className="text-center">
+            <h2 className="text-3xl font-bold mb-4">தயாராக இருக்கிறீர்களா?</h2>
+            <p className="text-muted-foreground mb-8">இன்றே உங்கள் தயாரிப்பைத் தொடங்குங்கள்.</p>
+            <Button asChild size="lg">
+                <Link href="/signup">
+                    இலவசமாக தொடங்கவும் <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+            </Button>
           </section>
         </div>
       </main>

@@ -1,9 +1,15 @@
 'use client';
 
-import { SiteHeader } from '@/components/site-header';
 import { useUser } from '@/firebase';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import {
+  Sidebar,
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from '@/components/ui/sidebar';
+import { AppSidebar } from '@/components/app-sidebar';
 
 export default function AppLayout({
   children,
@@ -15,12 +21,21 @@ export default function AppLayout({
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!isUserLoading && !user && pathname !== '/') {
+    if (!isUserLoading && !user) {
       router.push('/login');
     }
   }, [user, isUserLoading, router, pathname]);
 
-  if (isUserLoading && pathname !== '/') {
+  // The home page is now public and has its own layout.
+  // We only handle authenticated routes here.
+  useEffect(() => {
+    if(!isUserLoading && user && pathname === '/') {
+        router.push('/dashboard');
+    }
+  },[user, isUserLoading, pathname, router])
+
+
+  if (isUserLoading || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         Loading...
@@ -28,31 +43,18 @@ export default function AppLayout({
     );
   }
 
-  // For the home page, we don't want to enforce auth, but we want the layout
-  if (pathname === '/') {
-    return (
-        <div className="relative flex min-h-screen flex-col">
-          <SiteHeader />
-          <main className="flex-1">{children}</main>
-        </div>
-    )
-  }
-
-  // For other app pages, enforce auth
-  if (!user) {
-    // This can show a brief loading state or redirect immediately
-    // The useEffect above will handle the redirect.
-    return (
-        <div className="flex min-h-screen items-center justify-center">
-          Loading...
-        </div>
-      );
-  }
-
   return (
-    <div className="relative flex min-h-screen flex-col">
-      <SiteHeader />
-      <main className="flex-1">{children}</main>
-    </div>
+    <SidebarProvider>
+      <Sidebar>
+        <AppSidebar />
+      </Sidebar>
+      <SidebarInset>
+        <header className="flex h-14 items-center gap-4 border-b bg-card px-4 md:px-6 sticky top-0 z-40">
+          <SidebarTrigger className="md:hidden" />
+          <h1 className="text-lg font-semibold md:text-xl capitalize">{pathname.split('/').pop()?.replace('-', ' ') || 'Dashboard'}</h1>
+        </header>
+        <main className="flex-1 p-4 sm:p-6 bg-background">{children}</main>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
