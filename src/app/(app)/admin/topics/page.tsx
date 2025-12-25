@@ -3,18 +3,31 @@
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { addDoc, collection, doc, setDoc } from 'firebase/firestore';
+import { addDoc, collection, doc, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
 import type { Subject, Class } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/hooks/use-translation';
+import { Edit, Trash } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+
 
 const createSlug = (name: string) => {
   return name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
@@ -38,11 +51,32 @@ const classSubjectSchema = z.object({
 
 type ClassSubjectFormValues = z.infer<typeof classSubjectSchema>;
 
-function ExistingSubjectsList() {
+function ExistingSubjectsList({ onEdit }: { onEdit: (subject: Subject) => void }) {
     const { t } = useTranslation();
     const firestore = useFirestore();
+    const { toast } = useToast();
     const subjectsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'subjects') : null, [firestore]);
     const { data: subjects, isLoading } = useCollection<Subject>(subjectsCollection);
+
+    const handleDelete = async (subjectId: string) => {
+        if (!firestore) return;
+        const subjectDocRef = doc(firestore, 'subjects', subjectId);
+        try {
+            await deleteDoc(subjectDocRef);
+            toast({
+                title: t('subject_deleted_success_title'),
+                description: t('subject_deleted_success_desc'),
+            });
+        } catch (error) {
+            console.error("Error deleting subject: ", error);
+            toast({
+                variant: 'destructive',
+                title: t('subject_deletion_error_title'),
+                description: t('subject_deletion_error_desc'),
+            });
+        }
+    };
+
 
     if (isLoading) return <p>{t('loading_subjects')}...</p>
     
@@ -55,9 +89,37 @@ function ExistingSubjectsList() {
                 {subjects && subjects.length > 0 ? (
                      <ul className="space-y-2">
                         {subjects.map(subject => (
-                            <li key={subject.id} className="p-2 border rounded-md">
-                                <p className="font-semibold">{subject.name}</p>
-                                <p className="text-sm text-muted-foreground">{subject.description}</p>
+                            <li key={subject.id} className="flex justify-between items-center p-2 border rounded-md">
+                                <div>
+                                    <p className="font-semibold">{subject.name}</p>
+                                    <p className="text-sm text-muted-foreground">{subject.description}</p>
+                                </div>
+                                <div className="flex gap-2">
+                                    <Button variant="ghost" size="icon" onClick={() => onEdit(subject)}>
+                                        <Edit className="h-4 w-4" />
+                                        <span className="sr-only">{t('edit')}</span>
+                                    </Button>
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                                <Trash className="h-4 w-4" />
+                                                <span className="sr-only">{t('delete')}</span>
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>{t('confirm_deletion_title')}</AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    {t('confirm_deletion_desc', { subjectName: subject.name })}
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                                                <AlertDialogAction onClick={() => handleDelete(subject.id)}>{t('delete')}</AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </div>
                             </li>
                         ))}
                     </ul>
@@ -75,30 +137,76 @@ export default function TopicManagementPage() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showCustomClass, setShowCustomClass] = useState(false);
+  const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
+
 
   const form = useForm<ClassSubjectFormValues>({
     resolver: zodResolver(classSubjectSchema),
     defaultValues: { className: '', customClassName: '', subjectName: '', subjectDescription: '' },
   });
 
+  const handleEdit = (subject: Subject) => {
+    setEditingSubject(subject);
+    form.setValue('subjectName', subject.name);
+    form.setValue('subjectDescription', subject.description);
+    form.setValue('className', 'other'); // Cannot determine class from subject alone, default to prevent validation errors
+    form.setValue('customClassName', 'N/A - Editing Subject Name/Description');
+    setShowCustomClass(true);
+    form.control.getFieldState('className').disable();
+    form.control.getFieldState('customClassName').disable();
+  };
+
+  const resetForm = () => {
+    form.reset();
+    setEditingSubject(null);
+    setShowCustomClass(false);
+    form.control.getFieldState('className').enable();
+    form.control.getFieldState('customClassName').enable();
+  }
+
   const onSubmit: SubmitHandler<ClassSubjectFormValues> = async (values) => {
     if (!firestore) return;
     setIsSubmitting(true);
+
+    if(editingSubject) {
+        // Update logic
+        const subjectDocRef = doc(firestore, 'subjects', editingSubject.id);
+        try {
+            await updateDoc(subjectDocRef, {
+                name: values.subjectName,
+                description: values.subjectDescription || ''
+            });
+             toast({
+                title: t('subject_updated_success_title'),
+                description: t('subject_updated_success_desc', { subjectName: values.subjectName }),
+            });
+            resetForm();
+        } catch (error) {
+            console.error('Error updating subject:', error);
+            toast({
+                variant: 'destructive',
+                title: t('subject_update_error_title'),
+                description: t('subject_update_error_desc'),
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
+        return;
+    }
     
+    // Create logic
     const finalClassName = values.className === 'other' ? values.customClassName! : values.className;
     const subjectId = createSlug(values.subjectName);
     const classId = createSlug(finalClassName);
 
     try {
-      // Create subject
-      const subjectsCollectionRef = collection(firestore, 'subjects');
-      await addDoc(subjectsCollectionRef, {
+      const subjectDocRef = doc(firestore, 'subjects', subjectId);
+      await setDoc(subjectDocRef, {
           id: subjectId,
           name: values.subjectName,
           description: values.subjectDescription || ''
       });
 
-      // Create class document if it doesn't exist
       const classDocRef = doc(firestore, 'classes', classId);
       await setDoc(classDocRef, {
         id: classId,
@@ -111,8 +219,7 @@ export default function TopicManagementPage() {
         title: t('subject_created_success_title'),
         description: t('subject_created_success_desc', { subjectName: values.subjectName, className: finalClassName }),
       });
-      form.reset();
-      setShowCustomClass(false);
+      resetForm();
     } catch (error) {
       console.error('Error creating subject:', error);
       toast({
@@ -135,7 +242,7 @@ export default function TopicManagementPage() {
       <div className="grid md:grid-cols-2 gap-8">
         <Card>
           <CardHeader>
-            <CardTitle>{t('create_new_subject')}</CardTitle>
+            <CardTitle>{editingSubject ? t('edit_subject') : t('create_new_subject')}</CardTitle>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -152,6 +259,7 @@ export default function TopicManagementPage() {
                             setShowCustomClass(value === 'other');
                         }} 
                         defaultValue={field.value}
+                        disabled={!!editingSubject}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -181,7 +289,7 @@ export default function TopicManagementPage() {
                         <FormItem>
                         <FormLabel>{t('custom_class_name')}</FormLabel>
                         <FormControl>
-                            <Input placeholder={t('enter_custom_class_name')} {...field} />
+                            <Input placeholder={t('enter_custom_class_name')} {...field} disabled={!!editingSubject} />
                         </FormControl>
                         <FormMessage />
                         </FormItem>
@@ -216,15 +324,25 @@ export default function TopicManagementPage() {
                     </FormItem>
                   )}
                 />
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? t('creating_subject') : t('create_subject')}
-                </Button>
+                <div className="flex gap-4">
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting
+                        ? (editingSubject ? t('updating_subject') : t('creating_subject'))
+                        : (editingSubject ? t('update_subject') : t('create_subject'))
+                    }
+                  </Button>
+                  {editingSubject && (
+                      <Button type="button" variant="outline" onClick={resetForm}>
+                          {t('cancel')}
+                      </Button>
+                  )}
+                </div>
               </form>
             </Form>
           </CardContent>
         </Card>
 
-        <ExistingSubjectsList />
+        <ExistingSubjectsList onEdit={handleEdit} />
       </div>
     </div>
   );

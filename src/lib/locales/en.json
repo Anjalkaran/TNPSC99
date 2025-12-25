@@ -84,5 +84,21 @@
     "subject_created_success_title": "Subject Created!",
     "subject_created_success_desc": "The subject '{{subjectName}}' for '{{className}}' has been successfully created.",
     "subject_creation_error_title": "Error Creating Subject",
-    "subject_creation_error_desc": "There was a problem creating the subject."
+    "subject_creation_error_desc": "There was a problem creating the subject.",
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "edit_subject": "Edit Subject",
+    "update_subject": "Update Subject",
+    "updating_subject": "Updating Subject...",
+    "confirm_deletion_title": "Are you absolutely sure?",
+    "confirm_deletion_desc": "This action cannot be undone. This will permanently delete the subject '{{subjectName}}'.",
+    "subject_deleted_success_title": "Subject Deleted",
+    "subject_deleted_success_desc": "The subject has been successfully deleted.",
+    "subject_deletion_error_title": "Error Deleting Subject",
+    "subject_deletion_error_desc": "There was a problem deleting the subject.",
+    "subject_updated_success_title": "Subject Updated",
+    "subject_updated_success_desc": "The subject '{{subjectName}}' has been successfully updated.",
+    "subject_update_error_title": "Error Updating Subject",
+    "subject_update_error_desc": "There was a problem updating the subject."
 }

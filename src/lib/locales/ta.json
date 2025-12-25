@@ -84,5 +84,21 @@
     "subject_created_success_title": "பாடம் உருவாக்கப்பட்டது!",
     "subject_created_success_desc": "'{{className}}' க்கான '{{subjectName}}' என்ற பாடம் வெற்றிகரமாக உருவாக்கப்பட்டது.",
     "subject_creation_error_title": "பாடத்தை உருவாக்குவதில் பிழை",
-    "subject_creation_error_desc": "பாடத்தை உருவாக்கும்போது ஒரு சிக்கல் ஏற்பட்டது."
+    "subject_creation_error_desc": "பாடத்தை உருவாக்கும்போது ஒரு சிக்கல் ஏற்பட்டது.",
+    "edit": "திருத்து",
+    "delete": "நீக்கு",
+    "cancel": "ரத்துசெய்",
+    "edit_subject": "பாடத்தைத் திருத்து",
+    "update_subject": "பாடத்தைப் புதுப்பி",
+    "updating_subject": "பாடம் புதுப்பிக்கப்படுகிறது...",
+    "confirm_deletion_title": "நீங்கள் உறுதியாக இருக்கிறீர்களா?",
+    "confirm_deletion_desc": "இந்த செயலைச் செயல்தவிர்க்க முடியாது. இது '{{subjectName}}' என்ற பாடத்தை நிரந்தரமாக நீக்கும்.",
+    "subject_deleted_success_title": "பாடம் நீக்கப்பட்டது",
+    "subject_deleted_success_desc": "பாடம் வெற்றிகரமாக நீக்கப்பட்டது.",
+    "subject_deletion_error_title": "பாடத்தை நீக்குவதில் பிழை",
+    "subject_deletion_error_desc": "பாடத்தை நீக்கும்போது ஒரு சிக்கல் ஏற்பட்டது.",
+    "subject_updated_success_title": "பாடம் புதுப்பிக்கப்பட்டது",
+    "subject_updated_success_desc": "'{{subjectName}}' என்ற பாடம் வெற்றிகரமாக புதுப்பிக்கப்பட்டது.",
+    "subject_update_error_title": "பாடத்தைப் புதுப்பிப்பதில் பிழை",
+    "subject_update_error_desc": "பாடத்தைப் புதுப்பிக்கும்போது ஒரு சிக்கல் ஏற்பட்டது."
 }
