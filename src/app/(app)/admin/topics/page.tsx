@@ -24,7 +24,7 @@ const classSubjectSchema = z.object({
   className: z.string({ required_error: "Please select a class." }),
   customClassName: z.string().optional(),
   subjectName: z.string().min(3, { message: 'Subject name must be at least 3 characters.' }),
-  subjectDescription: z.string().min(10, { message: 'Description must be at least 10 characters.' }),
+  subjectDescription: z.string().optional(),
 }).refine(data => {
     if (data.className === 'other') {
         return !!data.customClassName && data.customClassName.length >= 1;
@@ -95,7 +95,7 @@ export default function TopicManagementPage() {
       await addDoc(subjectsCollection, {
           id: subjectId,
           name: values.subjectName,
-          description: values.subjectDescription
+          description: values.subjectDescription || ''
       });
 
       // Optionally, create or update class if it doesn't exist
