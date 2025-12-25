@@ -7,7 +7,7 @@ import { useFirestore } from "@/firebase";
 import type { Test, Subject, Class } from "@/lib/types";
 import { useParams } from "next/navigation";
 import { useMemo, useState, useEffect } from "react";
-import { collection, query, where, getDocs, doc, getDoc, collectionGroup } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 
 export default function ClassPage() {
   const { classId } = useParams();
