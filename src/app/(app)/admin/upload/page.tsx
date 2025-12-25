@@ -123,7 +123,7 @@ function ExistingTestsList() {
                                 </CardHeader>
                                 <CardFooter className="flex gap-2">
                                      <Button asChild variant="outline" size="sm">
-                                        <Link href={`/test/${test.slug}`}>
+                                        <Link href={`/admin/upload/${test.slug}/view`}>
                                             <View className="mr-2 h-4 w-4" />
                                             {t('View')}
                                         </Link>

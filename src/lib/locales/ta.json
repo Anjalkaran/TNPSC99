@@ -116,5 +116,7 @@
     "Error Deleting Test": "தேர்வை நீக்குவதில் பிழை",
     "There was a problem deleting the test.": "தேர்வை நீக்கும்போது ஒரு சிக்கல் ஏற்பட்டது.",
     "Loading tests...": "தேர்வுகளை ஏற்றுகிறது...",
-    "Edit Question Bank": "கேள்வி வங்கியைத் திருத்து"
+    "Edit Question Bank": "கேள்வி வங்கியைத் திருத்து",
+    "JSON View": "JSON காட்சி",
+    "Showing the questions for this test in JSON format.": "இந்த தேர்வுக்கான கேள்விகளை JSON வடிவத்தில் காட்டுகிறது."
 }

@@ -116,5 +116,7 @@
     "Error Deleting Test": "Error Deleting Test",
     "There was a problem deleting the test.": "There was a problem deleting the test.",
     "Loading tests...": "Loading tests...",
-    "Edit Question Bank": "Edit Question Bank"
+    "Edit Question Bank": "Edit Question Bank",
+    "JSON View": "JSON View",
+    "Showing the questions for this test in JSON format.": "Showing the questions for this test in JSON format."
 }
