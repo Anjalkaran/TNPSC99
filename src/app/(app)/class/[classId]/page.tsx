@@ -1,127 +1,151 @@
 'use client';
-import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ArrowRight, BookOpen } from "lucide-react";
-import { useFirestore } from "@/firebase";
-import type { Test, Subject, Class } from "@/lib/types";
-import { useParams } from "next/navigation";
-import { useMemo, useState, useEffect } from "react";
-import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
+import Link from 'next/link';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { useFirestore } from '@/firebase';
+import type { Test, Subject, Class } from '@/lib/types';
+import { useParams, useRouter } from 'next/navigation';
+import { useMemo, useState, useEffect } from 'react';
+import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 
-export default function ClassPage() {
+export default function GenerateMcqPage() {
   const { classId } = useParams();
+  const router = useRouter();
   const firestore = useFirestore();
-  const [subjects, setSubjects] = useState<{ id: string; name: string; testCount: number }[]>([]);
+
+  const [subjects, setSubjects] = useState<{ id: string; name: string }[]>([]);
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const [className, setClassName] = useState('');
+  const [testSlug, setTestSlug] = useState<string | null>(null);
 
-  const classIdString = useMemo(() => Array.isArray(classId) ? classId[0] : classId, [classId]);
+  const classIdString = useMemo(() => (Array.isArray(classId) ? classId[0] : classId), [classId]);
 
   useEffect(() => {
     if (!firestore || !classIdString) return;
 
-    const fetchSubjectsAndTests = async () => {
+    const fetchClassAndSubjects = async () => {
       setIsLoading(true);
       try {
-        // 1. Fetch the class name for the page title
+        // 1. Fetch Class Name
         const classDocRef = doc(firestore, 'classes', classIdString);
         const classSnap = await getDoc(classDocRef);
         if (classSnap.exists()) {
-            const classData = classSnap.data() as Class;
-            setClassName(classData.name);
+          setClassName((classSnap.data() as Class).name);
         } else {
-            setClassName(`Class ${classIdString}`); // Fallback
+          setClassName(`Class ${classIdString}`); // Fallback
         }
 
-        // 2. Find all tests that belong to this class
+        // 2. Find tests associated with this class
         const testsRef = collection(firestore, 'tests');
         const testsQuery = query(testsRef, where('classId', '==', classIdString));
         const testSnapshots = await getDocs(testsQuery);
         const testsForClass = testSnapshots.docs.map(d => d.data() as Test);
         
-        if (testsForClass.length === 0) {
-            setSubjects([]);
-            setIsLoading(false);
-            return;
-        }
+        if (testsForClass.length > 0) {
+            // 3. Get unique subject IDs from these tests
+            const subjectIds = [...new Set(testsForClass.map(t => t.subjectId).filter(Boolean) as string[])];
 
-        // 3. From these tests, get the unique subject IDs
-        const subjectIds = [...new Set(testsForClass.map(t => t.subjectId).filter(Boolean) as string[])];
-
-        if (subjectIds.length === 0) {
-            setSubjects([]);
-            setIsLoading(false);
-            return;
-        }
-        
-        // 4. Fetch the details for those subjects
-        const subjectsRef = collection(firestore, 'subjects');
-        // Firestore's 'in' query can handle up to 30 items. If more subjects per class are expected, pagination would be needed here.
-        const subjectsQuery = query(subjectsRef, where('id', 'in', subjectIds));
-        const subjectsSnapshot = await getDocs(subjectsQuery);
-
-        const subjectsData = subjectsSnapshot.docs.map(d => d.data() as Subject);
-
-        // 5. Count how many tests each subject has *for this specific class*
-        const subjectsWithCounts = subjectsData.map(subject => {
-            const count = testsForClass.filter(t => t.subjectId === subject.id).length;
-            return {
-                id: subject.id,
-                name: subject.name,
-                testCount: count
+            if(subjectIds.length > 0) {
+                 // 4. Fetch the subject details
+                const subjectsRef = collection(firestore, 'subjects');
+                const subjectsQuery = query(subjectsRef, where('id', 'in', subjectIds));
+                const subjectsSnapshot = await getDocs(subjectsQuery);
+                const subjectsData = subjectsSnapshot.docs.map(d => d.data() as Subject);
+                setSubjects(subjectsData);
             }
-        }).filter(s => s.testCount > 0); // Only show subjects that have tests in this class
-
-        setSubjects(subjectsWithCounts);
-
+        }
       } catch (error) {
-        console.error("Error fetching class subjects:", error);
+        console.error("Error fetching class/subject data:", error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchSubjectsAndTests();
-
+    fetchClassAndSubjects();
   }, [firestore, classIdString]);
+  
+  useEffect(() => {
+      const findTest = async () => {
+          if (!firestore || !classIdString || !selectedSubjectId) {
+              setTestSlug(null);
+              return;
+          };
 
-  const pageTitle = className ? `${className} பாடங்கள்` : "பாடங்கள் ஏற்றப்படுகின்றன...";
-  const pageDescription = className ? `${className} பாடத்திட்டத்தின் அடிப்படையில் தேர்வுகள்.` : "";
+          const testsRef = collection(firestore, 'tests');
+          const q = query(
+              testsRef, 
+              where('classId', '==', classIdString),
+              where('subjectId', '==', selectedSubjectId),
+              where('category', '==', 'class')
+          );
+          
+          const querySnapshot = await getDocs(q);
+          if (!querySnapshot.empty) {
+              // Assuming one test per class/subject combo for this logic
+              setTestSlug(querySnapshot.docs[0].data().slug);
+          } else {
+              setTestSlug(null);
+          }
+      };
+
+      findTest();
+
+  }, [firestore, classIdString, selectedSubjectId]);
+
+  const handleStartExam = () => {
+    if (testSlug) {
+      router.push(`/test/${testSlug}`);
+    }
+  };
+
+  const pageTitle = isLoading ? "Loading..." : `Start Test for ${className}`;
+  const pageDescription = "Select a subject from the dropdown to begin the test.";
 
   return (
-    <div className="container mx-auto px-4 py-8 md:py-12">
-      <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold">{pageTitle}</h1>
-        <p className="text-muted-foreground mt-2">{pageDescription}</p>
-      </div>
-      
-      {isLoading && <p>பாடங்கள் ஏற்றப்படுகின்றன...</p>}
-
-      {!isLoading && subjects.length > 0 ? (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {subjects.map(({ name, testCount, id }) => (
-             <Card key={id} className="flex flex-col overflow-hidden hover:shadow-xl transition-shadow duration-300">
-             <CardHeader className="flex flex-row items-center gap-4 pb-2">
-              <BookOpen className="h-8 w-8 text-primary" />
-              <CardTitle className="text-xl">{name}</CardTitle>
+    <div className="container mx-auto flex items-center justify-center min-h-[calc(100vh-200px)]">
+        <Card className="w-full max-w-md">
+            <CardHeader>
+                <CardTitle>{pageTitle}</CardTitle>
+                <CardDescription>{pageDescription}</CardDescription>
             </CardHeader>
-            <CardContent className="flex-grow flex flex-col justify-between">
-                <p className="text-muted-foreground mb-4">{testCount} {testCount !== 1 ? 'தேர்வுகள்' : 'தேர்வு'} உள்ளன.</p>
-                <Button asChild variant="outline" className="w-full justify-start mt-auto">
-                    <Link href={`/class/${classIdString}/${id}`}>
-                        தேர்வுகளைக் காண்க <ArrowRight className="ml-auto h-4 w-4" />
-                    </Link>
+            <CardContent className="space-y-6">
+                {isLoading ? (
+                    <p>Loading subjects...</p>
+                ) : subjects.length > 0 ? (
+                    <div className="space-y-2">
+                        <Label htmlFor="subject-select">Subject</Label>
+                        <Select onValueChange={setSelectedSubjectId} value={selectedSubjectId}>
+                            <SelectTrigger id="subject-select">
+                                <SelectValue placeholder="Select a subject..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {subjects.map(subject => (
+                                    <SelectItem key={subject.id} value={subject.id}>{subject.name}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                ) : (
+                    <p className="text-muted-foreground text-center">No subjects with available tests for this class.</p>
+                )}
+                 <Button 
+                    onClick={handleStartExam} 
+                    disabled={!selectedSubjectId || !testSlug || isLoading}
+                    className="w-full"
+                 >
+                    Start Exam
                 </Button>
             </CardContent>
-          </Card>
-          ))}
-        </div>
-      ) : (
-        !isLoading && <div className="text-center py-16">
-          <p className="text-muted-foreground">இந்த வகுப்பிற்கு தற்போது பாடங்கள் எதுவும் இல்லை.</p>
-        </div>
-      )}
+        </Card>
     </div>
   );
 }
