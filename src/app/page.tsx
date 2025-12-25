@@ -1,9 +1,13 @@
+
+'use client';
+
 import Link from 'next/link';
-import { ArrowRight, BookCopy, Library, Archive, LogIn, UserPlus } from 'lucide-react';
+import { ArrowRight, BookCopy, Library, Archive, LogIn, UserPlus, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { SiteHeader } from '@/components/site-header';
+import { useUser } from '@/firebase';
 
 const categories = [
   {
@@ -30,6 +34,8 @@ const categories = [
 ];
 
 export default function PublicHomePage() {
+  const { user, isUserLoading } = useUser();
+
   return (
     <div className="relative flex min-h-screen flex-col">
       <SiteHeader />
@@ -45,18 +51,31 @@ export default function PublicHomePage() {
               கண்காணிக்கவும்.
             </p>
             <div className="mt-8 flex justify-center gap-4">
+              {isUserLoading ? (
+                <div className="h-12 w-48 animate-pulse rounded-md bg-muted" />
+              ) : user ? (
                 <Button asChild size="lg">
+                  <Link href="/profile">
+                    <User className="mr-2 h-5 w-5" />
+                    சுயவிவரத்திற்குச் செல்லவும்
+                  </Link>
+                </Button>
+              ) : (
+                <>
+                  <Button asChild size="lg">
                     <Link href="/login">
-                        <LogIn className="mr-2 h-5 w-5" />
-                        உள்நுழைக
+                      <LogIn className="mr-2 h-5 w-5" />
+                      உள்நுழைக
                     </Link>
-                </Button>
-                <Button asChild variant="outline" size="lg">
+                  </Button>
+                  <Button asChild variant="outline" size="lg">
                     <Link href="/signup">
-                        <UserPlus className="mr-2 h-5 w-5" />
-                        பதிவு செய்க
+                      <UserPlus className="mr-2 h-5 w-5" />
+                      பதிவு செய்க
                     </Link>
-                </Button>
+                  </Button>
+                </>
+              )}
             </div>
           </section>
 
