@@ -3,7 +3,7 @@
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useFirestore, useCollection, useMemoFirebase, useUser, useDoc } from '@/firebase';
 import { addDoc, collection, doc, serverTimestamp } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
@@ -16,7 +16,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/hooks/use-translation';
-import { useEffect } from 'react';
 
 const createSlug = (name: string) => {
   return name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
@@ -66,21 +65,7 @@ export default function TopicManagementPage() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
-
   const { user, isUserLoading } = useUser();
-  const userProfileRef = useMemoFirebase(
-    () => (user && firestore ? doc(firestore, 'users', user.uid) : null),
-    [user, firestore]
-  );
-  const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
-
-  useEffect(() => {
-    if (!isUserLoading && !isProfileLoading) {
-      if (!user || !userProfile?.isAdmin) {
-        router.push('/');
-      }
-    }
-  }, [user, isUserLoading, userProfile, isProfileLoading, router]);
 
   const form = useForm<TopicFormValues>({
     resolver: zodResolver(topicSchema),
@@ -117,12 +102,8 @@ export default function TopicManagementPage() {
     }
   };
   
-  if (isUserLoading || isProfileLoading) {
+  if (isUserLoading) {
     return <div className="container mx-auto p-4">Loading...</div>;
-  }
-
-  if (!userProfile?.isAdmin) {
-    return <div className="container mx-auto p-4">You are not authorized to view this page.</div>;
   }
 
   return (
