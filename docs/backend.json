@@ -27,6 +27,14 @@
         "isAdmin": {
           "type": "boolean",
           "description": "Indicates if the user has administrative privileges."
+        },
+        "phone": {
+          "type": "string",
+          "description": "User's phone number."
+        },
+        "city": {
+          "type": "string",
+          "description": "User's city."
         }
       },
       "required": [

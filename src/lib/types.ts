@@ -44,6 +44,8 @@ export interface UserProfile {
   email: string;
   registrationDate: string;
   isAdmin?: boolean;
+  phone?: string;
+  city?: string;
 }
 
 export interface UserTestAttempt {

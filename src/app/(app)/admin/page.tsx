@@ -1,147 +1,134 @@
 'use client';
 import { useFirestore, useCollection } from '@/firebase';
-import { collection, getDocs } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
+import { collection } from 'firebase/firestore';
+import { useEffect, useState, useMemo } from 'react';
 import type { UserProfile, UserTestAttempt } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { format } from 'date-fns';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { Upload } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Search, Shield, BookOpen, FileQuestion, BarChart, Trophy, FileText, BrainCircuit } from 'lucide-react';
 import { useMemoFirebase } from '@/firebase/provider';
 import { useTranslation } from '@/hooks/use-translation';
+import { IconMcqBank, IconQuestionBank, IconTopicManagement } from '@/components/icons';
 
-function AllUsersList() {
+
+function UserManagementTab() {
     const firestore = useFirestore();
     const { t } = useTranslation();
+    const [searchTerm, setSearchTerm] = useState('');
+
     const usersCollection = useMemoFirebase(() => firestore ? collection(firestore, 'users') : null, [firestore]);
     const { data: users, isLoading: usersLoading } = useCollection<UserProfile>(usersCollection);
 
-    if (usersLoading) return <p>Loading users...</p>
+    const filteredUsers = useMemo(() => {
+        if (!users) return [];
+        return users.filter(user =>
+            user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            user.email.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [users, searchTerm]);
+
+
+    if (usersLoading) return <div className="p-4">{t('loading_users')}</div>
 
     return (
         <Card>
             <CardHeader>
-                <CardTitle>{t('all_users')}</CardTitle>
+                <CardTitle>{t('users')}</CardTitle>
                 <CardDescription>{t('all_users_desc')}</CardDescription>
             </CardHeader>
             <CardContent>
+                <div className="flex justify-between items-center mb-4">
+                     <div className="relative w-full max-w-sm">
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            type="search"
+                            placeholder={t('search_by_name_email')}
+                            className="pl-8"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                </div>
                 <Table>
                     <TableHeader>
                         <TableRow>
                             <TableHead>{t('username')}</TableHead>
                             <TableHead>{t('email')}</TableHead>
-                            <TableHead>{t('registration_date')}</TableHead>
-                            <TableHead>{t('is_admin')}</TableHead>
+                            <TableHead>{t('phone')}</TableHead>
+                            <TableHead>{t('city')}</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {users?.map((user) => (
+                        {filteredUsers?.map((user) => (
                             <TableRow key={user.id}>
                                 <TableCell className="font-medium">{user.username}</TableCell>
                                 <TableCell>{user.email}</TableCell>
-                                <TableCell>{format(new Date(user.registrationDate), 'PP')}</TableCell>
-                                <TableCell>{user.isAdmin ? t('yes') : t('no')}</TableCell>
+                                <TableCell>{user.phone || 'N/A'}</TableCell>
+                                <TableCell>{user.city || 'N/A'}</TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
                 </Table>
-                 {users?.length === 0 && <p className="text-center text-muted-foreground p-8">{t('no_users_found')}</p>}
+                 {filteredUsers?.length === 0 && <p className="text-center text-muted-foreground p-8">{t('no_users_found')}</p>}
             </CardContent>
         </Card>
     )
 }
 
-function AllUserAttempts() {
-    const firestore = useFirestore();
+function PlaceholderTab({ title }: { title: string }) {
     const { t } = useTranslation();
-    const [allAttempts, setAllAttempts] = useState<(UserTestAttempt & { userEmail?: string })[]>([]);
-    const [loading, setLoading] = useState(true);
-
-    const usersCollection = useMemoFirebase(() => firestore ? collection(firestore, 'users') : null, [firestore]);
-    const { data: users, isLoading: usersLoading } = useCollection<UserProfile>(usersCollection);
-
-    useEffect(() => {
-        const fetchAllAttempts = async () => {
-            if (!firestore || !users) {
-              setLoading(false);
-              return;
-            }
-        
-            setLoading(true);
-            const allUserAttempts: (UserTestAttempt & { userEmail?: string })[] = [];
-        
-            for (const user of users) {
-              const attemptsRef = collection(firestore, 'users', user.id, 'testAttempts');
-              const attemptsSnapshot = await getDocs(attemptsRef);
-              attemptsSnapshot.forEach((doc) => {
-                allUserAttempts.push({ 
-                  id: doc.id,
-                  ...(doc.data() as UserTestAttempt),
-                  userEmail: user.email
-                });
-              });
-            }
-        
-            setAllAttempts(allUserAttempts.sort((a,b) => new Date(b.attemptDate).getTime() - new Date(a.attemptDate).getTime()));
-            setLoading(false);
-          };
-      
-          fetchAllAttempts();
-    }, [users, firestore]);
-
-    if(loading || usersLoading) return <p>Loading all user attempts...</p>
-    
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>{t('all_user_attempts')}</CardTitle>
-                <CardDescription>{t('all_user_attempts_desc')}</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>{t('user')}</TableHead>
-                            <TableHead>{t('test')}</TableHead>
-                            <TableHead>{t('date')}</TableHead>
-                            <TableHead className="text-right">{t('score')}</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {allAttempts.map((attempt) => (
-                            <TableRow key={attempt.id}>
-                                <TableCell>{attempt.userEmail}</TableCell>
-                                <TableCell className="font-medium">{attempt.testTitle ?? t('unknown_test')}</TableCell>
-                                <TableCell>{format(new Date(attempt.attemptDate), 'PPp')}</TableCell>
-                                <TableCell className="text-right">{attempt.score}</TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-                 {allAttempts.length === 0 && <p className="text-center text-muted-foreground p-8">{t('no_attempts_found')}</p>}
-            </CardContent>
-        </Card>
-    )
-
+        <div className="flex items-center justify-center h-64">
+            <p className="text-muted-foreground">{t(title as any)} - {t('coming_soon')}</p>
+        </div>
+    );
 }
 
 export default function AdminPage() {
     const { t } = useTranslation();
+
+    const adminTabs = [
+        { value: 'user-management', label: t('user_management'), icon: <Shield /> },
+        { value: 'topic-management', label: t('topic_management'), icon: <IconTopicManagement /> },
+        { value: 'study-material', label: t('study_material'), icon: <BookOpen /> },
+        { value: 'mcq-bank', label: t('mcq_bank'), icon: <IconMcqBank /> },
+        { value: 'question-bank', label: t('question_bank'), icon: <IconQuestionBank /> },
+        { value: 'reasoning-bank', label: t('reasoning_bank'), icon: <BrainCircuit /> },
+        { value: 'live-test', label: t('live_test'), icon: <Trophy /> },
+        { value: 'analytics', label: t('analytics'), icon: <BarChart /> },
+    ];
+
   return (
-    <div className="container mx-auto p-4 sm:p-6 md:p-8 space-y-8">
-        <div className="flex justify-between items-center mb-6">
+    <div className="container mx-auto p-4 sm:p-6 md:p-8 space-y-6">
+        <div>
             <h1 className="text-3xl font-bold">{t('admin_panel')}</h1>
-            <Button asChild>
-                <Link href="/admin/upload">
-                    <Upload className="mr-2 h-4 w-4" />
-                    {t('upload_mcqs')}
-                </Link>
-            </Button>
+            <p className="text-muted-foreground">{t('admin_panel_desc')}</p>
         </div>
-      <AllUsersList />
-      <AllUserAttempts />
+        
+        <Tabs defaultValue="user-management" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2 h-auto bg-transparent p-0">
+                {adminTabs.map(tab => (
+                     <TabsTrigger key={tab.value} value={tab.value} asChild>
+                         <Card className="cursor-pointer data-[state=active]:border-primary data-[state=active]:ring-2 data-[state=active]:ring-primary">
+                            <CardContent className="p-4 flex flex-col items-center justify-center gap-2">
+                                {tab.icon}
+                                <span className="text-sm font-medium">{tab.label}</span>
+                            </CardContent>
+                         </Card>
+                     </TabsTrigger>
+                ))}
+            </TabsList>
+            <TabsContent value="user-management" className="mt-6">
+                <UserManagementTab />
+            </TabsContent>
+            {adminTabs.slice(1).map(tab => (
+                 <TabsContent key={tab.value} value={tab.value} className="mt-6">
+                    <PlaceholderTab title={tab.label} />
+                </TabsContent>
+            ))}
+        </Tabs>
     </div>
   );
 }
