@@ -15,9 +15,10 @@ import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { cn } from '@/lib/utils';
+import { Badge } from './ui/badge';
 
 
-export function McqTest({ test }: { test: Test }) {
+export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Test, totalQuestions: number, answeredQuestions: number }) {
   const questions = test.questions || [];
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<(number | undefined)[]>(Array(questions.length).fill(undefined));
@@ -119,12 +120,22 @@ export function McqTest({ test }: { test: Test }) {
       <Card className="w-full max-w-2xl">
         <CardHeader>
           <CardTitle>{test.title}</CardTitle>
+           <CardDescription>
+             <Badge variant="outline">
+              முன்னேற்றம்: {answeredQuestions} / {totalQuestions} கேள்விகள் சரியாக பதிலளிக்கப்பட்டுள்ளன
+            </Badge>
+          </CardDescription>
         </CardHeader>
-        <CardContent>
-          <p>இந்தத் தேர்வுக்கு இன்னும் கேள்விகள் இல்லை.</p>
+        <CardContent className="text-center py-10">
+          <p className="text-xl font-semibold mb-2">வாழ்த்துக்கள்!</p>
+          <p className="text-muted-foreground">இந்த தலைப்பில் உள்ள அனைத்து கேள்விகளுக்கும் நீங்கள் சரியாக பதிலளித்துவிட்டீர்கள்.</p>
         </CardContent>
-        <CardFooter>
-          <Button asChild variant="outline">
+        <CardFooter className="flex-col sm:flex-row gap-4">
+           <Button onClick={handleTryAgain} className="w-full sm:w-auto">
+            <RotateCw className="mr-2 h-4 w-4" />
+            மீண்டும் முயற்சிக்கவும்
+          </Button>
+          <Button asChild variant="outline" className="w-full sm:w-auto">
             <Link href="/">முகப்புக்குத் திரும்பு</Link>
           </Button>
         </CardFooter>
@@ -152,6 +163,9 @@ export function McqTest({ test }: { test: Test }) {
             <Progress value={scorePercentage} className="h-4" />
             <p className="text-sm text-muted-foreground mt-2">{scorePercentage.toFixed(0)}% சரி</p>
           </div>
+           <Badge variant="outline">
+            மொத்த முன்னேற்றம்: {answeredQuestions + score} / {totalQuestions} கேள்விகள் சரியாக பதிலளிக்கப்பட்டுள்ளன
+          </Badge>
           <div className="space-y-4 max-h-60 overflow-y-auto p-4 border rounded-md">
             {questions.map((q, index) => (
               <div key={q.id} className="text-left p-2 rounded-md bg-muted/50">
@@ -182,7 +196,12 @@ export function McqTest({ test }: { test: Test }) {
     <Card className="w-full max-w-2xl">
       <CardHeader>
         <CardTitle>{test.title}</CardTitle>
-        <CardDescription>கேள்வி {currentQuestionIndex + 1} / {questions.length}</CardDescription>
+        <div className="flex justify-between items-center text-sm text-muted-foreground">
+          <span>கேள்வி {currentQuestionIndex + 1} / {questions.length}</span>
+           <Badge variant="outline">
+            முன்னேற்றம்: {answeredQuestions} / {totalQuestions}
+          </Badge>
+        </div>
         <Progress value={progress} className="mt-2" />
       </CardHeader>
       <CardContent className="py-6">

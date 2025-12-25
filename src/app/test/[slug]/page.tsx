@@ -23,6 +23,9 @@ export default function TestPage() {
   const firestore = useFirestore();
   const [test, setTest] = useState<Test | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [totalQuestionsInTopic, setTotalQuestionsInTopic] = useState(0);
+  const [answeredQuestionsCount, setAnsweredQuestionsCount] = useState(0);
+
 
   useEffect(() => {
     if (!firestore || !slug || !user) return;
@@ -44,6 +47,7 @@ export default function TestPage() {
       // Fetch all questions for the test
       const allQuestions: Question[] = [];
       if (testData.questionIds) {
+        setTotalQuestionsInTopic(testData.questionIds.length);
         // Use 'in' query to fetch multiple documents, respecting the 30-item limit per query
         const questionIdChunks: string[][] = [];
         for (let i = 0; i < testData.questionIds.length; i += 30) {
@@ -73,6 +77,7 @@ export default function TestPage() {
               attempt.correctlyAnsweredQuestionIds.forEach(id => correctlyAnsweredIds.add(id));
           }
       });
+      setAnsweredQuestionsCount(correctlyAnsweredIds.size);
       
       // Filter out questions that have been answered correctly
       let filteredQuestions = allQuestions.filter(q => !correctlyAnsweredIds.has(q.id));
@@ -100,5 +105,5 @@ export default function TestPage() {
     return notFound();
   }
 
-  return <McqTest test={test} />;
+  return <McqTest test={test} totalQuestions={totalQuestionsInTopic} answeredQuestions={answeredQuestionsCount} />;
 }
