@@ -84,7 +84,7 @@ export default function SignupPage() {
         username: values.username,
         email: values.email,
         registrationDate: new Date().toISOString(),
-        isAdmin: values.email === 'admin@thervumaiyam.in',
+        isAdmin: values.email === 'shan@thervumaiyam.in',
       };
 
       const userDocRef = doc(firestore, 'users', newUser.uid);
