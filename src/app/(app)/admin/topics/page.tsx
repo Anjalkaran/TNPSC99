@@ -3,17 +3,16 @@
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useState, useEffect } from 'react';
-import { useFirestore, useCollection, useMemoFirebase, useUser, useDoc } from '@/firebase';
-import { addDoc, collection, doc, serverTimestamp } from 'firebase/firestore';
-import { useRouter } from 'next/navigation';
-import type { Subject, UserProfile } from '@/lib/types';
+import { useState } from 'react';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { addDoc, collection } from 'firebase/firestore';
+import type { Subject } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/hooks/use-translation';
 
@@ -21,25 +20,36 @@ const createSlug = (name: string) => {
   return name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
 };
 
-const topicSchema = z.object({
-  name: z.string().min(3, { message: 'Topic name must be at least 3 characters.' }),
-  description: z.string().min(10, { message: 'Description must be at least 10 characters.' }),
+const classSubjectSchema = z.object({
+  className: z.string({ required_error: "Please select a class." }),
+  customClassName: z.string().optional(),
+  subjectName: z.string().min(3, { message: 'Subject name must be at least 3 characters.' }),
+  subjectDescription: z.string().min(10, { message: 'Description must be at least 10 characters.' }),
+}).refine(data => {
+    if (data.className === 'other') {
+        return !!data.customClassName && data.customClassName.length >= 1;
+    }
+    return true;
+}, {
+    message: 'Custom class name is required when "Other" is selected.',
+    path: ['customClassName'],
 });
 
-type TopicFormValues = z.infer<typeof topicSchema>;
 
-function ExistingTopicsList() {
+type ClassSubjectFormValues = z.infer<typeof classSubjectSchema>;
+
+function ExistingSubjectsList() {
     const { t } = useTranslation();
     const firestore = useFirestore();
     const subjectsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'subjects') : null, [firestore]);
     const { data: subjects, isLoading } = useCollection<Subject>(subjectsCollection);
 
-    if (isLoading) return <p>{t('loading_users')}...</p>
+    if (isLoading) return <p>{t('loading_subjects')}...</p>
     
     return (
         <Card>
             <CardHeader>
-                <CardTitle>{t('existing_topics')}</CardTitle>
+                <CardTitle>{t('existing_subjects')}</CardTitle>
             </CardHeader>
             <CardContent>
                 {subjects && subjects.length > 0 ? (
@@ -52,7 +62,7 @@ function ExistingTopicsList() {
                         ))}
                     </ul>
                 ) : (
-                    <p className="text-muted-foreground">{t('no_topics_yet')}</p>
+                    <p className="text-muted-foreground">{t('no_subjects_yet')}</p>
                 )}
             </CardContent>
         </Card>
@@ -64,98 +74,152 @@ export default function TopicManagementPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const router = useRouter();
-  const { user, isUserLoading } = useUser();
+  const [showCustomClass, setShowCustomClass] = useState(false);
 
-  const form = useForm<TopicFormValues>({
-    resolver: zodResolver(topicSchema),
-    defaultValues: { name: '', description: '' },
+  const form = useForm<ClassSubjectFormValues>({
+    resolver: zodResolver(classSubjectSchema),
+    defaultValues: { className: '', customClassName: '', subjectName: '', subjectDescription: '' },
   });
 
-  const onSubmit: SubmitHandler<TopicFormValues> = async (values) => {
+  const onSubmit: SubmitHandler<ClassSubjectFormValues> = async (values) => {
     if (!firestore) return;
     setIsSubmitting(true);
     
-    const subjectId = createSlug(values.name);
+    const finalClassName = values.className === 'other' ? values.customClassName! : values.className;
+    const subjectId = createSlug(values.subjectName);
+    const classId = createSlug(finalClassName);
 
     try {
+      // Create subject
       const subjectsCollection = collection(firestore, 'subjects');
       await addDoc(subjectsCollection, {
           id: subjectId,
-          ...values
+          name: values.subjectName,
+          description: values.subjectDescription
       });
 
+      // Optionally, create or update class if it doesn't exist
+      // This part depends on whether you have a separate `classes` collection to manage
+      // For now, we are creating subjects with class/subject IDs
+
       toast({
-        title: t('topic_created_success_title'),
-        description: t('topic_created_success_desc', { name: values.name }),
+        title: t('subject_created_success_title'),
+        description: t('subject_created_success_desc', { subjectName: values.subjectName, className: finalClassName }),
       });
       form.reset();
+      setShowCustomClass(false);
     } catch (error) {
-      console.error('Error creating topic:', error);
+      console.error('Error creating subject:', error);
       toast({
         variant: 'destructive',
-        title: t('topic_creation_error_title'),
-        description: t('topic_creation_error_desc'),
+        title: t('subject_creation_error_title'),
+        description: t('subject_creation_error_desc'),
       });
     } finally {
       setIsSubmitting(false);
     }
   };
   
-  if (isUserLoading) {
-    return <div className="container mx-auto p-4">Loading...</div>;
-  }
-
   return (
     <div className="container mx-auto p-4 sm:p-6 md:p-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold">{t('manage_topics')}</h1>
-        <p className="text-muted-foreground">{t('create_new_topic')}</p>
+        <p className="text-muted-foreground">{t('create_new_subject_for_class')}</p>
       </div>
 
       <div className="grid md:grid-cols-2 gap-8">
         <Card>
           <CardHeader>
-            <CardTitle>{t('create_new_topic')}</CardTitle>
+            <CardTitle>{t('create_new_subject')}</CardTitle>
           </CardHeader>
           <CardContent>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <FormField
                   control={form.control}
-                  name="name"
+                  name="className"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('topic_name')}</FormLabel>
+                      <FormLabel>{t('class_name')}</FormLabel>
+                      <Select 
+                        onValueChange={(value) => {
+                            field.onChange(value);
+                            setShowCustomClass(value === 'other');
+                        }} 
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder={t('select_a_class')} />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Class V">Class V</SelectItem>
+                          <SelectItem value="Class VI">Class VI</SelectItem>
+                          <SelectItem value="Class VII">Class VII</SelectItem>
+                          <SelectItem value="Class VIII">Class VIII</SelectItem>
+                          <SelectItem value="Class IX">Class IX</SelectItem>
+                          <SelectItem value="Class X">Class X</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                {showCustomClass && (
+                    <FormField
+                    control={form.control}
+                    name="customClassName"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>{t('custom_class_name')}</FormLabel>
+                        <FormControl>
+                            <Input placeholder={t('enter_custom_class_name')} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                )}
+
+                <FormField
+                  control={form.control}
+                  name="subjectName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('subject_name')}</FormLabel>
                       <FormControl>
-                        <Input placeholder={t('topic_name_placeholder')} {...field} />
+                        <Input placeholder={t('subject_name_placeholder')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+
                 <FormField
                   control={form.control}
-                  name="description"
+                  name="subjectDescription"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('topic_description')}</FormLabel>
+                      <FormLabel>{t('subject_description')}</FormLabel>
                       <FormControl>
-                        <Textarea placeholder={t('topic_description_placeholder')} {...field} />
+                        <Textarea placeholder={t('subject_description_placeholder')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
                 <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? t('creating_topic') : t('create_topic')}
+                  {isSubmitting ? t('creating_subject') : t('create_subject')}
                 </Button>
               </form>
             </Form>
           </CardContent>
         </Card>
 
-        <ExistingTopicsList />
+        <ExistingSubjectsList />
       </div>
     </div>
   );
