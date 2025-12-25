@@ -22,10 +22,24 @@ import {
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
 import { useAuth, useUser } from '@/firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import {
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
+} from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 const loginSchema = z.object({
   email: z.string().email('தவறான மின்னஞ்சல் முகவரி.'),
@@ -40,6 +54,7 @@ export default function LoginPage() {
   const { user, isUserLoading } = useUser();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -54,6 +69,31 @@ export default function LoginPage() {
       router.push('/');
     }
   }, [user, isUserLoading, router]);
+
+  const handlePasswordReset = async () => {
+    if (!resetEmail) {
+      toast({
+        variant: 'destructive',
+        title: 'மின்னஞ்சல் தேவை',
+        description: 'கடவுச்சொல்லை மீட்டமைக்க ஒரு மின்னஞ்சல் முகவரியை உள்ளிடவும்.',
+      });
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, resetEmail);
+      toast({
+        title: 'மீட்டமைப்பு மின்னஞ்சல் அனுப்பப்பட்டது',
+        description:
+          'உங்கள் கடவுச்சொல்லை மீட்டமைப்பதற்கான வழிமுறைகளுடன் ஒரு மின்னஞ்சல் அனுப்பப்பட்டுள்ளது.',
+      });
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'மின்னஞ்சல் அனுப்புவதில் பிழை',
+        description: 'கடவுச்சொல் மீட்டமைப்பு மின்னஞ்சலை அனுப்புவதில் ஒரு சிக்கல் ஏற்பட்டது. மின்னஞ்சல் சரியானதா என சரிபார்க்கவும்.',
+      });
+    }
+  };
 
   const onSubmit = async (values: LoginFormValues) => {
     setIsSubmitting(true);
@@ -118,7 +158,43 @@ export default function LoginPage() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>கடவுச்சொல்</FormLabel>
+                  <div className="flex items-center justify-between">
+                    <FormLabel>கடவுச்சொல்</FormLabel>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="link"
+                          className="p-0 h-auto text-xs"
+                        >
+                          கடவுச்சொல்லை மறந்துவிட்டீர்களா?
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            கடவுச்சொல்லை மீட்டமைக்கவும்
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            உங்கள் கடவுச்சொல்லை மீட்டமைக்க ஒரு இணைப்பைப் பெற
+                            உங்கள் மின்னஞ்சல் முகவரியை உள்ளிடவும்.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <Input
+                          type="email"
+                          placeholder="name@example.com"
+                          value={resetEmail}
+                          onChange={(e) => setResetEmail(e.target.value)}
+                        />
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>ரத்துசெய்</AlertDialogCancel>
+                          <AlertDialogAction onClick={handlePasswordReset}>
+                            இணைப்பை அனுப்பு
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                   <FormControl>
                     <Input type="password" placeholder="••••••••" {...field} />
                   </FormControl>
