@@ -21,7 +21,6 @@ export default function ClassPage() {
     if (!testsCollection || !classIdString) return null;
     return query(
       testsCollection, 
-      where('category', '==', 'class'),
       where('classId', '==', classIdString)
     );
   }, [testsCollection, classIdString]);
@@ -29,40 +28,41 @@ export default function ClassPage() {
   const { data: classTests, isLoading: testsLoading } = useCollection<Test>(classTestsQuery);
 
   const subjectsCollection = useMemoFirebase(() => collection(firestore, 'subjects'), [firestore]);
-  const tamilSubjectQuery = useMemoFirebase(() => {
-    if (!subjectsCollection || classIdString !== '6') return null;
-    return query(subjectsCollection, where('id', '==', 'tamil'));
-  }, [subjectsCollection, classIdString]);
+  const subjectsQuery = useMemoFirebase(() => {
+      if(!subjectsCollection) return null;
+      // For now, let's assume we can query all subjects and filter client-side.
+      // This could be optimized if we had a classId on subjects.
+      return query(subjectsCollection);
+  }, [subjectsCollection]);
 
-  const { data: tamilSubject, isLoading: subjectLoading } = useCollection<Subject>(tamilSubjectQuery);
+  const { data: allSubjects, isLoading: subjectsLoading } = useCollection<Subject>(subjectsQuery);
 
   const subjects = useMemo(() => {
-    if (classIdString === '6') {
-      const tamilTests = classTests?.filter(test => test.subjectId === 'tamil') || [];
-      if (tamilSubject && tamilSubject.length > 0) {
-        return [{ name: tamilSubject[0].name, tests: tamilTests, id: 'tamil' }];
-      }
-      return [];
-    }
-
-    if (!classTests) return [];
+    if (testsLoading || subjectsLoading) return []; // Wait for data to load
+    if (!classTests || !allSubjects) return [];
     
-    const subjectMap = new Map<string, { tests: Test[], id?: string }>();
+    const subjectMap = new Map<string, { name: string, tests: Test[], id: string }>();
+
     classTests.forEach(test => {
-      const subjectName = test.subjectId;
-      if (subjectName) {
-        if (!subjectMap.has(subjectName)) {
-          subjectMap.set(subjectName, { tests: [], id: test.subjectId });
+      if (test.subjectId) {
+        if (!subjectMap.has(test.subjectId)) {
+           const subjectInfo = allSubjects.find(s => s.id === test.subjectId);
+           subjectMap.set(test.subjectId, { 
+               name: subjectInfo?.name || test.subjectId, 
+               tests: [], 
+               id: test.subjectId 
+            });
         }
-        subjectMap.get(subjectName)!.tests.push(test);
+        subjectMap.get(test.subjectId)!.tests.push(test);
       }
     });
-    return Array.from(subjectMap.entries()).map(([name, data]) => ({ name: data.tests[0]?.title.split(' - ')[1] || name, ...data }));
 
-  }, [classTests, classIdString, tamilSubject]);
+    return Array.from(subjectMap.values());
+
+  }, [classTests, allSubjects, testsLoading, subjectsLoading]);
 
   const className = classIdString ? `வகுப்பு ${classIdString}` : "வகுப்பு";
-  const isLoading = testsLoading || subjectLoading;
+  const isLoading = testsLoading || subjectsLoading;
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
@@ -82,28 +82,12 @@ export default function ClassPage() {
               <CardTitle className="text-xl">{name}</CardTitle>
             </CardHeader>
             <CardContent className="flex-grow flex flex-col justify-between">
-                {tests.length > 0 ? (
-                    <>
-                        <p className="text-muted-foreground mb-4">{tests.length} {tests.length > 1 ? 'தேர்வுகள்' : 'தேர்வு'} உள்ளன.</p>
-                        <div className="space-y-2">
-                        {tests.map(test => (
-                            <Button asChild key={test.slug} variant="outline" className="w-full justify-start">
-                                <Link href={`/test/${test.slug}`}>
-                                {test.title} <ArrowRight className="ml-auto h-4 w-4" />
-                                </Link>
-                            </Button>
-                        ))}
-                        </div>
-                    </>
-                ) : (
-                    <>
-                        <p className="text-muted-foreground mb-4">இந்த பாடத்திற்கு தற்போது தேர்வுகள் எதுவும் இல்லை.</p>
-                        <Button asChild variant="outline" className="w-full justify-start" disabled>
-                             <span>தேர்வுகளைக் காண்க <ArrowRight className="ml-auto h-4 w-4" /></span>
-                        </Button>
-                    </>
-                )}
-
+                <p className="text-muted-foreground mb-4">{tests.length} {tests.length !== 1 ? 'தேர்வுகள்' : 'தேர்வு'} உள்ளன.</p>
+                <Button asChild variant="outline" className="w-full justify-start">
+                    <Link href={`/class/${classIdString}/${id}`}>
+                        தேர்வுகளைக் காண்க <ArrowRight className="ml-auto h-4 w-4" />
+                    </Link>
+                </Button>
             </CardContent>
           </Card>
           ))}
