@@ -78,7 +78,7 @@ export function AppSidebar() {
         <SidebarMenu>
           {sidebarLinks.map((link) => (
             <SidebarMenuItem key={link.href}>
-              <Link href={link.href} legacyBehavior passHref>
+              <Link href={link.href}>
                 <SidebarMenuButton
                   isActive={pathname === link.href}
                   tooltip={{ children: link.label }}
@@ -91,7 +91,7 @@ export function AppSidebar() {
           ))}
           {userProfile?.isAdmin && (
             <SidebarMenuItem>
-                 <Link href="/admin" legacyBehavior passHref>
+                 <Link href="/admin">
                     <SidebarMenuButton
                     isActive={pathname.startsWith('/admin')}
                     tooltip={{ children: 'Admin' }}
