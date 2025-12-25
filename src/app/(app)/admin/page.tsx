@@ -11,6 +11,46 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Upload } from 'lucide-react';
 
+function AllUsersList() {
+    const firestore = useFirestore();
+    const usersCollection = useMemoFirebase(() => firestore ? collection(firestore, 'users') : null, [firestore]);
+    const { data: users, isLoading: usersLoading } = useCollection<UserProfile>(usersCollection);
+
+    if (usersLoading) return <p>Loading users...</p>
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>அனைத்து பயனர்கள்</CardTitle>
+                <CardDescription>பயன்பாட்டில் பதிவுசெய்யப்பட்ட அனைத்து பயனர்களின் பட்டியல்.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>பயனர்பெயர்</TableHead>
+                            <TableHead>மின்னஞ்சல்</TableHead>
+                            <TableHead>பதிவு செய்த தேதி</TableHead>
+                            <TableHead>நிர்வாகி?</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {users?.map((user) => (
+                            <TableRow key={user.id}>
+                                <TableCell className="font-medium">{user.username}</TableCell>
+                                <TableCell>{user.email}</TableCell>
+                                <TableCell>{format(new Date(user.registrationDate), 'PP')}</TableCell>
+                                <TableCell>{user.isAdmin ? 'ஆம்' : 'இல்லை'}</TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+                 {users?.length === 0 && <p className="text-center text-muted-foreground p-8">No users found.</p>}
+            </CardContent>
+        </Card>
+    )
+}
+
 function AllUserAttempts() {
     const firestore = useFirestore();
     const [allAttempts, setAllAttempts] = useState<(UserTestAttempt & { userEmail?: string })[]>([]);
@@ -96,25 +136,20 @@ export default function AdminPage() {
   const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
 
   useEffect(() => {
-    // This effect should only handle redirection once the final state is known.
     if (!isUserLoading && !isProfileLoading) {
-      // If loading is complete and there's no user or the user is not an admin, redirect.
       if (!user || !userProfile?.isAdmin) {
         router.replace('/');
       }
     }
   }, [user, userProfile, isUserLoading, isProfileLoading, router]);
   
-  // While we wait for auth and profile data, show a clear loading state.
-  // This is the key change: we do not proceed until both are resolved.
   if (isUserLoading || isProfileLoading) {
-    return <div className="container mx-auto p-4">Verifying access...</div>;
+    return <div className="container mx-auto p-4">அணுகலைச் சரிபார்க்கிறது...</div>;
   }
   
-  // After loading, if the user is finally determined to be an admin, render the page.
   if (user && userProfile?.isAdmin) {
     return (
-      <div className="container mx-auto p-4 sm:p-6 md:p-8">
+      <div className="container mx-auto p-4 sm:p-6 md:p-8 space-y-8">
           <div className="flex justify-between items-center mb-6">
               <h1 className="text-3xl font-bold">நிர்வாக குழு</h1>
               <Button asChild>
@@ -124,12 +159,11 @@ export default function AdminPage() {
                   </Link>
               </Button>
           </div>
+        <AllUsersList />
         <AllUserAttempts />
       </div>
     );
   }
   
-  // If we're done loading but the user is not an admin, they are about to be redirected.
-  // This state is briefly visible while the useEffect for redirection kicks in.
-  return <div className="container mx-auto p-4">Redirecting...</div>;
+  return <div className="container mx-auto p-4">திருப்பி விடப்படுகிறது...</div>;
 }
