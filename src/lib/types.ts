@@ -58,4 +58,6 @@ export interface UserTestAttempt {
   score: number;
   answers: number[];
   testTitle?: string;
+  correctlyAnsweredQuestionIds?: string[];
+  incorrectlyAnsweredQuestionIds?: string[];
 }

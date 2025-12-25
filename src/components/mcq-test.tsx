@@ -20,7 +20,7 @@ import { cn } from '@/lib/utils';
 export function McqTest({ test }: { test: Test }) {
   const questions = test.questions || [];
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<number[]>(Array(questions.length).fill(-1));
+  const [answers, setAnswers] = useState<(number | undefined)[]>(Array(questions.length).fill(undefined));
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [score, setScore] = useState(0);
   const [isAnswered, setIsAnswered] = useState(false);
@@ -49,9 +49,15 @@ export function McqTest({ test }: { test: Test }) {
 
   const handleSubmit = async () => {
     let calculatedScore = 0;
+    const correctlyAnsweredQuestionIds: string[] = [];
+    const incorrectlyAnsweredQuestionIds: string[] = [];
+
     questions.forEach((q, index) => {
       if (q.correctAnswerIndex === answers[index]) {
         calculatedScore++;
+        correctlyAnsweredQuestionIds.push(q.id);
+      } else if (answers[index] !== undefined) {
+        incorrectlyAnsweredQuestionIds.push(q.id);
       }
     });
     setScore(calculatedScore);
@@ -65,7 +71,9 @@ export function McqTest({ test }: { test: Test }) {
           testTitle: test.title,
           attemptDate: new Date().toISOString(),
           score: calculatedScore,
-          answers: answers,
+          answers: answers.map(a => a ?? -1),
+          correctlyAnsweredQuestionIds,
+          incorrectlyAnsweredQuestionIds,
         };
         const attemptsCollectionRef = collection(firestore, `users/${auth.currentUser.uid}/testAttempts`);
         
@@ -98,10 +106,12 @@ export function McqTest({ test }: { test: Test }) {
 
   const handleTryAgain = () => {
     setCurrentQuestionIndex(0);
-    setAnswers(Array(questions.length).fill(-1));
+    setAnswers(Array(questions.length).fill(undefined));
     setIsSubmitted(false);
     setScore(0);
     setIsAnswered(false);
+     // Re-shuffle and re-fetch questions by navigating to the same page
+    window.location.reload();
   };
 
   if (questions.length === 0) {
@@ -149,7 +159,7 @@ export function McqTest({ test }: { test: Test }) {
                   {answers[index] === q.correctAnswerIndex ? <CheckCircle2 className="text-green-500"/> : <XCircle className="text-red-500"/>}
                   {q.text}
                 </p>
-                <p className="text-sm pl-8">உங்கள் பதில்: <span className={answers[index] === q.correctAnswerIndex ? 'text-green-600' : 'text-red-600'}>{answers[index] !== -1 ? q.answerOptions[answers[index]] : 'பதிலளிக்கப்படவில்லை'}</span></p>
+                <p className="text-sm pl-8">உங்கள் பதில்: <span className={answers[index] === q.correctAnswerIndex ? 'text-green-600' : 'text-red-600'}>{answers[index] !== undefined ? q.answerOptions[answers[index]!] : 'பதிலளிக்கப்படவில்லை'}</span></p>
                 <p className="text-sm pl-8">சரியான பதில்: <span className="text-green-600">{q.answerOptions[q.correctAnswerIndex]}</span></p>
               </div>
             ))}
@@ -217,12 +227,12 @@ export function McqTest({ test }: { test: Test }) {
           முந்தைய
         </Button>
         {currentQuestionIndex < questions.length - 1 ? (
-          <Button onClick={handleNext} disabled={!isAnswered}>
+          <Button onClick={handleNext} disabled={userAnswer === undefined}>
             அடுத்தது
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         ) : (
-          <Button onClick={handleSubmit} style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }} disabled={!isAnswered}>
+          <Button onClick={handleSubmit} style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }} disabled={userAnswer === undefined}>
             சமர்ப்பிக்கவும்
           </Button>
         )}
