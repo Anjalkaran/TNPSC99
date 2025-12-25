@@ -9,7 +9,6 @@ import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Upload } from 'lucide-react';
-import { withAdminAuth } from '@/components/withAdminAuth';
 import { useMemoFirebase } from '@/firebase/provider';
 
 function AllUsersList() {
@@ -125,7 +124,7 @@ function AllUserAttempts() {
 
 }
 
-function AdminPage() {
+export default function AdminPage() {
   return (
     <div className="container mx-auto p-4 sm:p-6 md:p-8 space-y-8">
         <div className="flex justify-between items-center mb-6">
@@ -142,5 +141,3 @@ function AdminPage() {
     </div>
   );
 }
-
-export default withAdminAuth(AdminPage);
