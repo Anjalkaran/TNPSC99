@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { Test, UserTestAttempt, Score } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -41,6 +41,13 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
   const firestore = useFirestore();
   const { toast } = useToast();
 
+  useEffect(() => {
+    // When the question index changes, check if an answer already exists for the new question.
+    // If it does, it means the user is reviewing a previously answered question.
+    setIsAnswered(answers[currentQuestionIndex] !== undefined);
+  }, [currentQuestionIndex, answers]);
+
+
   const handleAnswerChange = (value: string) => {
     if (isAnswered) return; // Don't allow changing answer after it's been revealed
     const newAnswers = [...answers];
@@ -50,12 +57,10 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
   };
 
   const handleNext = () => {
-    setIsAnswered(false);
     setCurrentQuestionIndex(currentQuestionIndex + 1);
   };
   
   const handlePrevious = () => {
-    setIsAnswered(true); // When going back, we should show the answered state
     setCurrentQuestionIndex(currentQuestionIndex - 1);
   };
 
