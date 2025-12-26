@@ -275,14 +275,16 @@ export default function TopicManagementPage() {
     const isCustomClass = values.className === 'other';
     const finalClassName = isCustomClass ? values.customClassName! : values.className;
     
-    // Standardize the class ID
     let classId: string;
-    const romanMap: { [key: string]: string } = { 'Class V': '5', 'Class VI': '6', 'Class VII': '7', 'Class VIII': '8', 'Class IX': '9', 'Class X': '10' };
     
     if (isCustomClass) {
         classId = createSlug(finalClassName);
     } else {
-        const classValue = romanMap[values.className];
+        const romanMap: { [key: string]: string } = {
+          'Class V': '5', 'Class VI': '6', 'Class VII': '7', 'Class VIII': '8', 'Class IX': '9', 'Class X': '10'
+        };
+        const classValue = romanMap[values.className as keyof typeof romanMap];
+        
         if (!classValue) {
              toast({
                 variant: 'destructive',
