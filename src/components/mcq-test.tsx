@@ -263,7 +263,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
             </div>
              <AlertDialog>
                 <AlertDialogTrigger asChild>
-                    <Button variant="link" className="text-destructive">வெளியேறு</Button>
+                   <Button variant="link" className="text-destructive">வெளியேறு</Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                     <AlertDialogHeader>
@@ -283,7 +283,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
       </CardHeader>
       <CardContent className="py-6">
         <p className="font-semibold text-lg mb-6">{currentQuestion.text}</p>
-        <RadioGroup value={answers[currentQuestionIndex]?.toString()} onValueChange={handleAnswerChange} disabled={isAnswered}>
+        <RadioGroup onValueChange={handleAnswerChange} disabled={isAnswered} value={userAnswer?.toString()}>
           <div className="space-y-4">
             {currentQuestion.answerOptions.map((option, index) => {
               const isCorrect = index === currentQuestion.correctAnswerIndex;
