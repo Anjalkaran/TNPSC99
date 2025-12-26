@@ -6,6 +6,7 @@ import { ArrowRight, BookText } from "lucide-react";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, query, orderBy } from "firebase/firestore";
 import type { Class } from "@/lib/types";
+import { useMemo } from "react";
 
 export default function ClassWiseTestsPage() {
   const firestore = useFirestore();
@@ -13,6 +14,16 @@ export default function ClassWiseTestsPage() {
   const classesQuery = useMemoFirebase(() => classesCollection && query(classesCollection, orderBy('id')), [classesCollection]);
 
   const { data: classes, isLoading } = useCollection<Class>(classesQuery);
+
+  const uniqueClasses = useMemo(() => {
+    if (!classes) return [];
+    const seen = new Set();
+    return classes.filter(cls => {
+      const duplicate = seen.has(cls.id);
+      seen.add(cls.id);
+      return !duplicate;
+    });
+  }, [classes]);
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
@@ -23,9 +34,9 @@ export default function ClassWiseTestsPage() {
       
       {isLoading && <p>Loading classes...</p>}
 
-      {!isLoading && classes && classes.length > 0 ? (
+      {!isLoading && uniqueClasses && uniqueClasses.length > 0 ? (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {classes.map((cls) => (
+          {uniqueClasses.map((cls) => (
             <Card key={cls.id} className="flex flex-col overflow-hidden hover:shadow-xl transition-shadow duration-300">
               <CardHeader className="flex-row items-center gap-4">
                 <BookText className="w-8 h-8 text-primary" />
