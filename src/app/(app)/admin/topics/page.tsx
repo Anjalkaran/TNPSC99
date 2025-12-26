@@ -194,10 +194,22 @@ export default function TopicManagementPage() {
     }
     
     // Create logic
-    const finalClassName = values.className === 'other' ? values.customClassName! : values.className;
-    const subjectId = createSlug(values.subjectName);
-    const classId = createSlug(finalClassName);
+    const isCustomClass = values.className === 'other';
+    const finalClassName = isCustomClass ? values.customClassName! : values.className;
+    
+    // Standardize the class ID
+    let classId: string;
+    if (isCustomClass) {
+        classId = createSlug(finalClassName);
+    } else {
+        // For predefined classes, use a consistent ID (e.g., '6' for 'Class VI')
+        const match = values.className.match(/\b(V|VI|VII|VIII|IX|X)\b/);
+        const romanMap: { [key: string]: string } = { V: '5', VI: '6', VII: '7', VIII: '8', IX: '9', X: '10' };
+        classId = match ? romanMap[match[0]] : createSlug(values.className);
+    }
+    const finalClassNameDisplay = isCustomClass ? finalClassName : values.className;
 
+    const subjectId = createSlug(values.subjectName);
 
     try {
       const subjectDocRef = doc(firestore, 'subjects', subjectId);
@@ -210,14 +222,14 @@ export default function TopicManagementPage() {
       const classDocRef = doc(firestore, 'classes', classId);
       await setDoc(classDocRef, {
         id: classId,
-        name: finalClassName,
-        description: `Content for ${finalClassName}`
-      }, { merge: true }); // Use merge: true to avoid overwriting existing classes
+        name: finalClassNameDisplay,
+        description: `Content for ${finalClassNameDisplay}`
+      }, { merge: true });
 
 
       toast({
         title: t('subject_created_success_title'),
-        description: t('subject_created_success_desc', { subjectName: values.subjectName, className: finalClassName }),
+        description: t('subject_created_success_desc', { subjectName: values.subjectName, className: finalClassNameDisplay }),
       });
       resetForm();
     } catch (error) {
@@ -347,3 +359,5 @@ export default function TopicManagementPage() {
     </div>
   );
 }
+
+    
