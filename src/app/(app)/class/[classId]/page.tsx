@@ -3,34 +3,26 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { useFirestore } from '@/firebase';
 import type { Test, Subject, Class } from '@/lib/types';
 import { useParams, useRouter } from 'next/navigation';
 import { useMemo, useState, useEffect } from 'react';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
-import { useToast } from '@/hooks/use-toast';
+import { ArrowRight } from 'lucide-react';
 
 export default function GenerateMcqPage() {
   const { classId } = useParams();
   const router = useRouter();
   const firestore = useFirestore();
-  const { toast } = useToast();
 
-  const [subjects, setSubjects] = useState<{ id: string; name: string }[]>([]);
-  const [selectedSubjectId, setSelectedSubjectId] = useState<string>('');
+  const [subjects, setSubjects] = useState<Subject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [className, setClassName] = useState('');
-  const [testSlug, setTestSlug] = useState<string | null>(null);
-  const [totalQuestions, setTotalQuestions] = useState<number | null>(null);
-  const [questionLimit, setQuestionLimit] = useState<number | string>('');
 
   const classIdString = useMemo(() => (Array.isArray(classId) ? classId[0] : classId), [classId]);
 
@@ -64,7 +56,7 @@ export default function GenerateMcqPage() {
                 const subjectsRef = collection(firestore, 'subjects');
                 const subjectsQuery = query(subjectsRef, where('__name__', 'in', subjectIds));
                 const subjectsSnapshot = await getDocs(subjectsQuery);
-                const subjectsData = subjectsSnapshot.docs.map(d => d.data() as Subject);
+                const subjectsData = subjectsSnapshot.docs.map(d => ({id: d.id, ...d.data() } as Subject));
                 setSubjects(subjectsData);
             }
         }
@@ -78,70 +70,13 @@ export default function GenerateMcqPage() {
     fetchClassAndSubjects();
   }, [firestore, classIdString]);
   
-  useEffect(() => {
-      const findTest = async () => {
-          if (!firestore || !classIdString || !selectedSubjectId) {
-              setTestSlug(null);
-              setTotalQuestions(null);
-              setQuestionLimit('');
-              return;
-          };
 
-          const testsRef = collection(firestore, 'tests');
-          const q = query(
-              testsRef, 
-              where('classId', '==', classIdString),
-              where('subjectId', '==', selectedSubjectId),
-              where('category', '==', 'class')
-          );
-          
-          const querySnapshot = await getDocs(q);
-          if (!querySnapshot.empty) {
-              const testData = querySnapshot.docs[0].data() as Test;
-              setTestSlug(testData.slug);
-              const questionsCount = testData.questionIds?.length || 0;
-              setTotalQuestions(questionsCount);
-              setQuestionLimit(questionsCount > 0 ? String(Math.min(questionsCount, 25)) : ''); // Default to 25 or total, whichever is smaller
-          } else {
-              setTestSlug(null);
-              setTotalQuestions(null);
-              setQuestionLimit('');
-          }
-      };
-
-      findTest();
-
-  }, [firestore, classIdString, selectedSubjectId]);
-
-  const handleStartExam = () => {
-    if (!testSlug) return;
-    const limit = Number(questionLimit);
-    if (isNaN(limit) || limit <= 0) {
-        toast({
-            variant: 'destructive',
-            title: "Invalid Number",
-            description: "Please enter a valid number of questions to attempt.",
-        });
-        return;
-    }
-    if (totalQuestions !== null && limit > totalQuestions) {
-         toast({
-            variant: 'destructive',
-            title: "Too Many Questions",
-            description: `You can only attempt up to ${totalQuestions} questions.`,
-        });
-        return;
-    }
-    
-    router.push(`/test/${testSlug}?limit=${limit}`);
-  };
-
-  const pageTitle = isLoading ? "Loading..." : `Start Test for ${className}`;
-  const pageDescription = "Select a subject from the dropdown to begin the test.";
+  const pageTitle = isLoading ? "Loading..." : `Subjects for ${className}`;
+  const pageDescription = "Select a subject from the list below to view available tests.";
 
   return (
     <div className="container mx-auto flex items-center justify-center min-h-[calc(100vh-200px)]">
-        <Card className="w-full max-w-md">
+        <Card className="w-full max-w-lg">
             <CardHeader>
                 <CardTitle>{pageTitle}</CardTitle>
                 <CardDescription>{pageDescription}</CardDescription>
@@ -150,46 +85,24 @@ export default function GenerateMcqPage() {
                 {isLoading ? (
                     <p>Loading subjects...</p>
                 ) : subjects.length > 0 ? (
-                    <div className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="subject-select">Subject</Label>
-                            <Select onValueChange={setSelectedSubjectId} value={selectedSubjectId}>
-                                <SelectTrigger id="subject-select">
-                                    <SelectValue placeholder="Select a subject..." />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {subjects.map(subject => (
-                                        <SelectItem key={subject.id} value={subject.id}>{subject.name}</SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        {selectedSubjectId && totalQuestions !== null && (
-                             <div className="space-y-2">
-                                <Label htmlFor="question-limit">Number of Questions to Attempt</Label>
-                                <Input 
-                                    id="question-limit"
-                                    type="number"
-                                    value={questionLimit}
-                                    onChange={(e) => setQuestionLimit(e.target.value)}
-                                    placeholder={`Up to ${totalQuestions} available`}
-                                    max={totalQuestions}
-                                    min="1"
-                                />
-                                {totalQuestions > 0 && <p className="text-sm text-muted-foreground">{totalQuestions} questions available in this topic.</p>}
-                            </div>
-                        )}
-                    </div>
+                    <Accordion type="single" collapsible className="w-full">
+                        {subjects.map(subject => (
+                            <AccordionItem value={subject.id} key={subject.id}>
+                                <AccordionTrigger className="text-lg">{subject.name}</AccordionTrigger>
+                                <AccordionContent>
+                                    <p className="text-muted-foreground mb-4">{subject.description}</p>
+                                    <Button asChild>
+                                        <Link href={`/class/${classIdString}/${subject.id}`}>
+                                            View Tests <ArrowRight className="ml-2 h-4 w-4" />
+                                        </Link>
+                                    </Button>
+                                </AccordionContent>
+                            </AccordionItem>
+                        ))}
+                    </Accordion>
                 ) : (
                     <p className="text-muted-foreground text-center">No subjects with available tests for this class.</p>
                 )}
-                 <Button 
-                    onClick={handleStartExam} 
-                    disabled={!selectedSubjectId || !testSlug || isLoading || !questionLimit}
-                    className="w-full"
-                 >
-                    Start Exam
-                </Button>
             </CardContent>
         </Card>
     </div>
