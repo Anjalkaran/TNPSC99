@@ -278,10 +278,21 @@ export default function TopicManagementPage() {
     // Standardize the class ID
     let classId: string;
     const romanMap: { [key: string]: string } = { 'Class V': '5', 'Class VI': '6', 'Class VII': '7', 'Class VIII': '8', 'Class IX': '9', 'Class X': '10' };
+    
     if (isCustomClass) {
         classId = createSlug(finalClassName);
     } else {
-        classId = romanMap[values.className] || createSlug(values.className);
+        const classValue = romanMap[values.className];
+        if (!classValue) {
+             toast({
+                variant: 'destructive',
+                title: 'Invalid Class',
+                description: 'A valid class was not selected.',
+            });
+            setIsSubmitting(false);
+            return;
+        }
+        classId = classValue;
     }
     const finalClassNameDisplay = isCustomClass ? finalClassName : values.className;
 
