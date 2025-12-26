@@ -52,6 +52,83 @@ const classSubjectSchema = z.object({
 
 type ClassSubjectFormValues = z.infer<typeof classSubjectSchema>;
 
+
+function ExistingClassesList() {
+    const { t } = useTranslation();
+    const firestore = useFirestore();
+    const { toast } = useToast();
+    const classesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'classes') : null, [firestore]);
+    const { data: classes, isLoading } = useCollection<Class>(classesCollection);
+
+    const handleDelete = async (classId: string) => {
+        if (!firestore) return;
+        const classDocRef = doc(firestore, 'classes', classId);
+        try {
+            await deleteDoc(classDocRef);
+            toast({
+                title: t('Class Deleted'),
+                description: t('The class has been successfully deleted.'),
+            });
+        } catch (error) {
+            console.error("Error deleting class: ", error);
+            toast({
+                variant: 'destructive',
+                title: t('Error Deleting Class'),
+                description: t('There was a problem deleting the class.'),
+            });
+        }
+    };
+
+    if (isLoading) return <p>{t('Loading classes...')}...</p>
+    
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>{t('Existing Classes')}</CardTitle>
+                 <CardDescription>{t('Manage or delete existing classes.')}</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {classes && classes.length > 0 ? (
+                     <ul className="space-y-2">
+                        {classes.map(cls => (
+                            <li key={cls.id} className="flex justify-between items-center p-2 border rounded-md">
+                                <div>
+                                    <p className="font-semibold">{cls.name}</p>
+                                    <p className="text-sm text-muted-foreground">{cls.description}</p>
+                                </div>
+                                <div className="flex gap-2">
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                                <Trash className="h-4 w-4" />
+                                                <span className="sr-only">{t('delete')}</span>
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>{t('confirm_deletion_title')}</AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    {t('This action will permanently delete the class \'{{className}}\' and may affect related tests.', { className: cls.name })}
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                                                <AlertDialogAction onClick={() => handleDelete(cls.id)}>{t('delete')}</AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p className="text-muted-foreground">{t('No classes found.')}</p>
+                )}
+            </CardContent>
+        </Card>
+    );
+}
+
 function ExistingSubjectsList({ onEdit }: { onEdit: (subject: Subject) => void }) {
     const { t } = useTranslation();
     const firestore = useFirestore();
@@ -85,6 +162,7 @@ function ExistingSubjectsList({ onEdit }: { onEdit: (subject: Subject) => void }
         <Card>
             <CardHeader>
                 <CardTitle>{t('existing_subjects')}</CardTitle>
+                 <CardDescription>{t('Manage or delete existing subjects.')}</CardDescription>
             </CardHeader>
             <CardContent>
                 {subjects && subjects.length > 0 ? (
@@ -199,13 +277,11 @@ export default function TopicManagementPage() {
     
     // Standardize the class ID
     let classId: string;
+    const romanMap: { [key: string]: string } = { 'Class V': '5', 'Class VI': '6', 'Class VII': '7', 'Class VIII': '8', 'Class IX': '9', 'Class X': '10' };
     if (isCustomClass) {
         classId = createSlug(finalClassName);
     } else {
-        // For predefined classes, use a consistent ID (e.g., '6' for 'Class VI')
-        const match = values.className.match(/\b(V|VI|VII|VIII|IX|X)\b/);
-        const romanMap: { [key: string]: string } = { V: '5', VI: '6', VII: '7', VIII: '8', IX: '9', X: '10' };
-        classId = match ? romanMap[match[0]] : createSlug(values.className);
+        classId = romanMap[values.className] || createSlug(values.className);
     }
     const finalClassNameDisplay = isCustomClass ? finalClassName : values.className;
 
@@ -251,8 +327,8 @@ export default function TopicManagementPage() {
         <p className="text-muted-foreground">{t('create_new_subject_for_class')}</p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8">
-        <Card>
+      <div className="grid md:grid-cols-3 gap-8">
+        <Card className="md:col-span-1">
           <CardHeader>
             <CardTitle>{editingSubject ? t('edit_subject') : t('create_new_subject')}</CardTitle>
           </CardHeader>
@@ -354,10 +430,11 @@ export default function TopicManagementPage() {
           </CardContent>
         </Card>
 
-        <ExistingSubjectsList onEdit={handleEdit} />
+        <div className="md:col-span-2 space-y-8">
+            <ExistingSubjectsList onEdit={handleEdit} />
+            <ExistingClassesList />
+        </div>
       </div>
     </div>
   );
 }
-
-    

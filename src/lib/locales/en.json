@@ -118,5 +118,15 @@
     "Loading tests...": "Loading tests...",
     "Edit Question Bank": "Edit Question Bank",
     "JSON View": "JSON View",
-    "Showing the questions for this test in JSON format.": "Showing the questions for this test in JSON format."
+    "Showing the questions for this test in JSON format.": "Showing the questions for this test in JSON format.",
+    "Existing Classes": "Existing Classes",
+    "Manage or delete existing classes.": "Manage or delete existing classes.",
+    "Loading classes...": "Loading classes...",
+    "No classes found.": "No classes found.",
+    "Class Deleted": "Class Deleted",
+    "The class has been successfully deleted.": "The class has been successfully deleted.",
+    "Error Deleting Class": "Error Deleting Class",
+    "There was a problem deleting the class.": "There was a problem deleting the class.",
+    "This action will permanently delete the class '{{className}}' and may affect related tests.": "This action will permanently delete the class '{{className}}' and may affect related tests.",
+    "Manage or delete existing subjects.": "Manage or delete existing subjects."
 }

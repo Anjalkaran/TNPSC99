@@ -118,5 +118,15 @@
     "Loading tests...": "தேர்வுகளை ஏற்றுகிறது...",
     "Edit Question Bank": "கேள்வி வங்கியைத் திருத்து",
     "JSON View": "JSON காட்சி",
-    "Showing the questions for this test in JSON format.": "இந்த தேர்வுக்கான கேள்விகளை JSON வடிவத்தில் காட்டுகிறது."
+    "Showing the questions for this test in JSON format.": "இந்த தேர்வுக்கான கேள்விகளை JSON வடிவத்தில் காட்டுகிறது.",
+    "Existing Classes": "இருக்கும் வகுப்புகள்",
+    "Manage or delete existing classes.": "இருக்கும் வகுப்புகளை நிர்வகிக்கவும் அல்லது நீக்கவும்.",
+    "Loading classes...": "வகுப்புகள் ஏற்றப்படுகின்றன...",
+    "No classes found.": "வகுப்புகள் எதுவும் இல்லை.",
+    "Class Deleted": "வகுப்பு நீக்கப்பட்டது",
+    "The class has been successfully deleted.": "வகுப்பு வெற்றிகரமாக நீக்கப்பட்டது.",
+    "Error Deleting Class": "வகுப்பை நீக்குவதில் பிழை",
+    "There was a problem deleting the class.": "வகுப்பை நீக்கும்போது ஒரு சிக்கல் ஏற்பட்டது.",
+    "This action will permanently delete the class '{{className}}' and may affect related tests.": "இந்த செயல்பாடு '{{className}}' என்ற வகுப்பை நிரந்தரமாக நீக்கும் மற்றும் தொடர்புடைய சோதனைகளை பாதிக்கலாம்.",
+    "Manage or delete existing subjects.": "இருக்கும் பாடங்களை நிர்வகிக்கவும் அல்லது நீக்கவும்."
 }
