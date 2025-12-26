@@ -18,6 +18,7 @@ export default function ClassWiseTestsPage() {
   const uniqueClasses = useMemo(() => {
     if (!classes) return [];
     const seen = new Set();
+    // Filter the classes array to only include classes with unique IDs.
     return classes.filter(cls => {
       if (!cls.id) return false;
       const duplicate = seen.has(cls.id);
