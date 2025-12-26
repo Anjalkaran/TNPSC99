@@ -283,7 +283,12 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
       </CardHeader>
       <CardContent className="py-6">
         <p className="font-semibold text-lg mb-6">{currentQuestion.text}</p>
-        <RadioGroup onValueChange={handleAnswerChange} disabled={isAnswered} value={userAnswer?.toString()}>
+        <RadioGroup
+            key={currentQuestionIndex}
+            onValueChange={handleAnswerChange}
+            disabled={isAnswered}
+            value={userAnswer?.toString()}
+        >
           <div className="space-y-4">
             {currentQuestion.answerOptions.map((option, index) => {
               const isCorrect = index === currentQuestion.correctAnswerIndex;
