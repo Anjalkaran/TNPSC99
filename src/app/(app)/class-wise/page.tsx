@@ -19,6 +19,7 @@ export default function ClassWiseTestsPage() {
     if (!classes) return [];
     const seen = new Set();
     return classes.filter(cls => {
+      if (!cls.id) return false;
       const duplicate = seen.has(cls.id);
       seen.add(cls.id);
       return !duplicate;

@@ -30,6 +30,7 @@ import {
 
 
 const createSlug = (name: string) => {
+  if (!name) return '';
   return name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
 };
 
@@ -197,16 +198,6 @@ export default function TopicManagementPage() {
     const subjectId = createSlug(values.subjectName);
     const classId = createSlug(finalClassName);
 
-    const classMapping: { [key: string]: string } = {
-        "Class V": "5",
-        "Class VI": "6",
-        "Class VII": "7",
-        "Class VIII": "8",
-        "Class IX": "9",
-        "Class X": "10",
-    };
-    const finalClassId = classMapping[finalClassName] || classId;
-
 
     try {
       const subjectDocRef = doc(firestore, 'subjects', subjectId);
@@ -214,14 +205,14 @@ export default function TopicManagementPage() {
           id: subjectId,
           name: values.subjectName,
           description: values.subjectDescription || ''
-      });
+      }, { merge: true });
 
-      const classDocRef = doc(firestore, 'classes', finalClassId);
+      const classDocRef = doc(firestore, 'classes', classId);
       await setDoc(classDocRef, {
-        id: finalClassId,
+        id: classId,
         name: finalClassName,
         description: `Content for ${finalClassName}`
-      }, { merge: true });
+      }, { merge: true }); // Use merge: true to avoid overwriting existing classes
 
 
       toast({
