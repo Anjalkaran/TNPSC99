@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useState } from 'react';
+import { useTranslation } from '@/hooks/use-translation';
 
 function TestStartControl({ test }: { test: Test }) {
   const [limit, setLimit] = useState<string>('');
@@ -23,7 +24,7 @@ function TestStartControl({ test }: { test: Test }) {
   const options = [10, 25, 50].filter(o => o < questionCount);
 
   return (
-    <div className="flex flex-col sm:flex-row gap-2">
+    <div className="flex flex-col sm:flex-row gap-2 w-full">
       <Select onValueChange={setLimit} value={limit}>
         <SelectTrigger className="w-full sm:w-[180px]">
           <SelectValue placeholder="Select Questions" />
@@ -47,6 +48,7 @@ function TestStartControl({ test }: { test: Test }) {
 function SubjectPage() {
   const { subjectId } = useParams();
   const firestore = useFirestore();
+  const { t } = useTranslation();
 
   const subjectRef = useMemoFirebase(() => {
     if (!firestore || !subjectId) return null;
@@ -97,7 +99,7 @@ function SubjectPage() {
                 <CardDescription>{test.description}</CardDescription>
               </CardHeader>
               <CardContent className="flex-grow">
-                <p className="text-sm text-muted-foreground">Total of {test.questionIds.length} questions</p>
+                <p className="text-sm text-muted-foreground">{t('total_of_questions', { count: test.questionIds.length})}</p>
               </CardContent>
               <CardFooter>
                 <TestStartControl test={test} />
@@ -119,6 +121,7 @@ function SubjectPage() {
 // Or we can combine them. Let's create a new file for the subject detail page.
 export default function SubjectWiseTestsPage() {
     const pathname = usePathname();
+    const { t } = useTranslation();
     // This will check if we are on the /subject-wise/[subjectId] page
     if(pathname.split('/').length > 2) {
         return <SubjectPage />;
@@ -156,7 +159,7 @@ export default function SubjectWiseTestsPage() {
                     <CardDescription>{test.description}</CardDescription>
                 </CardHeader>
                 <CardContent className="flex-grow">
-                    <p className="text-sm text-muted-foreground">Total of {test.questionIds.length} questions</p>
+                    <p className="text-sm text-muted-foreground">{t('total_of_questions', { count: test.questionIds.length})}</p>
                 </CardContent>
                 <CardFooter>
                     <TestStartControl test={test} />
