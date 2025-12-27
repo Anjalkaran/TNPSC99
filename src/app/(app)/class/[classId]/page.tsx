@@ -14,11 +14,13 @@ import { useParams, useRouter } from 'next/navigation';
 import { useMemo, useState, useEffect } from 'react';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { ArrowRight } from 'lucide-react';
+import { useTranslation } from '@/hooks/use-translation';
 
 export default function GenerateMcqPage() {
   const { classId } = useParams();
   const router = useRouter();
   const firestore = useFirestore();
+  const { t } = useTranslation();
 
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -71,8 +73,8 @@ export default function GenerateMcqPage() {
   }, [firestore, classIdString]);
   
 
-  const pageTitle = isLoading ? "Loading..." : `Subjects for ${className}`;
-  const pageDescription = "Select a subject from the list below to view available tests.";
+  const pageTitle = isLoading ? "Loading..." : t('subjects_for_class', { className });
+  const pageDescription = t('select_subject_to_view_tests');
 
   return (
     <div className="container mx-auto flex items-center justify-center min-h-[calc(100vh-200px)]">

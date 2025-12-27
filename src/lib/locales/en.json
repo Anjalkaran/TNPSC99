@@ -129,5 +129,7 @@
     "There was a problem deleting the class.": "There was a problem deleting the class.",
     "This action will permanently delete the class '{{className}}' and may affect related tests.": "This action will permanently delete the class '{{className}}' and may affect related tests.",
     "Manage or delete existing subjects.": "Manage or delete existing subjects.",
-    "total_of_questions": "Total of {{count}} questions"
+    "total_of_questions": "Total of {{count}} questions",
+    "subjects_for_class": "Subjects for {{className}}",
+    "select_subject_to_view_tests": "Select a subject from the list below to view available tests."
 }
