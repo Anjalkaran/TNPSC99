@@ -1,13 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import {
   writeBatch,
   collection,
   doc,
   runTransaction,
-  deleteDoc
+  deleteDoc,
+  query,
+  where,
+  getDocs,
 } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import {
@@ -186,16 +189,64 @@ export default function UploadMcqPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedClassId, setSelectedClassId] = useState<string>('');
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>('');
+  const [availableSubjects, setAvailableSubjects] = useState<Subject[]>([]);
+  const [subjectsLoading, setSubjectsLoading] = useState(false);
+
 
   const firestore = useFirestore();
   const { toast } = useToast();
   const { t } = useTranslation();
 
-  const subjectsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'subjects') : null, [firestore]);
-  const { data: subjects, isLoading: subjectsLoading } = useCollection<Subject>(subjectsCollection);
-
   const classesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'classes') : null, [firestore]);
   const { data: classes, isLoading: classesLoading } = useCollection<Class>(classesCollection);
+
+  useEffect(() => {
+    const fetchSubjectsForClass = async () => {
+        if (!firestore || !selectedClassId) {
+            setAvailableSubjects([]);
+            return;
+        }
+
+        setSubjectsLoading(true);
+        try {
+            // Find all tests that belong to the selected class
+            const testsRef = collection(firestore, 'tests');
+            const testsQuery = query(testsRef, where('classId', '==', selectedClassId));
+            const testSnapshots = await getDocs(testsQuery);
+            const testsForClass = testSnapshots.docs.map(d => d.data() as Test);
+            
+            if (testsForClass.length > 0) {
+                // Get the unique subject IDs from those tests
+                const subjectIds = [...new Set(testsForClass.map(t => t.subjectId).filter(Boolean) as string[])];
+
+                if(subjectIds.length > 0) {
+                    // Fetch the subject details for the relevant subjects
+                    const subjectsRef = collection(firestore, 'subjects');
+                    const subjectsQuery = query(subjectsRef, where('__name__', 'in', subjectIds));
+                    const subjectsSnapshot = await getDocs(subjectsQuery);
+                    const subjectsData = subjectsSnapshot.docs.map(d => ({id: d.id, ...d.data() } as Subject));
+                    setAvailableSubjects(subjectsData);
+                } else {
+                    setAvailableSubjects([]);
+                }
+            } else {
+                setAvailableSubjects([]);
+            }
+        } catch (error) {
+            console.error("Error fetching subjects for class: ", error);
+            setAvailableSubjects([]);
+        } finally {
+            setSubjectsLoading(false);
+        }
+    };
+    
+    fetchSubjectsForClass();
+  }, [firestore, selectedClassId]);
+
+  const handleClassChange = (classId: string) => {
+    setSelectedClassId(classId);
+    setSelectedSubjectId(''); // Reset subject when class changes
+  };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -258,7 +309,7 @@ export default function UploadMcqPage() {
       const questionsCollectionRef = collection(firestore, 'questions');
       const testsCollectionRef = collection(firestore, 'tests');
       
-      const selectedSubject = subjects?.find(s => s.id === selectedSubjectId);
+      const selectedSubject = availableSubjects.find(s => s.id === selectedSubjectId);
       const selectedClass = classes?.find(c => c.id === selectedClassId);
 
       const newQuestionIds: string[] = [];
@@ -339,7 +390,7 @@ export default function UploadMcqPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
                 <Label>{t('Select Class')}</Label>
-                <Select onValueChange={setSelectedClassId} value={selectedClassId} disabled={classesLoading}>
+                <Select onValueChange={handleClassChange} value={selectedClassId} disabled={classesLoading}>
                     <SelectTrigger>
                         <SelectValue placeholder={t('Select a class...')} />
                     </SelectTrigger>
@@ -350,12 +401,12 @@ export default function UploadMcqPage() {
             </div>
              <div className="space-y-2">
                 <Label>{t('Select Subject')}</Label>
-                <Select onValueChange={setSelectedSubjectId} value={selectedSubjectId} disabled={subjectsLoading}>
+                <Select onValueChange={setSelectedSubjectId} value={selectedSubjectId} disabled={subjectsLoading || !selectedClassId}>
                     <SelectTrigger>
                         <SelectValue placeholder={t('Select a subject...')} />
                     </SelectTrigger>
                     <SelectContent>
-                        {subjects?.map(sub => <SelectItem key={sub.id} value={sub.id}>{sub.name}</SelectItem>)}
+                        {availableSubjects?.map(sub => <SelectItem key={sub.id} value={sub.id}>{sub.name}</SelectItem>)}
                     </SelectContent>
                 </Select>
             </div>
