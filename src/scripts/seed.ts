@@ -59,7 +59,7 @@ const questions = [
     { id: 'q6', text: 'இந்தியாவின் முதல் பிரதமர் யார்?', subjectId: 'history', classId: '12', answerOptions: ['மகாத்மா காந்தி', 'ஜவஹர்லால் நேரு', 'சர்தார் படேல்', 'சுபாஷ் சந்திர போஸ்'], correctAnswerIndex: 1 },
     { id: 'q7', text: 'பிளாசி போர் எந்த ஆண்டு நடந்தது?', subjectId: 'history', classId: '12', answerOptions: ['1757', '1764', '1857', '1947'], correctAnswerIndex: 0 },
     { id: 'q8', text: 'உலகின் மிக நீளமான நதி எது?', subjectId: 'geography', classId: '10', answerOptions: ['அமேசான்', 'நைல்', 'யாங்சே', 'மிசிசிப்பி'], correctAnswerIndex: 1 },
-    { id: 'q9', text: 'உலகின் மிகப்பெரிய பாலைவனம் எது?', subjectId: 'geography', classId: '10', answerOptions: ['சஹாரா', 'அரேபியன்', 'கோபி', 'அண்டार्க்டிக் துருவம்'], correctAnswerIndex: 3 },
+    { id: 'q9', text: 'உலகின் மிகப்பெரிய பாலைவனம் எது?', subjectId: 'geography', classId: '10', answerOptions: ['சஹாரா', 'அரேபியன்', 'கோபி', 'அண்டார்க்டிக் துருவம்'], correctAnswerIndex: 3 },
     { id: 'q10', text: 'இந்திய அரசியலமைப்பின் எந்தப் பிரிவின் கீழ் "கல்வி உரிமை" ஒரு அடிப்படை உரிமையாகும்?', subjectId: 'polity', classId: '12', answerOptions: ['பிரிவு 21A', 'பிரிவு 19', 'பிரிவு 14', 'பிரிவு 32'], correctAnswerIndex: 0 },
     { id: 'q11', text: 'பின்வருவனவற்றில் எது தமிழ்நாட்டின் பாரம்பரிய நடன வடிவம்?', subjectId: 'history', classId: '12', answerOptions: ['கதக்', 'குச்சிப்புடி', 'பரதநாட்டியம்', 'மோகினியாட்டம்'], correctAnswerIndex: 2 },
     { id: 'q12', text: 'சங்க இலக்கியம் எந்த மொழியில் எழுதப்பட்டது?', subjectId: 'tamil', classId: '12', answerOptions: ['சமஸ்கிருதம்', 'பாளி', 'தமிழ்', 'தெலுங்கு'], correctAnswerIndex: 2 },
@@ -419,4 +419,5 @@ export async function seedDatabase() {
   }
 }
 
+    
     
