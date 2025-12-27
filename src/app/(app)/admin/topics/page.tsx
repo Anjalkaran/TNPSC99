@@ -277,24 +277,14 @@ export default function TopicManagementPage() {
     
     let classId: string;
     
+    const romanMap: { [key: string]: string } = {
+        'Class V': '5', 'Class VI': '6', 'Class VII': '7', 'Class VIII': '8', 'Class IX': '9', 'Class X': '10'
+    };
+
     if (isCustomClass) {
         classId = createSlug(finalClassName);
     } else {
-        const romanMap: { [key: string]: string } = {
-          'Class V': '5', 'Class VI': '6', 'Class VII': '7', 'Class VIII': '8', 'Class IX': '9', 'Class X': '10'
-        };
-        const classValue = romanMap[values.className as keyof typeof romanMap];
-        
-        if (!classValue) {
-             toast({
-                variant: 'destructive',
-                title: 'Invalid Class',
-                description: 'A valid class was not selected.',
-            });
-            setIsSubmitting(false);
-            return;
-        }
-        classId = classValue;
+        classId = romanMap[values.className as keyof typeof romanMap] || createSlug(values.className);
     }
     const finalClassNameDisplay = isCustomClass ? finalClassName : values.className;
 
