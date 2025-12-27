@@ -7,9 +7,11 @@ import type { UserTestAttempt, Test } from '@/lib/types';
 import { useMemo, useState, useEffect } from 'react';
 import { useTranslation } from '@/hooks/use-translation';
 import { Progress } from '@/components/ui/progress';
-import { BrainCircuit, Sparkles } from 'lucide-react';
-import { analyzePerformance, type PerformanceInput } from '@/ai/flows/performance-analysis-flow';
+import { BrainCircuit, Sparkles, Target, TrendingUp, BookCheck } from 'lucide-react';
+import { analyzePerformance, type PerformanceInput, type PerformanceOutput } from '@/ai/flows/performance-analysis-flow';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
 
 interface SubjectPerformance {
   subjectId: string;
@@ -22,13 +24,12 @@ interface SubjectPerformance {
 }
 
 function AiAnalysis({ performanceData }: { performanceData: SubjectPerformance[] }) {
-    const [analysis, setAnalysis] = useState('');
+    const [analysis, setAnalysis] = useState<PerformanceOutput | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         if(performanceData.length === 0) {
             setIsLoading(false);
-            setAnalysis('No performance data available to analyze. Take some tests to get started!');
             return;
         }
 
@@ -43,10 +44,10 @@ function AiAnalysis({ performanceData }: { performanceData: SubjectPerformance[]
                     })),
                 };
                 const result = await analyzePerformance(input);
-                setAnalysis(result.analysis);
+                setAnalysis(result);
             } catch (error) {
                 console.error("Error analyzing performance:", error);
-                setAnalysis("Sorry, we couldn't generate an analysis at this time.");
+                setAnalysis(null);
             } finally {
                 setIsLoading(false);
             }
@@ -54,6 +55,30 @@ function AiAnalysis({ performanceData }: { performanceData: SubjectPerformance[]
 
         runAnalysis();
     }, [performanceData]);
+    
+    if (isLoading) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <Sparkles className="h-5 w-5 text-primary" />
+                        AI Performance Analysis
+                    </CardTitle>
+                    <CardDescription>An AI-generated summary of your strengths and weaknesses.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <Skeleton className="h-8 w-3/4" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-2/3" />
+                </CardContent>
+            </Card>
+        );
+    }
+    
+    if (!analysis) {
+        return null;
+    }
 
     return (
         <Card>
@@ -62,18 +87,37 @@ function AiAnalysis({ performanceData }: { performanceData: SubjectPerformance[]
                     <Sparkles className="h-5 w-5 text-primary" />
                     AI Performance Analysis
                 </CardTitle>
-                <CardDescription>An AI-generated summary of your strengths and weaknesses.</CardDescription>
+                <CardDescription>{analysis.overallSummary}</CardDescription>
             </CardHeader>
-            <CardContent>
-                {isLoading ? (
-                    <div className="space-y-2">
-                        <Skeleton className="h-4 w-full" />
-                        <Skeleton className="h-4 w-full" />
-                        <Skeleton className="h-4 w-3/4" />
+            <CardContent className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                     <div>
+                        <h3 className="font-semibold flex items-center gap-2 mb-2"><TrendingUp className="text-green-500" /> Strengths</h3>
+                        {analysis.strengths.length > 0 ? (
+                            <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+                                {analysis.strengths.map(s => <li key={s}>{s}</li>)}
+                            </ul>
+                        ) : <p className="text-sm text-muted-foreground">No significant strengths identified yet. Keep practicing!</p>}
                     </div>
-                ) : (
-                    <div className="prose prose-sm dark:prose-invert" dangerouslySetInnerHTML={{ __html: analysis }} />
-                )}
+                     <div>
+                        <h3 className="font-semibold flex items-center gap-2 mb-2"><Target className="text-red-500" /> Areas for Improvement</h3>
+                         {analysis.weaknesses.length > 0 ? (
+                            <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+                                {analysis.weaknesses.map(w => <li key={w}>{w}</li>)}
+                            </ul>
+                        ) : <p className="text-sm text-muted-foreground">No specific weaknesses found. Great job!</p>}
+                    </div>
+                </div>
+                 <div className="space-y-4">
+                     <div>
+                        <h3 className="font-semibold flex items-center gap-2 mb-2"><BookCheck className="text-blue-500" /> Actionable Advice</h3>
+                         {analysis.recommendations.length > 0 ? (
+                            <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+                                {analysis.recommendations.map(r => <li key={r}>{r}</li>)}
+                            </ul>
+                        ) : <p className="text-sm text-muted-foreground">Keep up the consistent effort!</p>}
+                    </div>
+                </div>
             </CardContent>
         </Card>
     );
@@ -168,6 +212,11 @@ export default function PerformancePage() {
     calculatePerformance();
 
   }, [testAttempts, attemptsLoading, firestore]);
+  
+  const chartData = useMemo(() => performanceData.map(p => ({
+    name: p.subjectName,
+    proficiency: p.proficiency,
+  })).reverse(), [performanceData]); // Reverse for horizontal bar chart
 
   if (isUserLoading || isLoading) {
     return <div className="container mx-auto p-4">Loading performance data...</div>;
@@ -188,25 +237,35 @@ export default function PerformancePage() {
         <AiAnalysis performanceData={performanceData} />
 
         {performanceData.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {performanceData.map(subjectPerf => (
-                    <Card key={subjectPerf.subjectId}>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-lg font-semibold">{subjectPerf.subjectName}</CardTitle>
-                            <BrainCircuit className="h-5 w-5 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{subjectPerf.proficiency.toFixed(1)}%</div>
-                            <p className="text-xs text-muted-foreground">
-                            சராசரி மதிப்பெண்: {subjectPerf.averageScore.toFixed(1)} on {subjectPerf.totalAttempts} {subjectPerf.totalAttempts > 1 ? 'attempts' : 'attempt'}
-                            </p>
-                            <div className="mt-4">
-                                <Progress value={subjectPerf.proficiency} className="h-2" />
-                            </div>
-                        </CardContent>
-                    </Card>
-                ))}
-            </div>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Subject-wise Proficiency</CardTitle>
+                    <CardDescription>Your proficiency score in each subject you've attempted.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <ChartContainer config={{
+                        proficiency: {
+                            label: "Proficiency",
+                            color: "hsl(var(--primary))",
+                        },
+                    }} className="h-[500px] w-full">
+                        <BarChart data={chartData} layout="vertical" margin={{ left: 50 }}>
+                            <CartesianGrid horizontal={false} />
+                            <XAxis type="number" dataKey="proficiency" unit="%" />
+                            <YAxis type="category" dataKey="name" tickLine={false} axisLine={false} tickMargin={10} width={150} />
+                            <ChartTooltip 
+                                content={<ChartTooltipContent 
+                                    nameKey="proficiency"
+                                    labelKey="name"
+                                    indicator="dot"
+                                    formatter={(value) => `${Number(value).toFixed(1)}%`}
+                                />}
+                            />
+                            <Bar dataKey="proficiency" fill="var(--color-proficiency)" radius={4} />
+                        </BarChart>
+                    </ChartContainer>
+                </CardContent>
+            </Card>
         ) : (
             <div className="text-center py-16 border-2 border-dashed rounded-lg">
                 <h3 className="text-xl font-semibold">தரவு இல்லை</h3>
