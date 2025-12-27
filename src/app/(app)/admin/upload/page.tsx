@@ -54,7 +54,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Edit, Trash, View } from 'lucide-react';
+import { Edit, Trash, View, Download } from 'lucide-react';
 import Link from 'next/link';
 
 
@@ -95,6 +95,54 @@ function ExistingTestsList() {
     const { toast } = useToast();
     const testsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'tests') : null, [firestore]);
     const { data: tests, isLoading } = useCollection<Test>(testsCollection);
+
+    const handleDownload = async (test: Test) => {
+        if (!firestore) return;
+        
+        try {
+            const fetchedQuestions: Omit<Question, 'id' | 'classId' | 'subjectId'>[] = [];
+            if (test.questionIds && test.questionIds.length > 0) {
+              const questionIdsChunks = [];
+              for (let i = 0; i < test.questionIds.length; i += 30) {
+                questionIdsChunks.push(test.questionIds.slice(i, i + 30));
+              }
+
+              for (const chunk of questionIdsChunks) {
+                 const questionsQuery = query(collection(firestore, 'questions'), where('__name__', 'in', chunk));
+                 const questionsSnap = await getDocs(questionsQuery);
+                 questionsSnap.forEach(docSnap => {
+                    const { id, classId, subjectId, ...questionData } = docSnap.data() as Question;
+                    fetchedQuestions.push(questionData);
+                 });
+              }
+            }
+
+            const jsonString = JSON.stringify(fetchedQuestions, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${test.slug}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            toast({
+                title: "Download Started",
+                description: `Downloading ${test.title} questions.`,
+            });
+
+        } catch (error) {
+            console.error("Error downloading test data:", error);
+            toast({
+                variant: 'destructive',
+                title: "Download Failed",
+                description: "There was a problem downloading the question bank.",
+            });
+        }
+    };
+
 
     const handleDelete = async (testId: string) => {
         if (!firestore) return;
@@ -138,24 +186,25 @@ function ExistingTestsList() {
                             <TableRow key={test.id}>
                                 <TableCell className="font-medium">{test.title}</TableCell>
                                 <TableCell>{test.questionIds.length}</TableCell>
-                                <TableCell className="text-right space-x-2">
-                                     <Button asChild variant="outline" size="sm">
+                                <TableCell className="text-right space-x-1">
+                                    <Button variant="outline" size="icon" onClick={() => handleDownload(test)}>
+                                        <Download className="h-4 w-4" />
+                                        <span className="sr-only">Download</span>
+                                    </Button>
+                                     <Button asChild variant="outline" size="icon">
                                         <Link href={`/admin/upload/${test.slug}/view`}>
-                                            <View className="mr-2 h-4 w-4" />
-                                            {t('View')}
+                                            <View className="h-4 w-4" />
                                         </Link>
                                     </Button>
-                                    <Button asChild variant="outline" size="sm">
+                                    <Button asChild variant="outline" size="icon">
                                         <Link href={`/admin/upload/${test.slug}/edit`}>
-                                            <Edit className="mr-2 h-4 w-4" />
-                                            {t('edit')}
+                                            <Edit className="h-4 w-4" />
                                         </Link>
                                     </Button>
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
-                                            <Button variant="destructive" size="sm">
-                                                <Trash className="mr-2 h-4 w-4" />
-                                                {t('delete')}
+                                            <Button variant="destructive" size="icon">
+                                                <Trash className="h-4 w-4" />
                                             </Button>
                                         </AlertDialogTrigger>
                                         <AlertDialogContent>
