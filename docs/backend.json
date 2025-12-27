@@ -65,6 +65,10 @@
         "description": {
           "type": "string",
           "description": "A brief description of the subject."
+        },
+        "description_ta": {
+          "type": "string",
+          "description": "A brief description of the subject in Tamil."
         }
       },
       "required": [

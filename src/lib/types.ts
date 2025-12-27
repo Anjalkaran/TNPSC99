@@ -33,6 +33,7 @@ export interface Subject {
   name: string;
   name_ta?: string;
   description: string;
+  description_ta?: string;
 }
 
 export interface Class {

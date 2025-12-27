@@ -94,10 +94,12 @@ export default function GenerateMcqPage() {
                                   {language === 'ta' && subject.name_ta ? subject.name_ta : subject.name}
                                 </AccordionTrigger>
                                 <AccordionContent>
-                                    <p className="text-muted-foreground mb-4">{subject.description}</p>
+                                    <p className="text-muted-foreground mb-4">
+                                        {language === 'ta' && subject.description_ta ? subject.description_ta : subject.description}
+                                    </p>
                                     <Button asChild>
                                         <Link href={`/class/${classIdString}/${subject.id}`}>
-                                            View Tests <ArrowRight className="ml-2 h-4 w-4" />
+                                            {t('view_tests')} <ArrowRight className="ml-2 h-4 w-4" />
                                         </Link>
                                     </Button>
                                 </AccordionContent>
