@@ -1,8 +1,8 @@
 'use client';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy } from 'firebase/firestore';
-import { useMemo } from 'react';
-import type { Score } from '@/lib/types';
+import { collection } from 'firebase/firestore';
+import { useMemo, useState } from 'react';
+import type { Score, Test, Class, Subject } from '@/lib/types';
 import {
   Card,
   CardContent,
@@ -18,9 +18,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Trophy } from 'lucide-react';
 import { useTranslation } from '@/hooks/use-translation';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface LeaderboardEntry {
   userId: string;
@@ -32,22 +34,48 @@ export default function LeaderboardPage() {
   const firestore = useFirestore();
   const { t } = useTranslation();
 
-  const scoresCollection = useMemoFirebase(
-    () => (firestore ? collection(firestore, 'scores') : null),
-    [firestore]
-  );
+  const [filterType, setFilterType] = useState<'overall' | 'class' | 'subject'>('overall');
+  const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
+
+  // Fetch all necessary data
+  const scoresCollection = useMemoFirebase(() => firestore ? collection(firestore, 'scores') : null, [firestore]);
+  const testsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'tests') : null, [firestore]);
+  const classesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'classes') : null, [firestore]);
+  const subjectsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'subjects') : null, [firestore]);
   
-  // We fetch all scores and then aggregate them on the client.
-  const { data: scores, isLoading } = useCollection<Score>(scoresCollection);
+  const { data: scores, isLoading: scoresLoading } = useCollection<Score>(scoresCollection);
+  const { data: tests, isLoading: testsLoading } = useCollection<Test>(testsCollection);
+  const { data: classes, isLoading: classesLoading } = useCollection<Class>(classesCollection);
+  const { data: subjects, isLoading: subjectsLoading } = useCollection<Subject>(subjectsCollection);
+
+  const testsMap = useMemo(() => {
+    if (!tests) return new Map();
+    return new Map(tests.map(test => [test.id, test]));
+  }, [tests]);
 
   const leaderboardData = useMemo(() => {
     if (!scores) {
       return [];
     }
 
+    let filteredScores = scores;
+
+    if (filterType === 'class' && selectedClassId) {
+        filteredScores = scores.filter(score => {
+            const test = testsMap.get(score.testId);
+            return test && test.classId === selectedClassId;
+        });
+    } else if (filterType === 'subject' && selectedSubjectId) {
+        filteredScores = scores.filter(score => {
+            const test = testsMap.get(score.testId);
+            return test && test.subjectId === selectedSubjectId;
+        });
+    }
+
     const userScores = new Map<string, LeaderboardEntry>();
 
-    scores.forEach((score) => {
+    filteredScores.forEach((score) => {
       const existingEntry = userScores.get(score.userId);
       if (existingEntry) {
         existingEntry.totalScore += score.score;
@@ -63,19 +91,70 @@ export default function LeaderboardPage() {
     return Array.from(userScores.values()).sort(
       (a, b) => b.totalScore - a.totalScore
     );
-  }, [scores]);
+  }, [scores, filterType, selectedClassId, selectedSubjectId, testsMap]);
+
+  const isLoading = scoresLoading || testsLoading || classesLoading || subjectsLoading;
+  
+  const handleTabChange = (value: string) => {
+    setFilterType(value as 'overall' | 'class' | 'subject');
+    setSelectedClassId(null);
+    setSelectedSubjectId(null);
+  }
+
+  const getFilterDescription = () => {
+    if (filterType === 'class' && selectedClassId) {
+      const className = classes?.find(c => c.id === selectedClassId)?.name;
+      return `Showing top performers for ${className}`;
+    }
+    if (filterType === 'subject' && selectedSubjectId) {
+        const subjectName = subjects?.find(s => s.id === selectedSubjectId)?.name;
+        return `Showing top performers for ${subjectName}`;
+    }
+    return "சிறப்பாக செயல்படும் பயனர்களைக் காண்க.";
+  }
 
   return (
     <div className="container mx-auto p-4 sm:p-6 md:p-8">
       <Card>
         <CardHeader>
-          <CardTitle className="text-3xl font-bold flex items-center gap-2">
-            <Trophy className="text-yellow-500" />
-            {t('leaderboard')}
-          </CardTitle>
-          <CardDescription>
-            சிறப்பாக செயல்படும் பயனர்களைக் காண்க.
-          </CardDescription>
+          <div className='flex justify-between items-start'>
+            <div>
+                <CardTitle className="text-3xl font-bold flex items-center gap-2">
+                    <Trophy className="text-yellow-500" />
+                    {t('leaderboard')}
+                </CardTitle>
+                <CardDescription className="mt-2">
+                    {getFilterDescription()}
+                </CardDescription>
+            </div>
+          </div>
+           <Tabs value={filterType} onValueChange={handleTabChange} className="w-full pt-4">
+                <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="overall">Overall</TabsTrigger>
+                    <TabsTrigger value="class">Class-wise</TabsTrigger>
+                    <TabsTrigger value="subject">Subject-wise</TabsTrigger>
+                </TabsList>
+                <TabsContent value="class" className="mt-4">
+                    <Select onValueChange={setSelectedClassId} value={selectedClassId || ''} disabled={classesLoading}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select a class..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {classes?.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                </TabsContent>
+                <TabsContent value="subject" className="mt-4">
+                     <Select onValueChange={setSelectedSubjectId} value={selectedSubjectId || ''} disabled={subjectsLoading}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select a subject..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {subjects?.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                </TabsContent>
+            </Tabs>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -113,8 +192,8 @@ export default function LeaderboardPage() {
               </TableBody>
             </Table>
           ) : (
-            <p className="text-center text-muted-foreground p-8">
-              முன்னிலை வகிப்பவர்கள் தரவு இன்னும் இல்லை.
+             <p className="text-center text-muted-foreground p-8">
+              No data for this filter.
             </p>
           )}
         </CardContent>
