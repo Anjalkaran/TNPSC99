@@ -43,6 +43,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Edit, Trash, View } from 'lucide-react';
 import Link from 'next/link';
 
@@ -112,16 +120,22 @@ function ExistingTestsList() {
                 <CardTitle>{t('Existing Question Banks')}</CardTitle>
                  <CardDescription>{t('View, edit, or delete your existing question banks.')}</CardDescription>
             </CardHeader>
-            <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <CardContent>
                 {tests && tests.length > 0 ? (
-                     <>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Test Title</TableHead>
+                                <TableHead>No. of Questions</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
                         {tests.map(test => (
-                            <Card key={test.id}>
-                                <CardHeader>
-                                    <CardTitle className="text-lg">{test.title}</CardTitle>
-                                    <CardDescription>{test.questionIds.length} {t('questions')}</CardDescription>
-                                </CardHeader>
-                                <CardFooter className="flex gap-2">
+                            <TableRow key={test.id}>
+                                <TableCell className="font-medium">{test.title}</TableCell>
+                                <TableCell>{test.questionIds.length}</TableCell>
+                                <TableCell className="text-right space-x-2">
                                      <Button asChild variant="outline" size="sm">
                                         <Link href={`/admin/upload/${test.slug}/view`}>
                                             <View className="mr-2 h-4 w-4" />
@@ -154,12 +168,13 @@ function ExistingTestsList() {
                                             </AlertDialogFooter>
                                         </AlertDialogContent>
                                     </AlertDialog>
-                                </CardFooter>
-                            </Card>
+                                </TableCell>
+                            </TableRow>
                         ))}
-                    </>
+                        </TableBody>
+                    </Table>
                 ) : (
-                    <p className="text-muted-foreground col-span-full">{t('No question banks created yet.')}</p>
+                    <p className="text-muted-foreground text-center p-8">{t('No question banks created yet.')}</p>
                 )}
             </CardContent>
         </Card>
