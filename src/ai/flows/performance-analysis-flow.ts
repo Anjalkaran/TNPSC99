@@ -11,7 +11,7 @@ import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import {marked} from 'marked';
 
-export const PerformanceInputSchema = z.object({
+const PerformanceInputSchema = z.object({
   subjects: z.array(
     z.object({
       name: z.string().describe('The name of the subject.'),
@@ -25,7 +25,7 @@ export const PerformanceInputSchema = z.object({
 export type PerformanceInput = z.infer<typeof PerformanceInputSchema>;
 
 
-export const PerformanceOutputSchema = z.object({
+const PerformanceOutputSchema = z.object({
   analysis: z.string().describe('A detailed analysis of the user\'s performance in markdown format. Identify strengths (high proficiency) and weaknesses (low proficiency). Provide actionable advice on which 2-3 subjects to focus on for improvement. Keep it concise and encouraging.'),
 });
 export type PerformanceOutput = z.infer<typeof PerformanceOutputSchema>;
