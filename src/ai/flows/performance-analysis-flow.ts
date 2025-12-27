@@ -21,6 +21,7 @@ const PerformanceInputSchema = z.object({
       attempts: z.number().describe('The number of tests the user has attempted in this subject.'),
     })
   ),
+  language: z.enum(['en', 'ta']).describe('The language for the analysis output.'),
 });
 export type PerformanceInput = z.infer<typeof PerformanceInputSchema>;
 
@@ -41,6 +42,8 @@ const analysisPrompt = ai.definePrompt(
     prompt: `
       You are a helpful and encouraging academic advisor for a user preparing for the TNPSC exams.
       Your task is to analyze the user's performance based on their test scores across various subjects and provide a structured analysis.
+      
+      **IMPORTANT**: Generate the entire output (strengths, weaknesses, recommendations, and overallSummary) in the language code provided: '{{language}}'.
 
       Here is the user's performance data:
       {{#each subjects}}

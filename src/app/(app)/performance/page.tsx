@@ -24,6 +24,7 @@ interface SubjectPerformance {
 }
 
 function AiAnalysis({ performanceData }: { performanceData: SubjectPerformance[] }) {
+    const { t, language } = useTranslation();
     const [analysis, setAnalysis] = useState<PerformanceOutput | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -42,6 +43,7 @@ function AiAnalysis({ performanceData }: { performanceData: SubjectPerformance[]
                         proficiency: p.proficiency,
                         attempts: p.totalAttempts,
                     })),
+                    language: language,
                 };
                 const result = await analyzePerformance(input);
                 setAnalysis(result);
@@ -54,7 +56,7 @@ function AiAnalysis({ performanceData }: { performanceData: SubjectPerformance[]
         };
 
         runAnalysis();
-    }, [performanceData]);
+    }, [performanceData, language]);
     
     if (isLoading) {
         return (
@@ -62,9 +64,9 @@ function AiAnalysis({ performanceData }: { performanceData: SubjectPerformance[]
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                         <Sparkles className="h-5 w-5 text-primary" />
-                        AI Performance Analysis
+                        {t('ai_performance_analysis')}
                     </CardTitle>
-                    <CardDescription>An AI-generated summary of your strengths and weaknesses.</CardDescription>
+                    <CardDescription>{t('ai_performance_analysis_desc')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <Skeleton className="h-8 w-3/4" />
@@ -85,37 +87,37 @@ function AiAnalysis({ performanceData }: { performanceData: SubjectPerformance[]
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <Sparkles className="h-5 w-5 text-primary" />
-                    AI Performance Analysis
+                    {t('ai_performance_analysis')}
                 </CardTitle>
                 <CardDescription>{analysis.overallSummary}</CardDescription>
             </CardHeader>
             <CardContent className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                      <div>
-                        <h3 className="font-semibold flex items-center gap-2 mb-2"><TrendingUp className="text-green-500" /> Strengths</h3>
+                        <h3 className="font-semibold flex items-center gap-2 mb-2"><TrendingUp className="text-green-500" /> {t('strengths')}</h3>
                         {analysis.strengths.length > 0 ? (
                             <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
                                 {analysis.strengths.map(s => <li key={s}>{s}</li>)}
                             </ul>
-                        ) : <p className="text-sm text-muted-foreground">No significant strengths identified yet. Keep practicing!</p>}
+                        ) : <p className="text-sm text-muted-foreground">{t('no_strengths_yet')}</p>}
                     </div>
                      <div>
-                        <h3 className="font-semibold flex items-center gap-2 mb-2"><Target className="text-red-500" /> Areas for Improvement</h3>
+                        <h3 className="font-semibold flex items-center gap-2 mb-2"><Target className="text-red-500" /> {t('areas_for_improvement')}</h3>
                          {analysis.weaknesses.length > 0 ? (
                             <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
                                 {analysis.weaknesses.map(w => <li key={w}>{w}</li>)}
                             </ul>
-                        ) : <p className="text-sm text-muted-foreground">No specific weaknesses found. Great job!</p>}
+                        ) : <p className="text-sm text-muted-foreground">{t('no_weaknesses_found')}</p>}
                     </div>
                 </div>
                  <div className="space-y-4">
                      <div>
-                        <h3 className="font-semibold flex items-center gap-2 mb-2"><BookCheck className="text-blue-500" /> Actionable Advice</h3>
+                        <h3 className="font-semibold flex items-center gap-2 mb-2"><BookCheck className="text-blue-500" /> {t('actionable_advice')}</h3>
                          {analysis.recommendations.length > 0 ? (
                             <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
                                 {analysis.recommendations.map(r => <li key={r}>{r}</li>)}
                             </ul>
-                        ) : <p className="text-sm text-muted-foreground">Keep up the consistent effort!</p>}
+                        ) : <p className="text-sm text-muted-foreground">{t('keep_up_effort')}</p>}
                     </div>
                 </div>
             </CardContent>
@@ -219,11 +221,11 @@ export default function PerformancePage() {
   })).reverse(), [performanceData]); // Reverse for horizontal bar chart
 
   if (isUserLoading || isLoading) {
-    return <div className="container mx-auto p-4">Loading performance data...</div>;
+    return <div className="container mx-auto p-4">{t('loading_performance_data')}</div>;
   }
 
   if (!user) {
-    return <div className="container mx-auto p-4">Please log in to view your performance.</div>;
+    return <div className="container mx-auto p-4">{t('login_to_view_performance')}</div>;
   }
 
 
@@ -231,7 +233,7 @@ export default function PerformancePage() {
     <div className="container mx-auto p-4 sm:p-6 md:p-8 space-y-8">
         <div className="mb-8">
             <h1 className="text-3xl md:text-4xl font-bold">{t('performance')}</h1>
-            <p className="text-muted-foreground mt-2">உங்கள் பாடம் வாரியான செயல்திறனைக் கண்காணித்து, உங்கள் பலம் மற்றும் பலவீனங்களைக் கண்டறியவும்.</p>
+            <p className="text-muted-foreground mt-2">{t('performance_desc')}</p>
         </div>
         
         <AiAnalysis performanceData={performanceData} />
@@ -239,13 +241,13 @@ export default function PerformancePage() {
         {performanceData.length > 0 ? (
             <Card>
                 <CardHeader>
-                    <CardTitle>Subject-wise Proficiency</CardTitle>
-                    <CardDescription>Your proficiency score in each subject you've attempted.</CardDescription>
+                    <CardTitle>{t('subject_wise_proficiency')}</CardTitle>
+                    <CardDescription>{t('subject_wise_proficiency_desc')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <ChartContainer config={{
                         proficiency: {
-                            label: "Proficiency",
+                            label: t('proficiency'),
                             color: "hsl(var(--primary))",
                         },
                     }} className="h-[500px] w-full">
@@ -268,8 +270,8 @@ export default function PerformancePage() {
             </Card>
         ) : (
             <div className="text-center py-16 border-2 border-dashed rounded-lg">
-                <h3 className="text-xl font-semibold">தரவு இல்லை</h3>
-                <p className="text-muted-foreground mt-2">உங்கள் செயல்திறன் பகுப்பாய்வைக் காண சில தேர்வுகளை எடுக்கத் தொடங்குங்கள்.</p>
+                <h3 className="text-xl font-semibold">{t('no_performance_data_title')}</h3>
+                <p className="text-muted-foreground mt-2">{t('no_performance_data_desc')}</p>
             </div>
         )}
     </div>

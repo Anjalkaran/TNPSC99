@@ -131,5 +131,21 @@
     "Manage or delete existing subjects.": "Manage or delete existing subjects.",
     "total_of_questions": "Total of {{count}} questions",
     "subjects_for_class": "Subjects for {{className}}",
-    "select_subject_to_view_tests": "Select a subject from the list below to view available tests."
+    "select_subject_to_view_tests": "Select a subject from the list below to view available tests.",
+    "performance_desc": "Track your subject-wise performance and identify your strengths and weaknesses.",
+    "loading_performance_data": "Loading performance data...",
+    "login_to_view_performance": "Please log in to view your performance.",
+    "ai_performance_analysis": "AI Performance Analysis",
+    "ai_performance_analysis_desc": "An AI-generated summary of your strengths and weaknesses.",
+    "strengths": "Strengths",
+    "no_strengths_yet": "No significant strengths identified yet. Keep practicing!",
+    "areas_for_improvement": "Areas for Improvement",
+    "no_weaknesses_found": "No specific weaknesses found. Great job!",
+    "actionable_advice": "Actionable Advice",
+    "keep_up_effort": "Keep up the consistent effort!",
+    "subject_wise_proficiency": "Subject-wise Proficiency",
+    "subject_wise_proficiency_desc": "Your proficiency score in each subject you've attempted.",
+    "proficiency": "Proficiency",
+    "no_performance_data_title": "No Data Yet",
+    "no_performance_data_desc": "Start taking some tests to see your performance analysis."
 }
