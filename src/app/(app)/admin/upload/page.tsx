@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import {
   writeBatch,
@@ -198,7 +198,34 @@ export default function UploadMcqPage() {
   const { data: classes, isLoading: classesLoading } = useCollection<Class>(classesCollection);
 
   const subjectsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'subjects') : null, [firestore]);
-  const { data: availableSubjects, isLoading: subjectsLoading } = useCollection<Subject>(subjectsCollection);
+  const { data: allSubjects, isLoading: subjectsLoading } = useCollection<Subject>(subjectsCollection);
+  
+  const testsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'tests') : null, [firestore]);
+  const { data: allTests, isLoading: testsLoading } = useCollection<Test>(testsCollection);
+
+  const subjectsForSelectedClass = useMemo(() => {
+    if (!selectedClassId || !allSubjects || !allTests) {
+        // If no class is selected, show all subjects to allow creating new associations.
+        return allSubjects || [];
+    }
+    
+    // Get all subject IDs associated with the selected class from tests.
+    const subjectIdsInClass = new Set<string>();
+    allTests.forEach(test => {
+        if (test.classId === selectedClassId && test.subjectId) {
+            subjectIdsInClass.add(test.subjectId);
+        }
+    });
+
+    // Also include subjects that may not have tests yet but have been created
+    // This is a simplification; a more robust solution might involve a direct class-subject mapping
+    // But for now, we show all subjects if the filtered list is empty to allow for new test creation
+    const filteredSubjects = allSubjects.filter(subject => subjectIdsInClass.has(subject.id));
+
+    return filteredSubjects.length > 0 ? filteredSubjects : allSubjects;
+
+  }, [selectedClassId, allSubjects, allTests]);
+
 
   const handleClassChange = (classId: string) => {
     setSelectedClassId(classId);
@@ -266,7 +293,7 @@ export default function UploadMcqPage() {
       const questionsCollectionRef = collection(firestore, 'questions');
       const testsCollectionRef = collection(firestore, 'tests');
       
-      const selectedSubject = availableSubjects?.find(s => s.id === selectedSubjectId);
+      const selectedSubject = allSubjects?.find(s => s.id === selectedSubjectId);
       const selectedClass = classes?.find(c => c.id === selectedClassId);
 
       const newQuestionIds: string[] = [];
@@ -358,12 +385,12 @@ export default function UploadMcqPage() {
             </div>
              <div className="space-y-2">
                 <Label>{t('Select Subject')}</Label>
-                <Select onValueChange={setSelectedSubjectId} value={selectedSubjectId} disabled={subjectsLoading || !selectedClassId}>
+                <Select onValueChange={setSelectedSubjectId} value={selectedSubjectId} disabled={subjectsLoading || testsLoading || !selectedClassId}>
                     <SelectTrigger>
                         <SelectValue placeholder={t('Select a subject...')} />
                     </SelectTrigger>
                     <SelectContent>
-                        {availableSubjects?.map(sub => <SelectItem key={sub.id} value={sub.id}>{sub.name}</SelectItem>)}
+                        {subjectsForSelectedClass?.map(sub => <SelectItem key={sub.id} value={sub.id}>{sub.name}</SelectItem>)}
                     </SelectContent>
                 </Select>
             </div>
