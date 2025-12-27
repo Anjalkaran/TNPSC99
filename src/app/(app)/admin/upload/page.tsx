@@ -248,6 +248,16 @@ export default function UploadMcqPage() {
 
   const subjectsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'subjects') : null, [firestore]);
   const { data: allSubjects, isLoading: subjectsLoading } = useCollection<Subject>(subjectsCollection);
+
+  const uniqueSubjects = useMemo(() => {
+    if (!allSubjects) return [];
+    const seen = new Set();
+    return allSubjects.filter(sub => {
+      const duplicate = seen.has(sub.id);
+      seen.add(sub.id);
+      return !duplicate;
+    });
+  }, [allSubjects]);
   
   const handleClassChange = (classId: string) => {
     setSelectedClassId(classId);
@@ -412,7 +422,7 @@ export default function UploadMcqPage() {
                         <SelectValue placeholder={t('Select a subject...')} />
                     </SelectTrigger>
                     <SelectContent>
-                        {allSubjects?.map(sub => <SelectItem key={sub.id} value={sub.id}>{sub.name}</SelectItem>)}
+                        {uniqueSubjects?.map(sub => <SelectItem key={sub.id} value={sub.id}>{sub.name}</SelectItem>)}
                     </SelectContent>
                 </Select>
             </div>

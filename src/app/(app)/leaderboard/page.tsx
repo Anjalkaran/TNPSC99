@@ -54,6 +54,27 @@ export default function LeaderboardPage() {
     return new Map(tests.map(test => [test.id, test]));
   }, [tests]);
 
+  const uniqueClasses = useMemo(() => {
+    if (!classes) return [];
+    const seen = new Set();
+    return classes.filter(cls => {
+      const duplicate = seen.has(cls.id);
+      seen.add(cls.id);
+      return !duplicate;
+    });
+  }, [classes]);
+
+  const uniqueSubjects = useMemo(() => {
+    if (!subjects) return [];
+    const seen = new Set();
+    return subjects.filter(sub => {
+      const duplicate = seen.has(sub.id);
+      seen.add(sub.id);
+      return !duplicate;
+    });
+  }, [subjects]);
+
+
   const leaderboardData = useMemo(() => {
     if (!scores) {
       return [];
@@ -140,7 +161,7 @@ export default function LeaderboardPage() {
                             <SelectValue placeholder="Select a class..." />
                         </SelectTrigger>
                         <SelectContent>
-                            {classes?.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                            {uniqueClasses?.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                         </SelectContent>
                     </Select>
                 </TabsContent>
@@ -150,7 +171,7 @@ export default function LeaderboardPage() {
                             <SelectValue placeholder="Select a subject..." />
                         </SelectTrigger>
                         <SelectContent>
-                            {subjects?.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                            {uniqueSubjects?.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
                         </SelectContent>
                     </Select>
                 </TabsContent>
