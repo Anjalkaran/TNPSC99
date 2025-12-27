@@ -25,8 +25,8 @@ function TestStartControl({ test }: { test: Test }) {
   return (
     <div className="flex flex-col sm:flex-row gap-2">
       <Select onValueChange={setLimit} value={limit}>
-        <SelectTrigger className="w-full sm:w-[120px]">
-          <SelectValue placeholder="Questions" />
+        <SelectTrigger className="w-full sm:w-[180px]">
+          <SelectValue placeholder="Select Questions" />
         </SelectTrigger>
         <SelectContent>
           {options.map(opt => <SelectItem key={opt} value={String(opt)}>{opt} Questions</SelectItem>)}
@@ -97,7 +97,7 @@ export default function SubjectTestsForSubjectPage() {
                 <CardDescription>{test.description}</CardDescription>
               </CardHeader>
               <CardContent className="flex-grow">
-                <p className="text-sm text-muted-foreground">{test.questionIds.length} கேள்விகள்</p>
+                <p className="text-sm text-muted-foreground">Total of {test.questionIds.length} questions</p>
               </CardContent>
               <CardFooter>
                  <TestStartControl test={test} />
@@ -107,7 +107,7 @@ export default function SubjectTestsForSubjectPage() {
         </div>
       ) : (
         <div className="text-center py-16">
-          <p className="text-muted-foreground">இந்த பாடத்திற்கு தற்போது தேர்வுகள் எதுவும் இல்லை.</p>
+          <p className="text-muted-foreground">No tests are available for this subject yet.</p>
         </div>
       )}
     </div>

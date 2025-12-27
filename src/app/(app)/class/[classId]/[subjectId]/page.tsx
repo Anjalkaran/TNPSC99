@@ -25,8 +25,8 @@ function TestStartControl({ test }: { test: Test }) {
   return (
     <div className="flex flex-col sm:flex-row gap-2">
       <Select onValueChange={setLimit} value={limit}>
-        <SelectTrigger className="w-full sm:w-[120px]">
-          <SelectValue placeholder="Questions" />
+        <SelectTrigger className="w-full sm:w-[180px]">
+          <SelectValue placeholder="Select Questions" />
         </SelectTrigger>
         <SelectContent>
           {options.map(opt => <SelectItem key={opt} value={String(opt)}>{opt} Questions</SelectItem>)}
@@ -71,7 +71,7 @@ export default function SubjectTestsPage() {
   useEffect(() => {
     async function fetchMetadata() {
         if (!firestore) return;
-        let className = `வகுப்பு ${classIdString}`;
+        let className = `Class ${classIdString}`;
         let subjectName = subjectIdString;
 
         try {
@@ -92,7 +92,7 @@ export default function SubjectTestsPage() {
 
 
         setPageTitle(`${className} - ${subjectName}`);
-        setPageDescription(`இந்த பாடத்திற்கான தேர்வுகள் கீழே பட்டியலிடப்பட்டுள்ளன.`);
+        setPageDescription(`Tests for the subject ${subjectName} in ${className} are listed below.`);
     }
     fetchMetadata();
   }, [firestore, classIdString, subjectIdString]);
@@ -123,7 +123,7 @@ export default function SubjectTestsPage() {
                 <CardDescription>{test.description}</CardDescription>
               </CardHeader>
               <CardContent className="flex-grow">
-                <p className="text-sm text-muted-foreground">{test.questionIds.length} கேள்விகள்</p>
+                <p className="text-sm text-muted-foreground">Total of {test.questionIds.length} questions</p>
               </CardContent>
               <CardFooter>
                 <TestStartControl test={test} />
@@ -133,7 +133,7 @@ export default function SubjectTestsPage() {
         </div>
       ) : (
         !isLoading && <div className="text-center py-16">
-          <p className="text-muted-foreground">இந்த பாடத்திற்கு தற்போது தேர்வுகள் எதுவும் இல்லை.</p>
+          <p className="text-muted-foreground">No tests are available for this subject yet.</p>
         </div>
       )}
     </div>

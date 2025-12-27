@@ -24,8 +24,8 @@ function TestStartControl({ test }: { test: Test }) {
   return (
     <div className="flex flex-col sm:flex-row gap-2">
       <Select onValueChange={setLimit} value={limit}>
-        <SelectTrigger className="w-full sm:w-[120px]">
-          <SelectValue placeholder="Questions" />
+        <SelectTrigger className="w-full sm:w-[180px]">
+          <SelectValue placeholder="Select Questions" />
         </SelectTrigger>
         <SelectContent>
           {options.map(opt => <SelectItem key={opt} value={String(opt)}>{opt} Questions</SelectItem>)}
@@ -51,8 +51,8 @@ export default function PreviousYearPapersPage() {
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
       <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold">முந்தைய ஆண்டு தாள்கள்</h1>
-        <p className="text-muted-foreground mt-2">கடந்த காலத் தாள்களுடன் தேர்வு முறையைப் பற்றி அறிந்து கொள்ளுங்கள்.</p>
+        <h1 className="text-3xl md:text-4xl font-bold">Previous Year Papers</h1>
+        <p className="text-muted-foreground mt-2">Get familiar with the exam pattern with past papers.</p>
       </div>
 
       {isLoading && <p>Loading tests...</p>}
@@ -74,7 +74,7 @@ export default function PreviousYearPapersPage() {
                 <CardDescription>{test.description}</CardDescription>
               </CardHeader>
               <CardContent className="flex-grow">
-                <p className="text-sm text-muted-foreground">{test.questionIds.length} கேள்விகள்</p>
+                <p className="text-sm text-muted-foreground">Total of {test.questionIds.length} questions</p>
               </CardContent>
               <CardFooter>
                 <TestStartControl test={test} />
@@ -84,7 +84,7 @@ export default function PreviousYearPapersPage() {
         </div>
       ) : (
         !isLoading && <div className="text-center py-16">
-          <p className="text-muted-foreground">தற்போது முந்தைய ஆண்டு தாள்கள் எதுவும் இல்லை.</p>
+          <p className="text-muted-foreground">No previous year papers are available at the moment.</p>
         </div>
       )}
     </div>
