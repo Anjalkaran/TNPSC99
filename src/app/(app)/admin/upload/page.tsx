@@ -209,31 +209,24 @@ export default function UploadMcqPage() {
 
         setSubjectsLoading(true);
         try {
-            // Find all questions that belong to the selected class
             const questionsRef = collection(firestore, 'questions');
             const questionsQuery = query(questionsRef, where('classId', '==', selectedClassId));
             const questionSnapshots = await getDocs(questionsQuery);
             const questionsForClass = questionSnapshots.docs.map(d => d.data() as Question);
             
+            let subjectIds: string[] = [];
             if (questionsForClass.length > 0) {
-                // Get the unique subject IDs from those questions
-                const subjectIds = [...new Set(questionsForClass.map(q => q.subjectId).filter(Boolean) as string[])];
+                subjectIds = [...new Set(questionsForClass.map(q => q.subjectId).filter(Boolean) as string[])];
+            }
 
-                if(subjectIds.length > 0) {
-                    // Fetch the subject details for the relevant subjects
-                    const subjectsRef = collection(firestore, 'subjects');
-                    const subjectsQuery = query(subjectsRef, where('__name__', 'in', subjectIds));
-                    const subjectsSnapshot = await getDocs(subjectsQuery);
-                    const subjectsData = subjectsSnapshot.docs.map(d => ({id: d.id, ...d.data() } as Subject));
-                    setAvailableSubjects(subjectsData);
-                } else {
-                    setAvailableSubjects([]);
-                }
+            if (subjectIds.length > 0) {
+                const subjectsRef = collection(firestore, 'subjects');
+                const subjectsQuery = query(subjectsRef, where('__name__', 'in', subjectIds));
+                const subjectsSnapshot = await getDocs(subjectsQuery);
+                const subjectsData = subjectsSnapshot.docs.map(d => ({id: d.id, ...d.data() } as Subject));
+                setAvailableSubjects(subjectsData);
             } else {
-                 // If no questions found for the class, maybe check tests as a fallback or just show all subjects?
-                 // For now, if no questions link a subject, it won't appear.
-                 // This logic might need to be re-evaluated based on how subjects are associated with classes.
-                 // A direct link might be better. Let's fetch all subjects for now.
+                 // Fallback: If no questions for that class have a subject, show all subjects.
                  const allSubjectsRef = collection(firestore, 'subjects');
                  const allSubjectsSnapshot = await getDocs(allSubjectsRef);
                  const allSubjectsData = allSubjectsSnapshot.docs.map(d => ({id: d.id, ...d.data()} as Subject));
@@ -241,6 +234,7 @@ export default function UploadMcqPage() {
             }
         } catch (error) {
             console.error("Error fetching subjects for class: ", error);
+             // Fallback on error as well
              const allSubjectsRef = collection(firestore, 'subjects');
              const allSubjectsSnapshot = await getDocs(allSubjectsRef);
              const allSubjectsData = allSubjectsSnapshot.docs.map(d => ({id: d.id, ...d.data()} as Subject));
