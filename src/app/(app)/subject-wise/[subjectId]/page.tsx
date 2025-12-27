@@ -19,6 +19,7 @@ import { useState } from 'react';
 import { useTranslation } from '@/hooks/use-translation';
 
 function TestStartControl({ test }: { test: Test }) {
+  const { t } = useTranslation();
   const [limit, setLimit] = useState<string>('');
   const questionCount = test.questionIds.length;
   const options = [10, 25, 50].filter(o => o < questionCount);

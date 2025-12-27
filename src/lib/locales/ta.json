@@ -128,5 +128,6 @@
     "Error Deleting Class": "வகுப்பை நீக்குவதில் பிழை",
     "There was a problem deleting the class.": "வகுப்பை நீக்கும்போது ஒரு சிக்கல் ஏற்பட்டது.",
     "This action will permanently delete the class '{{className}}' and may affect related tests.": "இந்த செயல்பாடு '{{className}}' என்ற வகுப்பை நிரந்தரமாக நீக்கும் மற்றும் தொடர்புடைய சோதனைகளை பாதிக்கலாம்.",
-    "Manage or delete existing subjects.": "இருக்கும் பாடங்களை நிர்வகிக்கவும் அல்லது நீக்கவும்."
+    "Manage or delete existing subjects.": "இருக்கும் பாடங்களை நிர்வகிக்கவும் அல்லது நீக்கவும்.",
+    "total_of_questions": "மொத்தம் {{count}} கேள்விகள்"
 }
