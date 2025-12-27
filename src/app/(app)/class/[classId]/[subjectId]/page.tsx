@@ -9,6 +9,39 @@ import { collection, query, where, getDoc, doc } from "firebase/firestore";
 import type { Test, Subject, Class } from "@/lib/types";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+
+function TestStartControl({ test }: { test: Test }) {
+  const [limit, setLimit] = useState<string>('');
+  const questionCount = test.questionIds.length;
+  const options = [10, 25, 50].filter(o => o < questionCount);
+
+  return (
+    <div className="flex flex-col sm:flex-row gap-2">
+      <Select onValueChange={setLimit} value={limit}>
+        <SelectTrigger className="w-full sm:w-[120px]">
+          <SelectValue placeholder="Questions" />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map(opt => <SelectItem key={opt} value={String(opt)}>{opt} Questions</SelectItem>)}
+          <SelectItem value={String(questionCount)}>All ({questionCount})</SelectItem>
+        </SelectContent>
+      </Select>
+      <Button asChild className="w-full" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
+        <Link href={`/test/${test.slug}${limit ? `?limit=${limit}` : ''}`}>
+          Start Test <ArrowRight className="ml-2 h-4 w-4" />
+        </Link>
+      </Button>
+    </div>
+  );
+}
+
 
 export default function SubjectTestsPage() {
   const { classId, subjectId } = useParams();
@@ -93,11 +126,7 @@ export default function SubjectTestsPage() {
                 <p className="text-sm text-muted-foreground">{test.questionIds.length} கேள்விகள்</p>
               </CardContent>
               <CardFooter>
-                <Button asChild className="w-full" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
-                  <Link href={`/test/${test.slug}`}>
-                    தேர்வைத் தொடங்கவும் <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
+                <TestStartControl test={test} />
               </CardFooter>
             </Card>
           ))}
