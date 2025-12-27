@@ -7,7 +7,9 @@ import type { UserTestAttempt, Test } from '@/lib/types';
 import { useMemo, useState, useEffect } from 'react';
 import { useTranslation } from '@/hooks/use-translation';
 import { Progress } from '@/components/ui/progress';
-import { BrainCircuit } from 'lucide-react';
+import { BrainCircuit, Sparkles } from 'lucide-react';
+import { analyzePerformance, type PerformanceInput } from '@/ai/flows/performance-analysis-flow';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface SubjectPerformance {
   subjectId: string;
@@ -17,6 +19,64 @@ interface SubjectPerformance {
   totalQuestionsAttempted: number;
   averageScore: number;
   proficiency: number;
+}
+
+function AiAnalysis({ performanceData }: { performanceData: SubjectPerformance[] }) {
+    const [analysis, setAnalysis] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        if(performanceData.length === 0) {
+            setIsLoading(false);
+            setAnalysis('No performance data available to analyze. Take some tests to get started!');
+            return;
+        }
+
+        const runAnalysis = async () => {
+            setIsLoading(true);
+            try {
+                const input: PerformanceInput = {
+                    subjects: performanceData.map(p => ({
+                        name: p.subjectName,
+                        proficiency: p.proficiency,
+                        attempts: p.totalAttempts,
+                    })),
+                };
+                const result = await analyzePerformance(input);
+                setAnalysis(result.analysis);
+            } catch (error) {
+                console.error("Error analyzing performance:", error);
+                setAnalysis("Sorry, we couldn't generate an analysis at this time.");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        runAnalysis();
+    }, [performanceData]);
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-primary" />
+                    AI Performance Analysis
+                </CardTitle>
+                <CardDescription>An AI-generated summary of your strengths and weaknesses.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {isLoading ? (
+                    <div className="space-y-2">
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-3/4" />
+                    </div>
+                ) : (
+                    <div className="prose prose-sm dark:prose-invert" dangerouslySetInnerHTML={{ __html: analysis }} />
+                )}
+            </CardContent>
+        </Card>
+    );
 }
 
 export default function PerformancePage() {
@@ -51,14 +111,20 @@ export default function PerformancePage() {
         // 2. Fetch all corresponding test documents
         const testsMap = new Map<string, Test>();
         if(testIds.length > 0) {
-            const testsQuery = query(collection(firestore, 'tests'), where('__name__', 'in', testIds));
-            const testsSnapshot = await getDocs(testsQuery);
-            testsSnapshot.forEach(doc => {
-                testsMap.set(doc.id, doc.data() as Test);
-            });
+            const testIdChunks = [];
+            for (let i = 0; i < testIds.length; i += 30) {
+                testIdChunks.push(testIds.slice(i, i + 30));
+            }
+            
+            for(const chunk of testIdChunks) {
+                const testsQuery = query(collection(firestore, 'tests'), where('__name__', 'in', chunk));
+                const testsSnapshot = await getDocs(testsQuery);
+                testsSnapshot.forEach(doc => {
+                    testsMap.set(doc.id, doc.data() as Test);
+                });
+            }
         }
        
-
         // 3. Aggregate performance by subject
         const subjectStats: { [key: string]: { totalScore: number, totalAttempts: number, totalQuestions: number, subjectName: string } } = {};
 
@@ -74,7 +140,9 @@ export default function PerformancePage() {
 
                 subjectStats[subjectId].totalScore += attempt.score;
                 subjectStats[subjectId].totalAttempts += 1;
-                subjectStats[subjectId].totalQuestions += attempt.answers.length;
+                // Ensure answers is an array before getting length
+                subjectStats[subjectId].totalQuestions += Array.isArray(attempt.answers) ? attempt.answers.length : 0;
+
             }
         });
         
@@ -111,38 +179,40 @@ export default function PerformancePage() {
 
 
   return (
-    <div className="container mx-auto p-4 sm:p-6 md:p-8">
+    <div className="container mx-auto p-4 sm:p-6 md:p-8 space-y-8">
         <div className="mb-8">
             <h1 className="text-3xl md:text-4xl font-bold">{t('performance')}</h1>
             <p className="text-muted-foreground mt-2">உங்கள் பாடம் வாரியான செயல்திறனைக் கண்காணித்து, உங்கள் பலம் மற்றும் பலவீனங்களைக் கண்டறியவும்.</p>
         </div>
+        
+        <AiAnalysis performanceData={performanceData} />
 
-      {performanceData.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {performanceData.map(subjectPerf => (
-                <Card key={subjectPerf.subjectId}>
-                    <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-lg font-semibold">{subjectPerf.subjectName}</CardTitle>
-                        <BrainCircuit className="h-5 w-5 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{subjectPerf.proficiency.toFixed(1)}%</div>
-                        <p className="text-xs text-muted-foreground">
-                           சராசரி மதிப்பெண்: {subjectPerf.averageScore.toFixed(1)} on {subjectPerf.totalAttempts} {subjectPerf.totalAttempts > 1 ? 'attempts' : 'attempt'}
-                        </p>
-                        <div className="mt-4">
-                            <Progress value={subjectPerf.proficiency} className="h-2" />
-                        </div>
-                    </CardContent>
-                </Card>
-            ))}
-        </div>
-      ) : (
-        <div className="text-center py-16 border-2 border-dashed rounded-lg">
-            <h3 className="text-xl font-semibold">தரவு இல்லை</h3>
-            <p className="text-muted-foreground mt-2">உங்கள் செயல்திறன் பகுப்பாய்வைக் காண சில தேர்வுகளை எடுக்கத் தொடங்குங்கள்.</p>
-        </div>
-      )}
+        {performanceData.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {performanceData.map(subjectPerf => (
+                    <Card key={subjectPerf.subjectId}>
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                            <CardTitle className="text-lg font-semibold">{subjectPerf.subjectName}</CardTitle>
+                            <BrainCircuit className="h-5 w-5 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{subjectPerf.proficiency.toFixed(1)}%</div>
+                            <p className="text-xs text-muted-foreground">
+                            சராசரி மதிப்பெண்: {subjectPerf.averageScore.toFixed(1)} on {subjectPerf.totalAttempts} {subjectPerf.totalAttempts > 1 ? 'attempts' : 'attempt'}
+                            </p>
+                            <div className="mt-4">
+                                <Progress value={subjectPerf.proficiency} className="h-2" />
+                            </div>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+        ) : (
+            <div className="text-center py-16 border-2 border-dashed rounded-lg">
+                <h3 className="text-xl font-semibold">தரவு இல்லை</h3>
+                <p className="text-muted-foreground mt-2">உங்கள் செயல்திறன் பகுப்பாய்வைக் காண சில தேர்வுகளை எடுக்கத் தொடங்குங்கள்.</p>
+            </div>
+        )}
     </div>
   );
 }
