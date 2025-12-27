@@ -80,7 +80,7 @@ function TestProgressBadge({ testId }: { testId: string }) {
 
     return (
          <Badge variant="secondary">
-            {answeredCount} answered
+            {answeredCount} attended
         </Badge>
     )
 }
