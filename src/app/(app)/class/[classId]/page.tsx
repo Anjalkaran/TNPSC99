@@ -20,7 +20,7 @@ export default function GenerateMcqPage() {
   const { classId } = useParams();
   const router = useRouter();
   const firestore = useFirestore();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
 
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -90,7 +90,9 @@ export default function GenerateMcqPage() {
                     <Accordion type="single" collapsible className="w-full">
                         {subjects.map(subject => (
                             <AccordionItem value={subject.id} key={subject.id}>
-                                <AccordionTrigger className="text-lg">{subject.name}</AccordionTrigger>
+                                <AccordionTrigger className="text-lg">
+                                  {language === 'ta' && subject.name_ta ? subject.name_ta : subject.name}
+                                </AccordionTrigger>
                                 <AccordionContent>
                                     <p className="text-muted-foreground mb-4">{subject.description}</p>
                                     <Button asChild>

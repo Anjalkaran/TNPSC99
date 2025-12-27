@@ -31,6 +31,7 @@ export interface Test {
 export interface Subject {
   id: string;
   name: string;
+  name_ta?: string;
   description: string;
 }
 

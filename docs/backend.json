@@ -58,6 +58,10 @@
           "type": "string",
           "description": "Name of the subject (e.g., History, Geography)."
         },
+        "name_ta": {
+          "type": "string",
+          "description": "Name of the subject in Tamil."
+        },
         "description": {
           "type": "string",
           "description": "A brief description of the subject."
