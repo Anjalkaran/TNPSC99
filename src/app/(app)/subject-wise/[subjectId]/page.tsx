@@ -5,9 +5,9 @@ import Image from "next/image";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-import { useCollection, useFirestore, useMemoFirebase, useDoc } from "@/firebase";
-import { collection, query, where, doc } from "firebase/firestore";
-import type { Test, Subject } from "@/lib/types";
+import { useCollection, useFirestore, useMemoFirebase, useDoc, useUser } from "@/firebase";
+import { collection, query, where, doc, getDocs } from "firebase/firestore";
+import type { Test, Subject, UserTestAttempt } from "@/lib/types";
 import {
   Select,
   SelectContent,
@@ -15,8 +15,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useState } from 'react';
-import { useTranslation } from '@/hooks/use-translation';
+import { useState, useEffect } from 'react';
+import { useTranslation } from "@/hooks/use-translation";
+import { Badge } from '@/components/ui/badge';
 
 function TestStartControl({ test }: { test: Test }) {
   const { t } = useTranslation();
@@ -42,6 +43,46 @@ function TestStartControl({ test }: { test: Test }) {
       </Button>
     </div>
   );
+}
+
+function TestProgressBadge({ testId }: { testId: string }) {
+    const { user } = useUser();
+    const firestore = useFirestore();
+    const [answeredCount, setAnsweredCount] = useState(0);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        if (!user || !firestore || !testId) return;
+
+        const fetchAttempts = async () => {
+            setIsLoading(true);
+            const attemptsRef = collection(firestore, `users/${user.uid}/testAttempts`);
+            const attemptsQuery = query(attemptsRef, where('testId', '==', testId));
+            const attemptsSnapshot = await getDocs(attemptsQuery);
+
+            const correctlyAnsweredIds = new Set<string>();
+            attemptsSnapshot.forEach(doc => {
+                const attempt = doc.data() as UserTestAttempt;
+                if (attempt.correctlyAnsweredQuestionIds) {
+                    attempt.correctlyAnsweredQuestionIds.forEach(id => correctlyAnsweredIds.add(id));
+                }
+            });
+            setAnsweredCount(correctlyAnsweredIds.size);
+            setIsLoading(false);
+        };
+
+        fetchAttempts();
+    }, [user, firestore, testId]);
+
+    if (isLoading || answeredCount === 0) {
+        return null;
+    }
+
+    return (
+         <Badge variant="secondary">
+            {answeredCount} answered
+        </Badge>
+    )
 }
 
 export default function SubjectTestsForSubjectPage() {
@@ -100,7 +141,10 @@ export default function SubjectTestsForSubjectPage() {
                 <CardDescription>{test.description}</CardDescription>
               </CardHeader>
               <CardContent className="flex-grow">
-                <p className="text-sm text-muted-foreground">{t('total_of_questions', { count: test.questionIds.length})}</p>
+                 <div className="flex items-center gap-2">
+                    <p className="text-sm text-muted-foreground">{t('total_of_questions', { count: test.questionIds.length})}</p>
+                    <TestProgressBadge testId={test.id} />
+                </div>
               </CardContent>
               <CardFooter>
                  <TestStartControl test={test} />
