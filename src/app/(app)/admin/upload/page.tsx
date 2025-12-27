@@ -189,9 +189,6 @@ export default function UploadMcqPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedClassId, setSelectedClassId] = useState<string>('');
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>('');
-  const [availableSubjects, setAvailableSubjects] = useState<Subject[]>([]);
-  const [subjectsLoading, setSubjectsLoading] = useState(false);
-
 
   const firestore = useFirestore();
   const { toast } = useToast();
@@ -200,52 +197,8 @@ export default function UploadMcqPage() {
   const classesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'classes') : null, [firestore]);
   const { data: classes, isLoading: classesLoading } = useCollection<Class>(classesCollection);
 
-  useEffect(() => {
-    const fetchSubjectsForClass = async () => {
-        if (!firestore || !selectedClassId) {
-            setAvailableSubjects([]);
-            return;
-        }
-
-        setSubjectsLoading(true);
-        try {
-            const questionsRef = collection(firestore, 'questions');
-            const questionsQuery = query(questionsRef, where('classId', '==', selectedClassId));
-            const questionSnapshots = await getDocs(questionsQuery);
-            const questionsForClass = questionSnapshots.docs.map(d => d.data() as Question);
-            
-            let subjectIds: string[] = [];
-            if (questionsForClass.length > 0) {
-                subjectIds = [...new Set(questionsForClass.map(q => q.subjectId).filter(Boolean) as string[])];
-            }
-
-            if (subjectIds.length > 0) {
-                const subjectsRef = collection(firestore, 'subjects');
-                const subjectsQuery = query(subjectsRef, where('__name__', 'in', subjectIds));
-                const subjectsSnapshot = await getDocs(subjectsQuery);
-                const subjectsData = subjectsSnapshot.docs.map(d => ({id: d.id, ...d.data() } as Subject));
-                setAvailableSubjects(subjectsData);
-            } else {
-                 // Fallback: If no questions for that class have a subject, show all subjects.
-                 const allSubjectsRef = collection(firestore, 'subjects');
-                 const allSubjectsSnapshot = await getDocs(allSubjectsRef);
-                 const allSubjectsData = allSubjectsSnapshot.docs.map(d => ({id: d.id, ...d.data()} as Subject));
-                 setAvailableSubjects(allSubjectsData);
-            }
-        } catch (error) {
-            console.error("Error fetching subjects for class: ", error);
-             // Fallback on error as well
-             const allSubjectsRef = collection(firestore, 'subjects');
-             const allSubjectsSnapshot = await getDocs(allSubjectsRef);
-             const allSubjectsData = allSubjectsSnapshot.docs.map(d => ({id: d.id, ...d.data()} as Subject));
-             setAvailableSubjects(allSubjectsData);
-        } finally {
-            setSubjectsLoading(false);
-        }
-    };
-    
-    fetchSubjectsForClass();
-  }, [firestore, selectedClassId]);
+  const subjectsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'subjects') : null, [firestore]);
+  const { data: availableSubjects, isLoading: subjectsLoading } = useCollection<Subject>(subjectsCollection);
 
   const handleClassChange = (classId: string) => {
     setSelectedClassId(classId);
@@ -313,7 +266,7 @@ export default function UploadMcqPage() {
       const questionsCollectionRef = collection(firestore, 'questions');
       const testsCollectionRef = collection(firestore, 'tests');
       
-      const selectedSubject = availableSubjects.find(s => s.id === selectedSubjectId);
+      const selectedSubject = availableSubjects?.find(s => s.id === selectedSubjectId);
       const selectedClass = classes?.find(c => c.id === selectedClassId);
 
       const newQuestionIds: string[] = [];
