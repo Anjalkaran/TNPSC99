@@ -11,7 +11,11 @@ import {
   query,
   where,
   getDocs,
+  setDoc,
 } from 'firebase/firestore';
+import { useForm, type SubmitHandler } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -23,9 +27,8 @@ import {
 } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import type { Question, Test, QuestionInput, Subject, Class } from '@/lib/types';
+import type { Question, Test, QuestionInput, Subject, Class, Unit } from '@/lib/types';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useTranslation } from '@/hooks/use-translation';
 import {
@@ -56,6 +59,7 @@ import {
 } from '@/components/ui/table';
 import { Edit, Trash, View, Download } from 'lucide-react';
 import Link from 'next/link';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 
 
 const jsonStructureExample = `[
@@ -73,11 +77,15 @@ const jsonStructureExample = `[
 ]`;
 
 // Helper to create a slug from a title
-const createSlug = (title: string) => {
-  return title
+const createSlug = (name: string) => {
+  if (!name) return '';
+  return name
     .toLowerCase()
-    .replace(/ /g, '-')
-    .replace(/[^\w-]+/g, '');
+    .replace(/\s+/g, '-') // Replace spaces with -
+    .replace(/[^\p{L}\p{N}-]+/gu, '') // Remove invalid chars, keeping letters, numbers, and hyphens
+    .replace(/--+/g, '-') // Replace multiple - with single -
+    .replace(/^-+/, '') // Trim - from start of text
+    .replace(/-+$/, ''); // Trim - from end of text
 };
 
 const findImage = (id: string) => {
@@ -88,6 +96,27 @@ const findImage = (id: string) => {
     }
     return image;
 };
+
+const uploadFormSchema = z.object({
+  classId: z.string().min(1, { message: "Please select a class." }),
+  subjectName: z.string().min(2, { message: "Subject name must be at least 2 characters." }),
+  term: z.string().min(1, { message: "Please select a term." }),
+  unitNumber: z.coerce.number().min(1, "Unit number must be at least 1."),
+  unitName: z.string().min(3, { message: 'Unit name must be at least 3 characters.' }),
+  category: z.string().optional(),
+  otherCategory: z.string().optional(),
+  jsonInput: z.string().min(1, { message: 'JSON data is required.' }),
+}).refine(data => {
+    if (data.category === 'other') {
+        return !!data.otherCategory && data.otherCategory.length > 0;
+    }
+    return true;
+}, {
+    message: "Please enter a value for the other category",
+    path: ["otherCategory"],
+});
+
+type UploadFormValues = z.infer<typeof uploadFormSchema>;
 
 function ExistingTestsList() {
     const { t } = useTranslation();
@@ -111,7 +140,7 @@ function ExistingTestsList() {
                  const questionsQuery = query(collection(firestore, 'questions'), where('__name__', 'in', chunk));
                  const questionsSnap = await getDocs(questionsQuery);
                  questionsSnap.forEach(docSnap => {
-                    const { id, classId, subjectId, ...questionData } = docSnap.data() as Question;
+                    const { id, classId, subjectId, unitId, ...questionData } = docSnap.data() as Question;
                     fetchedQuestions.push(questionData);
                  });
               }
@@ -234,35 +263,24 @@ function ExistingTestsList() {
 }
 
 export default function UploadMcqPage() {
-  const [jsonInput, setJsonInput] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedClassId, setSelectedClassId] = useState<string>('');
-  const [selectedSubjectId, setSelectedSubjectId] = useState<string>('');
-
   const firestore = useFirestore();
   const { toast } = useToast();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
+
+  const form = useForm<UploadFormValues>({
+    resolver: zodResolver(uploadFormSchema),
+    defaultValues: {
+      classId: '', subjectName: '', term: '', unitNumber: 1, unitName: '', category: '', otherCategory: '', jsonInput: ''
+    },
+  });
 
   const classesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'classes') : null, [firestore]);
   const { data: classes, isLoading: classesLoading } = useCollection<Class>(classesCollection);
 
-  const subjectsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'subjects') : null, [firestore]);
-  const { data: allSubjects, isLoading: subjectsLoading } = useCollection<Subject>(subjectsCollection);
+  const subjectNameValue = form.watch('subjectName');
+  const categoryValue = form.watch('category');
 
-  const uniqueSubjects = useMemo(() => {
-    if (!allSubjects) return [];
-    const seen = new Set();
-    return allSubjects.filter(sub => {
-      const duplicate = seen.has(sub.id);
-      seen.add(sub.id);
-      return !duplicate;
-    });
-  }, [allSubjects]);
-  
-  const handleClassChange = (classId: string) => {
-    setSelectedClassId(classId);
-    setSelectedSubjectId(''); // Reset subject when class changes
-  };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -270,39 +288,21 @@ export default function UploadMcqPage() {
       const reader = new FileReader();
       reader.onload = (e) => {
         const content = e.target?.result as string;
-        setJsonInput(content);
+        form.setValue('jsonInput', content);
       };
       reader.readAsText(file);
     }
   };
 
-  const handleSubmit = async () => {
-    if (!selectedClassId || !selectedSubjectId) {
-      toast({
-        variant: 'destructive',
-        title: 'Selection Required',
-        description: 'Please select a class and a subject before submitting.',
-      });
-      return;
-    }
-
-    if (!jsonInput.trim()) {
-      toast({
-        variant: 'destructive',
-        title: t('json_input_required_title'),
-        description: t('json_input_required_desc'),
-      });
-      return;
-    }
-
-    let questions: Omit<QuestionInput, 'classId' | 'subjectId'>[];
+  const onSubmit: SubmitHandler<UploadFormValues> = async (values) => {
+    setIsSubmitting(true);
+    let questions: Omit<Question, 'id' | 'classId' | 'subjectId' | 'unitId'>[];
     try {
-      questions = JSON.parse(jsonInput);
-      // Basic validation
+      questions = JSON.parse(values.jsonInput);
       if (!Array.isArray(questions) || questions.length === 0) {
         throw new Error('JSON must be a non-empty array of questions.');
       }
-      for(const q of questions) {
+       for(const q of questions) {
         if (!q.text || !q.answerOptions || q.correctAnswerIndex === undefined) {
             throw new Error('Each question object must have text, answerOptions, and correctAnswerIndex.');
         }
@@ -313,38 +313,57 @@ export default function UploadMcqPage() {
         title: t('invalid_json_format_title'),
         description: error.message || 'The provided JSON is not valid.',
       });
+      setIsSubmitting(false);
       return;
     }
-
-    setIsSubmitting(true);
 
     try {
       if (!firestore) throw new Error('Firestore is not initialized');
 
+      const { classId, subjectName, term, unitNumber, unitName, category, otherCategory } = values;
       const batch = writeBatch(firestore);
       const questionsCollectionRef = collection(firestore, 'questions');
       const testsCollectionRef = collection(firestore, 'tests');
+
+      // 1. Find or Create Subject
+      let subjectId: string;
+      const subjectSlug = createSlug(subjectName);
+      if (!subjectSlug) throw new Error("Subject name cannot be empty.");
+
+      const subjectsRef = collection(firestore, 'subjects');
+      const subjectQuery = query(subjectsRef, where('id', '==', subjectSlug));
+      const subjectSnapshot = await getDocs(subjectQuery);
+
+      if (subjectSnapshot.empty) {
+          const newSubjectRef = doc(subjectsRef, subjectSlug);
+          const newSubject: Subject = { id: subjectSlug, name: subjectName, description: `Subject for TNPSC exams` };
+          await setDoc(newSubjectRef, newSubject);
+          subjectId = subjectSlug;
+      } else {
+          subjectId = subjectSnapshot.docs[0].id;
+      }
+
+      // 2. Create Unit
+      const unitId = createSlug(`${classId}-${subjectId}-${term}-unit-${unitNumber}`);
+      if (!unitId) throw new Error("Could not create a valid Unit ID.");
       
-      const selectedSubject = allSubjects?.find(s => s.id === selectedSubjectId);
-      const selectedClass = classes?.find(c => c.id === selectedClassId);
+      const unitDocRef = doc(firestore, 'units', unitId);
+      const unitData: Partial<Unit> = { id: unitId, classId, subjectId, term, unitNumber, unitName };
+      if(category) unitData.category = category === 'other' ? otherCategory : category;
+      await setDoc(unitDocRef, unitData, { merge: true });
 
+      // 3. Add Questions
       const newQuestionIds: string[] = [];
-
-      // Add new questions to batch with selected class and subject
       questions.forEach(q => {
-          const questionRef = doc(questionsCollectionRef); // Auto-generate ID
-          const questionData: QuestionInput = {
-              ...q,
-              classId: selectedClassId,
-              subjectId: selectedSubjectId,
-              reference: q.reference || ''
-          };
+          const questionRef = doc(questionsCollectionRef);
+          const questionData: QuestionInput = { ...q, classId, subjectId, unitId, reference: q.reference || '' };
           batch.set(questionRef, questionData);
           newQuestionIds.push(questionRef.id);
       });
-
-      // Find or create test and update it
-      const testTitle = `${selectedClass?.name || 'Class'} - ${selectedSubject?.name || 'Subject'}`;
+      
+      // 4. Find or create test and update it
+      const selectedClass = classes?.find(c => c.id === classId);
+      const testTitle = `${selectedClass?.name || 'Class'} - ${subjectName}`;
       const testSlug = createSlug(testTitle);
       const testRef = doc(testsCollectionRef, testSlug);
 
@@ -356,12 +375,12 @@ export default function UploadMcqPage() {
                   id: testSlug,
                   slug: testSlug,
                   title: testTitle,
-                  description: t('test_for_class_subject', {classId: selectedClass?.name || selectedClassId, subjectId: selectedSubject?.name || selectedSubjectId}),
+                  description: t('test_for_class_subject', {classId: selectedClass?.name || classId, subjectId: subjectName}),
                   category: 'class',
                   image: findImage('class-wise'),
                   questionIds: newQuestionIds,
-                  classId: selectedClassId,
-                  subjectId: selectedSubjectId,
+                  classId: classId,
+                  subjectId: subjectId,
               };
               transaction.set(testRef, newTest);
           } else {
@@ -377,16 +396,13 @@ export default function UploadMcqPage() {
         title: t('upload_successful_title'),
         description: t('upload_successful_desc', { count: questions.length }),
       });
-      setJsonInput('');
-      setSelectedClassId('');
-      setSelectedSubjectId('');
+      form.reset();
     } catch (error: any) {
       console.error('Error uploading questions:', error);
       toast({
         variant: 'destructive',
         title: t('upload_error_title'),
-        description:
-          error.message || t('upload_error_desc'),
+        description: error.message || t('upload_error_desc'),
       });
     } finally {
       setIsSubmitting(false);
@@ -402,67 +418,185 @@ export default function UploadMcqPage() {
             {t('upload_class_wise_mcqs_desc')}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-                <Label>{t('Select Class')}</Label>
-                <Select onValueChange={handleClassChange} value={selectedClassId} disabled={classesLoading}>
-                    <SelectTrigger>
-                        <SelectValue placeholder={t('Select a class...')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {classes?.map(cls => <SelectItem key={cls.id} value={cls.id}>{cls.name}</SelectItem>)}
-                    </SelectContent>
-                </Select>
-            </div>
-             <div className="space-y-2">
-                <Label>{t('Select Subject')}</Label>
-                <Select onValueChange={setSelectedSubjectId} value={selectedSubjectId} disabled={subjectsLoading || !selectedClassId}>
-                    <SelectTrigger>
-                        <SelectValue placeholder={t('Select a subject...')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {uniqueSubjects?.map(sub => <SelectItem key={sub.id} value={sub.id}>{sub.name}</SelectItem>)}
-                    </SelectContent>
-                </Select>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <Label htmlFor="json-input">{t('json_data')}</Label>
-              <Textarea
-                id="json-input"
-                placeholder={t('json_data_placeholder')}
-                value={jsonInput}
-                onChange={(e) => setJsonInput(e.target.value)}
-                className="h-72 font-mono text-sm"
-              />
-              <div className="space-y-2">
-                <Label htmlFor="json-file">{t('or_upload_file')}</Label>
-                <Input
-                  id="json-file"
-                  type="file"
-                  accept=".json"
-                  onChange={handleFileChange}
-                />
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="classId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('class_name')}</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value} disabled={classesLoading}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder={t('select_a_class')} />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {classes?.map(c => <SelectItem key={c.id} value={c.id}>{language === 'ta' && c.name_ta ? c.name_ta : c.name}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="subjectName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('subject_name')}</FormLabel>
+                         <FormControl>
+                          <Input placeholder={t('subject_name_placeholder')} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                   {subjectNameValue === 'தமிழ்' && (
+                    <>
+                    <FormField
+                      control={form.control}
+                      name="category"
+                      render={({ field }) => (
+                          <FormItem>
+                          <FormLabel>Category</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                              <SelectTrigger>
+                                  <SelectValue placeholder="Select a category" />
+                              </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                  <SelectItem value="இலக்கணம்">இலக்கணம்</SelectItem>
+                                  <SelectItem value="உரைநடை & செய்யுள்">உரைநடை &amp; செய்யுள்</SelectItem>
+                                  <SelectItem value="other">Other</SelectItem>
+                              </SelectContent>
+                          </Select>
+                          <FormMessage />
+                          </FormItem>
+                      )}
+                      />
+                      {categoryValue === 'other' && (
+                          <FormField
+                              control={form.control}
+                              name="otherCategory"
+                              render={({ field }) => (
+                                  <FormItem>
+                                  <FormLabel>Custom Category</FormLabel>
+                                  <FormControl>
+                                      <Input placeholder="Enter custom category" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                  </FormItem>
+                              )}
+                          />
+                      )}
+                    </>
+                  )}
+                  <FormField
+                    control={form.control}
+                    name="term"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('Term')}</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder={t('Select a Term')} />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="பருவம் 1">பருவம் 1</SelectItem>
+                            <SelectItem value="பருவம் 2">பருவம் 2</SelectItem>
+                            <SelectItem value="பருவம் 3">பருவம் 3</SelectItem>
+                            <SelectItem value="Full Book">Full Book</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="unitNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('Unit Number')}</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="e.g., 1" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="unitName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('Unit Name')}</FormLabel>
+                        <FormControl>
+                          <Input placeholder={t('Name of the unit')} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="jsonInput"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel htmlFor="json-input">{t('json_data')}</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            id="json-input"
+                            placeholder={t('json_data_placeholder')}
+                            className="h-72 font-mono text-sm"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="space-y-2">
+                    <Label htmlFor="json-file">{t('or_upload_file')}</Label>
+                    <Input
+                      id="json-file"
+                      type="file"
+                      accept=".json"
+                      onChange={handleFileChange}
+                    />
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <Label>{t('expected_json_structure')}</Label>
+                    <Card className="bg-muted/50">
+                      <CardContent className="p-4">
+                        <pre className="text-xs font-mono overflow-auto max-h-80">
+                          <code>{jsonStructureExample}</code>
+                        </pre>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                </div>
               </div>
-            </div>
-            <div className="space-y-4">
-              <Label>{t('expected_json_structure')}</Label>
-              <Card className="bg-muted/50">
-                <CardContent className="p-4">
-                  <pre className="text-xs font-mono overflow-auto max-h-80">
-                    <code>{jsonStructureExample}</code>
-                  </pre>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-          <div>
-            <Button onClick={handleSubmit} disabled={isSubmitting || !selectedClassId || !selectedSubjectId}>
-              {isSubmitting ? t('submitting') : t('submit_questions')}
-            </Button>
-          </div>
+              <div>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? t('submitting') : t('submit_questions')}
+                </Button>
+              </div>
+            </form>
+          </Form>
         </CardContent>
       </Card>
       

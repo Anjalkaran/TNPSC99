@@ -7,7 +7,7 @@ export interface Question {
   text: string;
   subjectId: string;
   classId: string;
-  unitId?: string;
+  unitId: string;
   correctAnswerIndex: number;
   answerOptions: string[];
   reference?: string;
@@ -68,7 +68,7 @@ export interface UserProfile {
 }
 
 export interface UserTestAttempt {
-  id: string;
+  id:string;
   userId: string;
   testId: string;
   attemptDate: string;
@@ -88,5 +88,3 @@ export interface Score {
   testTitle: string;
   createdAt: string;
 }
-
-    
