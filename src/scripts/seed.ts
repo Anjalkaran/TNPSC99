@@ -41,13 +41,13 @@ const subjects = [
 ];
 
 const classes = [
-    { id: '5', name: 'Class V', name_ta: 'வகுப்பு 5', description: '5th Standard' },
-    { id: '6', name: 'Class VI', name_ta: 'வகுப்பு 6', description: '6th Standard' },
-    { id: '7', name: 'Class VII', name_ta: 'வகுப்பு 7', description: '7th Standard' },
-    { id: '8', name: 'Class VIII', name_ta: 'வகுப்பு 8', description: '8th Standard' },
-    { id: '9', name: 'Class IX', name_ta: 'வகுப்பு 9', description: '9th Standard' },
-    { id: '10', name: 'Class X', name_ta: 'வகுப்பு 10', description: '10th Standard' },
-    { id: '12', name: 'Class XII', name_ta: 'வகுப்பு 12', description: '12th Standard' },
+    { id: '5', name: 'Class V', name_ta: '5ஆம் வகுப்பு', description: '5th Standard' },
+    { id: '6', name: 'Class VI', name_ta: '6ஆம் வகுப்பு', description: '6th Standard' },
+    { id: '7', name: 'Class VII', name_ta: '7ஆம் வகுப்பு', description: '7th Standard' },
+    { id: '8', name: 'Class VIII', name_ta: '8ஆம் வகுப்பு', description: '8th Standard' },
+    { id: '9', name: 'Class IX', name_ta: '9ஆம் வகுப்பு', description: '9th Standard' },
+    { id: '10', name: 'Class X', name_ta: '10ஆம் வகுப்பு', description: '10th Standard' },
+    { id: '12', name: 'Class XII', name_ta: '12ஆம் வகுப்பு', description: '12th Standard' },
 ];
 
 const questions = [
@@ -418,7 +418,6 @@ export async function seedDatabase() {
     console.error('Error seeding database:', error);
   }
 }
-
     
     
 
