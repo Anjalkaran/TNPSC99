@@ -51,7 +51,8 @@ export interface Unit {
   unitNumber: number;
   unitName: string;
   unitName_ta?: string;
-  category?: string; // New field for subject-specific categorization
+  category?: string;
+  otherCategory?: string;
   className?: string; // For display purposes
   subjectName?: string; // For display purposes
 }

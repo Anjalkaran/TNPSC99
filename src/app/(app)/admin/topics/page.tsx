@@ -43,7 +43,17 @@ const unitFormSchema = z.object({
   unitName: z.string().min(3, { message: 'Unit name must be at least 3 characters.' }),
   unitName_ta: z.string().optional(),
   category: z.string().optional(),
+  otherCategory: z.string().optional(),
+}).refine(data => {
+    if (data.category === 'other') {
+        return !!data.otherCategory && data.otherCategory.length > 0;
+    }
+    return true;
+}, {
+    message: "Please enter a value for the other category",
+    path: ["otherCategory"],
 });
+
 
 type UnitFormValues = z.infer<typeof unitFormSchema>;
 
@@ -109,7 +119,7 @@ function ExistingUnitsList() {
                                     <p className="font-semibold text-sm">{unit.className} - {unit.subjectName} - {unit.term}</p>
                                     <p className="font-bold text-base">Unit {unit.unitNumber}: {unit.unitName}</p>
                                     {unit.unitName_ta && <p className="text-muted-foreground text-sm">{unit.unitName_ta}</p>}
-                                    {unit.category && <p className="text-xs text-muted-foreground">Category: {unit.category}</p>}
+                                    {unit.category && <p className="text-xs text-muted-foreground">Category: {unit.category === 'other' ? unit.otherCategory : unit.category}</p>}
                                 </div>
                                 <div className="flex gap-2">
                                     <AlertDialog>
@@ -155,10 +165,12 @@ export default function TopicManagementPage() {
   
   const form = useForm<UnitFormValues>({
     resolver: zodResolver(unitFormSchema),
-    defaultValues: { classId: '', subjectName: '', term: '', unitNumber: 1, unitName: '', unitName_ta: '', category: '' },
+    defaultValues: { classId: '', subjectName: '', term: '', unitNumber: 1, unitName: '', unitName_ta: '', category: '', otherCategory: '' },
   });
 
   const subjectNameValue = form.watch('subjectName');
+  const categoryValue = form.watch('category');
+
 
   const resetForm = () => {
     form.reset();
@@ -169,7 +181,7 @@ export default function TopicManagementPage() {
     setIsSubmitting(true);
     
     try {
-        const { classId, subjectName, term, unitNumber, unitName, unitName_ta, category } = values;
+        const { classId, subjectName, term, unitNumber, unitName, unitName_ta, category, otherCategory } = values;
 
         // 1. Find or create the subject
         let subjectId: string;
@@ -213,6 +225,9 @@ export default function TopicManagementPage() {
         
         if(category) {
             unitData.category = category;
+            if(category === 'other' && otherCategory) {
+                unitData.otherCategory = otherCategory;
+            }
         }
 
         await setDoc(unitDocRef, unitData, { merge: true });
@@ -287,6 +302,7 @@ export default function TopicManagementPage() {
                 />
                 
                 {subjectNameValue === 'தமிழ்' && (
+                  <>
                    <FormField
                     control={form.control}
                     name="category"
@@ -301,14 +317,30 @@ export default function TopicManagementPage() {
                             </FormControl>
                             <SelectContent>
                                 <SelectItem value="இலக்கணம்">இலக்கணம்</SelectItem>
-                                <SelectItem value="இலக்கியம்">இலக்கியம்</SelectItem>
-                                <SelectItem value="தமிழ் அறிஞர்களும் தமிழ்த்தொண்டும்">தமிழ் அறிஞர்களும் தமிழ்த்தொண்டும்</SelectItem>
+                                <SelectItem value="உரைநடை &amp; செய்யுள்">உரைநடை &amp; செய்யுள்</SelectItem>
+                                <SelectItem value="other">Other</SelectItem>
                             </SelectContent>
                         </Select>
                         <FormMessage />
                         </FormItem>
                     )}
                     />
+                    {categoryValue === 'other' && (
+                         <FormField
+                            control={form.control}
+                            name="otherCategory"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Custom Category</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="Enter custom category" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    )}
+                  </>
                 )}
 
                 <FormField
