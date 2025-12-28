@@ -7,6 +7,7 @@ export interface Question {
   text: string;
   subjectId: string;
   classId: string;
+  unitId?: string;
   correctAnswerIndex: number;
   answerOptions: string[];
   reference?: string;
@@ -42,6 +43,19 @@ export interface Class {
   description: string;
 }
 
+export interface Unit {
+  id: string;
+  classId: string;
+  subjectId: string;
+  term: string;
+  unitNumber: number;
+  unitName: string;
+  unitName_ta?: string;
+  className?: string; // For display purposes
+  subjectName?: string; // For display purposes
+}
+
+
 export interface UserProfile {
   id: string;
   username: string;
@@ -73,3 +87,5 @@ export interface Score {
   testTitle: string;
   createdAt: string;
 }
+
+    

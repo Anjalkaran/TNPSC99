@@ -1,17 +1,17 @@
 'use client';
 
-import { useForm, type SubmitHandler } from 'react-hook-form';
+import { useForm, type SubmitHandler, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useState, useEffect } from 'react';
-import { useFirestore, useCollection, useMemoFirebase, useDoc } from '@/firebase';
-import { addDoc, collection, doc, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
-import type { Subject, Class } from '@/lib/types';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { addDoc, collection, doc, setDoc, deleteDoc, updateDoc, getDocs } from 'firebase/firestore';
+import type { Subject, Class, Unit } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/hooks/use-translation';
@@ -34,150 +34,81 @@ const createSlug = (name: string) => {
   return name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
 };
 
-const classSubjectSchema = z.object({
-  className: z.string({ required_error: "Please select a class." }),
-  customClassName: z.string().optional(),
-  subjectName: z.string().min(3, { message: 'Subject name must be at least 3 characters.' }),
-  subjectDescription: z.string().optional(),
-}).refine(data => {
-    if (data.className === 'other') {
-        return !!data.customClassName && data.customClassName.length >= 1;
-    }
-    return true;
-}, {
-    message: 'Custom class name is required when "Other" is selected.',
-    path: ['customClassName'],
+const unitFormSchema = z.object({
+  classId: z.string({ required_error: "Please select a class." }),
+  subjectId: z.string({ required_error: "Please select a subject." }),
+  term: z.string({ required_error: "Please select a term." }),
+  unitNumber: z.coerce.number().min(1, "Unit number must be at least 1."),
+  unitName: z.string().min(3, { message: 'Unit name must be at least 3 characters.' }),
+  unitName_ta: z.string().optional(),
 });
 
+type UnitFormValues = z.infer<typeof unitFormSchema>;
 
-type ClassSubjectFormValues = z.infer<typeof classSubjectSchema>;
 
-
-function ExistingClassesList() {
+function ExistingUnitsList() {
     const { t } = useTranslation();
     const firestore = useFirestore();
     const { toast } = useToast();
+    const unitsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'units') : null, [firestore]);
+    const { data: units, isLoading } = useCollection<Unit>(unitsCollection);
+
+    // Fetch classes and subjects to display their names
     const classesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'classes') : null, [firestore]);
-    const { data: classes, isLoading } = useCollection<Class>(classesCollection);
-
-    const handleDelete = async (classId: string) => {
-        if (!firestore) return;
-        const classDocRef = doc(firestore, 'classes', classId);
-        try {
-            await deleteDoc(classDocRef);
-            toast({
-                title: t('Class Deleted'),
-                description: t('The class has been successfully deleted.'),
-            });
-        } catch (error) {
-            console.error("Error deleting class: ", error);
-            toast({
-                variant: 'destructive',
-                title: t('Error Deleting Class'),
-                description: t('There was a problem deleting the class.'),
-            });
-        }
-    };
-
-    if (isLoading) return <p>{t('Loading classes...')}...</p>
-    
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle>{t('Existing Classes')}</CardTitle>
-                 <CardDescription>{t('Manage or delete existing classes.')}</CardDescription>
-            </CardHeader>
-            <CardContent>
-                {classes && classes.length > 0 ? (
-                     <ul className="space-y-2">
-                        {classes.map(cls => (
-                            <li key={cls.id} className="flex justify-between items-center p-2 border rounded-md">
-                                <div>
-                                    <p className="font-semibold">{cls.name}</p>
-                                    <p className="text-sm text-muted-foreground">{cls.description}</p>
-                                </div>
-                                <div className="flex gap-2">
-                                    <AlertDialog>
-                                        <AlertDialogTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-                                                <Trash className="h-4 w-4" />
-                                                <span className="sr-only">{t('delete')}</span>
-                                            </Button>
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent>
-                                            <AlertDialogHeader>
-                                                <AlertDialogTitle>{t('confirm_deletion_title')}</AlertDialogTitle>
-                                                <AlertDialogDescription>
-                                                    {t('This action will permanently delete the class \'{{className}}\' and may affect related tests.', { className: cls.name })}
-                                                </AlertDialogDescription>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                                <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                                                <AlertDialogAction onClick={() => handleDelete(cls.id)}>{t('delete')}</AlertDialogAction>
-                                            </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                    </AlertDialog>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p className="text-muted-foreground">{t('No classes found.')}</p>
-                )}
-            </CardContent>
-        </Card>
-    );
-}
-
-function ExistingSubjectsList({ onEdit }: { onEdit: (subject: Subject) => void }) {
-    const { t } = useTranslation();
-    const firestore = useFirestore();
-    const { toast } = useToast();
+    const { data: classes } = useCollection<Class>(classesCollection);
     const subjectsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'subjects') : null, [firestore]);
-    const { data: subjects, isLoading } = useCollection<Subject>(subjectsCollection);
+    const { data: subjects } = useCollection<Subject>(subjectsCollection);
 
-    const handleDelete = async (subjectId: string) => {
+    const unitsWithNames = useMemo(() => {
+        if (!units || !classes || !subjects) return [];
+        const classMap = new Map(classes.map(c => [c.id, c.name]));
+        const subjectMap = new Map(subjects.map(s => [s.id, s.name]));
+        return units.map(unit => ({
+            ...unit,
+            className: classMap.get(unit.classId) || unit.classId,
+            subjectName: subjectMap.get(unit.subjectId) || unit.subjectId,
+        }))
+    }, [units, classes, subjects]);
+
+
+    const handleDelete = async (unitId: string) => {
         if (!firestore) return;
-        const subjectDocRef = doc(firestore, 'subjects', subjectId);
+        const unitDocRef = doc(firestore, 'units', unitId);
         try {
-            await deleteDoc(subjectDocRef);
+            await deleteDoc(unitDocRef);
             toast({
-                title: t('subject_deleted_success_title'),
-                description: t('subject_deleted_success_desc'),
+                title: t('Unit Deleted'),
+                description: t('The unit has been successfully deleted.'),
             });
         } catch (error) {
-            console.error("Error deleting subject: ", error);
+            console.error("Error deleting unit: ", error);
             toast({
                 variant: 'destructive',
-                title: t('subject_deletion_error_title'),
-                description: t('subject_deletion_error_desc'),
+                title: t('Error Deleting Unit'),
+                description: t('There was a problem deleting the unit.'),
             });
         }
     };
 
-
-    if (isLoading) return <p>{t('loading_subjects')}...</p>
+    if (isLoading) return <p>{t('Loading units...')}...</p>
     
     return (
         <Card>
             <CardHeader>
-                <CardTitle>{t('existing_subjects')}</CardTitle>
-                 <CardDescription>{t('Manage or delete existing subjects.')}</CardDescription>
+                <CardTitle>{t('Existing Units')}</CardTitle>
+                 <CardDescription>{t('Manage or delete existing units.')}</CardDescription>
             </CardHeader>
             <CardContent>
-                {subjects && subjects.length > 0 ? (
+                {unitsWithNames && unitsWithNames.length > 0 ? (
                      <ul className="space-y-2">
-                        {subjects.map(subject => (
-                            <li key={subject.id} className="flex justify-between items-center p-2 border rounded-md">
+                        {unitsWithNames.map(unit => (
+                            <li key={unit.id} className="flex justify-between items-center p-3 border rounded-md">
                                 <div>
-                                    <p className="font-semibold">{subject.name}</p>
-                                    <p className="text-sm text-muted-foreground">{subject.description}</p>
+                                    <p className="font-semibold text-sm">{unit.className} - {unit.subjectName} - {unit.term}</p>
+                                    <p className="font-bold text-base">Unit {unit.unitNumber}: {unit.unitName}</p>
+                                    {unit.unitName_ta && <p className="text-muted-foreground text-sm">{unit.unitName_ta}</p>}
                                 </div>
                                 <div className="flex gap-2">
-                                    <Button variant="ghost" size="icon" onClick={() => onEdit(subject)}>
-                                        <Edit className="h-4 w-4" />
-                                        <span className="sr-only">{t('edit')}</span>
-                                    </Button>
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
                                             <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
@@ -189,12 +120,12 @@ function ExistingSubjectsList({ onEdit }: { onEdit: (subject: Subject) => void }
                                             <AlertDialogHeader>
                                                 <AlertDialogTitle>{t('confirm_deletion_title')}</AlertDialogTitle>
                                                 <AlertDialogDescription>
-                                                    {t('confirm_deletion_desc', { subjectName: subject.name })}
+                                                    {t('This action will permanently delete the unit \'{{unitName}}\'.', { unitName: unit.unitName })}
                                                 </AlertDialogDescription>
                                             </AlertDialogHeader>
                                             <AlertDialogFooter>
                                                 <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                                                <AlertDialogAction onClick={() => handleDelete(subject.id)}>{t('delete')}</AlertDialogAction>
+                                                <AlertDialogAction onClick={() => handleDelete(unit.id)}>{t('delete')}</AlertDialogAction>
                                             </AlertDialogFooter>
                                         </AlertDialogContent>
                                     </AlertDialog>
@@ -203,7 +134,7 @@ function ExistingSubjectsList({ onEdit }: { onEdit: (subject: Subject) => void }
                         ))}
                     </ul>
                 ) : (
-                    <p className="text-muted-foreground">{t('no_subjects_yet')}</p>
+                    <p className="text-muted-foreground">{t('No units found.')}</p>
                 )}
             </CardContent>
         </Card>
@@ -215,108 +146,55 @@ export default function TopicManagementPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showCustomClass, setShowCustomClass] = useState(false);
-  const [editingSubject, setEditingSubject] = useState<Subject | null>(null);
+  
+  const classesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'classes') : null, [firestore]);
+  const { data: classes, isLoading: classesLoading } = useCollection<Class>(classesCollection);
+  const subjectsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'subjects') : null, [firestore]);
+  const { data: subjects, isLoading: subjectsLoading } = useCollection<Subject>(subjectsCollection);
 
 
-  const form = useForm<ClassSubjectFormValues>({
-    resolver: zodResolver(classSubjectSchema),
-    defaultValues: { className: '', customClassName: '', subjectName: '', subjectDescription: '' },
+  const form = useForm<UnitFormValues>({
+    resolver: zodResolver(unitFormSchema),
+    defaultValues: { classId: '', subjectId: '', term: '', unitNumber: 1, unitName: '', unitName_ta: '' },
   });
 
-  const handleEdit = (subject: Subject) => {
-    setEditingSubject(subject);
-    form.setValue('subjectName', subject.name);
-    form.setValue('subjectDescription', subject.description);
-    // When editing, we don't know the class, so we can't pre-fill it.
-    // The class fields are disabled to only allow editing of subject name and description.
-    form.setValue('className', '');
-    form.setValue('customClassName', '');
-    setShowCustomClass(false);
-  };
 
   const resetForm = () => {
     form.reset();
-    setEditingSubject(null);
-    setShowCustomClass(false);
   }
 
-  const onSubmit: SubmitHandler<ClassSubjectFormValues> = async (values) => {
+  const onSubmit: SubmitHandler<UnitFormValues> = async (values) => {
     if (!firestore) return;
     setIsSubmitting(true);
-
-    if(editingSubject) {
-        // Update logic
-        const subjectDocRef = doc(firestore, 'subjects', editingSubject.id);
-        try {
-            await updateDoc(subjectDocRef, {
-                name: values.subjectName,
-                description: values.subjectDescription || ''
-            });
-             toast({
-                title: t('subject_updated_success_title'),
-                description: t('subject_updated_success_desc', { subjectName: values.subjectName }),
-            });
-            resetForm();
-        } catch (error) {
-            console.error('Error updating subject:', error);
-            toast({
-                variant: 'destructive',
-                title: t('subject_update_error_title'),
-                description: t('subject_update_error_desc'),
-            });
-        } finally {
-            setIsSubmitting(false);
-        }
-        return;
-    }
     
     // Create logic
-    const isCustomClass = values.className === 'other';
-    const finalClassName = isCustomClass ? values.customClassName! : values.className;
-    
-    let classId: string;
-    
-    const romanMap: { [key: string]: string } = {
-        'Class V': '5', 'Class VI': '6', 'Class VII': '7', 'Class VIII': '8', 'Class IX': '9', 'Class X': '10'
-    };
-
-    if (isCustomClass) {
-        classId = createSlug(finalClassName);
-    } else {
-        classId = romanMap[values.className as keyof typeof romanMap] || createSlug(values.className);
-    }
-    const finalClassNameDisplay = isCustomClass ? finalClassName : values.className;
-
-    const subjectId = createSlug(values.subjectName);
+    const { classId, subjectId, term, unitNumber, unitName, unitName_ta } = values;
+    const unitId = createSlug(`${classId}-${subjectId}-${term}-unit-${unitNumber}`);
 
     try {
-      const subjectDocRef = doc(firestore, 'subjects', subjectId);
-      await setDoc(subjectDocRef, {
-          id: subjectId,
-          name: values.subjectName,
-          description: values.subjectDescription || ''
-      }, { merge: true });
-
-      const classDocRef = doc(firestore, 'classes', classId);
-      await setDoc(classDocRef, {
-        id: classId,
-        name: finalClassNameDisplay,
-        description: `Content for ${finalClassNameDisplay}`
+      const unitDocRef = doc(firestore, 'units', unitId);
+      await setDoc(unitDocRef, {
+          id: unitId,
+          classId,
+          subjectId,
+          term,
+          unitNumber,
+          unitName,
+          unitName_ta: unitName_ta || ''
       }, { merge: true });
 
 
       toast({
-        title: t('subject_created_success_title'),
-        description: t('subject_created_success_desc', { subjectName: values.subjectName, className: finalClassNameDisplay }),
+        title: t('Unit Created!'),
+        description: t('The unit "{{unitName}}" has been successfully created.', { unitName }),
       });
       resetForm();
     } catch (error) {
-      console.error('Error creating subject:', error);
+      console.error('Error creating unit:', error);
       toast({
         variant: 'destructive',
-        title: t('subject_creation_error_title'),
-        description: t('subject_creation_error_desc'),
+        title: t('Error Creating Unit'),
+        description: t('There was a problem creating the unit.'),
       });
     } finally {
       setIsSubmitting(false);
@@ -327,44 +205,32 @@ export default function TopicManagementPage() {
     <div className="container mx-auto p-4 sm:p-6 md:p-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold">{t('manage_topics')}</h1>
-        <p className="text-muted-foreground">{t('create_new_subject_for_class')}</p>
+        <p className="text-muted-foreground">{t('Create, view, and manage class subjects, terms, and units.')}</p>
       </div>
 
       <div className="grid md:grid-cols-3 gap-8">
         <Card className="md:col-span-1">
           <CardHeader>
-            <CardTitle>{editingSubject ? t('edit_subject') : t('create_new_subject')}</CardTitle>
+            <CardTitle>{t('Add New Unit')}</CardTitle>
+            <CardDescription>{t('Add a new unit to a subject and class.')}</CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField
                   control={form.control}
-                  name="className"
+                  name="classId"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t('class_name')}</FormLabel>
-                      <Select 
-                        onValueChange={(value) => {
-                            field.onChange(value);
-                            setShowCustomClass(value === 'other');
-                        }} 
-                        value={field.value}
-                        disabled={!!editingSubject}
-                      >
+                      <Select onValueChange={field.onChange} value={field.value} disabled={classesLoading}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder={t('select_a_class')} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="Class V">Class V</SelectItem>
-                          <SelectItem value="Class VI">Class VI</SelectItem>
-                          <SelectItem value="Class VII">Class VII</SelectItem>
-                          <SelectItem value="Class VIII">Class VIII</SelectItem>
-                          <SelectItem value="Class IX">Class IX</SelectItem>
-                          <SelectItem value="Class X">Class X</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
+                          {classes?.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -372,30 +238,59 @@ export default function TopicManagementPage() {
                   )}
                 />
                 
-                {showCustomClass && (
-                    <FormField
-                    control={form.control}
-                    name="customClassName"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>{t('custom_class_name')}</FormLabel>
-                        <FormControl>
-                            <Input placeholder={t('enter_custom_class_name')} {...field} disabled={!!editingSubject} />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                )}
-
                 <FormField
                   control={form.control}
-                  name="subjectName"
+                  name="subjectId"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t('subject_name')}</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value} disabled={subjectsLoading}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder={t('select_a_subject')} />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {subjects?.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="term"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('Term')}</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder={t('Select a Term')} />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="Term 1">Term 1</SelectItem>
+                          <SelectItem value="Term 2">Term 2</SelectItem>
+                          <SelectItem value="Term 3">Term 3</SelectItem>
+                           <SelectItem value="Full Book">Full Book</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="unitNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('Unit Number')}</FormLabel>
                       <FormControl>
-                        <Input placeholder={t('subject_name_placeholder')} {...field} />
+                        <Input type="number" placeholder="e.g., 1" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -404,40 +299,46 @@ export default function TopicManagementPage() {
 
                 <FormField
                   control={form.control}
-                  name="subjectDescription"
+                  name="unitName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('subject_description')}</FormLabel>
+                      <FormLabel>{t('Unit Name')}</FormLabel>
                       <FormControl>
-                        <Textarea placeholder={t('subject_description_placeholder')} {...field} />
+                        <Input placeholder={t('Name of the unit')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <div className="flex gap-4">
-                  <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting
-                        ? (editingSubject ? t('updating_subject') : t('creating_subject'))
-                        : (editingSubject ? t('update_subject') : t('create_subject'))
-                    }
-                  </Button>
-                  {editingSubject && (
-                      <Button type="button" variant="outline" onClick={resetForm}>
-                          {t('cancel')}
-                      </Button>
+
+                 <FormField
+                  control={form.control}
+                  name="unitName_ta"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('Unit Name (Tamil)')}</FormLabel>
+                      <FormControl>
+                        <Input placeholder={t('Unit name in Tamil')} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )}
-                </div>
+                />
+
+                <Button type="submit" disabled={isSubmitting} className="w-full">
+                    {isSubmitting ? t('Adding Unit...') : t('Add Unit')}
+                </Button>
               </form>
             </Form>
           </CardContent>
         </Card>
 
         <div className="md:col-span-2 space-y-8">
-            <ExistingSubjectsList onEdit={handleEdit} />
-            <ExistingClassesList />
+            <ExistingUnitsList />
         </div>
       </div>
     </div>
   );
 }
+
+    

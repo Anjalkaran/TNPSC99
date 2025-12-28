@@ -102,6 +102,50 @@
         "description"
       ]
     },
+    "Unit": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Unit",
+      "type": "object",
+      "description": "Represents a specific unit or topic within a subject for a particular class and term.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Unit entity."
+        },
+        "classId": {
+          "type": "string",
+          "description": "Reference to the Class this unit belongs to."
+        },
+        "subjectId": {
+          "type": "string",
+          "description": "Reference to the Subject this unit belongs to."
+        },
+        "term": {
+          "type": "string",
+          "description": "The academic term (e.g., 'Term 1', 'Term 2')."
+        },
+        "unitNumber": {
+          "type": "number",
+          "description": "The number of the unit."
+        },
+        "unitName": {
+          "type": "string",
+          "description": "The name of the unit in English."
+        },
+        "unitName_ta": {
+          "type": "string",
+          "description": "The name of the unit in Tamil."
+        }
+      },
+      "required": [
+        "id",
+        "classId",
+        "subjectId",
+        "term",
+        "unitNumber",
+        "unitName"
+      ]
+    },
     "Question": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Question",
@@ -123,6 +167,10 @@
         "classId": {
           "type": "string",
           "description": "Reference to Class. (Relationship: Class 1:N Question)"
+        },
+        "unitId": {
+          "type": "string",
+          "description": "Reference to Unit. (Relationship: Unit 1:N Question)"
         },
         "correctAnswerIndex": {
           "type": "number",
@@ -337,6 +385,22 @@
         }
       },
       {
+        "path": "/units/{unitId}",
+        "definition": {
+          "entityName": "Unit",
+          "schema": {
+            "$ref": "#/backend/entities/Unit"
+          },
+          "description": "Stores individual units or topics within a subject.",
+          "params": [
+            {
+              "name": "unitId",
+              "description": "The unique identifier of the unit."
+            }
+          ]
+        }
+      },
+      {
         "path": "/questions/{questionId}",
         "definition": {
           "entityName": "Question",
@@ -408,3 +472,5 @@
     "reasoning": "The Firestore structure is designed to support the TNPSC Ace application, focusing on class-wise, subject-wise, and previous year MCQ tests. The design emphasizes authorization independence, clarity, and scalability.  We are using path-based ownership for user data and a membership map approach for collaborative data. The key collections are `users`, `subjects`, `classes`, `questions`, `tests`, `userTestAttempts`, and a new `scores` collection for the leaderboard. User-specific data is stored under `/users/{userId}`. The `scores` collection is publicly readable to build the leaderboard, but write access is restricted. This structure allows for efficient score tracking and personalized insights while maintaining a public, competitive element."
   }
 }
+
+    
