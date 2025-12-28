@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useForm, type SubmitHandler, useFieldArray } from 'react-hook-form';
@@ -28,27 +29,40 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogClose,
+} from '@/components/ui/dialog';
 
 
-const createSlug = (name: string) => {
-  if (!name) return '';
-  const a = 'àáâäæãåāăąçćčđďèéêëēėęěğǵḧîïíīįìłḿñńǹňôöòóœøōõőṕŕřßśšşșťțûüùúūǘůűųẃẍÿýžźż·/_,:;'
-  const b = 'aaaaaaaaaacccddeeeeeeeegghiiiiiilmnnnnoooooooooprrsssssttuuuuuuuuuwxyyzzz------'
-  const p = new RegExp(a.split('').join('|'), 'g')
+const createSlug = (str: string) => {
+  if (!str) return '';
+  str = str.replace(/^\s+|\s+$/g, ''); // trim
+  str = str.toLowerCase();
 
-  return name.toString().toLowerCase()
-    .replace(/\s+/g, '-') // Replace spaces with -
-    .replace(p, c => b.charAt(a.indexOf(c))) // Replace special characters
-    .replace(/&/g, '-and-') // Replace & with 'and'
-    .replace(/[^\w\-]+/g, '') // Remove all non-word chars
-    .replace(/\-\-+/g, '-') // Replace multiple - with single -
-    .replace(/^-+/, '') // Trim - from start of text
-    .replace(/-+$/, '') // Trim - from end of text
-};
+  // remove accents, swap ñ for n, etc
+  const from = "àáäâèéëêìíïîòóöôùúüûñç·/_,:;";
+  const to = "aaaaeeeeiiiioooouuuunc------";
+  for (let i = 0, l = from.length; i < l; i++) {
+    str = str.replace(new RegExp(from.charAt(i), 'g'), to.charAt(i));
+  }
+
+  str = str.replace(/[^a-z0-9 -]/g, '') // remove invalid chars
+    .replace(/\s+/g, '-') // collapse whitespace and replace by -
+    .replace(/-+/g, '-'); // collapse dashes
+
+  return str;
+}
 
 const unitFormSchema = z.object({
   classId: z.string().min(1, { message: "Please select a class." }),
-  subjectName: z.string().min(2, { message: "Subject name must be at least 2 characters." }),
+  subjectName: z.string().min(1, { message: "Subject name must be at least 1 character." }),
   term: z.string().min(1, { message: "Please select a term." }),
   unitNumber: z.coerce.number().min(1, "Unit number must be at least 1."),
   unitName: z.string().min(1, { message: 'Unit name must be at least 1 character.' }),
@@ -67,15 +81,240 @@ const unitFormSchema = z.object({
 
 type UnitFormValues = z.infer<typeof unitFormSchema>;
 
+function EditUnitForm({ unit, classes, onFinished }: { unit: Unit, classes: Class[] | null | undefined, onFinished: () => void }) {
+    const { t, language } = useTranslation();
+    const firestore = useFirestore();
+    const { toast } = useToast();
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const form = useForm<UnitFormValues>({
+        resolver: zodResolver(unitFormSchema),
+        defaultValues: {
+            classId: unit.classId,
+            subjectName: unit.subjectName || '',
+            term: unit.term,
+            unitNumber: unit.unitNumber,
+            unitName: unit.unitName,
+            category: (unit.category && (unit.category === 'இலக்கணம்' || unit.category === 'உரைநடை & செய்யுள்')) ? unit.category : (unit.category ? 'other' : ''),
+            otherCategory: (unit.category && unit.category !== 'இலக்கணம்' && unit.category !== 'உரைநடை & செய்யுள்') ? unit.category : '',
+        },
+    });
+
+    const subjectNameValue = form.watch('subjectName');
+    const categoryValue = form.watch('category');
+
+    const onSubmit: SubmitHandler<UnitFormValues> = async (values) => {
+        if (!firestore) return;
+        setIsSubmitting(true);
+
+        try {
+            const { classId, subjectName, term, unitNumber, unitName, category, otherCategory } = values;
+
+            // 1. Find or create the subject
+            let subjectId: string;
+            const subjectSlug = createSlug(subjectName);
+            if (!subjectSlug) {
+                throw new Error("Subject name cannot be empty.");
+            }
+
+            const subjectsRef = collection(firestore, 'subjects');
+            const subjectQuery = query(subjectsRef, where('id', '==', subjectSlug));
+            const subjectSnapshot = await getDocs(subjectQuery);
+
+            if (subjectSnapshot.empty) {
+                const newSubjectRef = doc(subjectsRef, subjectSlug);
+                const newSubject: Subject = { id: subjectSlug, name: subjectName, description: `Subject for TNPSC exams` };
+                await setDoc(newSubjectRef, newSubject);
+                subjectId = subjectSlug;
+            } else {
+                subjectId = subjectSnapshot.docs[0].id;
+            }
+
+            // 2. Update the unit
+            const unitDocRef = doc(firestore, 'units', unit.id);
+            const unitData: Partial<Unit> = {
+                classId,
+                subjectId,
+                term,
+                unitNumber,
+                unitName,
+            };
+            if (category) {
+                unitData.category = category === 'other' ? otherCategory : category;
+            }
+
+            await updateDoc(unitDocRef, unitData);
+
+            toast({
+                title: t('Unit Updated!'),
+                description: t('The unit "{{unitName}}" has been successfully updated.', { unitName }),
+            });
+            onFinished();
+        } catch (error) {
+            console.error('Error updating unit:', error);
+            toast({
+                variant: 'destructive',
+                title: t('Error Updating Unit'),
+                description: (error as Error).message || t('There was a problem updating the unit.'),
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                    control={form.control}
+                    name="classId"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>{t('class_name')}</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value} disabled={!classes}>
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder={t('select_a_class')} />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {classes?.map(c => <SelectItem key={c.id} value={c.id}>{language === 'ta' && c.name_ta ? c.name_ta : c.name}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+
+                <FormField
+                    control={form.control}
+                    name="subjectName"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>{t('subject_name')}</FormLabel>
+                            <FormControl>
+                                <Input placeholder={t('subject_name_placeholder')} {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+
+                {subjectNameValue === 'தமிழ்' && (
+                    <>
+                        <FormField
+                            control={form.control}
+                            name="category"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Category</FormLabel>
+                                    <Select onValueChange={field.onChange} value={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select a category" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="இலக்கணம்">இலக்கணம்</SelectItem>
+                                            <SelectItem value="உரைநடை & செய்யுள்">உரைநடை &amp; செய்யுள்</SelectItem>
+                                            <SelectItem value="other">Other</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        {categoryValue === 'other' && (
+                            <FormField
+                                control={form.control}
+                                name="otherCategory"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Custom Category</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="Enter custom category" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        )}
+                    </>
+                )}
+
+                <FormField
+                    control={form.control}
+                    name="term"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>{t('Term')}</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder={t('Select a Term')} />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    <SelectItem value="பருவம் 1">பருவம் 1</SelectItem>
+                                    <SelectItem value="பருவம் 2">பருவம் 2</SelectItem>
+                                    <SelectItem value="பருவம் 3">பருவம் 3</SelectItem>
+                                    <SelectItem value="Full Book">Full Book</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+
+                <FormField
+                    control={form.control}
+                    name="unitNumber"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>{t('Unit Number')}</FormLabel>
+                            <FormControl>
+                                <Input type="number" placeholder="e.g., 1" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+
+                <FormField
+                    control={form.control}
+                    name="unitName"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>{t('Unit Name')}</FormLabel>
+                            <FormControl>
+                                <Input placeholder={t('Name of the unit')} {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                 <DialogFooter>
+                    <DialogClose asChild>
+                        <Button type="button" variant="secondary">{t('cancel')}</Button>
+                    </DialogClose>
+                    <Button type="submit" disabled={isSubmitting}>
+                        {isSubmitting ? t('Updating Unit...') : t('Update Unit')}
+                    </Button>
+                </DialogFooter>
+            </form>
+        </Form>
+    );
+}
 
 function ExistingUnitsList() {
     const { t } = useTranslation();
     const firestore = useFirestore();
     const { toast } = useToast();
+    const [openDialogs, setOpenDialogs] = useState<Record<string, boolean>>({});
+
     const unitsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'units') : null, [firestore]);
     const { data: units, isLoading } = useCollection<Unit>(unitsCollection);
 
-    // Fetch classes and subjects to display their names
     const classesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'classes') : null, [firestore]);
     const { data: classes } = useCollection<Class>(classesCollection);
     const subjectsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'subjects') : null, [firestore]);
@@ -111,6 +350,10 @@ function ExistingUnitsList() {
             });
         }
     };
+    
+    const setDialogState = (unitId: string, isOpen: boolean) => {
+        setOpenDialogs(prev => ({ ...prev, [unitId]: isOpen }));
+    };
 
     if (isLoading) return <p>{t('Loading units...')}...</p>
     
@@ -128,9 +371,26 @@ function ExistingUnitsList() {
                                 <div>
                                     <p className="font-semibold text-sm">{unit.className} - {unit.subjectName} - {unit.term}</p>
                                     <p className="font-bold text-base">Unit {unit.unitNumber}: {unit.unitName}</p>
-                                    {unit.category && <p className="text-xs text-muted-foreground">Category: {unit.category === 'other' ? unit.otherCategory : unit.category}</p>}
+                                    {unit.category && <p className="text-xs text-muted-foreground">Category: {unit.category}</p>}
                                 </div>
                                 <div className="flex gap-2">
+                                     <Dialog open={openDialogs[unit.id] || false} onOpenChange={(isOpen) => setDialogState(unit.id, isOpen)}>
+                                        <DialogTrigger asChild>
+                                            <Button variant="ghost" size="icon">
+                                                <Edit className="h-4 w-4" />
+                                                <span className="sr-only">{t('edit')}</span>
+                                            </Button>
+                                        </DialogTrigger>
+                                        <DialogContent>
+                                            <DialogHeader>
+                                                <DialogTitle>{t('Edit Unit')}</DialogTitle>
+                                                <DialogDescription>
+                                                    {t("Make changes to the unit details below.")}
+                                                </DialogDescription>
+                                            </DialogHeader>
+                                            <EditUnitForm unit={unit} classes={classes} onFinished={() => setDialogState(unit.id, false)} />
+                                        </DialogContent>
+                                    </Dialog>
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
                                             <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
