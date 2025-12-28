@@ -41,24 +41,18 @@ import {
 } from '@/components/ui/dialog';
 
 
-const createSlug = (str: string) => {
-  if (!str) return '';
-  str = str.replace(/^\s+|\s+$/g, ''); // trim
-  str = str.toLowerCase();
+const createSlug = (name: string) => {
+  if (!name) return '';
 
-  // remove accents, swap ñ for n, etc
-  const from = "àáäâèéëêìíïîòóöôùúüûñç·/_,:;";
-  const to = "aaaaeeeeiiiioooouuuunc------";
-  for (let i = 0, l = from.length; i < l; i++) {
-    str = str.replace(new RegExp(from.charAt(i), 'g'), to.charAt(i));
-  }
-
-  str = str.replace(/[^a-z0-9 -]/g, '') // remove invalid chars
-    .replace(/\s+/g, '-') // collapse whitespace and replace by -
-    .replace(/-+/g, '-'); // collapse dashes
-
-  return str;
-}
+  const normalized = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  
+  return normalized.toString().toLowerCase()
+    .replace(/\s+/g, '-') // Replace spaces with -
+    .replace(/[^\w\-\u0B80-\u0BFF]+/g, '') // Allow Tamil characters
+    .replace(/\-\-+/g, '-') // Replace multiple - with single -
+    .replace(/^-+/, '') // Trim - from start of text
+    .replace(/-+$/, '') // Trim - from end of text
+};
 
 const unitFormSchema = z.object({
   classId: z.string().min(1, { message: "Please select a class." }),
