@@ -8,6 +8,7 @@
  * - /users/{userId}: Stores user profiles, accessible only by the user themselves. Admins can read any profile.
  * - /subjects/{subjectId}: Stores subject information, publicly readable. Writable by admins.
  * - /classes/{classId}: Stores class information, publicly readable. Writable by admins.
+ * - /units/{unitId}: Stores unit information, publicly readable. Writable by admins.
  * - /questions/{questionId}: Stores question data, publicly readable. Writable by admins.
  * - /tests/{testId}: Stores test data, publicly readable. Writable by admins.
  * - /users/{userId}/testAttempts/{testAttemptId}: Stores user's test attempts, accessible by the user and admins.
@@ -80,6 +81,11 @@ service cloud.firestore {
     }
 
     match /classes/{classId} {
+      allow get, list: if true;
+      allow create, update, delete: if isAdmin();
+    }
+    
+    match /units/{unitId} {
       allow get, list: if true;
       allow create, update, delete: if isAdmin();
     }
