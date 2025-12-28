@@ -185,6 +185,8 @@ function ExistingTestsList() {
         if (!firestore) return;
         const testDocRef = doc(firestore, 'tests', testId);
         try {
+            // Here you might also want to delete associated questions if they are not used elsewhere.
+            // For now, we are just deleting the test document.
             await deleteDoc(testDocRef);
             toast({
                 title: t('Test Deleted'),
@@ -356,7 +358,7 @@ export default function UploadMcqPage() {
       if (!unitId) throw new Error("Could not create a valid Unit ID.");
       
       const unitDocRef = doc(firestore, 'units', unitId);
-      const unitData: Partial<Unit> = { id: unitId, classId, subjectId, term, unitNumber, unitName };
+      const unitData: Unit = { id: unitId, classId, subjectId, term, unitNumber, unitName };
       if(category) unitData.category = category === 'other' ? otherCategory : category;
       await setDoc(unitDocRef, unitData, { merge: true });
 
@@ -614,4 +616,3 @@ export default function UploadMcqPage() {
     </div>
   );
 }
-

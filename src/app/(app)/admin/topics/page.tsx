@@ -48,7 +48,7 @@ const createSlug = (name: string) => {
 
 const unitFormSchema = z.object({
   classId: z.string().min(1, { message: "Please select a class." }),
-  subjectName: z.string().min(1, { message: "Subject name must be at least 1 character." }),
+  subjectName: z.string().min(2, { message: "Subject name must be at least 2 characters." }),
   term: z.string().min(1, { message: "Please select a term." }),
   unitNumber: z.coerce.number().min(1, "Unit number must be at least 1."),
   unitName: z.string().min(1, { message: 'Unit name must be at least 1 character.' }),
@@ -229,7 +229,7 @@ export default function TopicManagementPage() {
         }
         const unitDocRef = doc(firestore, 'units', unitId);
         
-        const unitData: Partial<Unit> = {
+        const unitData: Unit = {
             id: unitId,
             classId,
             subjectId,
@@ -422,4 +422,3 @@ export default function TopicManagementPage() {
     </div>
   );
 }
-
