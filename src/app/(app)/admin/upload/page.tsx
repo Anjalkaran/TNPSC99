@@ -80,6 +80,7 @@ const jsonStructureExample = `[
 // Helper to create a slug from a title
 const createSlug = (name: string) => {
   if (!name) return '';
+  // Keep unicode characters, but replace spaces with dashes and clean up.
   return name
     .toLowerCase()
     .replace(/\s+/g, '-') // Replace spaces with -
@@ -141,7 +142,7 @@ function ExistingTestsList() {
                  const questionsQuery = query(collection(firestore, 'questions'), where('__name__', 'in', chunk));
                  const questionsSnap = await getDocs(questionsQuery);
                  questionsSnap.forEach(docSnap => {
-                    const { id, classId, subjectId, unitId, ...questionData } = docSnap.data() as Question;
+                    const { id, classId, subjectId, ...questionData } = docSnap.data() as Question;
                     fetchedQuestions.push(questionData);
                  });
               }
