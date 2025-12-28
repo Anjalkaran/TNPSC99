@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -351,7 +352,7 @@ export default function UploadMcqPage() {
       }
 
       // 2. Create Unit
-      const unitId = createSlug(`${classId}-${subjectId}-${term}-unit-${unitNumber}`);
+      const unitId = createSlug(`${classId}-${subjectId}-${term}-unit-${unitNumber}-${unitName}`);
       if (!unitId) throw new Error("Could not create a valid Unit ID.");
       
       const unitDocRef = doc(firestore, 'units', unitId);
@@ -613,3 +614,4 @@ export default function UploadMcqPage() {
     </div>
   );
 }
+
