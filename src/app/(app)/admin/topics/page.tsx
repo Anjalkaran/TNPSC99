@@ -42,6 +42,7 @@ const unitFormSchema = z.object({
   unitNumber: z.coerce.number().min(1, "Unit number must be at least 1."),
   unitName: z.string().min(3, { message: 'Unit name must be at least 3 characters.' }),
   unitName_ta: z.string().optional(),
+  category: z.string().optional(),
 });
 
 type UnitFormValues = z.infer<typeof unitFormSchema>;
@@ -108,6 +109,7 @@ function ExistingUnitsList() {
                                     <p className="font-semibold text-sm">{unit.className} - {unit.subjectName} - {unit.term}</p>
                                     <p className="font-bold text-base">Unit {unit.unitNumber}: {unit.unitName}</p>
                                     {unit.unitName_ta && <p className="text-muted-foreground text-sm">{unit.unitName_ta}</p>}
+                                    {unit.category && <p className="text-xs text-muted-foreground">Category: {unit.category}</p>}
                                 </div>
                                 <div className="flex gap-2">
                                     <AlertDialog>
@@ -153,9 +155,10 @@ export default function TopicManagementPage() {
   
   const form = useForm<UnitFormValues>({
     resolver: zodResolver(unitFormSchema),
-    defaultValues: { classId: '', subjectName: '', term: '', unitNumber: 1, unitName: '', unitName_ta: '' },
+    defaultValues: { classId: '', subjectName: '', term: '', unitNumber: 1, unitName: '', unitName_ta: '', category: '' },
   });
 
+  const subjectNameValue = form.watch('subjectName');
 
   const resetForm = () => {
     form.reset();
@@ -166,7 +169,7 @@ export default function TopicManagementPage() {
     setIsSubmitting(true);
     
     try {
-        const { classId, subjectName, term, unitNumber, unitName, unitName_ta } = values;
+        const { classId, subjectName, term, unitNumber, unitName, unitName_ta, category } = values;
 
         // 1. Find or create the subject
         let subjectId: string;
@@ -197,15 +200,22 @@ export default function TopicManagementPage() {
         // 2. Create the unit
         const unitId = createSlug(`${classId}-${subjectId}-${term}-unit-${unitNumber}`);
         const unitDocRef = doc(firestore, 'units', unitId);
-        await setDoc(unitDocRef, {
+        
+        const unitData: Partial<Unit> = {
             id: unitId,
             classId,
             subjectId,
             term,
             unitNumber,
             unitName,
-            unitName_ta: unitName_ta || ''
-        }, { merge: true });
+            unitName_ta: unitName_ta || '',
+        };
+        
+        if(category) {
+            unitData.category = category;
+        }
+
+        await setDoc(unitDocRef, unitData, { merge: true });
 
         toast({
             title: t('Unit Created!'),
@@ -275,6 +285,31 @@ export default function TopicManagementPage() {
                     </FormItem>
                   )}
                 />
+                
+                {subjectNameValue === 'தமிழ்' && (
+                   <FormField
+                    control={form.control}
+                    name="category"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Category</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a category" />
+                            </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                <SelectItem value="இலக்கணம்">இலக்கணம்</SelectItem>
+                                <SelectItem value="இலக்கியம்">இலக்கியம்</SelectItem>
+                                <SelectItem value="தமிழ் அறிஞர்களும் தமிழ்த்தொண்டும்">தமிழ் அறிஞர்களும் தமிழ்த்தொண்டும்</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                )}
 
                 <FormField
                   control={form.control}

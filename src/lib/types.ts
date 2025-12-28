@@ -51,6 +51,7 @@ export interface Unit {
   unitNumber: number;
   unitName: string;
   unitName_ta?: string;
+  category?: string; // New field for subject-specific categorization
   className?: string; // For display purposes
   subjectName?: string; // For display purposes
 }
@@ -87,5 +88,3 @@ export interface Score {
   testTitle: string;
   createdAt: string;
 }
-
-    
