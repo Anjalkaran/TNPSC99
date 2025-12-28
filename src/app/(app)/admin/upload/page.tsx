@@ -83,15 +83,9 @@ const createSlug = (name: string) => {
   if (!name) return '';
 
   const normalized = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-
-  const a = 'àáâäæãåāăąçćčđďèéêëēėęěğǵḧîïíīįìłḿñńǹňôöòóœøōõőṕŕřßśšşșťțûüùúūǘůűųẃẍÿýžźż·/_,:;'
-  const b = 'aaaaaaaaaacccddeeeeeeeegghiiiiiilmnnnnoooooooooprrsssssttuuuuuuuuuwxyyzzz------'
-  const p = new RegExp(a.split('').join('|'), 'g')
-
+  
   return normalized.toString().toLowerCase()
     .replace(/\s+/g, '-') // Replace spaces with -
-    .replace(p, c => b.charAt(a.indexOf(c))) // Replace special characters
-    .replace(/&/g, '-and-') // Replace & with 'and'
     .replace(/[^\w\-]+/g, '') // Remove all non-word chars
     .replace(/\-\-+/g, '-') // Replace multiple - with single -
     .replace(/^-+/, '') // Trim - from start of text
@@ -129,14 +123,18 @@ const uploadFormSchema = z.object({
 
 type UploadFormValues = z.infer<typeof uploadFormSchema>;
 
-function ExistingUnitsList() {
+interface UnitWithNames extends Unit {
+    className?: string;
+    subjectName?: string;
+}
+
+function ExistingUnitsList({ onUnitSelect }: { onUnitSelect: (unit: UnitWithNames) => void }) {
     const { t } = useTranslation();
     const firestore = useFirestore();
     const { toast } = useToast();
     const unitsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'units') : null, [firestore]);
     const { data: units, isLoading } = useCollection<Unit>(unitsCollection);
 
-    // Fetch classes and subjects to display their names
     const classesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'classes') : null, [firestore]);
     const { data: classes } = useCollection<Class>(classesCollection);
     const subjectsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'subjects') : null, [firestore]);
@@ -179,18 +177,18 @@ function ExistingUnitsList() {
         <Card>
             <CardHeader>
                 <CardTitle>{t('Existing Units')}</CardTitle>
-                 <CardDescription>{t('Manage or delete existing units.')}</CardDescription>
+                 <CardDescription>{t('Click a unit to populate the form below.')}</CardDescription>
             </CardHeader>
             <CardContent>
                 {unitsWithNames && unitsWithNames.length > 0 ? (
                      <ul className="space-y-2 max-h-96 overflow-y-auto">
                         {unitsWithNames.map(unit => (
                             <li key={unit.id} className="flex justify-between items-center p-3 border rounded-md">
-                                <div>
+                                <button type="button" className="text-left flex-grow" onClick={() => onUnitSelect(unit)}>
                                     <p className="font-semibold text-sm">{unit.className} - {unit.subjectName} - {unit.term}</p>
                                     <p className="font-bold text-base">Unit {unit.unitNumber}: {unit.unitName}</p>
-                                    {unit.category && <p className="text-xs text-muted-foreground">Category: {unit.category === 'other' ? unit.otherCategory : unit.category}</p>}
-                                </div>
+                                    {unit.category && <p className="text-xs text-muted-foreground">Category: {unit.category}</p>}
+                                </button>
                                 <div className="flex gap-2">
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>
@@ -284,8 +282,6 @@ function ExistingTestsList() {
         if (!firestore) return;
         const testDocRef = doc(firestore, 'tests', testId);
         try {
-            // Here you might also want to delete associated questions if they are not used elsewhere.
-            // For now, we are just deleting the test document.
             await deleteDoc(testDocRef);
             toast({
                 title: t('Test Deleted'),
@@ -402,6 +398,24 @@ export default function UploadMcqPage() {
       reader.readAsText(file);
     }
   };
+
+    const handleUnitSelect = (unit: UnitWithNames) => {
+        form.setValue('classId', unit.classId);
+        form.setValue('subjectName', unit.subjectName || unit.subjectId);
+        form.setValue('term', unit.term);
+        form.setValue('unitNumber', unit.unitNumber);
+        form.setValue('unitName', unit.unitName);
+        if (unit.category === 'இலக்கணம்' || unit.category === 'உரைநடை & செய்யுள்') {
+            form.setValue('category', unit.category);
+        } else if (unit.category) {
+            form.setValue('category', 'other');
+            form.setValue('otherCategory', unit.category);
+        } else {
+            form.setValue('category', '');
+            form.setValue('otherCategory', '');
+        }
+    };
+
 
   const onSubmit: SubmitHandler<UploadFormValues> = async (values) => {
     setIsSubmitting(true);
@@ -523,6 +537,21 @@ export default function UploadMcqPage() {
   return (
     <div className="container mx-auto p-4 sm:p-6 md:p-8 space-y-8">
        <div className="grid md:grid-cols-2 gap-8">
+        <div className="space-y-8">
+            <ExistingUnitsList onUnitSelect={handleUnitSelect} />
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>{t('expected_json_structure')}</CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 bg-muted rounded-md">
+                    <pre className="text-xs font-mono overflow-auto max-h-80">
+                        <code>{jsonStructureExample}</code>
+                    </pre>
+                </CardContent>
+            </Card>
+        </div>
+        
         <Card>
             <CardHeader>
             <CardTitle>{t('upload_class_wise_mcqs')}</CardTitle>
@@ -696,21 +725,6 @@ export default function UploadMcqPage() {
             </Form>
             </CardContent>
         </Card>
-      
-        <div className="space-y-8">
-            <ExistingUnitsList />
-
-            <Card>
-                <CardHeader>
-                    <CardTitle>{t('expected_json_structure')}</CardTitle>
-                </CardHeader>
-                <CardContent className="p-4 bg-muted rounded-md">
-                    <pre className="text-xs font-mono overflow-auto max-h-80">
-                        <code>{jsonStructureExample}</code>
-                    </pre>
-                </CardContent>
-            </Card>
-        </div>
       </div>
       
       <div className="mt-8">

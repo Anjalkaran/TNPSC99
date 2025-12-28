@@ -147,5 +147,14 @@
     "subject_wise_proficiency_desc": "நீங்கள் முயற்சி செய்த ஒவ்வொரு பாடத்திலும் உங்கள் திறமை மதிப்பெண்.",
     "proficiency": "திறமை",
     "no_performance_data_title": "இன்னும் தரவு இல்லை",
-    "no_performance_data_desc": "உங்கள் செயல்திறன் பகுப்பாய்வைக் காண சில சோதனைகளை எடுக்கத் தொடங்குங்கள்."
+    "no_performance_data_desc": "உங்கள் செயல்திறன் பகுப்பாய்வைக் காண சில சோதனைகளை எடுக்கத் தொடங்குங்கள்.",
+    "Existing Units": "இருக்கும் அலகுகள்",
+    "Click a unit to populate the form below.": "கீழே உள்ள படிவத்தை நிரப்ப ஒரு அலகைக் கிளிக் செய்யவும்.",
+    "No units found.": "அலகுகள் எதுவும் இல்லை.",
+    "Unit Deleted": "அலகு நீக்கப்பட்டது",
+    "The unit has been successfully deleted.": "அலகு வெற்றிகரமாக நீக்கப்பட்டது.",
+    "Error Deleting Unit": "அலகு நீக்குவதில் பிழை",
+    "There was a problem deleting the unit.": "அலகு நீக்கும்போது ஒரு சிக்கல் ஏற்பட்டது.",
+    "This action will permanently delete the unit '{{unitName}}'.": "இந்த செயல்பாடு '{{unitName}}' என்ற அலகை நிரந்தரமாக நீக்கும்.",
+    "Loading units...": "அலகுகள் ஏற்றப்படுகின்றன..."
 }

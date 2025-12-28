@@ -147,5 +147,14 @@
     "subject_wise_proficiency_desc": "Your proficiency score in each subject you've attempted.",
     "proficiency": "Proficiency",
     "no_performance_data_title": "No Data Yet",
-    "no_performance_data_desc": "Start taking some tests to see your performance analysis."
+    "no_performance_data_desc": "Start taking some tests to see your performance analysis.",
+    "Existing Units": "Existing Units",
+    "Click a unit to populate the form below.": "Click a unit to populate the form below.",
+    "No units found.": "No units found.",
+    "Unit Deleted": "Unit Deleted",
+    "The unit has been successfully deleted.": "The unit has been successfully deleted.",
+    "Error Deleting Unit": "Error Deleting Unit",
+    "There was a problem deleting the unit.": "There was a problem deleting the unit.",
+    "This action will permanently delete the unit '{{unitName}}'.": "This action will permanently delete the unit '{{unitName}}'.",
+    "Loading units...": "Loading units..."
 }
