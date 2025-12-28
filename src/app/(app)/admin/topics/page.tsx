@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm, type SubmitHandler, useFieldArray } from 'react-hook-form';
@@ -288,9 +289,9 @@ export default function TopicManagementPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="Term 1">Term 1</SelectItem>
-                          <SelectItem value="Term 2">Term 2</SelectItem>
-                          <SelectItem value="Term 3">Term 3</SelectItem>
+                          <SelectItem value="பருவம் 1">பருவம் 1</SelectItem>
+                          <SelectItem value="பருவம் 2">பருவம் 2</SelectItem>
+                          <SelectItem value="பருவம் 3">பருவம் 3</SelectItem>
                            <SelectItem value="Full Book">Full Book</SelectItem>
                         </SelectContent>
                       </Select>
