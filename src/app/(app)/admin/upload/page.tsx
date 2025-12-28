@@ -81,20 +81,20 @@ const jsonStructureExample = `[
 
 // Helper to create a slug from a title
 const createSlug = (name: string) => {
-    if (!name) return '';
-    const a = 'àáâäæãåāăąçćčđďèéêëēėęěğǵḧîïíīįìłḿñńǹňôöòóœøōõőṕŕřßśšşșťțûüùúūǘůűųẃẍÿýžźż·/_,:;'
-    const b = 'aaaaaaaaaacccddeeeeeeeegghiiiiiilmnnnnoooooooooprrsssssttuuuuuuuuuwxyyzzz------'
-    const p = new RegExp(a.split('').join('|'), 'g')
-  
-    return name.toString().toLowerCase()
-      .replace(/\s+/g, '-') // Replace spaces with -
-      .replace(p, c => b.charAt(a.indexOf(c))) // Replace special characters
-      .replace(/&/g, '-and-') // Replace & with 'and'
-      .replace(/[^\w\-]+/g, '') // Remove all non-word chars
-      .replace(/\-\-+/g, '-') // Replace multiple - with single -
-      .replace(/^-+/, '') // Trim - from start of text
-      .replace(/-+$/, '') // Trim - from end of text
+  if (!name) return '';
+  // This is a more robust slug generator that handles a wide range of Unicode characters
+  const slug = name
+    .toString()
+    .normalize('NFD') // split accented characters into base characters and diacritics
+    .replace(/[\u0300-\u036f]/g, '') // remove all the accents
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-') // replace spaces with -
+    .replace(/[^\w\-]+/g, '') // remove all non-word chars
+    .replace(/\-\-+/g, '-'); // replace multiple - with single -
+  return slug;
 };
+
 
 const findImage = (id: string) => {
     const image = PlaceHolderImages.find((img) => img.id === id);
