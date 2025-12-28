@@ -36,9 +36,9 @@ const createSlug = (name: string) => {
 };
 
 const unitFormSchema = z.object({
-  classId: z.string({ required_error: "Please select a class." }),
+  classId: z.string().min(1, { message: "Please select a class." }),
   subjectName: z.string().min(2, { message: "Subject name must be at least 2 characters." }),
-  term: z.string({ required_error: "Please select a term." }),
+  term: z.string().min(1, { message: "Please select a term." }),
   unitNumber: z.coerce.number().min(1, "Unit number must be at least 1."),
   unitName: z.string().min(3, { message: 'Unit name must be at least 3 characters.' }),
   category: z.string().optional(),
@@ -117,7 +117,6 @@ function ExistingUnitsList() {
                                 <div>
                                     <p className="font-semibold text-sm">{unit.className} - {unit.subjectName} - {unit.term}</p>
                                     <p className="font-bold text-base">Unit {unit.unitNumber}: {unit.unitName}</p>
-                                    {unit.unitName_ta && <p className="text-muted-foreground text-sm">{unit.unitName_ta}</p>}
                                     {unit.category && <p className="text-xs text-muted-foreground">Category: {unit.category === 'other' ? unit.otherCategory : unit.category}</p>}
                                 </div>
                                 <div className="flex gap-2">
@@ -185,6 +184,10 @@ export default function TopicManagementPage() {
         // 1. Find or create the subject
         let subjectId: string;
         const subjectSlug = createSlug(subjectName);
+        if (!subjectSlug) {
+            throw new Error("Subject name cannot be empty.");
+        }
+
         const subjectsRef = collection(firestore, 'subjects');
         const subjectQuery = query(subjectsRef, where('id', '==', subjectSlug));
         const subjectSnapshot = await getDocs(subjectQuery);
@@ -210,6 +213,9 @@ export default function TopicManagementPage() {
 
         // 2. Create the unit
         const unitId = createSlug(`${classId}-${subjectId}-${term}-unit-${unitNumber}`);
+        if (!unitId) {
+            throw new Error("Could not create a valid Unit ID. Please check all fields.");
+        }
         const unitDocRef = doc(firestore, 'units', unitId);
         
         const unitData: Partial<Unit> = {
@@ -238,7 +244,7 @@ export default function TopicManagementPage() {
       toast({
         variant: 'destructive',
         title: t('Error Creating Unit'),
-        description: t('There was a problem creating the unit.'),
+        description: (error as Error).message || t('There was a problem creating the unit.'),
       });
     } finally {
       setIsSubmitting(false);
@@ -405,3 +411,5 @@ export default function TopicManagementPage() {
     </div>
   );
 }
+
+    
