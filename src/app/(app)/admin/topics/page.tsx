@@ -41,7 +41,6 @@ const unitFormSchema = z.object({
   term: z.string().min(1, { message: "Please select a term." }),
   unitNumber: z.coerce.number().min(1, "Unit number must be at least 1."),
   unitName: z.string().min(3, { message: 'Unit name must be at least 3 characters.' }),
-  unitName_ta: z.string().optional(),
   category: z.string().optional(),
   otherCategory: z.string().optional(),
 }).refine(data => {
@@ -164,7 +163,7 @@ export default function TopicManagementPage() {
   
   const form = useForm<UnitFormValues>({
     resolver: zodResolver(unitFormSchema),
-    defaultValues: { classId: '', subjectName: '', term: '', unitNumber: 1, unitName: '', unitName_ta: '', category: '', otherCategory: '' },
+    defaultValues: { classId: '', subjectName: '', term: '', unitNumber: 1, unitName: '', category: '', otherCategory: '' },
   });
 
   const subjectNameValue = form.watch('subjectName');
@@ -180,7 +179,7 @@ export default function TopicManagementPage() {
     setIsSubmitting(true);
     
     try {
-        const { classId, subjectName, term, unitNumber, unitName, unitName_ta, category, otherCategory } = values;
+        const { classId, subjectName, term, unitNumber, unitName, category, otherCategory } = values;
 
         // 1. Find or create the subject
         let subjectId: string;
@@ -391,20 +390,6 @@ export default function TopicManagementPage() {
                       <FormLabel>{t('Unit Name')}</FormLabel>
                       <FormControl>
                         <Input placeholder={t('Name of the unit')} {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                 <FormField
-                  control={form.control}
-                  name="unitName_ta"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('Unit Name (Tamil)')}</FormLabel>
-                      <FormControl>
-                        <Input placeholder={t('Name of the unit in Tamil')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
