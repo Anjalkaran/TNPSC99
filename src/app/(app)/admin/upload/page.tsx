@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -79,15 +80,19 @@ const jsonStructureExample = `[
 
 // Helper to create a slug from a title
 const createSlug = (name: string) => {
-  if (!name) return '';
-  // Keep unicode characters, but replace spaces with dashes and clean up.
-  return name
-    .toLowerCase()
-    .replace(/\s+/g, '-') // Replace spaces with -
-    .replace(/[^\p{L}\p{N}-]+/gu, '') // Remove invalid chars, keeping letters, numbers, and hyphens
-    .replace(/--+/g, '-') // Replace multiple - with single -
-    .replace(/^-+/, '') // Trim - from start of text
-    .replace(/-+$/, ''); // Trim - from end of text
+    if (!name) return '';
+    const a = 'àáâäæãåāăąçćčđďèéêëēėęěğǵḧîïíīįìłḿñńǹňôöòóœøōõőṕŕřßśšşșťțûüùúūǘůűųẃẍÿýžźż·/_,:;'
+    const b = 'aaaaaaaaaacccddeeeeeeeegghiiiiiilmnnnnoooooooooprrsssssttuuuuuuuuuwxyyzzz------'
+    const p = new RegExp(a.split('').join('|'), 'g')
+  
+    return name.toString().toLowerCase()
+      .replace(/\s+/g, '-') // Replace spaces with -
+      .replace(p, c => b.charAt(a.indexOf(c))) // Replace special characters
+      .replace(/&/g, '-and-') // Replace & with 'and'
+      .replace(/[^\w\-]+/g, '') // Remove all non-word chars
+      .replace(/\-\-+/g, '-') // Replace multiple - with single -
+      .replace(/^-+/, '') // Trim - from start of text
+      .replace(/-+$/, '') // Trim - from end of text
 };
 
 const findImage = (id: string) => {
@@ -101,10 +106,10 @@ const findImage = (id: string) => {
 
 const uploadFormSchema = z.object({
   classId: z.string().min(1, { message: "Please select a class." }),
-  subjectName: z.string().min(2, { message: "Subject name must be at least 2 characters." }),
+  subjectName: z.string().min(1, { message: "Subject name must be at least 1 character." }),
   term: z.string().min(1, { message: "Please select a term." }),
   unitNumber: z.coerce.number().min(1, "Unit number must be at least 1."),
-  unitName: z.string().min(3, { message: 'Unit name must be at least 3 characters.' }),
+  unitName: z.string().min(1, { message: 'Unit name must be at least 1 character.' }),
   category: z.string().optional(),
   otherCategory: z.string().optional(),
   jsonInput: z.string().min(1, { message: 'JSON data is required.' }),
