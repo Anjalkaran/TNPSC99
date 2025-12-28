@@ -17,7 +17,7 @@ import { ArrowRight } from 'lucide-react';
 import { useTranslation } from '@/hooks/use-translation';
 
 export default function GenerateMcqPage() {
-  const { classId } = useParams();
+  const params = useParams();
   const router = useRouter();
   const firestore = useFirestore();
   const { t, language } = useTranslation();
@@ -26,26 +26,30 @@ export default function GenerateMcqPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [className, setClassName] = useState('');
 
-  const classIdString = useMemo(() => (Array.isArray(classId) ? classId[0] : classId), [classId]);
+  const classId = useMemo(() => {
+    const classIdParam = Array.isArray(params.classId) ? params.classId[0] : params.classId;
+    return classIdParam ? decodeURIComponent(classIdParam) : '';
+  }, [params.classId]);
 
   useEffect(() => {
-    if (!firestore || !classIdString) return;
+    if (!firestore || !classId) return;
 
     const fetchClassAndSubjects = async () => {
       setIsLoading(true);
       try {
         // 1. Fetch Class Name
-        const classDocRef = doc(firestore, 'classes', classIdString);
+        const classDocRef = doc(firestore, 'classes', classId);
         const classSnap = await getDoc(classDocRef);
         if (classSnap.exists()) {
-          setClassName((classSnap.data() as Class).name);
+          const classData = classSnap.data() as Class;
+          setClassName(language === 'ta' && classData.name_ta ? classData.name_ta : classData.name);
         } else {
-          setClassName(`Class ${classIdString}`); // Fallback
+          setClassName(`Class ${classId}`); // Fallback
         }
 
         // 2. Find tests associated with this class
         const testsRef = collection(firestore, 'tests');
-        const testsQuery = query(testsRef, where('classId', '==', classIdString));
+        const testsQuery = query(testsRef, where('classId', '==', classId));
         const testSnapshots = await getDocs(testsQuery);
         const testsForClass = testSnapshots.docs.map(d => d.data() as Test);
         
@@ -70,7 +74,7 @@ export default function GenerateMcqPage() {
     };
 
     fetchClassAndSubjects();
-  }, [firestore, classIdString]);
+  }, [firestore, classId, language]);
   
 
   const pageTitle = isLoading ? "Loading..." : t('subjects_for_class', { className });
@@ -98,7 +102,7 @@ export default function GenerateMcqPage() {
                                         {language === 'ta' && subject.description_ta ? subject.description_ta : subject.description}
                                     </p>
                                     <Button asChild>
-                                        <Link href={`/class/${classIdString}/${subject.id}`}>
+                                        <Link href={`/class/${classId}/${subject.id}`}>
                                             {t('view_tests')} <ArrowRight className="ml-2 h-4 w-4" />
                                         </Link>
                                     </Button>

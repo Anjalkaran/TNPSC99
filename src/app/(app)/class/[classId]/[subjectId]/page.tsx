@@ -8,7 +8,7 @@ import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebas
 import { collection, query, where, getDoc, doc, getDocs } from "firebase/firestore";
 import type { Test, Subject, Class, UserTestAttempt } from "@/lib/types";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
   Select,
   SelectContent,
@@ -87,50 +87,60 @@ function TestProgressBadge({ testId }: { testId: string }) {
 
 
 export default function SubjectTestsPage() {
-  const { classId, subjectId } = useParams();
+  const params = useParams();
   const firestore = useFirestore();
   const { t } = useTranslation();
 
   const [pageTitle, setPageTitle] = useState('');
   const [pageDescription, setPageDescription] = useState('');
 
-  const classIdString = Array.isArray(classId) ? classId[0] : classId;
-  const subjectIdString = Array.isArray(subjectId) ? subjectId[0] : subjectId;
+  const classId = useMemo(() => {
+    const classIdParam = Array.isArray(params.classId) ? params.classId[0] : params.classId;
+    return classIdParam ? decodeURIComponent(classIdParam) : '';
+  }, [params.classId]);
+
+  const subjectId = useMemo(() => {
+    const subjectIdParam = Array.isArray(params.subjectId) ? params.subjectId[0] : params.subjectId;
+    return subjectIdParam ? decodeURIComponent(subjectIdParam) : '';
+  }, [params.subjectId]);
+
 
   const testsCollection = useMemoFirebase(() => collection(firestore, 'tests'), [firestore]);
 
   const subjectTestsQuery = useMemoFirebase(() => {
-    if (!testsCollection || !classIdString || !subjectIdString) return null;
+    if (!testsCollection || !classId || !subjectId) return null;
     
     return query(
       testsCollection, 
-      where('classId', '==', classIdString),
-      where('subjectId', '==', subjectIdString),
+      where('classId', '==', classId),
+      where('subjectId', '==', subjectId),
       where('category', '==', 'class')
     );
-  }, [testsCollection, classIdString, subjectIdString]);
+  }, [testsCollection, classId, subjectId]);
 
   const { data: subjectTests, isLoading } = useCollection<Test>(subjectTestsQuery);
 
   useEffect(() => {
     async function fetchMetadata() {
         if (!firestore) return;
-        let className = `Class ${classIdString}`;
-        let subjectName = subjectIdString;
+        let className = `Class ${classId}`;
+        let subjectName = subjectId;
 
         try {
-            const classDocRef = doc(firestore, 'classes', classIdString);
+            const classDocRef = doc(firestore, 'classes', classId);
             const classSnap = await getDoc(classDocRef);
             if (classSnap.exists()) {
-                className = (classSnap.data() as Class).name;
+                const classData = classSnap.data() as Class;
+                className = t('language') === 'ta' && classData.name_ta ? classData.name_ta : classData.name;
             }
         } catch (e) { console.error("Failed to fetch class name", e)}
 
         try {
-            const subjectDocRef = doc(firestore, 'subjects', subjectIdString);
+            const subjectDocRef = doc(firestore, 'subjects', subjectId);
             const subjectSnap = await getDoc(subjectDocRef);
             if(subjectSnap.exists()){
-                subjectName = (subjectSnap.data() as Subject).name;
+                const subjectData = subjectSnap.data() as Subject;
+                subjectName = t('language') === 'ta' && subjectData.name_ta ? subjectData.name_ta : subjectData.name;
             }
         } catch (e) { console.error("Failed to fetch subject name", e)}
 
@@ -139,7 +149,7 @@ export default function SubjectTestsPage() {
         setPageDescription(`Tests for the subject ${subjectName} in ${className} are listed below.`);
     }
     fetchMetadata();
-  }, [firestore, classIdString, subjectIdString]);
+  }, [firestore, classId, subjectId, t]);
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
