@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -81,45 +79,59 @@ const jsonStructureExample = `[
   }
 ]`;
 
-const createSlug = (name: string) => {
-    if (!name) return '';
+const createSlug = (name: string): string => {
+  if (!name) return '';
 
-    const tamilMap = {
-        'அ': 'a', 'ஆ': 'aa', 'இ': 'i', 'ஈ': 'ii', 'உ': 'u', 'ஊ': 'uu', 'எ': 'e', 'ஏ': 'e', 'ஐ': 'ai', 'ஒ': 'o', 'ஓ': 'oo', 'ஔ': 'au',
-        'க': 'k', 'ங': 'ng', 'ச': 's', 'ஞ': 'gn', 'ட': 't', 'ண': 'n', 'த': 'th', 'ந': 'n', 'ப': 'p', 'ம': 'm', 'ய': 'y', 'ர': 'r', 'ల': 'l', 'வ': 'v', 'ழ': 'zh', 'ள': 'l', 'ற': 'r', 'ன': 'n',
-        'ஜ': 'j', 'ஷ': 'sh', 'ஸ': 's', 'ஹ': 'h', 'க்ஷ': 'ksh', 'ஸ்ரீ': 'sri',
-        '்': '', 'ா': 'a', 'ి': 'i', 'ీ': 'ii', 'ு': 'u', 'ూ': 'uu', 'ெ': 'e', 'ே': 'e', 'ை': 'ai', 'ొ': 'o', 'ో': 'oo', 'ౌ': 'au'
-    };
+  const tamilToLatinMap: { [key: string]: string } = {
+    'அ': 'a', 'ஆ': 'aa', 'இ': 'i', 'ஈ': 'ii', 'உ': 'u', 'ஊ': 'uu',
+    'எ': 'e', 'ஏ': 'e', 'ஐ': 'ai', 'ஒ': 'o', 'ஓ': 'oo', 'ஔ': 'au',
+    'க': 'k', 'ங': 'ng', 'ச': 's', 'ஞ': 'nj', 'ட': 't', 'ண': 'n',
+    'த': 'th', 'ந': 'n', 'ப': 'p', 'ம': 'm', 'ய': 'y', 'ர': 'r',
+    'ல': 'l', 'வ': 'v', 'ழ': 'zh', 'ள': 'l', 'ற': 'r', 'ன': 'n',
+    'ஜ': 'j', 'ஷ': 'sh', 'ஸ': 's', 'ஹ': 'h', 'க்ஷ': 'ksh',
+    'ஸ்ரீ': 'sri',
+    // Vowel diacritics
+    '்': '', 'ா': 'a', 'ி': 'i', 'ீ': 'ii', 'ு': 'u', 'ூ': 'uu',
+    'ெ': 'e', 'ே': 'e', 'ை': 'ai', 'ொ': 'o', 'ோ': 'oo', 'ௌ': 'au'
+  };
 
-    const consonants = "கஙசஞடணதநபமயரலவழளறன";
+  const consonants = "கஙசஞடணதநபமயரலவழளறனஜஷஸஹக்ஷ";
 
-    let slug = '';
-    for (let i = 0; i < name.length; i++) {
-        const char = name[i];
-        const nextChar = name[i + 1];
+  let slug = '';
+  for (let i = 0; i < name.length; i++) {
+    const char = name[i];
+    const nextChar = name[i + 1];
 
-        if (consonants.includes(char) && tamilMap[nextChar as keyof typeof tamilMap] !== undefined && tamilMap[nextChar as keyof typeof tamilMap] !== '') {
-            // Consonant followed by a vowel sign
-            slug += tamilMap[char as keyof typeof tamilMap] + tamilMap[nextChar as keyof typeof tamilMap];
-            i++; // Skip the vowel sign
-        } else if (tamilMap[char as keyof typeof tamilMap] !== undefined) {
-            // Standalone vowel or consonant with pulli
-             if (consonants.includes(char) && (nextChar === undefined || nextChar === ' ' || !tamilMap[nextChar as keyof typeof tamilMap] )) {
-                 slug += tamilMap[char as keyof typeof tamilMap] + 'a';
-             } else {
-                slug += tamilMap[char as keyof typeof tamilMap];
-             }
+    if (tamilToLatinMap[char]) {
+      // It's a Tamil character
+      if (consonants.includes(char)) {
+        if (nextChar && tamilToLatinMap[nextChar] && !consonants.includes(nextChar) && tamilToLatinMap[nextChar] !== '') {
+          // Consonant followed by a vowel sign
+          slug += tamilToLatinMap[char] + tamilToLatinMap[nextChar];
+          i++; // Skip the vowel sign
         } else {
-            slug += char;
+          // Consonant with an inherent 'a' sound or with a pulli (which maps to '')
+          slug += tamilToLatinMap[char] + (tamilToLatinMap[char] ? 'a' : '');
         }
+      } else {
+        // It's a standalone vowel
+        slug += tamilToLatinMap[char];
+      }
+    } else {
+      // Not a Tamil character, append as is
+      slug += char;
     }
+  }
 
-    return slug
-        .toLowerCase()
-        .trim()
-        .replace(/[^a-z0-9 -]/g, '') // Remove invalid chars
-        .replace(/\s+/g, '-') // Collapse whitespace and replace by -
-        .replace(/-+/g, '-'); // Collapse dashes
+  return slug
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-') // Replace spaces with -
+    .replace(/[^\w\-]+/g, '') // Remove all non-word chars except hyphen
+    .replace(/\-\-+/g, '-') // Replace multiple - with single -
+    .replace(/^-+/, '') // Trim - from start of text
+    .replace(/-+$/, ''); // Trim - from end of text
 };
 
 
