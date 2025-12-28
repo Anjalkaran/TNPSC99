@@ -32,7 +32,14 @@ import {
 
 const createSlug = (name: string) => {
   if (!name) return '';
-  return name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
+  // Keep unicode characters, but replace spaces with dashes and clean up.
+  return name
+    .toLowerCase()
+    .replace(/\s+/g, '-') // Replace spaces with -
+    .replace(/[^\p{L}\p{N}-]+/gu, '') // Remove invalid chars, keeping letters, numbers, and hyphens
+    .replace(/--+/g, '-') // Replace multiple - with single -
+    .replace(/^-+/, '') // Trim - from start of text
+    .replace(/-+$/, ''); // Trim - from end of text
 };
 
 const unitFormSchema = z.object({
