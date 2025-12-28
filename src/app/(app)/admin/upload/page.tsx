@@ -70,26 +70,31 @@ const jsonStructureExample = `[
     "text": "Your question text here?",
     "answerOptions": ["Option A", "Option B", "Option C", "Option D"],
     "correctAnswerIndex": 0,
-    "reference": "Source or hint for the question (optional)"
+    "reference": "Source or hint for the question (optional)",
+    "unitId": "your-unit-id-here"
   },
   {
     "text": "Another question?",
     "answerOptions": ["Yes", "No"],
-    "correctAnswerIndex": 1
+    "correctAnswerIndex": 1,
+    "unitId": "your-unit-id-here"
   }
 ]`;
 
 const createSlug = (name: string) => {
   if (!name) return '';
 
-  const normalized = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  
-  return normalized.toString().toLowerCase()
-    .replace(/\s+/g, '-') // Replace spaces with -
-    .replace(/[^\w\-\u0B80-\u0BFF]+/g, '') // Allow Tamil characters
-    .replace(/\-\-+/g, '-') // Replace multiple - with single -
-    .replace(/^-+/, '') // Trim - from start of text
-    .replace(/-+$/, '') // Trim - from end of text
+  const normalized = name
+    .toString()
+    .normalize('NFD') // split an accented letter in the base letter and the acent
+    .replace(/[\u0300-\u036f]/g, '') // remove all previously split accents
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-') // replace spaces with -
+    .replace(/[^\w-]+/g, '') // remove all non-word chars
+    .replace(/--+/g, '-'); // replace multiple - with single -
+
+  return normalized;
 };
 
 
@@ -419,15 +424,15 @@ export default function UploadMcqPage() {
 
   const onSubmit: SubmitHandler<UploadFormValues> = async (values) => {
     setIsSubmitting(true);
-    let questions: Omit<Question, 'id' | 'classId' | 'subjectId' | 'unitId'>[];
+    let questions: Omit<Question, 'id' | 'classId' | 'subjectId'>[];
     try {
       questions = JSON.parse(values.jsonInput);
       if (!Array.isArray(questions) || questions.length === 0) {
         throw new Error('JSON must be a non-empty array of questions.');
       }
        for(const q of questions) {
-        if (!q.text || !q.answerOptions || q.correctAnswerIndex === undefined) {
-            throw new Error('Each question object must have text, answerOptions, and correctAnswerIndex.');
+        if (!q.text || !q.answerOptions || q.correctAnswerIndex === undefined || !q.unitId) {
+            throw new Error('Each question object must have text, answerOptions, correctAnswerIndex and unitId.');
         }
       }
     } catch (error: any) {
@@ -479,7 +484,7 @@ export default function UploadMcqPage() {
       const newQuestionIds: string[] = [];
       questions.forEach(q => {
           const questionRef = doc(questionsCollectionRef);
-          const questionData: QuestionInput = { ...q, classId, subjectId, unitId, reference: q.reference || '' };
+          const questionData: QuestionInput = { ...q, classId, subjectId, reference: q.reference || '' };
           batch.set(questionRef, questionData);
           newQuestionIds.push(questionRef.id);
       });

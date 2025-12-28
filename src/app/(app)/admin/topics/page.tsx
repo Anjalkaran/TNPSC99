@@ -44,14 +44,17 @@ import {
 const createSlug = (name: string) => {
   if (!name) return '';
 
-  const normalized = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  
-  return normalized.toString().toLowerCase()
-    .replace(/\s+/g, '-') // Replace spaces with -
-    .replace(/[^\w\-\u0B80-\u0BFF]+/g, '') // Allow Tamil characters
-    .replace(/\-\-+/g, '-') // Replace multiple - with single -
-    .replace(/^-+/, '') // Trim - from start of text
-    .replace(/-+$/, '') // Trim - from end of text
+  const normalized = name
+    .toString()
+    .normalize('NFD') // split an accented letter in the base letter and the acent
+    .replace(/[\u0300-\u036f]/g, '') // remove all previously split accents
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-') // replace spaces with -
+    .replace(/[^\w-]+/g, '') // remove all non-word chars
+    .replace(/--+/g, '-'); // replace multiple - with single -
+
+  return normalized;
 };
 
 const unitFormSchema = z.object({
