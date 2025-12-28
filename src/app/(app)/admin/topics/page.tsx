@@ -153,7 +153,7 @@ function ExistingUnitsList() {
 }
 
 export default function TopicManagementPage() {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const firestore = useFirestore();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -280,7 +280,7 @@ export default function TopicManagementPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {classes?.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                          {classes?.map(c => <SelectItem key={c.id} value={c.id}>{language === 'ta' && c.name_ta ? c.name_ta : c.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -411,5 +411,7 @@ export default function TopicManagementPage() {
     </div>
   );
 }
+
+    
 
     
