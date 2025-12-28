@@ -60,6 +60,7 @@ import {
 import { Edit, Trash, View, Download } from 'lucide-react';
 import Link from 'next/link';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Label } from '@/components/ui/label';
 
 
 const jsonStructureExample = `[
