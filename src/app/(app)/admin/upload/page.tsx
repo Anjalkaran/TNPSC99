@@ -261,7 +261,7 @@ function ExistingTestsList() {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `${test.slug}.json`;
+            a.download = `${createSlug(test.title)}.json`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -331,12 +331,12 @@ function ExistingTestsList() {
                                         <span className="sr-only">Download</span>
                                     </Button>
                                      <Button asChild variant="outline" size="icon">
-                                        <Link href={`/admin/upload/${test.slug}/view`}>
+                                        <Link href={`/admin/upload/${encodeURIComponent(test.title)}/view`}>
                                             <View className="h-4 w-4" />
                                         </Link>
                                     </Button>
                                     <Button asChild variant="outline" size="icon">
-                                        <Link href={`/admin/upload/${test.slug}/edit`}>
+                                        <Link href={`/admin/upload/${encodeURIComponent(test.title)}/edit`}>
                                             <Edit className="h-4 w-4" />
                                         </Link>
                                     </Button>
@@ -492,16 +492,15 @@ export default function UploadMcqPage() {
       // 4. Find or create test and update it
       const selectedClass = classes?.find(c => c.id === classId);
       const testTitle = `${selectedClass?.name || 'Class'} - ${subjectName} - ${term} - ${unitName}`;
-      const testSlug = createSlug(testTitle);
-      const testRef = doc(testsCollectionRef, testSlug);
+      const testDocId = createSlug(testTitle);
+      const testRef = doc(testsCollectionRef, testDocId);
 
       await runTransaction(firestore, async (transaction) => {
           const testDoc = await transaction.get(testRef);
 
           if (!testDoc.exists()) {
               const newTest: Test = {
-                  id: testSlug,
-                  slug: testSlug,
+                  id: testDocId,
                   title: testTitle,
                   description: t('test_for_class_subject', {classId: selectedClass?.name || classId, subjectId: subjectName}),
                   category: 'class',

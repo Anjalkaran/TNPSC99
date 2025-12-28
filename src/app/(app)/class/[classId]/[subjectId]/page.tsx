@@ -37,7 +37,7 @@ function TestStartControl({ test }: { test: Test }) {
         </SelectContent>
       </Select>
       <Button asChild className="w-full" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
-        <Link href={`/test/${test.slug}${limit ? `?limit=${limit}` : ''}`}>
+        <Link href={`/test/${encodeURIComponent(test.title)}${limit ? `?limit=${limit}` : ''}`}>
           Start Test <ArrowRight className="ml-2 h-4 w-4" />
         </Link>
       </Button>
@@ -163,7 +163,7 @@ export default function SubjectTestsPage() {
       {!isLoading && subjectTests && subjectTests.length > 0 ? (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {subjectTests.map((test) => (
-            <Card key={test.slug} className="flex flex-col overflow-hidden hover:shadow-lg transition-shadow duration-300">
+            <Card key={test.id} className="flex flex-col overflow-hidden hover:shadow-lg transition-shadow duration-300">
               <Image
                 src={test.image.imageUrl}
                 alt={test.title}
