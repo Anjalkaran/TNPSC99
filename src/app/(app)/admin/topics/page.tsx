@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useState, useEffect, useMemo } from 'react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { addDoc, collection, doc, setDoc, deleteDoc, updateDoc, getDocs } from 'firebase/firestore';
+import { addDoc, collection, doc, setDoc, deleteDoc, updateDoc, getDocs, query, where, writeBatch } from 'firebase/firestore';
 import type { Subject, Class, Unit } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -36,7 +36,7 @@ const createSlug = (name: string) => {
 
 const unitFormSchema = z.object({
   classId: z.string({ required_error: "Please select a class." }),
-  subjectId: z.string({ required_error: "Please select a subject." }),
+  subjectName: z.string().min(2, { message: "Subject name must be at least 2 characters." }),
   term: z.string({ required_error: "Please select a term." }),
   unitNumber: z.coerce.number().min(1, "Unit number must be at least 1."),
   unitName: z.string().min(3, { message: 'Unit name must be at least 3 characters.' }),
@@ -149,13 +149,10 @@ export default function TopicManagementPage() {
   
   const classesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'classes') : null, [firestore]);
   const { data: classes, isLoading: classesLoading } = useCollection<Class>(classesCollection);
-  const subjectsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'subjects') : null, [firestore]);
-  const { data: subjects, isLoading: subjectsLoading } = useCollection<Subject>(subjectsCollection);
-
-
+  
   const form = useForm<UnitFormValues>({
     resolver: zodResolver(unitFormSchema),
-    defaultValues: { classId: '', subjectId: '', term: '', unitNumber: 1, unitName: '', unitName_ta: '' },
+    defaultValues: { classId: '', subjectName: '', term: '', unitNumber: 1, unitName: '', unitName_ta: '' },
   });
 
 
@@ -167,28 +164,54 @@ export default function TopicManagementPage() {
     if (!firestore) return;
     setIsSubmitting(true);
     
-    // Create logic
-    const { classId, subjectId, term, unitNumber, unitName, unitName_ta } = values;
-    const unitId = createSlug(`${classId}-${subjectId}-${term}-unit-${unitNumber}`);
-
     try {
-      const unitDocRef = doc(firestore, 'units', unitId);
-      await setDoc(unitDocRef, {
-          id: unitId,
-          classId,
-          subjectId,
-          term,
-          unitNumber,
-          unitName,
-          unitName_ta: unitName_ta || ''
-      }, { merge: true });
+        const { classId, subjectName, term, unitNumber, unitName, unitName_ta } = values;
 
+        // 1. Find or create the subject
+        let subjectId: string;
+        const subjectSlug = createSlug(subjectName);
+        const subjectsRef = collection(firestore, 'subjects');
+        const subjectQuery = query(subjectsRef, where('id', '==', subjectSlug));
+        const subjectSnapshot = await getDocs(subjectQuery);
 
-      toast({
-        title: t('Unit Created!'),
-        description: t('The unit "{{unitName}}" has been successfully created.', { unitName }),
-      });
-      resetForm();
+        if (subjectSnapshot.empty) {
+            // Subject does not exist, create it
+            const newSubjectRef = doc(subjectsRef, subjectSlug);
+            const newSubject: Subject = {
+                id: subjectSlug,
+                name: subjectName,
+                description: `Subject for TNPSC exams`,
+            };
+            await setDoc(newSubjectRef, newSubject);
+            subjectId = subjectSlug;
+            toast({
+                title: t('Subject Created'),
+                description: `New subject '${subjectName}' was created.`,
+            });
+        } else {
+            // Subject exists, use its ID
+            subjectId = subjectSnapshot.docs[0].id;
+        }
+
+        // 2. Create the unit
+        const unitId = createSlug(`${classId}-${subjectId}-${term}-unit-${unitNumber}`);
+        const unitDocRef = doc(firestore, 'units', unitId);
+        await setDoc(unitDocRef, {
+            id: unitId,
+            classId,
+            subjectId,
+            term,
+            unitNumber,
+            unitName,
+            unitName_ta: unitName_ta || ''
+        }, { merge: true });
+
+        toast({
+            title: t('Unit Created!'),
+            description: t('The unit "{{unitName}}" has been successfully created.', { unitName }),
+        });
+        resetForm();
+
     } catch (error) {
       console.error('Error creating unit:', error);
       toast({
@@ -240,20 +263,13 @@ export default function TopicManagementPage() {
                 
                 <FormField
                   control={form.control}
-                  name="subjectId"
+                  name="subjectName"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t('subject_name')}</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value} disabled={subjectsLoading}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder={t('select_a_subject')} />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {subjects?.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
+                       <FormControl>
+                        <Input placeholder={t('subject_name_placeholder')} {...field} />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
