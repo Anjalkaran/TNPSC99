@@ -50,9 +50,7 @@ export interface Unit {
   term: string;
   unitNumber: number;
   unitName: string;
-  unitName_ta?: string;
   category?: string;
-  otherCategory?: string;
   className?: string; // For display purposes
   subjectName?: string; // For display purposes
 }
