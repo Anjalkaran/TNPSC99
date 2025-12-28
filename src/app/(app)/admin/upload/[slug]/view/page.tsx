@@ -16,26 +16,24 @@ export default function ViewTestJsonPage() {
   const [questions, setQuestions] = useState<Omit<Question, 'id' | 'classId' | 'subjectId'>[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const testRef = useMemoFirebase(() => {
-      if (!firestore || !slug) return null;
-      const testSlug = Array.isArray(slug) ? slug[0] : slug;
-      return doc(firestore, 'tests', testSlug);
-  }, [firestore, slug]);
-
   useEffect(() => {
-    if (!testRef) return;
+    if (!firestore || !slug) return;
 
     const fetchTestAndQuestions = async () => {
       setIsLoading(true);
       try {
-        const testSnap = await getDoc(testRef);
+        const testSlug = Array.isArray(slug) ? slug[0] : slug;
+        const testsRef = collection(firestore, 'tests');
+        const q = query(testsRef, where('slug', '==', testSlug));
+        const querySnapshot = await getDocs(q);
 
-        if (!testSnap.exists()) {
+        if (querySnapshot.empty) {
           notFound();
           return;
         }
 
-        const testData = { id: testSnap.id, ...testSnap.data() } as Test;
+        const testDoc = querySnapshot.docs[0];
+        const testData = { id: testDoc.id, ...testDoc.data() } as Test;
         setTest(testData);
 
         const fetchedQuestions: Omit<Question, 'id' | 'classId' | 'subjectId'>[] = [];
@@ -46,12 +44,14 @@ export default function ViewTestJsonPage() {
           }
 
           for (const chunk of questionIdsChunks) {
-             const questionsQuery = query(collection(firestore, 'questions'), where('__name__', 'in', chunk));
-             const questionsSnap = await getDocs(questionsQuery);
-             questionsSnap.forEach(docSnap => {
-                const { id, classId, subjectId, ...questionData } = docSnap.data() as Question;
-                fetchedQuestions.push(questionData);
-             });
+             if (chunk.length > 0) {
+                const questionsQuery = query(collection(firestore, 'questions'), where('__name__', 'in', chunk));
+                const questionsSnap = await getDocs(questionsQuery);
+                questionsSnap.forEach(docSnap => {
+                    const { id, classId, subjectId, ...questionData } = docSnap.data() as Question;
+                    fetchedQuestions.push(questionData);
+                });
+             }
           }
         }
         setQuestions(fetchedQuestions);
@@ -63,7 +63,7 @@ export default function ViewTestJsonPage() {
     };
 
     fetchTestAndQuestions();
-  }, [testRef, firestore]);
+  }, [slug, firestore]);
 
   if (isLoading) {
     return <div className="container mx-auto p-8">{t('Loading tests...')}</div>;

@@ -30,30 +30,32 @@ export default function EditTestPage() {
   const { toast } = useToast();
   
   const [test, setTest] = useState<Test | null>(null);
+  const [testRef, setTestRef] = useState<any>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const testRef = useMemoFirebase(() => {
-      if (!firestore || !slug) return null;
-      const testSlug = Array.isArray(slug) ? slug[0] : slug;
-      return doc(firestore, 'tests', testSlug);
-  }, [firestore, slug]);
 
   useEffect(() => {
-    if (!testRef) return;
+    if (!firestore || !slug) return;
 
     const fetchTestAndQuestions = async () => {
       setIsLoading(true);
       try {
-        const testSnap = await getDoc(testRef);
+        const testSlug = Array.isArray(slug) ? slug[0] : slug;
+        const testsRef = collection(firestore, 'tests');
+        const q = query(testsRef, where('slug', '==', testSlug));
+        const querySnapshot = await getDocs(q);
 
-        if (!testSnap.exists()) {
+        if (querySnapshot.empty) {
           notFound();
           return;
         }
 
-        const testData = { id: testSnap.id, ...testSnap.data() } as Test;
+        const testDoc = querySnapshot.docs[0];
+        const testData = { id: testDoc.id, ...testDoc.data() } as Test;
         setTest(testData);
+        setTestRef(testDoc.ref);
+
 
         const fetchedQuestions: Question[] = [];
         if (testData.questionIds && testData.questionIds.length > 0) {
@@ -65,11 +67,13 @@ export default function EditTestPage() {
           }
 
           for (const chunk of questionIdsChunks) {
-             const questionsQuery = query(collection(firestore, 'questions'), where('__name__', 'in', chunk));
-             const questionsSnap = await getDocs(questionsQuery);
-             questionsSnap.forEach(doc => {
-                fetchedQuestions.push({ id: doc.id, ...doc.data() } as Question);
-             });
+             if (chunk.length > 0) {
+                const questionsQuery = query(collection(firestore, 'questions'), where('__name__', 'in', chunk));
+                const questionsSnap = await getDocs(questionsQuery);
+                questionsSnap.forEach(doc => {
+                    fetchedQuestions.push({ id: doc.id, ...doc.data() } as Question);
+                });
+             }
           }
         }
         setQuestions(fetchedQuestions);
@@ -86,7 +90,7 @@ export default function EditTestPage() {
     };
 
     fetchTestAndQuestions();
-  }, [testRef, toast, firestore]);
+  }, [slug, toast, firestore]);
 
   const handleRemoveQuestion = async (questionId: string) => {
       if(!test || !testRef) return;
@@ -143,7 +147,8 @@ export default function EditTestPage() {
                 <TableHeader>
                     <TableRow>
                         <TableHead>{t('Question Text')}</TableHead>
-                        <TableHead className="text-right">{t('Actions')}</TableHead>
+                        <TableHead>{t('Actions')}</TableHead>
+                        <TableHead>{t('Unit ID')}</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -171,6 +176,7 @@ export default function EditTestPage() {
                                     </AlertDialogContent>
                                 </AlertDialog>
                             </TableCell>
+                            <TableCell>{q.unitId}</TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
