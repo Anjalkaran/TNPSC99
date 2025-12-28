@@ -81,15 +81,18 @@ const jsonStructureExample = `[
 
 const createSlug = (name: string) => {
   if (!name) return '';
+
+  const normalized = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
   const a = 'àáâäæãåāăąçćčđďèéêëēėęěğǵḧîïíīįìłḿñńǹňôöòóœøōõőṕŕřßśšşșťțûüùúūǘůűųẃẍÿýžźż·/_,:;'
   const b = 'aaaaaaaaaacccddeeeeeeeegghiiiiiilmnnnnoooooooooprrsssssttuuuuuuuuuwxyyzzz------'
   const p = new RegExp(a.split('').join('|'), 'g')
 
-  return name.toString().toLowerCase()
+  return normalized.toString().toLowerCase()
     .replace(/\s+/g, '-') // Replace spaces with -
     .replace(p, c => b.charAt(a.indexOf(c))) // Replace special characters
     .replace(/&/g, '-and-') // Replace & with 'and'
-    .replace(/[^\w\-u0b80-\u0bff]+/g, '') // Remove all non-word chars except Tamil
+    .replace(/[^\w\-]+/g, '') // Remove all non-word chars
     .replace(/\-\-+/g, '-') // Replace multiple - with single -
     .replace(/^-+/, '') // Trim - from start of text
     .replace(/-+$/, '') // Trim - from end of text
@@ -125,6 +128,102 @@ const uploadFormSchema = z.object({
 });
 
 type UploadFormValues = z.infer<typeof uploadFormSchema>;
+
+function ExistingUnitsList() {
+    const { t } = useTranslation();
+    const firestore = useFirestore();
+    const { toast } = useToast();
+    const unitsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'units') : null, [firestore]);
+    const { data: units, isLoading } = useCollection<Unit>(unitsCollection);
+
+    // Fetch classes and subjects to display their names
+    const classesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'classes') : null, [firestore]);
+    const { data: classes } = useCollection<Class>(classesCollection);
+    const subjectsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'subjects') : null, [firestore]);
+    const { data: subjects } = useCollection<Subject>(subjectsCollection);
+
+    const unitsWithNames = useMemo(() => {
+        if (!units || !classes || !subjects) return [];
+        const classMap = new Map(classes.map(c => [c.id, c.name]));
+        const subjectMap = new Map(subjects.map(s => [s.id, s.name]));
+        return units.map(unit => ({
+            ...unit,
+            className: classMap.get(unit.classId) || unit.classId,
+            subjectName: subjectMap.get(unit.subjectId) || unit.subjectId,
+        }))
+    }, [units, classes, subjects]);
+
+
+    const handleDelete = async (unitId: string) => {
+        if (!firestore) return;
+        const unitDocRef = doc(firestore, 'units', unitId);
+        try {
+            await deleteDoc(unitDocRef);
+            toast({
+                title: t('Unit Deleted'),
+                description: t('The unit has been successfully deleted.'),
+            });
+        } catch (error) {
+            console.error("Error deleting unit: ", error);
+            toast({
+                variant: 'destructive',
+                title: t('Error Deleting Unit'),
+                description: t('There was a problem deleting the unit.'),
+            });
+        }
+    };
+
+    if (isLoading) return <p>{t('Loading units...')}...</p>
+    
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>{t('Existing Units')}</CardTitle>
+                 <CardDescription>{t('Manage or delete existing units.')}</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {unitsWithNames && unitsWithNames.length > 0 ? (
+                     <ul className="space-y-2 max-h-96 overflow-y-auto">
+                        {unitsWithNames.map(unit => (
+                            <li key={unit.id} className="flex justify-between items-center p-3 border rounded-md">
+                                <div>
+                                    <p className="font-semibold text-sm">{unit.className} - {unit.subjectName} - {unit.term}</p>
+                                    <p className="font-bold text-base">Unit {unit.unitNumber}: {unit.unitName}</p>
+                                    {unit.category && <p className="text-xs text-muted-foreground">Category: {unit.category === 'other' ? unit.otherCategory : unit.category}</p>}
+                                </div>
+                                <div className="flex gap-2">
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                                <Trash className="h-4 w-4" />
+                                                <span className="sr-only">{t('delete')}</span>
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>{t('confirm_deletion_title')}</AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    {t('This action will permanently delete the unit \'{{unitName}}\'.', { unitName: unit.unitName })}
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                                                <AlertDialogAction onClick={() => handleDelete(unit.id)}>{t('delete')}</AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p className="text-muted-foreground">{t('No units found.')}</p>
+                )}
+            </CardContent>
+        </Card>
+    );
+}
+
 
 function ExistingTestsList() {
     const { t } = useTranslation();
@@ -423,196 +522,200 @@ export default function UploadMcqPage() {
 
   return (
     <div className="container mx-auto p-4 sm:p-6 md:p-8 space-y-8">
-      <Card className="w-full max-w-4xl mx-auto">
-        <CardHeader>
-          <CardTitle>{t('upload_class_wise_mcqs')}</CardTitle>
-          <CardDescription>
-            {t('upload_class_wise_mcqs_desc')}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+       <div className="grid md:grid-cols-2 gap-8">
+        <Card>
+            <CardHeader>
+            <CardTitle>{t('upload_class_wise_mcqs')}</CardTitle>
+            <CardDescription>
+                {t('upload_class_wise_mcqs_desc')}
+            </CardDescription>
+            </CardHeader>
+            <CardContent>
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <div className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="classId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('class_name')}</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value} disabled={classesLoading}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder={t('select_a_class')} />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {classes?.map(c => <SelectItem key={c.id} value={c.id}>{language === 'ta' && c.name_ta ? c.name_ta : c.name}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="subjectName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('subject_name')}</FormLabel>
-                         <FormControl>
-                          <Input placeholder={t('subject_name_placeholder')} {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                   {subjectNameValue === 'தமிழ்' && (
-                    <>
                     <FormField
-                      control={form.control}
-                      name="category"
-                      render={({ field }) => (
-                          <FormItem>
-                          <FormLabel>Category</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                              <FormControl>
-                              <SelectTrigger>
-                                  <SelectValue placeholder="Select a category" />
-                              </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                  <SelectItem value="இலக்கணம்">இலக்கணம்</SelectItem>
-                                  <SelectItem value="உரைநடை & செய்யுள்">உரைநடை &amp; செய்யுள்</SelectItem>
-                                  <SelectItem value="other">Other</SelectItem>
-                              </SelectContent>
-                          </Select>
-                          <FormMessage />
-                          </FormItem>
-                      )}
-                      />
-                      {categoryValue === 'other' && (
-                          <FormField
-                              control={form.control}
-                              name="otherCategory"
-                              render={({ field }) => (
-                                  <FormItem>
-                                  <FormLabel>Custom Category</FormLabel>
-                                  <FormControl>
-                                      <Input placeholder="Enter custom category" {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                  </FormItem>
-                              )}
-                          />
-                      )}
-                    </>
-                  )}
-                  <FormField
-                    control={form.control}
-                    name="term"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('Term')}</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder={t('Select a Term')} />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="பருவம் 1">பருவம் 1</SelectItem>
-                            <SelectItem value="பருவம் 2">பருவம் 2</SelectItem>
-                            <SelectItem value="பருவம் 3">பருவம் 3</SelectItem>
-                            <SelectItem value="Full Book">Full Book</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="unitNumber"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('Unit Number')}</FormLabel>
-                        <FormControl>
-                          <Input type="number" placeholder="e.g., 1" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="unitName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('Unit Name')}</FormLabel>
-                        <FormControl>
-                          <Input placeholder={t('Name of the unit')} {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="jsonInput"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel htmlFor="json-input">{t('json_data')}</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            id="json-input"
-                            placeholder={t('json_data_placeholder')}
-                            className="h-72 font-mono text-sm"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="space-y-2">
-                    <Label htmlFor="json-file">{t('or_upload_file')}</Label>
-                    <Input
-                      id="json-file"
-                      type="file"
-                      accept=".json"
-                      onChange={handleFileChange}
+                        control={form.control}
+                        name="classId"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>{t('class_name')}</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value} disabled={classesLoading}>
+                            <FormControl>
+                                <SelectTrigger>
+                                <SelectValue placeholder={t('select_a_class')} />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                {classes?.map(c => <SelectItem key={c.id} value={c.id}>{language === 'ta' && c.name_ta ? c.name_ta : c.name}</SelectItem>)}
+                            </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                        )}
                     />
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <Label>{t('expected_json_structure')}</Label>
-                    <Card className="bg-muted/50">
-                      <CardContent className="p-4">
-                        <pre className="text-xs font-mono overflow-auto max-h-80">
-                          <code>{jsonStructureExample}</code>
-                        </pre>
-                      </CardContent>
-                    </Card>
-                  </div>
+                    <FormField
+                        control={form.control}
+                        name="subjectName"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>{t('subject_name')}</FormLabel>
+                            <FormControl>
+                            <Input placeholder={t('subject_name_placeholder')} {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    {subjectNameValue === 'தமிழ்' && (
+                        <>
+                        <FormField
+                        control={form.control}
+                        name="category"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Category</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select a category" />
+                                </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    <SelectItem value="இலக்கணம்">இலக்கணம்</SelectItem>
+                                    <SelectItem value="உரைநடை & செய்யுள்">உரைநடை &amp; செய்யுள்</SelectItem>
+                                    <SelectItem value="other">Other</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                        {categoryValue === 'other' && (
+                            <FormField
+                                control={form.control}
+                                name="otherCategory"
+                                render={({ field }) => (
+                                    <FormItem>
+                                    <FormLabel>Custom Category</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="Enter custom category" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        )}
+                        </>
+                    )}
+                    <FormField
+                        control={form.control}
+                        name="term"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>{t('Term')}</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                                <SelectTrigger>
+                                <SelectValue placeholder={t('Select a Term')} />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                <SelectItem value="பருவம் 1">பருவம் 1</SelectItem>
+                                <SelectItem value="பருவம் 2">பருவம் 2</SelectItem>
+                                <SelectItem value="பருவம் 3">பருவம் 3</SelectItem>
+                                <SelectItem value="Full Book">Full Book</SelectItem>
+                            </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="unitNumber"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>{t('Unit Number')}</FormLabel>
+                            <FormControl>
+                            <Input type="number" placeholder="e.g., 1" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="unitName"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>{t('Unit Name')}</FormLabel>
+                            <FormControl>
+                            <Input placeholder={t('Name of the unit')} {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="jsonInput"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel htmlFor="json-input">{t('json_data')}</FormLabel>
+                            <FormControl>
+                            <Textarea
+                                id="json-input"
+                                placeholder={t('json_data_placeholder')}
+                                className="h-48 font-mono text-sm"
+                                {...field}
+                            />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
 
+                    <div className="space-y-2">
+                        <Label htmlFor="json-file">{t('or_upload_file')}</Label>
+                        <Input
+                        id="json-file"
+                        type="file"
+                        accept=".json"
+                        onChange={handleFileChange}
+                        />
+                    </div>
+                    
+                    <div>
+                        <Button type="submit" disabled={isSubmitting}>
+                        {isSubmitting ? t('submitting') : t('submit_questions')}
+                        </Button>
+                    </div>
                 </div>
-              </div>
-              <div>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? t('submitting') : t('submit_questions')}
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+                </form>
+            </Form>
+            </CardContent>
+        </Card>
       
-      <ExistingTestsList />
+        <div className="space-y-8">
+            <ExistingUnitsList />
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>{t('expected_json_structure')}</CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 bg-muted rounded-md">
+                    <pre className="text-xs font-mono overflow-auto max-h-80">
+                        <code>{jsonStructureExample}</code>
+                    </pre>
+                </CardContent>
+            </Card>
+        </div>
+      </div>
+      
+      <div className="mt-8">
+        <ExistingTestsList />
+      </div>
     </div>
   );
 }
