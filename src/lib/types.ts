@@ -27,6 +27,8 @@ export interface Test {
   questions?: Question[];
   classId?: string; // Added for class-wise tests
   subjectId?: string; // Added for subject-wise tests
+  term?: string;
+  unitName?: string;
 }
 
 export interface Subject {

@@ -364,7 +364,7 @@ export default function UploadMcqPage() {
       
       // 4. Find or create test and update it
       const selectedClass = classes?.find(c => c.id === classId);
-      const testTitle = `${selectedClass?.name || 'Class'} - ${subjectName}`;
+      const testTitle = `${selectedClass?.name || 'Class'} - ${subjectName} - ${term} - ${unitName}`;
       const testSlug = createSlug(testTitle);
       const testRef = doc(testsCollectionRef, testSlug);
 
@@ -382,6 +382,8 @@ export default function UploadMcqPage() {
                   questionIds: newQuestionIds,
                   classId: classId,
                   subjectId: subjectId,
+                  term: term,
+                  unitName: unitName,
               };
               transaction.set(testRef, newTest);
           } else {
