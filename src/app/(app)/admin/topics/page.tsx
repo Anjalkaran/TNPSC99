@@ -42,20 +42,46 @@ import {
 
 
 const createSlug = (name: string) => {
-  if (!name) return '';
+    if (!name) return '';
 
-  const normalized = name
-    .toString()
-    .normalize('NFD') // split an accented letter in the base letter and the acent
-    .replace(/[\u0300-\u036f]/g, '') // remove all previously split accents
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, '-') // replace spaces with -
-    .replace(/[^\w-]+/g, '') // remove all non-word chars
-    .replace(/--+/g, '-'); // replace multiple - with single -
+    const tamilMap = {
+        'அ': 'a', 'ஆ': 'aa', 'இ': 'i', 'ஈ': 'ii', 'உ': 'u', 'ஊ': 'uu', 'எ': 'e', 'ஏ': 'e', 'ஐ': 'ai', 'ஒ': 'o', 'ஓ': 'oo', 'ஔ': 'au',
+        'க': 'k', 'ங': 'ng', 'ச': 's', 'ஞ': 'gn', 'ட': 't', 'ண': 'n', 'த': 'th', 'ந': 'n', 'ப': 'p', 'ம': 'm', 'ய': 'y', 'ர': 'r', 'ల': 'l', 'வ': 'v', 'ழ': 'zh', 'ள': 'l', 'ற': 'r', 'ன': 'n',
+        'ஜ': 'j', 'ஷ': 'sh', 'ஸ': 's', 'ஹ': 'h', 'க்ஷ': 'ksh', 'ஸ்ரீ': 'sri',
+        '்': '', 'ா': 'a', 'ి': 'i', 'ీ': 'ii', 'ு': 'u', 'ూ': 'uu', 'ெ': 'e', 'ே': 'e', 'ை': 'ai', 'ొ': 'o', 'ో': 'oo', 'ౌ': 'au'
+    };
 
-  return normalized;
+    const consonants = "கஙசஞடணதநபமயரலவழளறன";
+
+    let slug = '';
+    for (let i = 0; i < name.length; i++) {
+        const char = name[i];
+        const nextChar = name[i + 1];
+
+        if (consonants.includes(char) && tamilMap[nextChar as keyof typeof tamilMap] !== undefined && tamilMap[nextChar as keyof typeof tamilMap] !== '') {
+            // Consonant followed by a vowel sign
+            slug += tamilMap[char as keyof typeof tamilMap] + tamilMap[nextChar as keyof typeof tamilMap];
+            i++; // Skip the vowel sign
+        } else if (tamilMap[char as keyof typeof tamilMap] !== undefined) {
+            // Standalone vowel or consonant with pulli
+             if (consonants.includes(char) && (nextChar === undefined || nextChar === ' ' || !tamilMap[nextChar as keyof typeof tamilMap] )) {
+                 slug += tamilMap[char as keyof typeof tamilMap] + 'a';
+             } else {
+                slug += tamilMap[char as keyof typeof tamilMap];
+             }
+        } else {
+            slug += char;
+        }
+    }
+
+    return slug
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9 -]/g, '') // Remove invalid chars
+        .replace(/\s+/g, '-') // Collapse whitespace and replace by -
+        .replace(/-+/g, '-'); // Collapse dashes
 };
+
 
 const unitFormSchema = z.object({
   classId: z.string().min(1, { message: "Please select a class." }),

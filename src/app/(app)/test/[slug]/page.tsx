@@ -34,8 +34,8 @@ export default function TestPage() {
     const fetchTest = async () => {
       setIsLoading(true);
       const testsRef = collection(firestore, 'tests');
-      const decodedSlug = decodeURIComponent(Array.isArray(slug) ? slug[0] : slug);
-      const q = query(testsRef, where('title', '==', decodedSlug));
+      const decodedSlug = Array.isArray(slug) ? slug[0] : slug;
+      const q = query(testsRef, where('slug', '==', decodedSlug));
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {

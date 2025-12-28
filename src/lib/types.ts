@@ -18,6 +18,7 @@ export type QuestionInput = Omit<Question, 'id'>;
 
 export interface Test {
   id: string;
+  slug: string;
   title: string;
   description: string;
   category: 'class' | 'subject' | 'previous';

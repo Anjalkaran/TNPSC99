@@ -41,9 +41,9 @@ export default function EditTestPage() {
     const fetchTestAndQuestions = async () => {
       setIsLoading(true);
       try {
-        const decodedSlug = decodeURIComponent(Array.isArray(slug) ? slug[0] : slug);
+        const decodedSlug = Array.isArray(slug) ? slug[0] : slug;
         const testsRef = collection(firestore, 'tests');
-        const q = query(testsRef, where('title', '==', decodedSlug));
+        const q = query(testsRef, where('slug', '==', decodedSlug));
         const querySnapshot = await getDocs(q);
 
         if (querySnapshot.empty) {
