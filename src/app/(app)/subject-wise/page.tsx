@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useState, useEffect } from 'react';
-import { useTranslation } from '@/hooks/use-translation';
+import { useTranslation } from "@/hooks/use-translation";
 import { Badge } from '@/components/ui/badge';
 
 function TestStartControl({ test }: { test: Test }) {
