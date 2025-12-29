@@ -660,13 +660,22 @@ export default function UploadMcqPage() {
                         control={form.control}
                         name="unitNumber"
                         render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>{t('Unit')}</FormLabel>
-                            <FormControl>
-                            <Input type="number" placeholder="e.g., 1" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
+                            <FormItem>
+                                <FormLabel>{t('Unit')}</FormLabel>
+                                <Select onValueChange={field.onChange} value={field.value.toString()}>
+                                    <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select a unit" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        {Array.from({ length: 9 }, (_, i) => i + 1).map(num => (
+                                            <SelectItem key={num} value={String(num)}>இயல் {num}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
                         )}
                     />
                     <FormField

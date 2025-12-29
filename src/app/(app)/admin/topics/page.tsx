@@ -237,17 +237,26 @@ function EditUnitForm({ unit, classes, onFinished }: { unit: Unit, classes: Clas
                 />
 
                 <FormField
-                    control={form.control}
-                    name="unitNumber"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>{t('Unit')}</FormLabel>
+                  control={form.control}
+                  name="unitNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('Unit')}</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value?.toString()}>
                             <FormControl>
-                                <Input type="number" placeholder="e.g., 1" {...field} />
+                                <SelectTrigger>
+                                <SelectValue placeholder="Select a unit" />
+                                </SelectTrigger>
                             </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
+                            <SelectContent>
+                                {Array.from({ length: 9 }, (_, i) => i + 1).map(num => (
+                                    <SelectItem key={num} value={String(num)}>இயல் {num}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
 
                 <FormField
@@ -599,9 +608,18 @@ export default function TopicManagementPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t('Unit')}</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="e.g., 1" {...field} />
-                      </FormControl>
+                        <Select onValueChange={field.onChange} value={field.value.toString()}>
+                            <FormControl>
+                                <SelectTrigger>
+                                <SelectValue placeholder="Select a unit" />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                {Array.from({ length: 9 }, (_, i) => i + 1).map(num => (
+                                    <SelectItem key={num} value={String(num)}>இயல் {num}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                       <FormMessage />
                     </FormItem>
                   )}
