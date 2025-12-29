@@ -116,7 +116,7 @@ interface UnitWithNames extends Unit {
 }
 
 function ExistingUnitsList({ onUnitSelect }: { onUnitSelect: (unit: UnitWithNames) => void }) {
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
     const firestore = useFirestore();
     const { toast } = useToast();
     const unitsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'units') : null, [firestore]);
@@ -129,14 +129,14 @@ function ExistingUnitsList({ onUnitSelect }: { onUnitSelect: (unit: UnitWithName
 
     const unitsWithNames = useMemo(() => {
         if (!units || !classes || !subjects) return [];
-        const classMap = new Map(classes.map(c => [c.id, c.name]));
-        const subjectMap = new Map(subjects.map(s => [s.id, s.name]));
+        const classMap = new Map(classes.map(c => [c.id, language === 'ta' && c.name_ta ? c.name_ta : c.name]));
+        const subjectMap = new Map(subjects.map(s => [s.id, language === 'ta' && s.name_ta ? s.name_ta : s.name]));
         return units.map(unit => ({
             ...unit,
             className: classMap.get(unit.classId) || unit.classId,
             subjectName: subjectMap.get(unit.subjectId) || unit.subjectId,
         }))
-    }, [units, classes, subjects]);
+    }, [units, classes, subjects, language]);
 
 
     const handleDelete = async (unitId: string) => {
@@ -173,7 +173,7 @@ function ExistingUnitsList({ onUnitSelect }: { onUnitSelect: (unit: UnitWithName
                             <li key={unit.id} className="flex justify-between items-center p-3 border rounded-md">
                                 <button type="button" className="text-left flex-grow" onClick={() => onUnitSelect(unit)}>
                                     <p className="font-semibold text-sm">{unit.className} - {unit.subjectName} - {unit.term}</p>
-                                    <p className="font-bold text-base">Unit {unit.unitNumber}: {unit.unitName}</p>
+                                    <p className="font-bold text-base">{t('Unit')} {unit.unitNumber}: {unit.unitName}</p>
                                     {unit.category && <p className="text-xs text-muted-foreground">Category: {unit.category}</p>}
                                 </button>
                                 <div className="flex gap-2">
@@ -484,7 +484,8 @@ export default function UploadMcqPage() {
       // 4. Find or create test and update it
       const testsCollectionRef = collection(firestore, 'tests');
       const selectedClass = classes?.find(c => c.id === classId);
-      const testTitle = `${selectedClass?.name || 'Class'} - ${subjectName} - ${term} - ${unitName}`;
+      const className = language === 'ta' && selectedClass?.name_ta ? selectedClass.name_ta : selectedClass?.name;
+      const testTitle = `${className || 'Class'} - ${subjectName} - ${term} - ${t('Unit')} ${unitNumber} - ${unitName}`;
       
       const testQuery = query(testsCollectionRef, where('title', '==', testTitle));
       
@@ -495,13 +496,14 @@ export default function UploadMcqPage() {
               const newTest: Test = {
                   id: newTestRef.id, // Store the auto-generated ID in the document
                   title: testTitle,
-                  description: t('test_for_class_subject', {classId: selectedClass?.name || classId, subjectId: subjectName}),
+                  description: t('test_for_class_subject', {classId: className || classId, subjectId: subjectName}),
                   category: 'class',
                   image: findImage('class-wise'),
                   questionIds: newQuestionIds,
                   classId: classId,
                   subjectId: subjectId,
                   term: term,
+                  unitNumber: unitNumber,
                   unitName: unitName,
               };
               transaction.set(newTestRef, newTest);
@@ -662,7 +664,7 @@ export default function UploadMcqPage() {
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>{t('Unit')}</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value.toString()}>
+                                <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value.toString()}>
                                     <FormControl>
                                         <SelectTrigger>
                                             <SelectValue placeholder="Select a unit" />
@@ -738,3 +740,5 @@ export default function UploadMcqPage() {
     </div>
   );
 }
+
+    

@@ -27,6 +27,7 @@ export interface Test {
   classId?: string; // Added for class-wise tests
   subjectId?: string; // Added for subject-wise tests
   term?: string;
+  unitNumber?: number;
   unitName?: string;
 }
 
@@ -89,3 +90,5 @@ export interface Score {
   testTitle: string;
   createdAt: string;
 }
+
+    
