@@ -89,7 +89,7 @@ function TestProgressBadge({ testId }: { testId: string }) {
 export default function SubjectTestsPage() {
   const params = useParams();
   const firestore = useFirestore();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
 
   const [pageTitle, setPageTitle] = useState('');
   const [pageDescription, setPageDescription] = useState('');
@@ -131,7 +131,7 @@ export default function SubjectTestsPage() {
             const classSnap = await getDoc(classDocRef);
             if (classSnap.exists()) {
                 const classData = classSnap.data() as Class;
-                className = t('language') === 'ta' && classData.name_ta ? classData.name_ta : classData.name;
+                className = language === 'ta' && classData.name_ta ? classData.name_ta : classData.name;
             }
         } catch (e) { console.error("Failed to fetch class name", e)}
 
@@ -140,7 +140,7 @@ export default function SubjectTestsPage() {
             const subjectSnap = await getDoc(subjectDocRef);
             if(subjectSnap.exists()){
                 const subjectData = subjectSnap.data() as Subject;
-                subjectName = t('language') === 'ta' && subjectData.name_ta ? subjectData.name_ta : subjectData.name;
+                subjectName = language === 'ta' && subjectData.name_ta ? subjectData.name_ta : subjectData.name;
             }
         } catch (e) { console.error("Failed to fetch subject name", e)}
 
@@ -149,7 +149,7 @@ export default function SubjectTestsPage() {
         setPageDescription(`Tests for the subject ${subjectName} in ${className} are listed below.`);
     }
     fetchMetadata();
-  }, [firestore, classId, subjectId, t]);
+  }, [firestore, classId, subjectId, t, language]);
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">

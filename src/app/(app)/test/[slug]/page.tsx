@@ -33,7 +33,6 @@ export default function TestPage() {
 
     const fetchTest = async () => {
       setIsLoading(true);
-      const testsRef = collection(firestore, 'tests');
       const testId = Array.isArray(slug) ? slug[0] : slug;
       
       const testDocRef = doc(firestore, 'tests', testId);
@@ -110,7 +109,7 @@ export default function TestPage() {
   }, [firestore, slug, user, searchParams]);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div className="flex min-h-screen items-center justify-center">Loading...</div>;
   }
 
   if (!test) {
