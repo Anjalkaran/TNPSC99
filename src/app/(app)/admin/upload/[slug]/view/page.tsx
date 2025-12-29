@@ -22,7 +22,7 @@ export default function ViewTestJsonPage() {
     const fetchTestAndQuestions = async () => {
       setIsLoading(true);
       try {
-        const decodedId = Array.isArray(testId) ? testId[0] : testId;
+        const decodedId = Array.isArray(testId) ? testId[0] : decodeURIComponent(testId);
         const testDocRef = doc(firestore, 'tests', decodedId);
         const testDocSnap = await getDoc(testDocRef);
 

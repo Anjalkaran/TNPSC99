@@ -431,8 +431,7 @@ export default function UploadMcqPage() {
       if (!firestore) throw new Error('Firestore is not initialized');
 
       const { classId, subjectName, term, unitNumber, unitName, category, otherCategory } = values;
-      const testsCollectionRef = collection(firestore, 'tests');
-
+      
       // 1. Find or Create Subject
       let subjectId: string;
       const subjectsRef = collection(firestore, 'subjects');
@@ -483,6 +482,7 @@ export default function UploadMcqPage() {
       await batch.commit();
       
       // 4. Find or create test and update it
+      const testsCollectionRef = collection(firestore, 'tests');
       const selectedClass = classes?.find(c => c.id === classId);
       const testTitle = `${selectedClass?.name || 'Class'} - ${subjectName} - ${term} - ${unitName}`;
       
@@ -491,9 +491,9 @@ export default function UploadMcqPage() {
       await runTransaction(firestore, async (transaction) => {
           const testSnapshot = await getDocs(testQuery);
           if (testSnapshot.empty) {
-              const newTestRef = doc(testsCollectionRef);
+              const newTestRef = doc(testsCollectionRef); // Let Firestore generate the ID
               const newTest: Test = {
-                  id: newTestRef.id,
+                  id: newTestRef.id, // Store the auto-generated ID in the document
                   title: testTitle,
                   description: t('test_for_class_subject', {classId: selectedClass?.name || classId, subjectId: subjectName}),
                   category: 'class',
