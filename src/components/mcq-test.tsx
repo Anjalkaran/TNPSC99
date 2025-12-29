@@ -40,6 +40,8 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
+  
+  const decodedTitle = decodeURIComponent(test.title);
 
   useEffect(() => {
     // When the question index changes, check if an answer already exists for the new question.
@@ -48,10 +50,10 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
   }, [currentQuestionIndex, answers]);
   
   useEffect(() => {
-    if (test?.title) {
-        document.title = test.title;
+    if (decodedTitle) {
+        document.title = decodedTitle;
     }
-  }, [test]);
+  }, [decodedTitle]);
 
 
   const handleAnswerChange = (value: string) => {
@@ -97,7 +99,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
             const testAttempt: Omit<UserTestAttempt, 'id'> = {
                 userId: user.uid,
                 testId: test.id,
-                testTitle: test.title,
+                testTitle: decodedTitle,
                 attemptDate: new Date().toISOString(),
                 score: calculatedScore,
                 answers: answersToScore.map(a => a ?? -1),
@@ -124,7 +126,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
               username: user.displayName || 'Anonymous',
               score: calculatedScore,
               testId: test.id,
-              testTitle: test.title,
+              testTitle: decodedTitle,
               createdAt: new Date().toISOString(),
             };
             const scoresCollectionRef = collection(firestore, `scores`);
@@ -179,7 +181,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
     return (
       <Card className="w-full max-w-2xl">
         <CardHeader>
-          <CardTitle>{test.title}</CardTitle>
+          <CardTitle>{decodedTitle}</CardTitle>
            <CardDescription>
              <Badge variant="outline">
               முன்னேற்றம்: {answeredQuestions} / {totalQuestions} கேள்விகள் சரியாக பதிலளிக்கப்பட்டுள்ளன
@@ -215,7 +217,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
       <Card className="w-full max-w-2xl text-center">
         <CardHeader>
           <CardTitle className="text-3xl">தேர்வு முடிந்தது!</CardTitle>
-          <CardDescription>நீங்கள் {test.title} தேர்வை முடித்துவிட்டீர்கள்.</CardDescription>
+          <CardDescription>நீங்கள் {decodedTitle} தேர்வை முடித்துவிட்டீர்கள்.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="text-5xl font-bold" style={{ color: 'hsl(var(--accent))' }}>
@@ -259,7 +261,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
       <CardHeader>
         <div className='flex justify-between items-start'>
             <div>
-                <CardTitle>{test.title}</CardTitle>
+                <CardTitle>{decodedTitle}</CardTitle>
                 <div className="flex items-center text-sm text-muted-foreground mt-2 gap-4">
                     <span>கேள்வி {currentQuestionIndex + 1} / {questions.length}</span>
                     <Badge variant="outline">
