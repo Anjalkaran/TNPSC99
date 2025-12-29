@@ -79,55 +79,6 @@ const jsonStructureExample = `[
   }
 ]`;
 
-const createSlug = (name: string): string => {
-  if (!name) return '';
-
-  const tamilToLatin: { [key: string]: string } = {
-    'அ': 'a', 'ஆ': 'aa', 'இ': 'i', 'ஈ': 'ii', 'உ': 'u', 'ஊ': 'uu',
-    'எ': 'e', 'ஏ': 'e', 'ஐ': 'ai', 'ஒ': 'o', 'ஓ': 'oo', 'ஔ': 'au',
-    'க': 'k', 'ச': 's', 'ட': 't', 'த': 'th', 'ப': 'p', 'ற': 'r',
-    'ஞ': 'nj', 'ங': 'ng', 'ண': 'n', 'ந': 'n', 'ம': 'm', 'ன': 'n',
-    'ய': 'y', 'ர': 'r', 'ல': 'l', 'வ': 'v', 'ழ': 'zh', 'ள': 'l',
-    'ஶ': 'sh', 'ஷ': 'sh', 'ஸ': 's', 'ஹ': 'h', 'க்ஷ': 'ksh', 'ஜ': 'j',
-    'க்': 'k', 'ச்': 's', 'ட்': 't', 'த்': 'th', 'ப்': 'p', 'ற்': 'r',
-    'ஞ்': 'nj', 'ங்': 'ng', 'ண்': 'n', 'ந்': 'n', 'ம்': 'm', 'ன்': 'n',
-    'ய்': 'y', 'ர்': 'r', 'ல்': 'l', 'வ்': 'v', 'ழ்': 'zh', 'ள்': 'l',
-    'ஸ்ரீ': 'sri',
-    ' ': '-', '0': '0', '1': '1', '2': '2', '3': '3', '4': '4',
-    '5': '5', '6': '6', '7': '7', '8': '8', '9': '9'
-  };
-
-  const pulli = '்';
-  const consonants = "கசடதபறஞஙணநமனயரலவழளஶஷஸஹஜ";
-
-  let result = '';
-  for (let i = 0; i < name.length; i++) {
-    const char = name[i];
-    const nextChar = name[i + 1];
-
-    if (tamilToLatin[char]) {
-      result += tamilToLatin[char];
-    } else if (consonants.includes(char)) {
-      if (nextChar === pulli) {
-        result += tamilToLatin[char + pulli];
-        i++; // Skip the pulli
-      } else {
-        result += tamilToLatin[char] + 'a';
-      }
-    } else if (char.match(/[a-zA-Z0-9-]/)) {
-        result += char;
-    }
-  }
-
-  return result
-    .toLowerCase()
-    .replace(/\s+/g, '-') // Replace spaces with -
-    .replace(/[^\w\-]+/g, '') // Remove all non-word chars except hyphen
-    .replace(/\-\-+/g, '-') // Replace multiple - with single -
-    .replace(/^-+/, '') // Trim - from start of text
-    .replace(/-+$/, ''); // Trim - from end of text
-};
-
 
 const findImage = (id: string) => {
     const image = PlaceHolderImages.find((img) => img.id === id);
@@ -292,7 +243,7 @@ function ExistingTestsList() {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `${createSlug(test.title)}.json`;
+            a.download = `${test.title}.json`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -362,12 +313,12 @@ function ExistingTestsList() {
                                         <span className="sr-only">Download</span>
                                     </Button>
                                      <Button asChild variant="outline" size="icon">
-                                        <Link href={`/admin/upload/${test.slug}/view`}>
+                                        <Link href={`/admin/upload/${test.id}/view`}>
                                             <View className="h-4 w-4" />
                                         </Link>
                                     </Button>
                                     <Button asChild variant="outline" size="icon">
-                                        <Link href={`/admin/upload/${test.slug}/edit`}>
+                                        <Link href={`/admin/upload/${test.id}/edit`}>
                                             <Edit className="h-4 w-4" />
                                         </Link>
                                     </Button>
@@ -486,36 +437,45 @@ export default function UploadMcqPage() {
 
       // 1. Find or Create Subject
       let subjectId: string;
-      const subjectSlug = createSlug(subjectName);
-      if (!subjectSlug) throw new Error("Subject name cannot be empty.");
-
-      const subjectsRef = collection(firestore, 'subjects');
-      const subjectQuery = query(subjectsRef, where('id', '==', subjectSlug));
+      const subjectQuery = query(collection(firestore, 'subjects'), where('name', '==', subjectName));
       const subjectSnapshot = await getDocs(subjectQuery);
-
+      
       if (subjectSnapshot.empty) {
-          const newSubjectRef = doc(subjectsRef, subjectSlug);
-          const newSubject: Subject = { id: subjectSlug, name: subjectName, description: `Subject for TNPSC exams` };
-          await setDoc(newSubjectRef, newSubject);
-          subjectId = subjectSlug;
+          const newSubjectRef = doc(subjectsCollectionRef);
+          const newSubject: Subject = { id: newSubjectRef.id, name: subjectName, description: `Subject for TNPSC exams` };
+          batch.set(newSubjectRef, newSubject);
+          subjectId = newSubjectRef.id;
       } else {
           subjectId = subjectSnapshot.docs[0].id;
       }
-
-      // 2. Create Unit
-      const unitId = createSlug(`${classId}-${subjectId}-${term}-unit-${unitNumber}-${unitName}`);
-      if (!unitId) throw new Error("Could not create a valid Unit ID.");
       
-      const unitDocRef = doc(firestore, 'units', unitId);
-      const unitData: Unit = { id: unitId, classId, subjectId, term, unitNumber, unitName };
-      if(category) unitData.category = category === 'other' ? otherCategory : category;
-      await setDoc(unitDocRef, unitData, { merge: true });
+      // 2. Find or Create Unit
+      let unitId: string;
+      const unitQuery = query(collection(firestore, 'units'), 
+        where('classId', '==', classId),
+        where('subjectId', '==', subjectId),
+        where('term', '==', term),
+        where('unitNumber', '==', unitNumber),
+        where('unitName', '==', unitName)
+      );
+      const unitSnapshot = await getDocs(unitQuery);
+
+      if (unitSnapshot.empty) {
+          const newUnitRef = doc(collection(firestore, 'units'));
+          const unitData: Unit = { id: newUnitRef.id, classId, subjectId, term, unitNumber, unitName };
+          if (category) unitData.category = category === 'other' ? otherCategory : category;
+          batch.set(newUnitRef, unitData);
+          unitId = newUnitRef.id;
+      } else {
+          unitId = unitSnapshot.docs[0].id;
+      }
+
 
       // 3. Add Questions
       const newQuestionIds: string[] = [];
       questions.forEach(q => {
           const questionRef = doc(questionsCollectionRef);
-          const questionData: QuestionInput = { ...q, classId, subjectId, reference: q.reference || '' };
+          const questionData: QuestionInput = { ...q, classId, subjectId, unitId: q.unitId || unitId, reference: q.reference || '' };
           batch.set(questionRef, questionData);
           newQuestionIds.push(questionRef.id);
       });
@@ -523,16 +483,15 @@ export default function UploadMcqPage() {
       // 4. Find or create test and update it
       const selectedClass = classes?.find(c => c.id === classId);
       const testTitle = `${selectedClass?.name || 'Class'} - ${subjectName} - ${term} - ${unitName}`;
-      const testSlug = createSlug(testTitle);
-      const testRef = doc(testsCollectionRef, testSlug);
-
+      
+      const testQuery = query(testsCollectionRef, where('title', '==', testTitle));
+      
       await runTransaction(firestore, async (transaction) => {
-          const testDoc = await transaction.get(testRef);
-
-          if (!testDoc.exists()) {
+          const testSnapshot = await getDocs(testQuery);
+          if (testSnapshot.empty) {
+              const newTestRef = doc(testsCollectionRef);
               const newTest: Test = {
-                  id: testSlug,
-                  slug: testSlug,
+                  id: newTestRef.id,
                   title: testTitle,
                   description: t('test_for_class_subject', {classId: selectedClass?.name || classId, subjectId: subjectName}),
                   category: 'class',
@@ -543,11 +502,12 @@ export default function UploadMcqPage() {
                   term: term,
                   unitName: unitName,
               };
-              transaction.set(testRef, newTest);
+              transaction.set(newTestRef, newTest);
           } else {
+              const testDoc = testSnapshot.docs[0];
               const existingQuestionIds = testDoc.data().questionIds || [];
               const updatedQuestionIds = [...new Set([...existingQuestionIds, ...newQuestionIds])];
-              transaction.update(testRef, { questionIds: updatedQuestionIds });
+              transaction.update(testDoc.ref, { questionIds: updatedQuestionIds });
           }
       });
       

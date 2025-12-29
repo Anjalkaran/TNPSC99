@@ -8,7 +8,7 @@ import { useTranslation } from '@/hooks/use-translation';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 
 export default function ViewTestJsonPage() {
-  const { slug } = useParams();
+  const { slug: testId } = useParams();
   const firestore = useFirestore();
   const { t } = useTranslation();
   
@@ -17,23 +17,21 @@ export default function ViewTestJsonPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!firestore || !slug) return;
+    if (!firestore || !testId) return;
 
     const fetchTestAndQuestions = async () => {
       setIsLoading(true);
       try {
-        const decodedSlug = Array.isArray(slug) ? slug[0] : slug;
-        const testsRef = collection(firestore, 'tests');
-        const q = query(testsRef, where('slug', '==', decodedSlug));
-        const querySnapshot = await getDocs(q);
+        const decodedId = Array.isArray(testId) ? testId[0] : testId;
+        const testDocRef = doc(firestore, 'tests', decodedId);
+        const testDocSnap = await getDoc(testDocRef);
 
-        if (querySnapshot.empty) {
+        if (!testDocSnap.exists()) {
           notFound();
           return;
         }
 
-        const testDoc = querySnapshot.docs[0];
-        const testData = { id: testDoc.id, ...testDoc.data() } as Test;
+        const testData = { id: testDocSnap.id, ...testDocSnap.data() } as Test;
         setTest(testData);
 
         const fetchedQuestions: Omit<Question, 'id' | 'classId' | 'subjectId'>[] = [];
@@ -63,7 +61,7 @@ export default function ViewTestJsonPage() {
     };
 
     fetchTestAndQuestions();
-  }, [slug, firestore]);
+  }, [testId, firestore]);
 
   if (isLoading) {
     return <div className="container mx-auto p-8">{t('Loading tests...')}</div>;

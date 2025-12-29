@@ -24,7 +24,7 @@ import {
 
 
 export default function EditTestPage() {
-  const { slug } = useParams();
+  const { slug: testId } = useParams();
   const firestore = useFirestore();
   const { t } = useTranslation();
   const { toast } = useToast();
@@ -36,25 +36,24 @@ export default function EditTestPage() {
 
 
   useEffect(() => {
-    if (!firestore || !slug) return;
+    if (!firestore || !testId) return;
 
     const fetchTestAndQuestions = async () => {
       setIsLoading(true);
       try {
-        const decodedSlug = Array.isArray(slug) ? slug[0] : slug;
-        const testsRef = collection(firestore, 'tests');
-        const q = query(testsRef, where('slug', '==', decodedSlug));
-        const querySnapshot = await getDocs(q);
+        const decodedId = Array.isArray(testId) ? testId[0] : testId;
+        const testDocRef = doc(firestore, 'tests', decodedId);
+        const testDocSnap = await getDoc(testDocRef);
 
-        if (querySnapshot.empty) {
+
+        if (!testDocSnap.exists()) {
           notFound();
           return;
         }
 
-        const testDoc = querySnapshot.docs[0];
-        const testData = { id: testDoc.id, ...testDoc.data() } as Test;
+        const testData = { id: testDocSnap.id, ...testDocSnap.data() } as Test;
         setTest(testData);
-        setTestRef(testDoc.ref);
+        setTestRef(testDocSnap.ref);
 
 
         const fetchedQuestions: Question[] = [];
@@ -90,7 +89,7 @@ export default function EditTestPage() {
     };
 
     fetchTestAndQuestions();
-  }, [slug, toast, firestore]);
+  }, [testId, toast, firestore]);
 
   const handleRemoveQuestion = async (questionId: string) => {
       if(!test || !testRef) return;

@@ -39,56 +39,6 @@ import {
 } from '@/components/ui/dialog';
 
 
-const createSlug = (name: string): string => {
-  if (!name) return '';
-
-  const tamilToLatin: { [key: string]: string } = {
-    'அ': 'a', 'ஆ': 'aa', 'இ': 'i', 'ஈ': 'ii', 'உ': 'u', 'ஊ': 'uu',
-    'எ': 'e', 'ஏ': 'e', 'ஐ': 'ai', 'ஒ': 'o', 'ஓ': 'oo', 'ஔ': 'au',
-    'க': 'k', 'ச': 's', 'ட': 't', 'த': 'th', 'ப': 'p', 'ற': 'r',
-    'ஞ': 'nj', 'ங': 'ng', 'ண': 'n', 'ந': 'n', 'ம': 'm', 'ன': 'n',
-    'ய': 'y', 'ர': 'r', 'ல': 'l', 'வ': 'v', 'ழ': 'zh', 'ள': 'l',
-    'ஶ': 'sh', 'ஷ': 'sh', 'ஸ': 's', 'ஹ': 'h', 'க்ஷ': 'ksh', 'ஜ': 'j',
-    'க்': 'k', 'ச்': 's', 'ட்': 't', 'த்': 'th', 'ப்': 'p', 'ற்': 'r',
-    'ஞ்': 'nj', 'ங்': 'ng', 'ண்': 'n', 'ந்': 'n', 'ம்': 'm', 'ன்': 'n',
-    'ய்': 'y', 'ர்': 'r', 'ல்': 'l', 'வ்': 'v', 'ழ்': 'zh', 'ள்': 'l',
-    'ஸ்ரீ': 'sri',
-    ' ': '-', '0': '0', '1': '1', '2': '2', '3': '3', '4': '4',
-    '5': '5', '6': '6', '7': '7', '8': '8', '9': '9'
-  };
-
-  const pulli = '்';
-  const consonants = "கசடதபறஞஙணநமனயரலவழளஶஷஸஹஜ";
-
-  let result = '';
-  for (let i = 0; i < name.length; i++) {
-    const char = name[i];
-    const nextChar = name[i + 1];
-
-    if (tamilToLatin[char]) {
-      result += tamilToLatin[char];
-    } else if (consonants.includes(char)) {
-      if (nextChar === pulli) {
-        result += tamilToLatin[char + pulli];
-        i++; // Skip the pulli
-      } else {
-        result += tamilToLatin[char] + 'a';
-      }
-    } else if (char.match(/[a-zA-Z0-9-]/)) {
-        result += char;
-    }
-  }
-
-  return result
-    .toLowerCase()
-    .replace(/\s+/g, '-') // Replace spaces with -
-    .replace(/[^\w\-]+/g, '') // Remove all non-word chars except hyphen
-    .replace(/\-\-+/g, '-') // Replace multiple - with single -
-    .replace(/^-+/, '') // Trim - from start of text
-    .replace(/-+$/, ''); // Trim - from end of text
-};
-
-
 const unitFormSchema = z.object({
   classId: z.string().min(1, { message: "Please select a class." }),
   subjectName: z.string().min(1, { message: "Subject name must be at least 1 character." }),
@@ -141,20 +91,16 @@ function EditUnitForm({ unit, classes, onFinished }: { unit: Unit, classes: Clas
 
             // 1. Find or create the subject
             let subjectId: string;
-            const subjectSlug = createSlug(subjectName);
-            if (!subjectSlug) {
-                throw new Error("Subject name cannot be empty.");
-            }
-
+            
             const subjectsRef = collection(firestore, 'subjects');
-            const subjectQuery = query(subjectsRef, where('id', '==', subjectSlug));
+            const subjectQuery = query(subjectsRef, where('name', '==', subjectName));
             const subjectSnapshot = await getDocs(subjectQuery);
 
             if (subjectSnapshot.empty) {
-                const newSubjectRef = doc(subjectsRef, subjectSlug);
-                const newSubject: Subject = { id: subjectSlug, name: subjectName, description: `Subject for TNPSC exams` };
+                const newSubjectRef = doc(subjectsRef);
+                const newSubject: Subject = { id: newSubjectRef.id, name: subjectName, description: `Subject for TNPSC exams` };
                 await setDoc(newSubjectRef, newSubject);
-                subjectId = subjectSlug;
+                subjectId = newSubjectRef.id;
             } else {
                 subjectId = subjectSnapshot.docs[0].id;
             }
@@ -483,25 +429,21 @@ export default function TopicManagementPage() {
 
         // 1. Find or create the subject
         let subjectId: string;
-        const subjectSlug = createSlug(subjectName);
-        if (!subjectSlug) {
-            throw new Error("Subject name cannot be empty.");
-        }
-
+        
         const subjectsRef = collection(firestore, 'subjects');
-        const subjectQuery = query(subjectsRef, where('id', '==', subjectSlug));
+        const subjectQuery = query(subjectsRef, where('name', '==', subjectName));
         const subjectSnapshot = await getDocs(subjectQuery);
 
         if (subjectSnapshot.empty) {
             // Subject does not exist, create it
-            const newSubjectRef = doc(subjectsRef, subjectSlug);
+            const newSubjectRef = doc(subjectsRef);
             const newSubject: Subject = {
-                id: subjectSlug,
+                id: newSubjectRef.id,
                 name: subjectName,
                 description: `Subject for TNPSC exams`,
             };
             await setDoc(newSubjectRef, newSubject);
-            subjectId = subjectSlug;
+            subjectId = newSubjectRef.id;
             toast({
                 title: t('Subject Created'),
                 description: `New subject '${subjectName}' was created.`,
@@ -512,14 +454,10 @@ export default function TopicManagementPage() {
         }
 
         // 2. Create the unit
-        const unitId = createSlug(`${classId}-${subjectId}-${term}-unit-${unitNumber}-${unitName}`);
-        if (!unitId) {
-            throw new Error("Could not create a valid Unit ID. Please check all fields.");
-        }
-        const unitDocRef = doc(firestore, 'units', unitId);
+        const unitDocRef = doc(collection(firestore, 'units'));
         
         const unitData: Unit = {
-            id: unitId,
+            id: unitDocRef.id,
             classId,
             subjectId,
             term,
