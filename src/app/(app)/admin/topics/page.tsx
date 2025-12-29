@@ -242,7 +242,7 @@ function EditUnitForm({ unit, classes, onFinished }: { unit: Unit, classes: Clas
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t('Unit')}</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value?.toString()}>
+                        <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
                             <FormControl>
                                 <SelectTrigger>
                                 <SelectValue placeholder="Select a unit" />
@@ -608,7 +608,7 @@ export default function TopicManagementPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t('Unit')}</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value.toString()}>
+                        <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value.toString()}>
                             <FormControl>
                                 <SelectTrigger>
                                 <SelectValue placeholder="Select a unit" />
