@@ -88,14 +88,12 @@ function EditUnitForm({ unit, classes, onFinished }: { unit: Unit, classes: Clas
 
         try {
             const { classId, subjectName, term, unitNumber, unitName, category, otherCategory } = values;
-
-            // 1. Find or create the subject
-            let subjectId: string;
             
             const subjectsRef = collection(firestore, 'subjects');
             const subjectQuery = query(subjectsRef, where('name', '==', subjectName));
             const subjectSnapshot = await getDocs(subjectQuery);
 
+            let subjectId: string;
             if (subjectSnapshot.empty) {
                 const newSubjectRef = doc(subjectsRef);
                 const newSubject: Subject = { id: newSubjectRef.id, name: subjectName, description: `Subject for TNPSC exams` };
@@ -105,18 +103,15 @@ function EditUnitForm({ unit, classes, onFinished }: { unit: Unit, classes: Clas
                 subjectId = subjectSnapshot.docs[0].id;
             }
 
-            // 2. Update the unit
             const unitDocRef = doc(firestore, 'units', unit.id);
-            const unitData: Partial<Unit> = {
+            const unitData: Partial<Omit<Unit, 'id'>> = {
                 classId,
                 subjectId,
                 term,
                 unitNumber,
                 unitName,
+                category: category === 'other' ? otherCategory : category
             };
-            if (category) {
-                unitData.category = category === 'other' ? otherCategory : category;
-            }
 
             await updateDoc(unitDocRef, unitData);
 
@@ -426,16 +421,13 @@ export default function TopicManagementPage() {
     
     try {
         const { classId, subjectName, term, unitNumber, unitName, category, otherCategory } = values;
-
-        // 1. Find or create the subject
-        let subjectId: string;
         
         const subjectsRef = collection(firestore, 'subjects');
         const subjectQuery = query(subjectsRef, where('name', '==', subjectName));
         const subjectSnapshot = await getDocs(subjectQuery);
 
+        let subjectId: string;
         if (subjectSnapshot.empty) {
-            // Subject does not exist, create it
             const newSubjectRef = doc(subjectsRef);
             const newSubject: Subject = {
                 id: newSubjectRef.id,
@@ -449,11 +441,9 @@ export default function TopicManagementPage() {
                 description: `New subject '${subjectName}' was created.`,
             });
         } else {
-            // Subject exists, use its ID
             subjectId = subjectSnapshot.docs[0].id;
         }
 
-        // 2. Create the unit
         const unitDocRef = doc(collection(firestore, 'units'));
         
         const unitData: Unit = {
@@ -463,13 +453,10 @@ export default function TopicManagementPage() {
             term,
             unitNumber,
             unitName,
+            category: category === 'other' ? otherCategory : category
         };
         
-        if(category) {
-            unitData.category = category === 'other' ? otherCategory : category;
-        }
-
-        await setDoc(unitDocRef, unitData, { merge: true });
+        await setDoc(unitDocRef, unitData);
 
         toast({
             title: t('Unit Created!'),

@@ -434,10 +434,11 @@ export default function UploadMcqPage() {
       const batch = writeBatch(firestore);
       const questionsCollectionRef = collection(firestore, 'questions');
       const testsCollectionRef = collection(firestore, 'tests');
+      const subjectsCollectionRef = collection(firestore, 'subjects');
 
       // 1. Find or Create Subject
       let subjectId: string;
-      const subjectQuery = query(collection(firestore, 'subjects'), where('name', '==', subjectName));
+      const subjectQuery = query(subjectsCollectionRef, where('name', '==', subjectName));
       const subjectSnapshot = await getDocs(subjectQuery);
       
       if (subjectSnapshot.empty) {
@@ -511,8 +512,6 @@ export default function UploadMcqPage() {
           }
       });
       
-      await batch.commit();
-
       toast({
         title: t('upload_successful_title'),
         description: t('upload_successful_desc', { count: questions.length }),

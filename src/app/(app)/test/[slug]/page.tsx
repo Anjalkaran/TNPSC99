@@ -34,17 +34,17 @@ export default function TestPage() {
     const fetchTest = async () => {
       setIsLoading(true);
       const testsRef = collection(firestore, 'tests');
-      const decodedSlug = Array.isArray(slug) ? slug[0] : slug;
-      const q = query(testsRef, where('slug', '==', decodedSlug));
-      const querySnapshot = await getDocs(q);
+      const testId = Array.isArray(slug) ? slug[0] : slug;
+      
+      const testDocRef = doc(firestore, 'tests', testId);
+      const testDocSnap = await getDoc(testDocRef);
 
-      if (querySnapshot.empty) {
+      if (!testDocSnap.exists()) {
         notFound();
         return;
       }
 
-      const testDoc = querySnapshot.docs[0];
-      const testData = { id: testDoc.id, ...testDoc.data() } as Test;
+      const testData = { id: testDocSnap.id, ...testDocSnap.data() } as Test;
 
       // Fetch all questions for the test
       const allQuestions: Question[] = [];

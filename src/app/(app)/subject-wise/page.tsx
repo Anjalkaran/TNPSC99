@@ -36,7 +36,7 @@ function TestStartControl({ test }: { test: Test }) {
         </SelectContent>
       </Select>
       <Button asChild className="w-full" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
-        <Link href={`/test/${encodeURIComponent(test.title)}${limit ? `?limit=${limit}` : ''}`}>
+        <Link href={`/test/${test.id}${limit ? `?limit=${limit}` : ''}`}>
           Start Test <ArrowRight className="ml-2 h-4 w-4" />
         </Link>
       </Button>
