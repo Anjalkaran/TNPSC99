@@ -47,6 +47,11 @@ export default function AppLayout({
   }
 
   const getPageTitle = () => {
+    // If we're on a test page, return a generic title to avoid showing the encoded slug.
+    // The test page itself will handle displaying the specific test title.
+    if (pathname.startsWith('/test/')) {
+        return t('online_tests');
+    }
     const segment = pathname.split('/').pop()?.replace('-', ' ') || 'dashboard';
     // Use translation key that matches the segment
     return t(segment as any);
