@@ -241,7 +241,7 @@ function EditUnitForm({ unit, classes, onFinished }: { unit: Unit, classes: Clas
                     name="unitNumber"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>{t('Unit Number')}</FormLabel>
+                            <FormLabel>{t('Unit')}</FormLabel>
                             <FormControl>
                                 <Input type="number" placeholder="e.g., 1" {...field} />
                             </FormControl>
@@ -277,7 +277,7 @@ function EditUnitForm({ unit, classes, onFinished }: { unit: Unit, classes: Clas
 }
 
 function ExistingUnitsList() {
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
     const firestore = useFirestore();
     const { toast } = useToast();
     const [openDialogs, setOpenDialogs] = useState<Record<string, boolean>>({});
@@ -292,14 +292,14 @@ function ExistingUnitsList() {
 
     const unitsWithNames = useMemo(() => {
         if (!units || !classes || !subjects) return [];
-        const classMap = new Map(classes.map(c => [c.id, c.name]));
-        const subjectMap = new Map(subjects.map(s => [s.id, s.name]));
+        const classMap = new Map(classes.map(c => [c.id, language === 'ta' && c.name_ta ? c.name_ta : c.name]));
+        const subjectMap = new Map(subjects.map(s => [s.id, language === 'ta' && s.name_ta ? s.name_ta : s.name]));
         return units.map(unit => ({
             ...unit,
             className: classMap.get(unit.classId) || unit.classId,
             subjectName: subjectMap.get(unit.subjectId) || unit.subjectId,
         }))
-    }, [units, classes, subjects]);
+    }, [units, classes, subjects, language]);
 
 
     const handleDelete = async (unitId: string) => {
@@ -340,7 +340,7 @@ function ExistingUnitsList() {
                             <li key={unit.id} className="flex justify-between items-center p-3 border rounded-md">
                                 <div>
                                     <p className="font-semibold text-sm">{unit.className} - {unit.subjectName} - {unit.term}</p>
-                                    <p className="font-bold text-base">Unit {unit.unitNumber}: {unit.unitName}</p>
+                                    <p className="font-bold text-base">{t('Unit')} {unit.unitNumber}: {unit.unitName}</p>
                                     {unit.category && <p className="text-xs text-muted-foreground">Category: {unit.category}</p>}
                                 </div>
                                 <div className="flex gap-2">
@@ -598,7 +598,7 @@ export default function TopicManagementPage() {
                   name="unitNumber"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('Unit Number')}</FormLabel>
+                      <FormLabel>{t('Unit')}</FormLabel>
                       <FormControl>
                         <Input type="number" placeholder="e.g., 1" {...field} />
                       </FormControl>

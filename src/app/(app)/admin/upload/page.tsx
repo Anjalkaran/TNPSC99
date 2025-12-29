@@ -661,7 +661,7 @@ export default function UploadMcqPage() {
                         name="unitNumber"
                         render={({ field }) => (
                         <FormItem>
-                            <FormLabel>{t('Unit Number')}</FormLabel>
+                            <FormLabel>{t('Unit')}</FormLabel>
                             <FormControl>
                             <Input type="number" placeholder="e.g., 1" {...field} />
                             </FormControl>
