@@ -92,7 +92,7 @@ export default function EditTestPage() {
   }, [testId, toast, firestore]);
 
   const handleRemoveQuestion = async (questionId: string) => {
-      if(!test || !testRef) return;
+      if(!test || !testRef || !firestore) return;
 
       const updatedQuestionIds = test.questionIds.filter(id => id !== questionId);
       
@@ -146,14 +146,15 @@ export default function EditTestPage() {
                 <TableHeader>
                     <TableRow>
                         <TableHead>{t('Question Text')}</TableHead>
-                        <TableHead>{t('Actions')}</TableHead>
                         <TableHead>{t('Unit ID')}</TableHead>
+                        <TableHead className="text-right">{t('Actions')}</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {questions.map(q => (
                         <TableRow key={q.id}>
                             <TableCell className="max-w-prose">{q.text}</TableCell>
+                            <TableCell>{q.unitId}</TableCell>
                             <TableCell className="text-right">
                                <AlertDialog>
                                     <AlertDialogTrigger asChild>
@@ -175,7 +176,6 @@ export default function EditTestPage() {
                                     </AlertDialogContent>
                                 </AlertDialog>
                             </TableCell>
-                            <TableCell>{q.unitId}</TableCell>
                         </TableRow>
                     ))}
                 </TableBody>

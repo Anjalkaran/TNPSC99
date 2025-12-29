@@ -431,20 +431,18 @@ export default function UploadMcqPage() {
       if (!firestore) throw new Error('Firestore is not initialized');
 
       const { classId, subjectName, term, unitNumber, unitName, category, otherCategory } = values;
-      const batch = writeBatch(firestore);
-      const questionsCollectionRef = collection(firestore, 'questions');
       const testsCollectionRef = collection(firestore, 'tests');
-      const subjectsCollectionRef = collection(firestore, 'subjects');
 
       // 1. Find or Create Subject
       let subjectId: string;
-      const subjectQuery = query(subjectsCollectionRef, where('name', '==', subjectName));
+      const subjectsRef = collection(firestore, 'subjects');
+      const subjectQuery = query(subjectsRef, where('name', '==', subjectName));
       const subjectSnapshot = await getDocs(subjectQuery);
       
       if (subjectSnapshot.empty) {
-          const newSubjectRef = doc(subjectsCollectionRef);
+          const newSubjectRef = doc(subjectsRef);
           const newSubject: Subject = { id: newSubjectRef.id, name: subjectName, description: `Subject for TNPSC exams` };
-          batch.set(newSubjectRef, newSubject);
+          await setDoc(newSubjectRef, newSubject);
           subjectId = newSubjectRef.id;
       } else {
           subjectId = subjectSnapshot.docs[0].id;
@@ -465,7 +463,7 @@ export default function UploadMcqPage() {
           const newUnitRef = doc(collection(firestore, 'units'));
           const unitData: Unit = { id: newUnitRef.id, classId, subjectId, term, unitNumber, unitName };
           if (category) unitData.category = category === 'other' ? otherCategory : category;
-          batch.set(newUnitRef, unitData);
+          await setDoc(newUnitRef, unitData);
           unitId = newUnitRef.id;
       } else {
           unitId = unitSnapshot.docs[0].id;
@@ -473,13 +471,16 @@ export default function UploadMcqPage() {
 
 
       // 3. Add Questions
+      const batch = writeBatch(firestore);
+      const questionsCollectionRef = collection(firestore, 'questions');
       const newQuestionIds: string[] = [];
       questions.forEach(q => {
           const questionRef = doc(questionsCollectionRef);
-          const questionData: QuestionInput = { ...q, classId, subjectId, unitId: q.unitId || unitId, reference: q.reference || '' };
+          const questionData: Question = { ...q, id: questionRef.id, classId, subjectId, unitId: q.unitId || unitId, reference: q.reference || '' };
           batch.set(questionRef, questionData);
           newQuestionIds.push(questionRef.id);
       });
+      await batch.commit();
       
       // 4. Find or create test and update it
       const selectedClass = classes?.find(c => c.id === classId);
