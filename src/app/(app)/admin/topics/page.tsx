@@ -42,51 +42,45 @@ import {
 const createSlug = (name: string): string => {
   if (!name) return '';
 
-  const tamilToLatinMap: { [key: string]: string } = {
+  const tamilToLatin: { [key: string]: string } = {
     'அ': 'a', 'ஆ': 'aa', 'இ': 'i', 'ஈ': 'ii', 'உ': 'u', 'ஊ': 'uu',
     'எ': 'e', 'ஏ': 'e', 'ஐ': 'ai', 'ஒ': 'o', 'ஓ': 'oo', 'ஔ': 'au',
-    'க': 'k', 'ங': 'ng', 'ச': 's', 'ஞ': 'nj', 'ட': 't', 'ண': 'n',
-    'த': 'th', 'ந': 'n', 'ப': 'p', 'ம': 'm', 'ய': 'y', 'ர': 'r',
-    'ல': 'l', 'வ': 'v', 'ழ': 'zh', 'ள': 'l', 'ற': 'r', 'ன': 'n',
-    'ஜ': 'j', 'ஷ': 'sh', 'ஸ': 's', 'ஹ': 'h', 'க்ஷ': 'ksh',
+    'க': 'k', 'ச': 's', 'ட': 't', 'த': 'th', 'ப': 'p', 'ற': 'r',
+    'ஞ': 'nj', 'ங': 'ng', 'ண': 'n', 'ந': 'n', 'ம': 'm', 'ன': 'n',
+    'ய': 'y', 'ர': 'r', 'ல': 'l', 'வ': 'v', 'ழ': 'zh', 'ள': 'l',
+    'ஶ': 'sh', 'ஷ': 'sh', 'ஸ': 's', 'ஹ': 'h', 'க்ஷ': 'ksh', 'ஜ': 'j',
+    'க்': 'k', 'ச்': 's', 'ட்': 't', 'த்': 'th', 'ப்': 'p', 'ற்': 'r',
+    'ஞ்': 'nj', 'ங்': 'ng', 'ண்': 'n', 'ந்': 'n', 'ம்': 'm', 'ன்': 'n',
+    'ய்': 'y', 'ர்': 'r', 'ல்': 'l', 'வ்': 'v', 'ழ்': 'zh', 'ள்': 'l',
     'ஸ்ரீ': 'sri',
-    // Vowel diacritics
-    '்': '', 'ா': 'a', 'ி': 'i', 'ீ': 'ii', 'ு': 'u', 'ூ': 'uu',
-    'ெ': 'e', 'ே': 'e', 'ை': 'ai', 'ொ': 'o', 'ோ': 'oo', 'ௌ': 'au'
+    ' ': '-', '0': '0', '1': '1', '2': '2', '3': '3', '4': '4',
+    '5': '5', '6': '6', '7': '7', '8': '8', '9': '9'
   };
 
-  const consonants = "கஙசஞடணதநபமயரலவழளறனஜஷஸஹக்ஷ";
+  const pulli = '்';
+  const consonants = "கசடதபறஞஙணநமனயரலவழளஶஷஸஹஜ";
 
-  let slug = '';
+  let result = '';
   for (let i = 0; i < name.length; i++) {
     const char = name[i];
     const nextChar = name[i + 1];
 
-    if (tamilToLatinMap[char]) {
-      // It's a Tamil character
-      if (consonants.includes(char)) {
-        if (nextChar && tamilToLatinMap[nextChar] && !consonants.includes(nextChar) && tamilToLatinMap[nextChar] !== '') {
-          // Consonant followed by a vowel sign
-          slug += tamilToLatinMap[char] + tamilToLatinMap[nextChar];
-          i++; // Skip the vowel sign
-        } else {
-          // Consonant with an inherent 'a' sound or with a pulli (which maps to '')
-          slug += tamilToLatinMap[char] + (tamilToLatinMap[char] ? 'a' : '');
-        }
+    if (tamilToLatin[char]) {
+      result += tamilToLatin[char];
+    } else if (consonants.includes(char)) {
+      if (nextChar === pulli) {
+        result += tamilToLatin[char + pulli];
+        i++; // Skip the pulli
       } else {
-        // It's a standalone vowel
-        slug += tamilToLatinMap[char];
+        result += tamilToLatin[char] + 'a';
       }
-    } else {
-      // Not a Tamil character, append as is
-      slug += char;
+    } else if (char.match(/[a-zA-Z0-9-]/)) {
+        result += char;
     }
   }
 
-  return slug
-    .toString()
+  return result
     .toLowerCase()
-    .trim()
     .replace(/\s+/g, '-') // Replace spaces with -
     .replace(/[^\w\-]+/g, '') // Remove all non-word chars except hyphen
     .replace(/\-\-+/g, '-') // Replace multiple - with single -
