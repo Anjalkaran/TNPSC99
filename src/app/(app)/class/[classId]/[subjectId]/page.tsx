@@ -127,20 +127,24 @@ export default function SubjectTestsPage() {
         let subjectName = subjectId;
 
         try {
-            const classDocRef = doc(firestore, 'classes', classId);
-            const classSnap = await getDoc(classDocRef);
-            if (classSnap.exists()) {
-                const classData = classSnap.data() as Class;
-                className = language === 'ta' && classData.name_ta ? classData.name_ta : classData.name;
+            if (classId) {
+                const classDocRef = doc(firestore, 'classes', classId);
+                const classSnap = await getDoc(classDocRef);
+                if (classSnap.exists()) {
+                    const classData = classSnap.data() as Class;
+                    className = language === 'ta' && classData.name_ta ? classData.name_ta : classData.name;
+                }
             }
         } catch (e) { console.error("Failed to fetch class name", e)}
 
         try {
-            const subjectDocRef = doc(firestore, 'subjects', subjectId);
-            const subjectSnap = await getDoc(subjectDocRef);
-            if(subjectSnap.exists()){
-                const subjectData = subjectSnap.data() as Subject;
-                subjectName = language === 'ta' && subjectData.name_ta ? subjectData.name_ta : subjectData.name;
+             if (subjectId) {
+                const subjectDocRef = doc(firestore, 'subjects', subjectId);
+                const subjectSnap = await getDoc(subjectDocRef);
+                if(subjectSnap.exists()){
+                    const subjectData = subjectSnap.data() as Subject;
+                    subjectName = language === 'ta' && subjectData.name_ta ? subjectData.name_ta : subjectData.name;
+                }
             }
         } catch (e) { console.error("Failed to fetch subject name", e)}
 
@@ -148,7 +152,9 @@ export default function SubjectTestsPage() {
         setPageTitle(`${className} - ${subjectName}`);
         setPageDescription(`Tests for the subject ${subjectName} in ${className} are listed below.`);
     }
-    fetchMetadata();
+    if (classId && subjectId) {
+      fetchMetadata();
+    }
   }, [firestore, classId, subjectId, t, language]);
 
   return (

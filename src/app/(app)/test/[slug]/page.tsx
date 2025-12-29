@@ -33,7 +33,7 @@ export default function TestPage() {
 
     const fetchTest = async () => {
       setIsLoading(true);
-      const testId = Array.isArray(slug) ? slug[0] : slug;
+      const testId = Array.isArray(slug) ? slug[0] : decodeURIComponent(slug);
       
       const testDocRef = doc(firestore, 'tests', testId);
       const testDocSnap = await getDoc(testDocRef);

@@ -46,6 +46,12 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
     // If it does, it means the user is reviewing a previously answered question.
     setIsAnswered(answers[currentQuestionIndex] !== undefined);
   }, [currentQuestionIndex, answers]);
+  
+  useEffect(() => {
+    if (test?.title) {
+        document.title = test.title;
+    }
+  }, [test]);
 
 
   const handleAnswerChange = (value: string) => {
