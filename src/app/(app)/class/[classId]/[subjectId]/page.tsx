@@ -194,6 +194,18 @@ export default function SubjectTestsPage() {
     }
   }, [firestore, classId, subjectId, t, language]);
 
+  const getShortTestTitle = (fullTitle: string, pageTitle: string) => {
+    if (!pageTitle) return fullTitle;
+    // The page title is like "Class Name - Subject Name"
+    // The full title is like "Class Name - Subject Name - Term - Unit - Unit Name"
+    // We want to remove the "Class Name - Subject Name - " part
+    const prefix = `${pageTitle} - `;
+    if (fullTitle.startsWith(prefix)) {
+      return fullTitle.substring(prefix.length);
+    }
+    return fullTitle;
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
       <div className="mb-8">
@@ -216,7 +228,7 @@ export default function SubjectTestsPage() {
               <TableBody>
                 {sortedTests.map((test) => (
                   <TableRow key={test.id}>
-                    <TableCell className="font-medium">{test.title}</TableCell>
+                    <TableCell className="font-medium">{getShortTestTitle(test.title, pageTitle)}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <span>{test.questionIds.length}</span>
