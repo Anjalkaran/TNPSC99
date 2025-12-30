@@ -19,14 +19,15 @@ export default function ClassWiseTestsPage() {
   const sortedClasses = useMemo(() => {
     if (!classes) return [];
     
-    // Sort classes numerically by their ID
+    // Custom sort function to handle class names like "Class VI", "10ஆம் வகுப்பு"
     const sorted = [...classes].sort((a, b) => {
-        const idA = parseInt(a.id, 10);
-        const idB = parseInt(b.id, 10);
-        // Handle cases where ID might not be a number
-        if (isNaN(idA)) return 1;
-        if (isNaN(idB)) return -1;
-        return idA - idB;
+        // Use a regular expression to extract the first number from the name or id
+        const numA = parseInt((a.name.match(/\d+/) || [a.id])[0], 10);
+        const numB = parseInt((b.name.match(/\d+/) || [b.id])[0], 10);
+
+        if (isNaN(numA)) return 1;
+        if (isNaN(numB)) return -1;
+        return numA - numB;
     });
 
     // Filter out duplicates after sorting to be safe
