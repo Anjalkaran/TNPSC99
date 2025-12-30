@@ -7,9 +7,11 @@ import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, query } from "firebase/firestore";
 import type { Class } from "@/lib/types";
 import { useMemo } from "react";
+import { useTranslation } from "@/hooks/use-translation";
 
 export default function ClassWiseTestsPage() {
   const firestore = useFirestore();
+  const { language } = useTranslation();
   const classesCollection = useMemoFirebase(() => collection(firestore, 'classes'), [firestore]);
   // Remove the orderBy from the query, as we will sort on the client
   const classesQuery = useMemoFirebase(() => classesCollection && query(classesCollection), [classesCollection]);
@@ -21,12 +23,24 @@ export default function ClassWiseTestsPage() {
     
     // Custom sort function to handle class names like "Class VI", "10ஆம் வகுப்பு"
     const sorted = [...classes].sort((a, b) => {
-        // Use a regular expression to extract the first number from the name or id
-        const numA = parseInt((a.name.match(/\d+/) || [a.id])[0], 10);
-        const numB = parseInt((b.name.match(/\d+/) || [b.id])[0], 10);
+        // Function to extract number from name or id
+        const getNumber = (cls: Class) => {
+            const nameToUse = language === 'ta' && cls.name_ta ? cls.name_ta : cls.name;
+            const match = nameToUse.match(/\d+/);
+            if (match) {
+                return parseInt(match[0], 10);
+            }
+            // Fallback to ID if no number in name
+            const idMatch = cls.id.match(/\d+/);
+            if (idMatch) {
+                return parseInt(idMatch[0], 10);
+            }
+            return Infinity; // Push items without numbers to the end
+        };
 
-        if (isNaN(numA)) return 1;
-        if (isNaN(numB)) return -1;
+        const numA = getNumber(a);
+        const numB = getNumber(b);
+
         return numA - numB;
     });
 
@@ -38,7 +52,7 @@ export default function ClassWiseTestsPage() {
       seen.add(cls.id);
       return !duplicate;
     });
-  }, [classes]);
+  }, [classes, language]);
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
