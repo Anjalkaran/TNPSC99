@@ -120,6 +120,31 @@ export default function SubjectTestsPage() {
   }, [testsCollection, classId, subjectId]);
 
   const { data: subjectTests, isLoading } = useCollection<Test>(subjectTestsQuery);
+  
+  const sortedTests = useMemo(() => {
+    if (!subjectTests) return [];
+    
+    const termOrder: { [key: string]: number } = {
+        "பருவம் 1": 1,
+        "பருவம் 2": 2,
+        "பருவம் 3": 3,
+        "Full Book": 4,
+    };
+
+    return [...subjectTests].sort((a, b) => {
+        const termA = a.term ? termOrder[a.term] || 99 : 99;
+        const termB = b.term ? termOrder[b.term] || 99 : 99;
+
+        if (termA !== termB) {
+            return termA - termB;
+        }
+        
+        const unitA = a.unitNumber || 99;
+        const unitB = b.unitNumber || 99;
+        
+        return unitA - unitB;
+    });
+  }, [subjectTests]);
 
   useEffect(() => {
     async function fetchMetadata() {
@@ -167,7 +192,7 @@ export default function SubjectTestsPage() {
       
       {isLoading && <p>Loading tests...</p>}
 
-      {!isLoading && subjectTests && subjectTests.length > 0 ? (
+      {!isLoading && sortedTests && sortedTests.length > 0 ? (
         <Card>
           <CardContent className="p-0">
             <Table>
@@ -180,7 +205,7 @@ export default function SubjectTestsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {subjectTests.map((test) => (
+                {sortedTests.map((test) => (
                   <TableRow key={test.id}>
                     <TableCell className="font-medium">{test.title}</TableCell>
                     <TableCell className="text-muted-foreground">{test.description}</TableCell>
