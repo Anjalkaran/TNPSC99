@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import type { Test, UserTestAttempt, Score } from '@/lib/types';
+import type { Test, UserTestAttempt, Score, Question } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -79,6 +79,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
     let calculatedScore = 0;
     const correctlyAnsweredQuestionIds: string[] = [];
     const incorrectlyAnsweredQuestionIds: string[] = [];
+    const sessionQuestionIds = questionsToScore.map(q => q.id);
 
     questionsToScore.forEach((q, index) => {
         const answerIndex = answersToScore[index];
@@ -107,6 +108,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
                 answers: answersToScore.map(a => a ?? -1),
                 correctlyAnsweredQuestionIds,
                 incorrectlyAnsweredQuestionIds,
+                sessionQuestionIds,
             };
             
             setDoc(attemptDocRef, testAttempt)

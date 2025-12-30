@@ -78,6 +78,7 @@ export interface UserTestAttempt {
   testTitle?: string;
   correctlyAnsweredQuestionIds?: string[];
   incorrectlyAnsweredQuestionIds?: string[];
+  sessionQuestionIds?: string[];
 }
 
 export interface Score {

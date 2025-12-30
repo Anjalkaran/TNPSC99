@@ -64,14 +64,23 @@ function TestProgressBadge({ testId }: { testId: string }) {
             const attemptsQuery = query(attemptsRef, where('testId', '==', testId));
             const attemptsSnapshot = await getDocs(attemptsQuery);
 
-            const correctlyAnsweredIds = new Set<string>();
+            const attemptedQuestionIds = new Set<string>();
             attemptsSnapshot.forEach(doc => {
                 const attempt = doc.data() as UserTestAttempt;
-                if (attempt.correctlyAnsweredQuestionIds) {
-                    attempt.correctlyAnsweredQuestionIds.forEach(id => correctlyAnsweredIds.add(id));
+                // Check if sessionQuestionIds and answers exist
+                if (attempt.sessionQuestionIds && attempt.answers) {
+                    attempt.answers.forEach((answer, index) => {
+                        // An answer is considered attempted if it's not undefined or -1
+                        if (answer !== undefined && answer !== -1) {
+                            const questionId = attempt.sessionQuestionIds?.[index];
+                            if (questionId) {
+                                attemptedQuestionIds.add(questionId);
+                            }
+                        }
+                    });
                 }
             });
-            setAnsweredCount(correctlyAnsweredIds.size);
+            setAnsweredCount(attemptedQuestionIds.size);
             setIsLoading(false);
         };
 
@@ -149,7 +158,7 @@ export default function SubjectTestsPage() {
   }, [subjectTests]);
 
   useEffect(() => {
-    async function fetchMetadata() {
+    async function fetchMetadataAndSetTitle() {
         if (!firestore) return;
         let className = `Class ${classId}`;
         let subjectName = subjectId;
@@ -178,9 +187,10 @@ export default function SubjectTestsPage() {
 
         const title = `${className} - ${subjectName}`;
         setPageTitle(title);
+        document.title = title; // Set document title directly
     }
     if (classId && subjectId) {
-      fetchMetadata();
+      fetchMetadataAndSetTitle();
     }
   }, [firestore, classId, subjectId, t, language]);
 
