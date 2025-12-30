@@ -21,7 +21,6 @@ export interface Test {
   title: string;
   description: string;
   category: 'class' | 'subject' | 'previous';
-  image?: ImagePlaceholder;
   questionIds: string[];
   questions?: Question[];
   classId?: string; // Added for class-wise tests

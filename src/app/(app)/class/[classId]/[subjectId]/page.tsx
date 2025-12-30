@@ -53,7 +53,10 @@ function TestProgressBadge({ testId }: { testId: string }) {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        if (!user || !firestore || !testId) return;
+        if (!user || !firestore || !testId) {
+            setIsLoading(false);
+            return;
+        };
 
         const fetchAttempts = async () => {
             setIsLoading(true);
@@ -75,8 +78,8 @@ function TestProgressBadge({ testId }: { testId: string }) {
         fetchAttempts();
     }, [user, firestore, testId]);
 
-    if (isLoading || answeredCount === 0) {
-        return null; // Don't show anything if loading or no progress
+    if (isLoading) {
+        return <Badge variant="outline">Loading...</Badge>;
     }
 
     return (

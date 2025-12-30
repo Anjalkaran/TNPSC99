@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { ArrowLeft, ArrowRight, CheckCircle2, XCircle, RotateCw, LogOut } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth, useFirestore, useUser } from '@/firebase';
-import { addDoc, collection } from 'firebase/firestore';
+import { addDoc, collection, doc, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -96,7 +96,9 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
 
     if (user && (correctlyAnsweredQuestionIds.length > 0 || incorrectlyAnsweredQuestionIds.length > 0)) {
         try {
-            const testAttempt: Omit<UserTestAttempt, 'id'> = {
+            const attemptDocRef = doc(collection(firestore, `users/${user.uid}/testAttempts`));
+            const testAttempt: UserTestAttempt = {
+                id: attemptDocRef.id,
                 userId: user.uid,
                 testId: test.id,
                 testTitle: decodedTitle,
@@ -106,14 +108,13 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
                 correctlyAnsweredQuestionIds,
                 incorrectlyAnsweredQuestionIds,
             };
-            const attemptsCollectionRef = collection(firestore, `users/${user.uid}/testAttempts`);
             
-            addDoc(attemptsCollectionRef, testAttempt)
+            setDoc(attemptDocRef, testAttempt)
                 .catch(error => {
                     errorEmitter.emit(
                     'permission-error',
                     new FirestorePermissionError({
-                        path: attemptsCollectionRef.path,
+                        path: attemptDocRef.path,
                         operation: 'create',
                         requestResourceData: testAttempt,
                     })
@@ -121,7 +122,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
                 });
             
              // Also add a record to the public 'scores' collection for the leaderboard
-            const scoreData: Omit<Score, 'id'> = {
+            const scoreData: Score = {
               userId: user.uid,
               username: user.displayName || 'Anonymous',
               score: calculatedScore,
