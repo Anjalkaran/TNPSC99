@@ -477,7 +477,7 @@ export default function UploadMcqPage() {
       const testsCollectionRef = collection(firestore, 'tests');
       const selectedClass = classes?.find(c => c.id === classId);
       const className = language === 'ta' && selectedClass?.name_ta ? selectedClass.name_ta : selectedClass?.name;
-      const testTitle = `${className || 'Class'} - ${subjectName} - ${term} - ${t('Unit')} ${unitNumber} - ${unitName}`;
+      const testTitle = `${className || 'Class'} - ${subjectName} - ${term} - இயல் ${unitNumber} - ${unitName}`;
       
       const testQuery = query(testsCollectionRef, where('title', '==', testTitle));
       
@@ -731,5 +731,7 @@ export default function UploadMcqPage() {
     </div>
   );
 }
+
+    
 
     
