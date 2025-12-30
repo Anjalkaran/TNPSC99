@@ -199,7 +199,6 @@ export default function SubjectTestsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Test Title</TableHead>
-                  <TableHead>Description</TableHead>
                   <TableHead>Questions</TableHead>
                   <TableHead className="text-right">Action</TableHead>
                 </TableRow>
@@ -208,7 +207,6 @@ export default function SubjectTestsPage() {
                 {sortedTests.map((test) => (
                   <TableRow key={test.id}>
                     <TableCell className="font-medium">{test.title}</TableCell>
-                    <TableCell className="text-muted-foreground">{test.description}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <span>{test.questionIds.length}</span>
