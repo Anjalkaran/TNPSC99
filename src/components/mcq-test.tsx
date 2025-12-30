@@ -178,6 +178,8 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
     window.location.reload();
   };
 
+  const returnHref = (test.classId && test.subjectId) ? `/class/${test.classId}/${test.subjectId}` : '/dashboard';
+
   if (questions.length === 0) {
     return (
       <Card className="w-full max-w-2xl">
@@ -199,7 +201,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
             மீண்டும் முயற்சிக்கவும்
           </Button>
           <Button asChild variant="outline" className="w-full sm:w-auto">
-            <Link href="/">முகப்புக்குத் திரும்பு</Link>
+            <Link href={returnHref}>முகப்புக்குத் திரும்பு</Link>
           </Button>
         </CardFooter>
       </Card>
@@ -250,7 +252,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
             மீண்டும் முயற்சிக்கவும்
           </Button>
           <Button asChild variant="outline" className="w-full sm:w-auto">
-            <Link href="/">முகப்புக்குத் திரும்பு</Link>
+            <Link href={returnHref}>முகப்புக்குத் திரும்பு</Link>
           </Button>
         </CardFooter>
       </Card>
