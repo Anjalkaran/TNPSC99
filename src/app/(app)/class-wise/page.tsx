@@ -4,13 +4,14 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, BookText } from "lucide-react";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection, query, orderBy } from "firebase/firestore";
+import { collection, query } from "firebase/firestore";
 import type { Class } from "@/lib/types";
 import { useMemo } from "react";
 
 export default function ClassWiseTestsPage() {
   const firestore = useFirestore();
   const classesCollection = useMemoFirebase(() => collection(firestore, 'classes'), [firestore]);
+  // Remove the orderBy from the query, as we will sort on the client
   const classesQuery = useMemoFirebase(() => classesCollection && query(classesCollection), [classesCollection]);
 
   const { data: classes, isLoading } = useCollection<Class>(classesQuery);
@@ -22,10 +23,13 @@ export default function ClassWiseTestsPage() {
     const sorted = [...classes].sort((a, b) => {
         const idA = parseInt(a.id, 10);
         const idB = parseInt(b.id, 10);
+        // Handle cases where ID might not be a number
+        if (isNaN(idA)) return 1;
+        if (isNaN(idB)) return -1;
         return idA - idB;
     });
 
-    // Filter out duplicates after sorting
+    // Filter out duplicates after sorting to be safe
     const seen = new Set();
     return sorted.filter(cls => {
       if (!cls.id) return false;
