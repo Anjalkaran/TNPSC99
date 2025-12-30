@@ -177,9 +177,10 @@ export default function SubjectTestsPage() {
             }
         } catch (e) { console.error("Failed to fetch subject name", e)}
 
-
-        setPageTitle(`${className} - ${subjectName}`);
+        const title = `${className} - ${subjectName}`;
+        setPageTitle(title);
         setPageDescription(`Tests for the subject ${subjectName} in ${className} are listed below.`);
+        document.title = title;
     }
     if (classId && subjectId) {
       fetchMetadata();
