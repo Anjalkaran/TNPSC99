@@ -52,6 +52,9 @@ export default function AppLayout({
     if (pathname.startsWith('/test/')) {
         return t('online_tests');
     }
+     if (pathname === '/online-tests') {
+      return t('online_tests');
+    }
     const segment = pathname.split('/').pop()?.replace('-', ' ') || 'dashboard';
     // Use translation key that matches the segment
     return t(segment as any);
