@@ -105,14 +105,6 @@ export default function PreviousYearPapersPage() {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {previousYearTests.map((test) => (
             <Card key={test.id} className="flex flex-col overflow-hidden hover:shadow-lg transition-shadow duration-300">
-              <Image
-                src={test.image.imageUrl}
-                alt={test.title}
-                width={600}
-                height={400}
-                className="w-full h-48 object-cover"
-                data-ai-hint={test.image.imageHint}
-              />
               <CardHeader>
                 <CardTitle>{test.title}</CardTitle>
                 <CardDescription>{test.description}</CardDescription>

@@ -80,14 +80,6 @@ const jsonStructureExample = `[
 ]`;
 
 
-const findImage = (id: string) => {
-    const image = PlaceHolderImages.find((img) => img.id === id);
-    if (!image) {
-      // Fallback to a default image if not found
-      return PlaceHolderImages[0];
-    }
-    return image;
-};
 
 const uploadFormSchema = z.object({
   classId: z.string().min(1, { message: "Please select a class." }),
@@ -498,7 +490,6 @@ export default function UploadMcqPage() {
                   title: testTitle,
                   description: t('test_for_class_subject', {classId: className || classId, subjectId: subjectName}),
                   category: 'class',
-                  image: findImage('class-wise'),
                   questionIds: newQuestionIds,
                   classId: classId,
                   subjectId: subjectId,
