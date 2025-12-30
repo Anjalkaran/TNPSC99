@@ -1,6 +1,6 @@
 'use client';
 import Link from "next/link";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
@@ -96,7 +96,6 @@ export default function SubjectTestsPage() {
   const { t, language } = useTranslation();
 
   const [pageTitle, setPageTitle] = useState('');
-  const [pageDescription, setPageDescription] = useState('');
 
   const classId = useMemo(() => {
     const classIdParam = Array.isArray(params.classId) ? params.classId[0] : params.classId;
@@ -179,8 +178,6 @@ export default function SubjectTestsPage() {
 
         const title = `${className} - ${subjectName}`;
         setPageTitle(title);
-        setPageDescription(`Tests for the subject ${subjectName} in ${className} are listed below.`);
-        document.title = title;
     }
     if (classId && subjectId) {
       fetchMetadata();
@@ -191,7 +188,6 @@ export default function SubjectTestsPage() {
     <div className="container mx-auto px-4 py-8 md:py-12">
       <div className="mb-8">
         <h1 className="text-3xl md:text-4xl font-bold">{isLoading ? 'Loading...' : pageTitle}</h1>
-        <p className="text-muted-foreground mt-2">{pageDescription}</p>
       </div>
       
       {isLoading && <p>Loading tests...</p>}

@@ -47,14 +47,13 @@ export default function AppLayout({
   }
 
   const getPageTitle = () => {
-    // If we're on a test page, return a generic title to avoid showing the encoded slug.
-    // The test page itself will handle displaying the specific test title.
-    if (pathname.startsWith('/test/')) {
-        return t('online_tests');
+    // These paths have dynamic titles set by their respective page components.
+    // Return a generic or empty title to avoid showing garbled URL slugs.
+    if (pathname.startsWith('/test/') || pathname.startsWith('/class/')) {
+        return t('online_tests'); 
     }
-     if (pathname === '/online-tests') {
-      return t('online_tests');
-    }
+    
+    // For other static pages, derive the title from the path.
     const segment = pathname.split('/').pop()?.replace('-', ' ') || 'dashboard';
     // Use translation key that matches the segment
     return t(segment as any);
