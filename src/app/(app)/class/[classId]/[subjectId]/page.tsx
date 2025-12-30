@@ -1,6 +1,5 @@
 'use client';
 import Link from "next/link";
-import Image from "next/image";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
@@ -18,6 +17,8 @@ import {
 } from '@/components/ui/select';
 import { useTranslation } from "@/hooks/use-translation";
 import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+
 
 function TestStartControl({ test }: { test: Test }) {
   const { t } = useTranslation();
@@ -36,7 +37,7 @@ function TestStartControl({ test }: { test: Test }) {
           <SelectItem value={String(questionCount)}>All ({questionCount})</SelectItem>
         </SelectContent>
       </Select>
-      <Button asChild className="w-full" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
+      <Button asChild className="w-full sm:w-auto" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
         <Link href={`/test/${test.id}${limit ? `?limit=${limit}` : ''}`}>
           Start Test <ArrowRight className="ml-2 h-4 w-4" />
         </Link>
@@ -167,25 +168,37 @@ export default function SubjectTestsPage() {
       {isLoading && <p>Loading tests...</p>}
 
       {!isLoading && subjectTests && subjectTests.length > 0 ? (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {subjectTests.map((test) => (
-            <Card key={test.id} className="flex flex-col overflow-hidden hover:shadow-lg transition-shadow duration-300">
-              <CardHeader>
-                <CardTitle>{test.title}</CardTitle>
-                <CardDescription>{test.description}</CardDescription>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                 <div className="flex items-center gap-2">
-                    <p className="text-sm text-muted-foreground">{t('total_of_questions', { count: test.questionIds.length})}</p>
-                    <TestProgressBadge testId={test.id} />
-                </div>
-              </CardContent>
-              <CardFooter>
-                <TestStartControl test={test} />
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
+        <Card>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Test Title</TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead>Questions</TableHead>
+                  <TableHead className="text-right">Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {subjectTests.map((test) => (
+                  <TableRow key={test.id}>
+                    <TableCell className="font-medium">{test.title}</TableCell>
+                    <TableCell className="text-muted-foreground">{test.description}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <span>{test.questionIds.length}</span>
+                        <TestProgressBadge testId={test.id} />
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <TestStartControl test={test} />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       ) : (
         !isLoading && <div className="text-center py-16">
           <p className="text-muted-foreground">No tests are available for this subject yet.</p>
