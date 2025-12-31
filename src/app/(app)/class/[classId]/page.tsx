@@ -94,7 +94,7 @@ export default function GenerateMcqPage() {
                     <Accordion type="single" collapsible className="w-full">
                         {subjects.map(subject => {
                             const isTamil = subject.name.toLowerCase() === 'tamil' || subject.name_ta === 'தமிழ்';
-                            const href = isTamil ? `/class/${classId}/tamil` : `/class/${classId}/${subject.id}`;
+                            const href = isTamil ? `/class/${classId}/tamil` : `/class/${classId}/subject/${subject.id}`;
                             
                             return (
                                 <AccordionItem value={subject.id} key={subject.id}>

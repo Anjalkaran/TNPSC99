@@ -141,11 +141,6 @@ export default function SubjectTestsPage() {
   const { data: subjectTests, isLoading: testsLoading } = useCollection<Test>(subjectTestsQuery);
 
   useEffect(() => {
-     if (subjectId === 'tamil') {
-        router.replace(`/class/${classId}/tamil`);
-        return;
-    }
-
     async function fetchMetadata() {
         if (!firestore || !classId || !subjectId) return;
 
@@ -193,7 +188,7 @@ export default function SubjectTestsPage() {
     return test.title;
   };
 
-  if (testsLoading || subjectId === 'tamil') {
+  if (testsLoading) {
     return (
         <div className="container mx-auto px-4 py-8 md:py-12">
             <h1 className="text-3xl md:text-4xl font-bold mb-8">Loading...</h1>
