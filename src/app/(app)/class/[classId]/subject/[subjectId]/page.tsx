@@ -228,18 +228,14 @@ export default function SubjectTestsPage() {
   }, [firestore, classId, subjectId, language]);
 
   const getShortTestTitle = (test: Test) => {
+    let title = test.title;
     if (test.unitNumber && test.unitName) {
-      let title = `இயல் ${test.unitNumber}: ${test.unitName}`;
+      title = `இயல் ${test.unitNumber}: ${test.unitName}`;
       if (test.term) {
         title = `${test.term} - ${title}`;
       }
-      return title;
     }
-    const pageTitle = `${className} - ${subjectName}`;
-    if (test.title.startsWith(`${pageTitle} - `)) {
-      return test.title.substring(`${pageTitle} - `.length);
-    }
-    return test.title;
+    return title;
   };
   
   const isLoading = testsLoading || categoriesLoading;
