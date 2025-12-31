@@ -187,7 +187,11 @@ export default function TamilCategoryTestsPage() {
 
   const getShortTestTitle = (test: Test) => {
     if (test.unitNumber && test.unitName) {
-        return `இயல் ${test.unitNumber}: ${test.unitName}`;
+        let title = `இயல் ${test.unitNumber}: ${test.unitName}`;
+        if (test.term) {
+            title = `${test.term} - ${title}`;
+        }
+        return title;
     }
     return test.title;
   };

@@ -210,7 +210,11 @@ export default function SubjectTestsPage() {
 
   const getShortTestTitle = (test: Test) => {
     if (test.unitNumber && test.unitName) {
-        return `இயல் ${test.unitNumber}: ${test.unitName}`;
+      let title = `இயல் ${test.unitNumber}: ${test.unitName}`;
+      if (test.term) {
+        title = `${test.term} - ${title}`;
+      }
+      return title;
     }
     const pageTitle = `${className} - ${subjectName}`;
     if (test.title.startsWith(`${pageTitle} - `)) {
