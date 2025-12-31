@@ -36,7 +36,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [score, setScore] = useState(0);
   const [isAnswered, setIsAnswered] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(45);
+  const [totalTimeLeft, setTotalTimeLeft] = useState(questions.length * 45);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
 
@@ -58,7 +58,6 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
     // When the question index changes, check if an answer already exists for the new question.
     // If it does, it means the user is reviewing a previously answered question.
     setIsAnswered(answers[currentQuestionIndex] !== undefined);
-    setTimeLeft(45); // Reset timer for new question
   }, [currentQuestionIndex, answers]);
   
   useEffect(() => {
@@ -68,16 +67,16 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
   }, [decodedTitle]);
 
   useEffect(() => {
-    if (isSubmitted || isAnswered) {
+    if (isSubmitted) {
       if (timerRef.current) clearInterval(timerRef.current);
       return;
     }
 
     timerRef.current = setInterval(() => {
-      setTimeLeft(prevTime => {
+      setTotalTimeLeft(prevTime => {
         if (prevTime <= 1) {
           if (timerRef.current) clearInterval(timerRef.current);
-          handleNext();
+          handleSubmit();
           return 0;
         }
         return prevTime - 1;
@@ -87,7 +86,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [currentQuestionIndex, isSubmitted, isAnswered]);
+  }, [isSubmitted]);
 
 
   const handleAnswerChange = (value: string) => {
@@ -95,8 +94,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
     const newAnswers = [...answers];
     newAnswers[currentQuestionIndex] = parseInt(value, 10);
     setAnswers(newAnswers);
-    setIsAnswered(true);
-    if (timerRef.current) clearInterval(timerRef.current);
+    setIsAnswered(true); // Mark as answered for immediate feedback, but main timer continues
   };
   
   const handlePrevious = () => {
@@ -104,6 +102,9 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
   };
 
   const processAndSaveAttempt = async (isExiting: boolean) => {
+    // Stop the timer when submission starts
+    if (timerRef.current) clearInterval(timerRef.current);
+
     const questionsToScore = isExiting ? questions.slice(0, currentQuestionIndex + 1) : questions;
     const answersToScore = isExiting ? answers.slice(0, currentQuestionIndex + 1) : answers;
 
@@ -251,6 +252,12 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
   const questionsInThisSession = isSubmitted ? answers.filter(a => a !== undefined).length : questions.length;
   const scorePercentage = (score / questionsInThisSession) * 100;
 
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
   if (isSubmitted) {
     return (
       <Card className="w-full max-w-2xl text-center">
@@ -309,9 +316,9 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
                 </div>
             </div>
             <div className="flex items-center gap-4">
-                 <div className={cn("flex items-center gap-2 font-mono text-2xl p-2 rounded-md", timeLeft < 10 ? "text-destructive-foreground bg-destructive" : "bg-muted")}>
+                 <div className={cn("flex items-center gap-2 font-mono text-2xl p-2 rounded-md", totalTimeLeft < 60 ? "text-destructive-foreground bg-destructive" : "bg-muted")}>
                     <Timer className="h-6 w-6" />
-                    <span>00:{timeLeft.toString().padStart(2, '0')}</span>
+                    <span>{formatTime(totalTimeLeft)}</span>
                 </div>
                  <AlertDialog>
                     <AlertDialogTrigger asChild>
@@ -381,12 +388,12 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
           முந்தைய
         </Button>
         {currentQuestionIndex < questions.length - 1 ? (
-          <Button onClick={handleNext} disabled={userAnswer === undefined}>
+          <Button onClick={handleNext} disabled={!isAnswered}>
             அடுத்தது
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         ) : (
-          <Button onClick={handleSubmit} style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }} disabled={userAnswer === undefined}>
+          <Button onClick={handleSubmit} style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }} disabled={!isAnswered}>
             சமர்ப்பிக்கவும்
           </Button>
         )}
