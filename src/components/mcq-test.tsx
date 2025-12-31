@@ -309,8 +309,8 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
                 </div>
             </div>
             <div className="flex items-center gap-4">
-                 <div className={cn("flex items-center gap-2 font-mono text-lg", timeLeft < 10 && "text-destructive")}>
-                    <Timer className="h-5 w-5" />
+                 <div className={cn("flex items-center gap-2 font-mono text-2xl p-2 rounded-md", timeLeft < 10 ? "text-destructive-foreground bg-destructive" : "bg-muted")}>
+                    <Timer className="h-6 w-6" />
                     <span>00:{timeLeft.toString().padStart(2, '0')}</span>
                 </div>
                  <AlertDialog>
