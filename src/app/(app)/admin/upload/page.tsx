@@ -120,12 +120,25 @@ function ExistingUnitsList({ onUnitSelect }: { onUnitSelect: (unit: UnitWithName
         const subjectMap = new Map(subjects.map(s => [s.id, language === 'ta' && s.name_ta ? s.name_ta : s.name]));
         const categoryMap = new Map(categories.map(cat => [cat.id, language === 'ta' && cat.name_ta ? cat.name_ta : cat.name]));
         
-        return units.map(unit => ({
+        const mappedUnits = units.map(unit => ({
             ...unit,
             className: classMap.get(unit.classId) || unit.classId,
             subjectName: subjectMap.get(unit.subjectId) || unit.subjectId,
             categoryName: unit.categoryId ? categoryMap.get(unit.categoryId) : undefined,
-        }))
+        }));
+        
+        return mappedUnits.sort((a, b) => {
+            const termA = a.term || '';
+            const termB = b.term || '';
+            const unitA = a.unitNumber || 0;
+            const unitB = b.unitNumber || 0;
+
+            if (termA.localeCompare(termB) !== 0) {
+                return termA.localeCompare(termB);
+            }
+            return unitA - unitB;
+        });
+
     }, [units, classes, subjects, categories, language]);
 
 
@@ -207,6 +220,21 @@ function ExistingTestsList() {
     const testsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'tests') : null, [firestore]);
     const { data: tests, isLoading } = useCollection<Test>(testsCollection);
 
+    const sortedTests = useMemo(() => {
+        if (!tests) return [];
+        return [...tests].sort((a,b) => {
+            const termA = a.term || '';
+            const termB = b.term || '';
+            const unitA = a.unitNumber || 0;
+            const unitB = b.unitNumber || 0;
+
+            if (termA.localeCompare(termB) !== 0) {
+                return termA.localeCompare(termB);
+            }
+            return unitA - unitB;
+        });
+    }, [tests]);
+
     const handleDownload = async (test: Test) => {
         if (!firestore) return;
         
@@ -283,7 +311,7 @@ function ExistingTestsList() {
                  <CardDescription>{t('View, edit, or delete your existing question banks.')}</CardDescription>
             </CardHeader>
             <CardContent>
-                {tests && tests.length > 0 ? (
+                {sortedTests && sortedTests.length > 0 ? (
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -293,7 +321,7 @@ function ExistingTestsList() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                        {tests.map(test => (
+                        {sortedTests.map(test => (
                             <TableRow key={test.id}>
                                 <TableCell className="font-medium">{test.title}</TableCell>
                                 <TableCell>{test.questionIds.length}</TableCell>
@@ -598,21 +626,15 @@ export default function UploadMcqPage() {
                         </FormItem>
                         )}
                     />
-                    {showTamilCategories && (
-                        <FormField
-                            control={form.control}
-                            name="categoryName"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Category Name</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="e.g., இலக்கணம்" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    )}
+                    
+                    <FormItem>
+                        <FormLabel>Category Name</FormLabel>
+                        <FormControl>
+                            <Input placeholder="e.g., இலக்கணம்" {...form.control.register('categoryName')} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+
                     <FormField
                         control={form.control}
                         name="term"
