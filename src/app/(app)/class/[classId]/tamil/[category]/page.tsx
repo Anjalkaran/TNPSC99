@@ -18,12 +18,6 @@ import {
 import { useTranslation } from "@/hooks/use-translation";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 
 
 function TestStartControl({ test }: { test: Test }) {
@@ -204,40 +198,39 @@ export default function TamilCategoryTestsPage() {
       </div>
       
       {sortedTests.length > 0 ? (
-        <Accordion type="single" collapsible defaultValue="category-item" className="w-full">
-            <AccordionItem value="category-item">
-                <AccordionTrigger className="text-xl font-semibold bg-card p-4 rounded-t-lg">
-                    {categoryName}
-                </AccordionTrigger>
-                <AccordionContent className="bg-card p-0 rounded-b-lg">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Test Title</TableHead>
-                                <TableHead>Questions</TableHead>
-                                <TableHead className="text-right">Action</TableHead>
+        <Card>
+            <CardHeader>
+                <CardTitle>{t('available_tests', { category: categoryName })}</CardTitle>
+                <CardDescription>{t('select_a_test_to_start')}</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Test Title</TableHead>
+                            <TableHead>Questions</TableHead>
+                            <TableHead className="text-right">Action</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {sortedTests.map((test) => (
+                            <TableRow key={test.id}>
+                                <TableCell className="font-medium">{getShortTestTitle(test)}</TableCell>
+                                <TableCell>
+                                <div className="flex items-center gap-2">
+                                    <span>{test.questionIds.length}</span>
+                                    <TestProgressBadge testId={test.id} />
+                                </div>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                <TestStartControl test={test} />
+                                </TableCell>
                             </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {sortedTests.map((test) => (
-                                <TableRow key={test.id}>
-                                    <TableCell className="font-medium">{getShortTestTitle(test)}</TableCell>
-                                    <TableCell>
-                                    <div className="flex items-center gap-2">
-                                        <span>{test.questionIds.length}</span>
-                                        <TestProgressBadge testId={test.id} />
-                                    </div>
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                    <TestStartControl test={test} />
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </AccordionContent>
-            </AccordionItem>
-        </Accordion>
+                        ))}
+                    </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
       ) : (
          <div className="text-center py-16">
           <p className="text-muted-foreground">No tests are available for this category yet.</p>
