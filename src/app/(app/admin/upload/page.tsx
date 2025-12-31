@@ -490,7 +490,7 @@ export default function UploadMcqPage() {
                   id: newTestRef.id,
                   title: testTitle,
                   description: t('test_for_class_subject', {classId: className || classId, subjectId: subjectName}),
-                  category: finalCategory, // <-- Use the finalCategory here
+                  category: finalCategory,
                   questionIds: newQuestionIds,
                   classId: classId,
                   subjectId: subjectId,
@@ -506,7 +506,7 @@ export default function UploadMcqPage() {
               const updatedQuestionIds = [...new Set([...existingQuestionIds, ...newQuestionIds])];
               const updateData: any = { questionIds: updatedQuestionIds };
               if (finalCategory) {
-                updateData.category = finalCategory; // <-- Update category on existing test
+                updateData.category = finalCategory;
               }
               transaction.update(testDoc.ref, updateData);
           }

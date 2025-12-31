@@ -170,7 +170,18 @@ export default function SubjectTestsPage() {
     if (!subjectTests || testsLoading) return {};
 
     const grouped = subjectTests.reduce((acc, test) => {
-        const category = test.category || "Uncategorized";
+        // Prioritize the category field on the test itself
+        let category = test.category;
+
+        // Fallback for older tests without the category field
+        if (!category && test.unitId) {
+            category = test.unitId.endsWith('g') ? 'இலக்கணம்' : 'உரைநடை & செய்யுள்';
+        }
+
+        // Final fallback
+        if (!category) {
+            category = "Uncategorized";
+        }
         
         if (!acc[category]) {
             acc[category] = [];
