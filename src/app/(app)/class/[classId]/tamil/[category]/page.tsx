@@ -18,6 +18,12 @@ import {
 import { useTranslation } from "@/hooks/use-translation";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 
 function TestStartControl({ test }: { test: Test }) {
@@ -123,44 +129,23 @@ export default function TamilCategoryTestsPage() {
   const categoryTestsQuery = useMemoFirebase(() => {
     if (!testsCollection || !classId || !subjectId) return null;
     
+    const isIlakkanam = category === 'ilakkanam';
+    const targetCategory = isIlakkanam ? 'இலக்கணம்' : 'உரைநடை & செய்யுள்';
+
     return query(
       testsCollection, 
       where('classId', '==', classId),
       where('subjectId', '==', subjectId),
+      where('category', '==', targetCategory)
     );
-  }, [testsCollection, classId, subjectId]);
+  }, [testsCollection, classId, subjectId, category]);
 
   const { data: tests, isLoading: testsLoading } = useCollection<Test>(categoryTestsQuery);
 
-  const filteredTests = useMemo(() => {
+  const sortedTests = useMemo(() => {
     if (!tests) return [];
-    
-    const isIlakkanam = category === 'ilakkanam';
-
-    const categorizedTests = tests.filter(test => {
-        // First, check the explicit category field on the test itself.
-        if (test.category) {
-            if (isIlakkanam) return test.category === 'இலக்கணம்';
-            // Assuming 'urai' corresponds to this category.
-            return test.category === 'உரைநடை & செய்யுள்';
-        }
-        
-        // Fallback logic for older tests without a category field, using unitId.
-        if(test.unitId) {
-            const unitEndsWithG = test.unitId.endsWith('g');
-            if (isIlakkanam) return unitEndsWithG; // unitId ending with 'g' is for 'இலக்கணம்'
-            return !unitEndsWithG; // Everything else is for 'உரைநடை & செய்யுள்'
-        }
-
-        // If no category and no unitId, it doesn't belong here.
-        return false;
-
-    });
-
-    // Sort the filtered tests by their unit number for a logical order.
-    return categorizedTests.sort((a,b) => (a.unitNumber || 0) - (b.unitNumber || 0));
-
-  }, [tests, category]);
+    return tests.sort((a,b) => (a.unitNumber || 0) - (b.unitNumber || 0));
+  }, [tests]);
 
   useEffect(() => {
     async function fetchMetadata() {
@@ -210,46 +195,49 @@ export default function TamilCategoryTestsPage() {
     );
   }
 
+  const categoryName = category === 'ilakkanam' ? 'இலக்கணம்' : 'உரைநடை & செய்யுள்';
+
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
       <div className="mb-8">
         <h1 className="text-3xl md:text-4xl font-bold">{pageTitle}</h1>
       </div>
       
-      {filteredTests.length > 0 ? (
-         <Card>
-            <CardHeader>
-                <CardTitle>{t('available_tests', { category: category === 'ilakkanam' ? 'இலக்கணம்' : 'உரைநடை & செய்யுள்' })}</CardTitle>
-                <CardDescription>{t('select_a_test_to_start')}</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Test Title</TableHead>
-                            <TableHead>Questions</TableHead>
-                            <TableHead className="text-right">Action</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {filteredTests.map((test) => (
-                            <TableRow key={test.id}>
-                                <TableCell className="font-medium">{getShortTestTitle(test)}</TableCell>
-                                <TableCell>
-                                <div className="flex items-center gap-2">
-                                    <span>{test.questionIds.length}</span>
-                                    <TestProgressBadge testId={test.id} />
-                                </div>
-                                </TableCell>
-                                <TableCell className="text-right">
-                                <TestStartControl test={test} />
-                                </TableCell>
+      {sortedTests.length > 0 ? (
+        <Accordion type="single" collapsible defaultValue="category-item" className="w-full">
+            <AccordionItem value="category-item">
+                <AccordionTrigger className="text-xl font-semibold bg-card p-4 rounded-t-lg">
+                    {categoryName}
+                </AccordionTrigger>
+                <AccordionContent className="bg-card p-0 rounded-b-lg">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Test Title</TableHead>
+                                <TableHead>Questions</TableHead>
+                                <TableHead className="text-right">Action</TableHead>
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </CardContent>
-         </Card>
+                        </TableHeader>
+                        <TableBody>
+                            {sortedTests.map((test) => (
+                                <TableRow key={test.id}>
+                                    <TableCell className="font-medium">{getShortTestTitle(test)}</TableCell>
+                                    <TableCell>
+                                    <div className="flex items-center gap-2">
+                                        <span>{test.questionIds.length}</span>
+                                        <TestProgressBadge testId={test.id} />
+                                    </div>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                    <TestStartControl test={test} />
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </AccordionContent>
+            </AccordionItem>
+        </Accordion>
       ) : (
          <div className="text-center py-16">
           <p className="text-muted-foreground">No tests are available for this category yet.</p>
