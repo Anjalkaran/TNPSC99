@@ -20,15 +20,16 @@ export interface Test {
   id: string;
   title: string;
   description: string;
-  category?: string; // Changed to optional string
   questionIds: string[];
   questions?: Question[];
   classId?: string;
   subjectId?: string;
+  categoryId?: string;
   term?: string;
   unitId?: string;
   unitNumber?: number;
   unitName?: string;
+  isPreviousYearPaper?: boolean;
 }
 
 export interface Subject {
@@ -46,16 +47,25 @@ export interface Class {
   description: string;
 }
 
+export interface Category {
+  id: string;
+  name: string;
+  name_ta?: string;
+  subjectId: string;
+}
+
+
 export interface Unit {
   id: string;
   classId: string;
   subjectId: string;
+  categoryId?: string;
   term: string;
   unitNumber: number;
   unitName: string;
-  category?: string;
   className?: string; // For display purposes
   subjectName?: string; // For display purposes
+  categoryName?: string; // For display purposes
 }
 
 

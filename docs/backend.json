@@ -106,6 +106,31 @@
         "description"
       ]
     },
+    "Category": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Category",
+      "type": "object",
+      "description": "Represents a category within a subject (e.g., 'Grammar', 'Literature').",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Category entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the category in English."
+        },
+        "name_ta": {
+          "type": "string",
+          "description": "Name of the category in Tamil."
+        },
+        "subjectId": {
+          "type": "string",
+          "description": "Reference to the Subject this category belongs to."
+        }
+      },
+      "required": ["id", "name", "subjectId"]
+    },
     "Unit": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Unit",
@@ -124,6 +149,10 @@
           "type": "string",
           "description": "Reference to the Subject this unit belongs to."
         },
+        "categoryId": {
+          "type": "string",
+          "description": "Reference to the Category this unit belongs to. (Optional)"
+        },
         "term": {
           "type": "string",
           "description": "The academic term (e.g., 'Term 1', 'Term 2')."
@@ -135,10 +164,6 @@
         "unitName": {
           "type": "string",
           "description": "The name of the unit in English."
-        },
-        "category": {
-          "type": "string",
-          "description": "A subject-specific category, e.g., 'Grammar', 'Literature' for Tamil."
         }
       },
       "required": [
@@ -227,6 +252,10 @@
         "classId": {
           "type": "string",
           "description": "Reference to Class. (Relationship: Class 1:N Test) Nullable if it's a Previous Year Paper."
+        },
+        "categoryId": {
+          "type": "string",
+          "description": "Reference to the Category this test belongs to. (Optional)"
         },
         "isPreviousYearPaper": {
           "type": "boolean",
@@ -385,6 +414,22 @@
             {
               "name": "classId",
               "description": "The unique identifier of the class."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/categories/{categoryId}",
+        "definition": {
+          "entityName": "Category",
+          "schema": {
+            "$ref": "#/backend/entities/Category"
+          },
+          "description": "Stores categories for subjects.",
+          "params": [
+            {
+              "name": "categoryId",
+              "description": "The unique identifier of the category."
             }
           ]
         }

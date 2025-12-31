@@ -6,7 +6,7 @@ import * as z from 'zod';
 import { useState, useEffect, useMemo } from 'react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { addDoc, collection, doc, setDoc, deleteDoc, updateDoc, getDocs, query, where, writeBatch } from 'firebase/firestore';
-import type { Subject, Class, Unit } from '@/lib/types';
+import type { Subject, Class, Unit, Category } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -45,16 +45,7 @@ const unitFormSchema = z.object({
   term: z.string().min(1, { message: "Please select a term." }),
   unitNumber: z.coerce.number().min(1, "Unit number must be at least 1."),
   unitName: z.string().min(1, { message: 'Unit name must be at least 1 character.' }),
-  category: z.string().optional(),
-  otherCategory: z.string().optional(),
-}).refine(data => {
-    if (data.category === 'other') {
-        return !!data.otherCategory && data.otherCategory.length > 0;
-    }
-    return true;
-}, {
-    message: "Please enter a value for the other category",
-    path: ["otherCategory"],
+  categoryName: z.string().optional(),
 });
 
 
@@ -74,20 +65,18 @@ function EditUnitForm({ unit, classes, onFinished }: { unit: Unit, classes: Clas
             term: unit.term,
             unitNumber: unit.unitNumber,
             unitName: unit.unitName,
-            category: (unit.category && (unit.category === 'இலக்கணம்' || unit.category === 'உரைநடை & செய்யுள்')) ? unit.category : (unit.category ? 'other' : ''),
-            otherCategory: (unit.category && unit.category !== 'இலக்கணம்' && unit.category !== 'உரைநடை & செய்யுள்') ? unit.category : '',
+            categoryName: unit.categoryName || '',
         },
     });
 
     const subjectNameValue = form.watch('subjectName');
-    const categoryValue = form.watch('category');
 
     const onSubmit: SubmitHandler<UnitFormValues> = async (values) => {
         if (!firestore) return;
         setIsSubmitting(true);
 
         try {
-            const { classId, subjectName, term, unitNumber, unitName, category, otherCategory } = values;
+            const { classId, subjectName, term, unitNumber, unitName, categoryName } = values;
             
             const subjectsRef = collection(firestore, 'subjects');
             const subjectQuery = query(subjectsRef, where('name', '==', subjectName));
@@ -103,6 +92,22 @@ function EditUnitForm({ unit, classes, onFinished }: { unit: Unit, classes: Clas
                 subjectId = subjectSnapshot.docs[0].id;
             }
 
+            let categoryId: string | undefined = undefined;
+            if (categoryName) {
+                const categoriesRef = collection(firestore, 'categories');
+                const categoryQuery = query(categoriesRef, where('name', '==', categoryName), where('subjectId', '==', subjectId));
+                const categorySnapshot = await getDocs(categoryQuery);
+                if (categorySnapshot.empty) {
+                    const newCategoryRef = doc(categoriesRef);
+                    const newCategory: Category = { id: newCategoryRef.id, name: categoryName, subjectId };
+                    await setDoc(newCategoryRef, newCategory);
+                    categoryId = newCategoryRef.id;
+                } else {
+                    categoryId = categorySnapshot.docs[0].id;
+                }
+            }
+
+
             const unitDocRef = doc(firestore, 'units', unit.id);
             const unitData: Partial<Omit<Unit, 'id'>> = {
                 classId,
@@ -110,7 +115,7 @@ function EditUnitForm({ unit, classes, onFinished }: { unit: Unit, classes: Clas
                 term,
                 unitNumber,
                 unitName,
-                category: category === 'other' ? otherCategory : category
+                categoryId
             };
 
             await updateDoc(unitDocRef, unitData);
@@ -171,45 +176,19 @@ function EditUnitForm({ unit, classes, onFinished }: { unit: Unit, classes: Clas
                 />
 
                 {subjectNameValue === 'தமிழ்' && (
-                    <>
-                        <FormField
-                            control={form.control}
-                            name="category"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Category</FormLabel>
-                                    <Select onValueChange={field.onChange} value={field.value}>
-                                        <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select a category" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            <SelectItem value="இலக்கணம்">இலக்கணம்</SelectItem>
-                                            <SelectItem value="உரைநடை & செய்யுள்">உரைநடை &amp; செய்யுள்</SelectItem>
-                                            <SelectItem value="other">Other</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        {categoryValue === 'other' && (
-                            <FormField
-                                control={form.control}
-                                name="otherCategory"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Custom Category</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="Enter custom category" {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
+                    <FormField
+                        control={form.control}
+                        name="categoryName"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Category</FormLabel>
+                                 <FormControl>
+                                    <Input placeholder="e.g. இலக்கணம்" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
                         )}
-                    </>
+                    />
                 )}
 
                 <FormField
@@ -298,17 +277,22 @@ function ExistingUnitsList() {
     const { data: classes } = useCollection<Class>(classesCollection);
     const subjectsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'subjects') : null, [firestore]);
     const { data: subjects } = useCollection<Subject>(subjectsCollection);
+    const categoriesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'categories') : null, [firestore]);
+    const { data: categories } = useCollection<Category>(categoriesCollection);
 
     const unitsWithNames = useMemo(() => {
-        if (!units || !classes || !subjects) return [];
+        if (!units || !classes || !subjects || !categories) return [];
         const classMap = new Map(classes.map(c => [c.id, language === 'ta' && c.name_ta ? c.name_ta : c.name]));
         const subjectMap = new Map(subjects.map(s => [s.id, language === 'ta' && s.name_ta ? s.name_ta : s.name]));
+        const categoryMap = new Map(categories.map(cat => [cat.id, language === 'ta' && cat.name_ta ? cat.name_ta : cat.name]));
+        
         return units.map(unit => ({
             ...unit,
             className: classMap.get(unit.classId) || unit.classId,
             subjectName: subjectMap.get(unit.subjectId) || unit.subjectId,
+            categoryName: unit.categoryId ? categoryMap.get(unit.categoryId) : undefined,
         }))
-    }, [units, classes, subjects, language]);
+    }, [units, classes, subjects, categories, language]);
 
 
     const handleDelete = async (unitId: string) => {
@@ -350,7 +334,7 @@ function ExistingUnitsList() {
                                 <div>
                                     <p className="font-semibold text-sm">{unit.className} - {unit.subjectName} - {unit.term}</p>
                                     <p className="font-bold text-base">{t('Unit')} {unit.unitNumber}: {unit.unitName}</p>
-                                    {unit.category && <p className="text-xs text-muted-foreground">Category: {unit.category}</p>}
+                                    {unit.categoryName && <p className="text-xs text-muted-foreground">Category: {unit.categoryName}</p>}
                                 </div>
                                 <div className="flex gap-2">
                                      <Dialog open={openDialogs[unit.id] || false} onOpenChange={(isOpen) => setDialogState(unit.id, isOpen)}>
@@ -413,11 +397,10 @@ export default function TopicManagementPage() {
   
   const form = useForm<UnitFormValues>({
     resolver: zodResolver(unitFormSchema),
-    defaultValues: { classId: '', subjectName: '', term: '', unitNumber: 1, unitName: '', category: '', otherCategory: '' },
+    defaultValues: { classId: '', subjectName: '', term: '', unitNumber: 1, unitName: '', categoryName: '' },
   });
 
   const subjectNameValue = form.watch('subjectName');
-  const categoryValue = form.watch('category');
 
 
   const resetForm = () => {
@@ -429,7 +412,7 @@ export default function TopicManagementPage() {
     setIsSubmitting(true);
     
     try {
-        const { classId, subjectName, term, unitNumber, unitName, category, otherCategory } = values;
+        const { classId, subjectName, term, unitNumber, unitName, categoryName } = values;
         
         const subjectsRef = collection(firestore, 'subjects');
         const subjectQuery = query(subjectsRef, where('name', '==', subjectName));
@@ -453,6 +436,22 @@ export default function TopicManagementPage() {
             subjectId = subjectSnapshot.docs[0].id;
         }
 
+        let categoryId: string | undefined = undefined;
+        if (categoryName) {
+            const categoriesRef = collection(firestore, 'categories');
+            const categoryQuery = query(categoriesRef, where('name', '==', categoryName), where('subjectId', '==', subjectId));
+            const categorySnapshot = await getDocs(categoryQuery);
+            if (categorySnapshot.empty) {
+                const newCategoryRef = doc(categoriesRef);
+                const newCategory: Category = { id: newCategoryRef.id, name: categoryName, subjectId };
+                await setDoc(newCategoryRef, newCategory);
+                categoryId = newCategoryRef.id;
+            } else {
+                categoryId = categorySnapshot.docs[0].id;
+            }
+        }
+
+
         const unitDocRef = doc(collection(firestore, 'units'));
         
         const unitData: Unit = {
@@ -462,7 +461,7 @@ export default function TopicManagementPage() {
             term,
             unitNumber,
             unitName,
-            category: category === 'other' ? otherCategory : category
+            categoryId
         };
         
         await setDoc(unitDocRef, unitData);
@@ -537,45 +536,19 @@ export default function TopicManagementPage() {
                 />
                 
                 {subjectNameValue === 'தமிழ்' && (
-                  <>
-                   <FormField
-                    control={form.control}
-                    name="category"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Category</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select a category" />
-                            </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                                <SelectItem value="இலக்கணம்">இலக்கணம்</SelectItem>
-                                <SelectItem value="உரைநடை & செய்யுள்">உரைநடை &amp; செய்யுள்</SelectItem>
-                                <SelectItem value="other">Other</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                    {categoryValue === 'other' && (
-                         <FormField
-                            control={form.control}
-                            name="otherCategory"
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>Custom Category</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="Enter custom category" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    )}
-                  </>
+                  <FormField
+                      control={form.control}
+                      name="categoryName"
+                      render={({ field }) => (
+                          <FormItem>
+                          <FormLabel>Category</FormLabel>
+                              <FormControl>
+                                <Input placeholder="e.g. இலக்கணம்" {...field} />
+                              </FormControl>
+                          <FormMessage />
+                          </FormItem>
+                      )}
+                  />
                 )}
 
                 <FormField

@@ -28,7 +28,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import type { Question, Test, QuestionInput, Subject, Class, Unit } from '@/lib/types';
+import type { Question, Test, QuestionInput, Subject, Class, Unit, Category } from '@/lib/types';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useTranslation } from '@/hooks/use-translation';
 import {
@@ -87,17 +87,8 @@ const uploadFormSchema = z.object({
   term: z.string().min(1, { message: "Please select a term." }),
   unitNumber: z.coerce.number().min(1, "Unit number must be at least 1."),
   unitName: z.string().min(1, { message: 'Unit name must be at least 1 character.' }),
-  category: z.string().optional(),
-  otherCategory: z.string().optional(),
+  categoryName: z.string().optional(),
   jsonInput: z.string().min(1, { message: 'JSON data is required.' }),
-}).refine(data => {
-    if (data.category === 'other') {
-        return !!data.otherCategory && data.otherCategory.length > 0;
-    }
-    return true;
-}, {
-    message: "Please enter a value for the other category",
-    path: ["otherCategory"],
 });
 
 type UploadFormValues = z.infer<typeof uploadFormSchema>;
@@ -105,6 +96,7 @@ type UploadFormValues = z.infer<typeof uploadFormSchema>;
 interface UnitWithNames extends Unit {
     className?: string;
     subjectName?: string;
+    categoryName?: string;
 }
 
 function ExistingUnitsList({ onUnitSelect }: { onUnitSelect: (unit: UnitWithNames) => void }) {
@@ -118,17 +110,22 @@ function ExistingUnitsList({ onUnitSelect }: { onUnitSelect: (unit: UnitWithName
     const { data: classes } = useCollection<Class>(classesCollection);
     const subjectsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'subjects') : null, [firestore]);
     const { data: subjects } = useCollection<Subject>(subjectsCollection);
+    const categoriesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'categories') : null, [firestore]);
+    const { data: categories } = useCollection<Category>(categoriesCollection);
 
     const unitsWithNames = useMemo(() => {
-        if (!units || !classes || !subjects) return [];
+        if (!units || !classes || !subjects || !categories) return [];
         const classMap = new Map(classes.map(c => [c.id, language === 'ta' && c.name_ta ? c.name_ta : c.name]));
         const subjectMap = new Map(subjects.map(s => [s.id, language === 'ta' && s.name_ta ? s.name_ta : s.name]));
+        const categoryMap = new Map(categories.map(cat => [cat.id, language === 'ta' && cat.name_ta ? cat.name_ta : cat.name]));
+        
         return units.map(unit => ({
             ...unit,
             className: classMap.get(unit.classId) || unit.classId,
             subjectName: subjectMap.get(unit.subjectId) || unit.subjectId,
+            categoryName: unit.categoryId ? categoryMap.get(unit.categoryId) : undefined,
         }))
-    }, [units, classes, subjects, language]);
+    }, [units, classes, subjects, categories, language]);
 
 
     const handleDelete = async (unitId: string) => {
@@ -166,7 +163,7 @@ function ExistingUnitsList({ onUnitSelect }: { onUnitSelect: (unit: UnitWithName
                                 <button type="button" className="text-left flex-grow" onClick={() => onUnitSelect(unit)}>
                                     <p className="font-semibold text-sm">{unit.className} - {unit.subjectName} - {unit.term}</p>
                                     <p className="font-bold text-base">{t('Unit')} {unit.unitNumber}: {unit.unitName}</p>
-                                    {unit.category && <p className="text-xs text-muted-foreground">Category: {unit.category}</p>}
+                                    {unit.categoryName && <p className="text-xs text-muted-foreground">Category: {unit.categoryName}</p>}
                                 </button>
                                 <div className="flex gap-2">
                                     <AlertDialog>
@@ -355,7 +352,7 @@ export default function UploadMcqPage() {
   const form = useForm<UploadFormValues>({
     resolver: zodResolver(uploadFormSchema),
     defaultValues: {
-      classId: '', subjectName: '', term: '', unitNumber: 1, unitName: '', category: '', otherCategory: '', jsonInput: ''
+      classId: '', subjectName: '', term: '', unitNumber: 1, unitName: '', categoryName: '', jsonInput: ''
     },
   });
 
@@ -363,7 +360,6 @@ export default function UploadMcqPage() {
   const { data: classes, isLoading: classesLoading } = useCollection<Class>(classesCollection);
 
   const subjectNameValue = form.watch('subjectName');
-  const categoryValue = form.watch('category');
 
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -384,15 +380,7 @@ export default function UploadMcqPage() {
         form.setValue('term', unit.term);
         form.setValue('unitNumber', unit.unitNumber);
         form.setValue('unitName', unit.unitName);
-        if (unit.category === 'இலக்கணம்' || unit.category === 'உரைநடை & செய்யுள்') {
-            form.setValue('category', unit.category);
-        } else if (unit.category) {
-            form.setValue('category', 'other');
-            form.setValue('otherCategory', unit.category);
-        } else {
-            form.setValue('category', '');
-            form.setValue('otherCategory', '');
-        }
+        form.setValue('categoryName', unit.categoryName || '');
     };
 
 
@@ -422,8 +410,7 @@ export default function UploadMcqPage() {
     try {
       if (!firestore) throw new Error('Firestore is not initialized');
 
-      const { classId, subjectName, term, unitNumber, unitName, category, otherCategory } = values;
-      const finalCategory = category === 'other' ? otherCategory : category;
+      const { classId, subjectName, term, unitNumber, unitName, categoryName } = values;
 
       // 1. Find or Create Subject
       let subjectId: string;
@@ -439,8 +426,24 @@ export default function UploadMcqPage() {
       } else {
           subjectId = subjectSnapshot.docs[0].id;
       }
+
+      // 2. Find or Create Category
+      let categoryId: string | undefined;
+      if (categoryName) {
+        const categoriesRef = collection(firestore, 'categories');
+        const categoryQuery = query(categoriesRef, where('name', '==', categoryName), where('subjectId', '==', subjectId));
+        const categorySnapshot = await getDocs(categoryQuery);
+        if (categorySnapshot.empty) {
+          const newCategoryRef = doc(categoriesRef);
+          const newCategory: Category = { id: newCategoryRef.id, name: categoryName, subjectId: subjectId };
+          await setDoc(newCategoryRef, newCategory);
+          categoryId = newCategoryRef.id;
+        } else {
+          categoryId = categorySnapshot.docs[0].id;
+        }
+      }
       
-      // 2. Find or Create Unit
+      // 3. Find or Create Unit
       let unitId: string;
       const unitQuery = query(collection(firestore, 'units'), 
         where('classId', '==', classId),
@@ -453,16 +456,18 @@ export default function UploadMcqPage() {
 
       if (unitSnapshot.empty) {
           const newUnitRef = doc(collection(firestore, 'units'));
-          const unitData: Unit = { id: newUnitRef.id, classId, subjectId, term, unitNumber, unitName };
-          if (finalCategory) unitData.category = finalCategory;
+          const unitData: Unit = { id: newUnitRef.id, classId, subjectId, term, unitNumber, unitName, categoryId };
           await setDoc(newUnitRef, unitData);
           unitId = newUnitRef.id;
       } else {
           unitId = unitSnapshot.docs[0].id;
+          if (categoryId) {
+             await updateDoc(doc(firestore, 'units', unitId), { categoryId });
+          }
       }
 
 
-      // 3. Add Questions
+      // 4. Add Questions
       const batch = writeBatch(firestore);
       const questionsCollectionRef = collection(firestore, 'questions');
       const newQuestionIds: string[] = [];
@@ -474,7 +479,7 @@ export default function UploadMcqPage() {
       });
       await batch.commit();
       
-      // 4. Find or create test and update it
+      // 5. Find or create test and update it
       const testsCollectionRef = collection(firestore, 'tests');
       const selectedClass = classes?.find(c => c.id === classId);
       const className = language === 'ta' && selectedClass?.name_ta ? selectedClass.name_ta : selectedClass?.name;
@@ -490,10 +495,10 @@ export default function UploadMcqPage() {
                   id: newTestRef.id,
                   title: testTitle,
                   description: t('test_for_class_subject', {classId: className || classId, subjectId: subjectName}),
-                  category: finalCategory,
                   questionIds: newQuestionIds,
                   classId: classId,
                   subjectId: subjectId,
+                  categoryId: categoryId,
                   term: term,
                   unitId: unitId,
                   unitNumber: unitNumber,
@@ -505,8 +510,8 @@ export default function UploadMcqPage() {
               const existingQuestionIds = testDoc.data().questionIds || [];
               const updatedQuestionIds = [...new Set([...existingQuestionIds, ...newQuestionIds])];
               const updateData: any = { questionIds: updatedQuestionIds };
-              if (finalCategory) {
-                updateData.category = finalCategory;
+              if (categoryId) {
+                updateData.categoryId = categoryId;
               }
               transaction.update(testDoc.ref, updateData);
           }
@@ -592,45 +597,19 @@ export default function UploadMcqPage() {
                         )}
                     />
                     {subjectNameValue === 'தமிழ்' && (
-                        <>
                         <FormField
-                        control={form.control}
-                        name="category"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Category</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
+                            control={form.control}
+                            name="categoryName"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Category</FormLabel>
                                 <FormControl>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select a category" />
-                                </SelectTrigger>
+                                    <Input placeholder="e.g. இலக்கணம்" {...field} />
                                 </FormControl>
-                                <SelectContent>
-                                    <SelectItem value="இலக்கணம்">இலக்கணம்</SelectItem>
-                                    <SelectItem value="உரைநடை & செய்யுள்">உரைநடை &amp; செய்யுள்</SelectItem>
-                                    <SelectItem value="other">Other</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <FormMessage />
-                            </FormItem>
-                        )}
+                                <FormMessage />
+                                </FormItem>
+                            )}
                         />
-                        {categoryValue === 'other' && (
-                            <FormField
-                                control={form.control}
-                                name="otherCategory"
-                                render={({ field }) => (
-                                    <FormItem>
-                                    <FormLabel>Custom Category</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="Enter custom category" {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        )}
-                        </>
                     )}
                     <FormField
                         control={form.control}
