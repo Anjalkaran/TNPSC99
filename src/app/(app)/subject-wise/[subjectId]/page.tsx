@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useCollection, useFirestore, useMemoFirebase, useDoc, useUser } from "@/firebase";
 import { collection, query, where, doc, getDocs } from "firebase/firestore";
-import type { Test, Subject, UserTestAttempt } from "@/lib/types";
+import type { Test, Subject, UserTestAttempt, Unit } from "@/lib/types";
 import {
   Select,
   SelectContent,
@@ -15,9 +15,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from "@/hooks/use-translation";
 import { Badge } from '@/components/ui/badge';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+
 
 function TestStartControl({ test }: { test: Test }) {
   const { t } = useTranslation();
@@ -36,7 +44,7 @@ function TestStartControl({ test }: { test: Test }) {
           <SelectItem value={String(questionCount)}>All ({questionCount})</SelectItem>
         </SelectContent>
       </Select>
-      <Button asChild className="w-full" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
+      <Button asChild className="w-full sm:w-auto" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
         <Link href={`/test/${test.id}${limit ? `?limit=${limit}` : ''}`}>
           Start Test <ArrowRight className="ml-2 h-4 w-4" />
         </Link>
@@ -107,13 +115,70 @@ export default function SubjectTestsForSubjectPage() {
   
   const { data: subjectTests, isLoading: testsLoading } = useCollection<Test>(subjectTestsQuery);
   
-  if (subjectLoading || testsLoading) {
+  const unitIds = useMemo(() => {
+    if (!subjectTests) return [];
+    return [...new Set(subjectTests.map(t => t.unitId).filter(Boolean) as string[])];
+  }, [subjectTests]);
+
+  const unitsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'units') : null, [firestore]);
+  const unitsQuery = useMemoFirebase(() => {
+    if (!unitsCollection || unitIds.length === 0) return null;
+    return query(unitsCollection, where('__name__', 'in', unitIds));
+  }, [unitsCollection, unitIds]);
+  const { data: units, isLoading: unitsLoading } = useCollection<Unit>(unitsQuery);
+
+  const unitsMap = useMemo(() => {
+    if (!units) return new Map<string, Unit>();
+    return new Map(units.map(u => [u.id, u]));
+  }, [units]);
+
+  const groupedAndSortedTests = useMemo(() => {
+    if (!subjectTests) return {};
+
+    const grouped = subjectTests.reduce((acc, test) => {
+        const unit = test.unitId ? unitsMap.get(test.unitId) : undefined;
+        const category = unit?.category || 'Uncategorized';
+        
+        if (!acc[category]) {
+            acc[category] = [];
+        }
+        acc[category].push(test);
+        return acc;
+    }, {} as Record<string, Test[]>);
+    
+    // Sort tests within each category
+    for (const category in grouped) {
+        grouped[category].sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+    }
+
+    // Sort the categories themselves
+    const sortedCategories = Object.keys(grouped).sort((a, b) => a.localeCompare(b));
+    
+    const result: Record<string, Test[]> = {};
+    for (const category of sortedCategories) {
+        result[category] = grouped[category];
+    }
+    
+    return result;
+  }, [subjectTests, unitsMap]);
+
+
+  if (subjectLoading || testsLoading || unitsLoading) {
       return <div className="container mx-auto px-4 py-8 md:py-12"><p>Loading tests...</p></div>;
   }
 
   if (!subject) {
       return notFound();
   }
+  
+  const getShortTestTitle = (fullTitle: string, subjectName: string) => {
+    if (!subjectName) return fullTitle;
+    const prefix = `${subjectName} - `;
+    if (fullTitle.startsWith(prefix)) {
+      return fullTitle.substring(prefix.length);
+    }
+    return fullTitle;
+  };
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
@@ -122,26 +187,43 @@ export default function SubjectTestsForSubjectPage() {
         <p className="text-muted-foreground mt-2">{subject.description}</p>
       </div>
       
-      {subjectTests && subjectTests.length > 0 ? (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {subjectTests.map((test) => (
-            <Card key={test.id} className="flex flex-col overflow-hidden hover:shadow-lg transition-shadow duration-300">
-              <CardHeader>
-                <CardTitle>{test.title}</CardTitle>
-                <CardDescription>{test.description}</CardDescription>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                 <div className="flex items-center gap-2">
-                    <p className="text-sm text-muted-foreground">{t('total_of_questions', { count: test.questionIds.length})}</p>
-                    <TestProgressBadge testId={test.id} />
-                </div>
-              </CardContent>
-              <CardFooter>
-                 <TestStartControl test={test} />
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
+      {Object.keys(groupedAndSortedTests).length > 0 ? (
+        <Accordion type="multiple" defaultValue={Object.keys(groupedAndSortedTests)} className="w-full space-y-4">
+            {Object.entries(groupedAndSortedTests).map(([category, tests]) => (
+                <AccordionItem value={category} key={category} className="border rounded-lg bg-card">
+                    <AccordionTrigger className="px-6 py-4 text-lg font-semibold">
+                        {category}
+                    </AccordionTrigger>
+                    <AccordionContent className="p-0">
+                         <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Test Title</TableHead>
+                                    <TableHead>Questions</TableHead>
+                                    <TableHead className="text-right">Action</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {tests.map((test) => (
+                                    <TableRow key={test.id}>
+                                        <TableCell className="font-medium">{getShortTestTitle(test.title, subject.name)}</TableCell>
+                                        <TableCell>
+                                        <div className="flex items-center gap-2">
+                                            <span>{test.questionIds.length}</span>
+                                            <TestProgressBadge testId={test.id} />
+                                        </div>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                        <TestStartControl test={test} />
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                         </Table>
+                    </AccordionContent>
+                </AccordionItem>
+            ))}
+        </Accordion>
       ) : (
         <div className="text-center py-16">
           <p className="text-muted-foreground">No tests are available for this subject yet.</p>
