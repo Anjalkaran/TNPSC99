@@ -108,9 +108,7 @@ export default function SubjectTestsPage() {
 
   const [pageTitle, setPageTitle] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [unitsMap, setUnitsMap] = useState<Map<string, Unit>>(new Map());
-  const [isLoading, setIsLoading] = useState(true);
-
+  
   const classId = useMemo(() => {
     const classIdParam = Array.isArray(params.classId) ? params.classId[0] : params.classId;
     return classIdParam ? decodeURIComponent(classIdParam) : '';
@@ -138,7 +136,6 @@ export default function SubjectTestsPage() {
   useEffect(() => {
     async function fetchMetadata() {
         if (!firestore || !classId || !subjectId) return;
-        setIsLoading(true);
 
         let className = `Class ${classId}`;
         let subjectName = subjectId;
@@ -164,50 +161,16 @@ export default function SubjectTestsPage() {
         const title = `${className} - ${subjectName}`;
         setPageTitle(title);
         document.title = title;
-        
-        // Now handle units, but only after tests are loaded
-        if (!testsLoading && subjectTests) {
-            const unitIds = [...new Set(subjectTests.map(t => t.unitId).filter(Boolean) as string[])];
-            
-            if (unitIds.length > 0) {
-                const map = new Map<string, Unit>();
-                const unitIdChunks: string[][] = [];
-                for (let i = 0; i < unitIds.length; i += 30) {
-                    unitIdChunks.push(unitIds.slice(i, i + 30));
-                }
-                
-                const unitsCollectionRef = collection(firestore, 'units');
-                try {
-                    for (const chunk of unitIdChunks) {
-                        if (chunk.length > 0) {
-                            const unitsQuery = query(unitsCollectionRef, where('__name__', 'in', chunk));
-                            const unitsSnapshot = await getDocs(unitsQuery);
-                            unitsSnapshot.forEach(doc => {
-                                map.set(doc.id, { id: doc.id, ...doc.data() } as Unit);
-                            });
-                        }
-                    }
-                    setUnitsMap(map);
-                } catch (error) {
-                    console.error("Error fetching units: ", error);
-                }
-            }
-            setIsLoading(false);
-        } else if (!testsLoading) {
-            // No tests, so no units to fetch
-            setIsLoading(false);
-        }
     }
 
     fetchMetadata();
-  }, [firestore, classId, subjectId, t, language, testsLoading, subjectTests]);
+  }, [firestore, classId, subjectId, t, language]);
 
   const groupedAndSortedTests = useMemo(() => {
     if (!subjectTests || testsLoading) return {};
 
     const grouped = subjectTests.reduce((acc, test) => {
-        const unit = test.unitId ? unitsMap.get(test.unitId) : undefined;
-        const category = unit?.category || "Uncategorized";
+        const category = test.category || "Uncategorized";
         
         if (!acc[category]) {
             acc[category] = [];
@@ -222,13 +185,12 @@ export default function SubjectTestsPage() {
     }
     
     return grouped;
-  }, [subjectTests, testsLoading, unitsMap]);
+  }, [subjectTests, testsLoading]);
 
 
   const getShortTestTitle = (test: Test) => {
-    const unit = test.unitId ? unitsMap.get(test.unitId) : undefined;
-    if (unit) {
-        return `இயல் ${unit.unitNumber}: ${unit.unitName}`;
+    if (test.unitNumber && test.unitName) {
+        return `இயல் ${test.unitNumber}: ${test.unitName}`;
     }
     // Fallback logic
     if (pageTitle && test.title.startsWith(`${pageTitle} - `)) {
@@ -237,7 +199,7 @@ export default function SubjectTestsPage() {
     return test.title;
   };
 
-  if (isLoading) {
+  if (testsLoading) {
     return (
         <div className="container mx-auto px-4 py-8 md:py-12">
             <h1 className="text-3xl md:text-4xl font-bold mb-8">Loading...</h1>
@@ -310,7 +272,7 @@ export default function SubjectTestsPage() {
         </Card>
       ) : null}
 
-      {Object.keys(groupedAndSortedTests).length === 0 && (
+      {Object.keys(groupedAndSortedTests).length === 0 && !testsLoading && (
          <div className="text-center py-16">
           <p className="text-muted-foreground">No tests are available for this subject yet.</p>
         </div>
@@ -318,3 +280,5 @@ export default function SubjectTestsPage() {
     </div>
   );
 }
+
+    

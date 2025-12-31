@@ -20,12 +20,13 @@ export interface Test {
   id: string;
   title: string;
   description: string;
-  category: 'class' | 'subject' | 'previous';
+  category?: string; // Changed to optional string
   questionIds: string[];
   questions?: Question[];
-  classId?: string; // Added for class-wise tests
-  subjectId?: string; // Added for subject-wise tests
+  classId?: string;
+  subjectId?: string;
   term?: string;
+  unitId?: string;
   unitNumber?: number;
   unitName?: string;
 }
