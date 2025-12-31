@@ -423,7 +423,8 @@ export default function UploadMcqPage() {
       if (!firestore) throw new Error('Firestore is not initialized');
 
       const { classId, subjectName, term, unitNumber, unitName, category, otherCategory } = values;
-      
+      const finalCategory = category === 'other' ? otherCategory : category;
+
       // 1. Find or Create Subject
       let subjectId: string;
       const subjectsRef = collection(firestore, 'subjects');
@@ -453,7 +454,7 @@ export default function UploadMcqPage() {
       if (unitSnapshot.empty) {
           const newUnitRef = doc(collection(firestore, 'units'));
           const unitData: Unit = { id: newUnitRef.id, classId, subjectId, term, unitNumber, unitName };
-          if (category) unitData.category = category === 'other' ? otherCategory : category;
+          if (finalCategory) unitData.category = finalCategory;
           await setDoc(newUnitRef, unitData);
           unitId = newUnitRef.id;
       } else {
@@ -484,16 +485,17 @@ export default function UploadMcqPage() {
       await runTransaction(firestore, async (transaction) => {
           const testSnapshot = await getDocs(testQuery);
           if (testSnapshot.empty) {
-              const newTestRef = doc(testsCollectionRef); // Let Firestore generate the ID
+              const newTestRef = doc(testsCollectionRef);
               const newTest: Test = {
-                  id: newTestRef.id, // Store the auto-generated ID in the document
+                  id: newTestRef.id,
                   title: testTitle,
                   description: t('test_for_class_subject', {classId: className || classId, subjectId: subjectName}),
-                  category: 'class',
+                  category: finalCategory,
                   questionIds: newQuestionIds,
                   classId: classId,
                   subjectId: subjectId,
                   term: term,
+                  unitId: unitId,
                   unitNumber: unitNumber,
                   unitName: unitName,
               };
@@ -502,7 +504,11 @@ export default function UploadMcqPage() {
               const testDoc = testSnapshot.docs[0];
               const existingQuestionIds = testDoc.data().questionIds || [];
               const updatedQuestionIds = [...new Set([...existingQuestionIds, ...newQuestionIds])];
-              transaction.update(testDoc.ref, { questionIds: updatedQuestionIds });
+              const updateData: any = { questionIds: updatedQuestionIds };
+              if (finalCategory) {
+                updateData.category = finalCategory;
+              }
+              transaction.update(testDoc.ref, updateData);
           }
       });
       
@@ -731,7 +737,5 @@ export default function UploadMcqPage() {
     </div>
   );
 }
-
-    
 
     
