@@ -2,10 +2,10 @@
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
 import { collection, query, where, getDoc, doc, getDocs } from "firebase/firestore";
-import type { Test, Subject, Class, UserTestAttempt, Unit } from "@/lib/types";
+import type { Test, Subject, Class, UserTestAttempt } from "@/lib/types";
 import { useParams } from "next/navigation";
 import { useEffect, useState, useMemo } from "react";
 import {
@@ -18,6 +18,12 @@ import {
 import { useTranslation } from "@/hooks/use-translation";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 
 function TestStartControl({ test }: { test: Test }) {
@@ -165,9 +171,43 @@ export default function SubjectTestsPage() {
     fetchMetadata();
   }, [firestore, classId, subjectId, t, language]);
 
-  const sortedTests = useMemo(() => {
-    if (!subjectTests) return [];
-    return [...subjectTests].sort((a, b) => (a.unitNumber || 0) - (b.unitNumber || 0));
+  const groupedAndSortedTests = useMemo(() => {
+    if (!subjectTests) return {};
+
+    const grouped = subjectTests.reduce((acc, test) => {
+        // Default category
+        let category = "உரைநடை & செய்யுள்";
+        
+        // Rule: if unitId ends with 'g', it's இலக்கணம்
+        if (test.unitId && test.unitId.endsWith('g')) {
+            category = "இலக்கணம்";
+        }
+        
+        if (!acc[category]) {
+            acc[category] = [];
+        }
+        acc[category].push(test);
+        return acc;
+    }, {} as Record<string, Test[]>);
+    
+    // Sort tests within each category by unit number
+    for (const category in grouped) {
+        grouped[category].sort((a, b) => (a.unitNumber || 0) - (b.unitNumber || 0));
+    }
+
+    // Sort the categories themselves (e.g., இலக்கணம் first)
+    const sortedCategories = Object.keys(grouped).sort((a, b) => {
+        if (a === "இலக்கணம்") return -1;
+        if (b === "இலக்கணம்") return 1;
+        return a.localeCompare(b);
+    });
+    
+    const result: Record<string, Test[]> = {};
+    for (const category of sortedCategories) {
+        result[category] = grouped[category];
+    }
+    
+    return result;
   }, [subjectTests]);
 
   const getShortTestTitle = (test: Test) => {
@@ -196,39 +236,43 @@ export default function SubjectTestsPage() {
         <h1 className="text-3xl md:text-4xl font-bold">{pageTitle}</h1>
       </div>
       
-      {sortedTests && sortedTests.length > 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('view_tests')}</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Test Title</TableHead>
-                  <TableHead>Questions</TableHead>
-                  <TableHead className="text-right">Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {sortedTests.map((test) => (
-                  <TableRow key={test.id}>
-                    <TableCell className="font-medium">{getShortTestTitle(test)}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <span>{test.questionIds.length}</span>
-                        <TestProgressBadge testId={test.id} />
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <TestStartControl test={test} />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+      {Object.keys(groupedAndSortedTests).length > 0 ? (
+        <Accordion type="multiple" defaultValue={Object.keys(groupedAndSortedTests)} className="w-full space-y-4">
+            {Object.entries(groupedAndSortedTests).map(([category, tests]) => (
+                <AccordionItem value={category} key={category} className="border rounded-lg bg-card">
+                    <AccordionTrigger className="px-6 py-4 text-lg font-semibold">
+                        {category}
+                    </AccordionTrigger>
+                    <AccordionContent className="p-0">
+                         <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Test Title</TableHead>
+                                    <TableHead>Questions</TableHead>
+                                    <TableHead className="text-right">Action</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {tests.map((test) => (
+                                    <TableRow key={test.id}>
+                                        <TableCell className="font-medium">{getShortTestTitle(test)}</TableCell>
+                                        <TableCell>
+                                        <div className="flex items-center gap-2">
+                                            <span>{test.questionIds.length}</span>
+                                            <TestProgressBadge testId={test.id} />
+                                        </div>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                        <TestStartControl test={test} />
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                         </Table>
+                    </AccordionContent>
+                </AccordionItem>
+            ))}
+        </Accordion>
       ) : (
          <div className="text-center py-16">
           <p className="text-muted-foreground">No tests are available for this subject yet.</p>
