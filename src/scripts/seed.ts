@@ -50,6 +50,11 @@ const classes = [
     { id: '12', name: 'Class XII', name_ta: '12ஆம் வகுப்பு', description: '12th Standard' },
 ];
 
+const categories = [
+    { id: 'ilakkanam', name: 'Ilakkanam', name_ta: 'இலக்கணம்', subjectId: 'tamil'},
+    { id: 'urai-seyyul', name: 'Urainadai & Seyyul', name_ta: 'உரைநடை & செய்யுள்', subjectId: 'tamil'},
+]
+
 const questions = [
     { id: 'q1', text: 'நீரின் வேதியியல் சூத்திரம் என்ன?', subjectId: 'science', classId: '10', answerOptions: ['H2O', 'CO2', 'O2', 'NaCl'], correctAnswerIndex: 0 },
     { id: 'q2', text: 'எந்த கிரகம் சிவப்பு கிரகம் என்று அழைக்கப்படுகிறது?', subjectId: 'science', classId: '10', answerOptions: ['பூமி', 'செவ்வாய்', 'வியாழன்', 'சனி'], correctAnswerIndex: 1 },
@@ -369,6 +374,13 @@ export async function seedDatabase() {
     const docRef = doc(classesCollection, cls.id);
     batch.set(docRef, cls);
   });
+  
+  // Seed Categories
+  const categoriesCollection = collection(firestore, 'categories');
+  categories.forEach((category) => {
+    const docRef = doc(categoriesCollection, category.id);
+    batch.set(docRef, category);
+  });
 
   // Seed Questions
   const questionsCollection = collection(firestore, 'questions');
@@ -397,3 +409,6 @@ export async function seedDatabase() {
 
     
 
+
+
+    
