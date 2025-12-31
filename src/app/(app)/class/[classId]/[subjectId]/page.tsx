@@ -107,7 +107,6 @@ export default function SubjectTestsPage() {
   const { t, language } = useTranslation();
 
   const [pageTitle, setPageTitle] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   
   const classId = useMemo(() => {
     const classIdParam = Array.isArray(params.classId) ? params.classId[0] : params.classId;
@@ -166,38 +165,10 @@ export default function SubjectTestsPage() {
     fetchMetadata();
   }, [firestore, classId, subjectId, t, language]);
 
-  const groupedAndSortedTests = useMemo(() => {
-    if (!subjectTests || testsLoading) return {};
-
-    const grouped = subjectTests.reduce((acc, test) => {
-        // Prioritize the category field on the test itself
-        let category = test.category;
-
-        // Fallback for older tests without the category field
-        if (!category && test.unitId) {
-            category = test.unitId.endsWith('g') ? 'இலக்கணம்' : 'உரைநடை & செய்யுள்';
-        }
-
-        // Final fallback
-        if (!category) {
-            category = "Uncategorized";
-        }
-        
-        if (!acc[category]) {
-            acc[category] = [];
-        }
-        acc[category].push(test);
-        return acc;
-    }, {} as Record<string, Test[]>);
-    
-    // Sort tests within each category by unit number
-    for (const category in grouped) {
-        grouped[category].sort((a, b) => (a.unitNumber || 0) - (b.unitNumber || 0));
-    }
-    
-    return grouped;
-  }, [subjectTests, testsLoading]);
-
+  const sortedTests = useMemo(() => {
+    if (!subjectTests) return [];
+    return [...subjectTests].sort((a, b) => (a.unitNumber || 0) - (b.unitNumber || 0));
+  }, [subjectTests]);
 
   const getShortTestTitle = (test: Test) => {
     if (test.unitNumber && test.unitName) {
@@ -223,35 +194,12 @@ export default function SubjectTestsPage() {
     <div className="container mx-auto px-4 py-8 md:py-12">
       <div className="mb-8">
         <h1 className="text-3xl md:text-4xl font-bold">{pageTitle}</h1>
-        {selectedCategory && (
-            <Button variant="ghost" onClick={() => setSelectedCategory(null)} className="mt-2">
-                <ArrowLeft className="mr-2 h-4 w-4" /> Back to Categories
-            </Button>
-        )}
       </div>
       
-      {!selectedCategory && Object.keys(groupedAndSortedTests).length > 0 ? (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Object.entries(groupedAndSortedTests).map(([category, tests]) => (
-                 <Card key={category} className="flex flex-col overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer" onClick={() => setSelectedCategory(category)}>
-                    <CardHeader>
-                        <CardTitle>{category}</CardTitle>
-                        <CardDescription>{tests.length} {tests.length === 1 ? 'test' : 'tests'} available</CardDescription>
-                    </CardHeader>
-                    <CardContent className="flex-grow flex items-end">
-                        <Button variant="link" className="p-0">
-                            View Tests <ArrowRight className="ml-2 h-4 w-4" />
-                        </Button>
-                    </CardContent>
-                 </Card>
-            ))}
-        </div>
-      ) : null}
-
-      {selectedCategory && groupedAndSortedTests[selectedCategory] ? (
+      {sortedTests && sortedTests.length > 0 ? (
         <Card>
           <CardHeader>
-            <CardTitle>{selectedCategory}</CardTitle>
+            <CardTitle>{t('view_tests')}</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
@@ -263,7 +211,7 @@ export default function SubjectTestsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {groupedAndSortedTests[selectedCategory].map((test) => (
+                {sortedTests.map((test) => (
                   <TableRow key={test.id}>
                     <TableCell className="font-medium">{getShortTestTitle(test)}</TableCell>
                     <TableCell>
@@ -281,9 +229,7 @@ export default function SubjectTestsPage() {
             </Table>
           </CardContent>
         </Card>
-      ) : null}
-
-      {Object.keys(groupedAndSortedTests).length === 0 && !testsLoading && (
+      ) : (
          <div className="text-center py-16">
           <p className="text-muted-foreground">No tests are available for this subject yet.</p>
         </div>
@@ -291,5 +237,3 @@ export default function SubjectTestsPage() {
     </div>
   );
 }
-
-    
