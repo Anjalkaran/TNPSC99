@@ -1,207 +1,90 @@
 'use client';
-import { notFound, useParams, usePathname } from 'next/navigation';
 import Link from "next/link";
-import Image from "next/image";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-import { useCollection, useFirestore, useMemoFirebase, useDoc, useUser } from "@/firebase";
-import { collection, query, where, doc, getDocs } from "firebase/firestore";
-import type { Test, Subject, UserTestAttempt } from "@/lib/types";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { useState, useEffect } from 'react';
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import type { Test, Subject } from "@/lib/types";
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from "@/hooks/use-translation";
-import { Badge } from '@/components/ui/badge';
 
-function TestStartControl({ test }: { test: Test }) {
-  const { t } = useTranslation();
-  const [limit, setLimit] = useState<string>('');
-  const questionCount = test.questionIds.length;
-  const options = [10, 25, 50].filter(o => o < questionCount);
-
-  return (
-    <div className="flex flex-col sm:flex-row gap-2 w-full">
-      <Select onValueChange={setLimit} value={limit}>
-        <SelectTrigger className="w-full sm:w-[180px]">
-          <SelectValue placeholder="Select Questions" />
-        </SelectTrigger>
-        <SelectContent>
-          {options.map(opt => <SelectItem key={opt} value={String(opt)}>{opt} Questions</SelectItem>)}
-          <SelectItem value={String(questionCount)}>All ({questionCount})</SelectItem>
-        </SelectContent>
-      </Select>
-      <Button asChild className="w-full" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
-        <Link href={`/test/${test.id}${limit ? `?limit=${limit}` : ''}`}>
-          Start Test <ArrowRight className="ml-2 h-4 w-4" />
-        </Link>
-      </Button>
-    </div>
-  );
-}
-
-function TestProgressBadge({ testId }: { testId: string }) {
-    const { user } = useUser();
+export default function SubjectWiseTestsPage() {
+    const { t, language } = useTranslation();
     const firestore = useFirestore();
-    const [answeredCount, setAnsweredCount] = useState(0);
+    const [subjects, setSubjects] = useState<Subject[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        if (!user || !firestore || !testId) return;
+        if (!firestore) return;
 
-        const fetchAttempts = async () => {
+        const fetchSubjectsWithTests = async () => {
             setIsLoading(true);
-            const attemptsRef = collection(firestore, `users/${user.uid}/testAttempts`);
-            const attemptsQuery = query(attemptsRef, where('testId', '==', testId));
-            const attemptsSnapshot = await getDocs(attemptsQuery);
+            try {
+                // 1. Find all tests that are categorized as 'subject' wise or have a subjectId
+                const testsRef = collection(firestore, 'tests');
+                // A broader query to find any test linked to a subject
+                const testsQuery = query(testsRef, where('subjectId', '!=', null));
+                const testSnapshots = await getDocs(testsQuery);
+                const tests = testSnapshots.docs.map(d => d.data() as Test);
+                
+                if (tests.length > 0) {
+                    // 2. Get unique subject IDs from these tests
+                    const subjectIds = [...new Set(tests.map(t => t.subjectId).filter(Boolean) as string[])];
 
-            const correctlyAnsweredIds = new Set<string>();
-            attemptsSnapshot.forEach(doc => {
-                const attempt = doc.data() as UserTestAttempt;
-                if (attempt.correctlyAnsweredQuestionIds) {
-                    attempt.correctlyAnsweredQuestionIds.forEach(id => correctlyAnsweredIds.add(id));
+                    if(subjectIds.length > 0) {
+                        // 3. Fetch the subject details
+                        const subjectsRef = collection(firestore, 'subjects');
+                        const subjectsQuery = query(subjectsRef, where('__name__', 'in', subjectIds));
+                        const subjectsSnapshot = await getDocs(subjectsQuery);
+                        const subjectsData = subjectsSnapshot.docs.map(d => ({id: d.id, ...d.data() } as Subject));
+                        setSubjects(subjectsData);
+                    }
                 }
-            });
-            setAnsweredCount(correctlyAnsweredIds.size);
-            setIsLoading(false);
+            } catch (error) {
+                console.error("Error fetching subjects with tests:", error);
+            } finally {
+                setIsLoading(false);
+            }
         };
 
-        fetchAttempts();
-    }, [user, firestore, testId]);
+        fetchSubjectsWithTests();
+    }, [firestore]);
 
-    if (isLoading || answeredCount === 0) {
-        return null;
-    }
-
-    return (
-         <Badge variant="secondary">
-            {answeredCount} attended
-        </Badge>
-    )
-}
-
-
-// This new page component will render tests for a specific subject ID.
-function SubjectPage() {
-  const { subjectId } = useParams();
-  const firestore = useFirestore();
-  const { t } = useTranslation();
-
-  const subjectRef = useMemoFirebase(() => {
-    if (!firestore || !subjectId) return null;
-    return doc(firestore, 'subjects', Array.isArray(subjectId) ? subjectId[0] : subjectId);
-  }, [firestore, subjectId]);
-  const { data: subject, isLoading: subjectLoading } = useDoc<Subject>(subjectRef);
-
-
-  const testsCollection = useMemoFirebase(() => collection(firestore, 'tests'), [firestore]);
-  const subjectTestsQuery = useMemoFirebase(() => {
-      if (!testsCollection || !subjectId) return null;
-      return query(testsCollection, where('subjectId', '==', Array.isArray(subjectId) ? subjectId[0] : subjectId));
-  }, [testsCollection, subjectId]);
-  
-  const { data: subjectTests, isLoading: testsLoading } = useCollection<Test>(subjectTestsQuery);
-  
-  if (subjectLoading || testsLoading) {
-      return <div className="container mx-auto px-4 py-8 md:py-12"><p>Loading tests...</p></div>;
-  }
-
-  if (!subject) {
-      return notFound();
-  }
-
-  return (
-    <div className="container mx-auto px-4 py-8 md:py-12">
-      <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold">{subject.name} Tests</h1>
-        <p className="text-muted-foreground mt-2">{subject.description}</p>
-      </div>
-      
-      {subjectTests && subjectTests.length > 0 ? (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {subjectTests.map((test) => (
-            <Card key={test.id} className="flex flex-col overflow-hidden hover:shadow-lg transition-shadow duration-300">
-              <CardHeader>
-                <CardTitle>{test.title}</CardTitle>
-                <CardDescription>{test.description}</CardDescription>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                 <div className="flex items-center gap-2">
-                    <p className="text-sm text-muted-foreground">{t('total_of_questions', { count: test.questionIds.length})}</p>
-                    <TestProgressBadge testId={test.id} />
-                </div>
-              </CardContent>
-              <CardFooter>
-                <TestStartControl test={test} />
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-16">
-          <p className="text-muted-foreground">No tests are available for this subject yet.</p>
-        </div>
-      )}
-    </div>
-  );
-}
-
-
-// This is the original page component, it will now act as a parent route.
-// Or we can combine them. Let's create a new file for the subject detail page.
-export default function SubjectWiseTestsPage() {
-    const pathname = usePathname();
-    const { t } = useTranslation();
-    // This will check if we are on the /subject-wise/[subjectId] page
-    if(pathname.split('/').length > 2) {
-        return <SubjectPage />;
-    }
-  
-    const firestore = useFirestore();
-    const testsCollection = useMemoFirebase(() => collection(firestore, 'tests'), [firestore]);
-    const subjectTestsQuery = useMemoFirebase(() => testsCollection && query(testsCollection, where('category', '==', 'subject')), [testsCollection]);
-    
-    const { data: subjectTests, isLoading } = useCollection<Test>(subjectTestsQuery);
 
     return (
         <div className="container mx-auto px-4 py-8 md:py-12">
-        <div className="mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold">Subject-wise Tests</h1>
-            <p className="text-muted-foreground mt-2">Focus your preparation on specific subjects.</p>
-        </div>
-        
-        {isLoading && <p>Loading tests...</p>}
+            <div className="mb-8">
+                <h1 className="text-3xl md:text-4xl font-bold">Subject-wise Tests</h1>
+                <p className="text-muted-foreground mt-2">Focus your preparation on specific subjects.</p>
+            </div>
+            
+            {isLoading && <p>Loading tests...</p>}
 
-        {!isLoading && subjectTests && subjectTests.length > 0 ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {subjectTests.map((test) => (
-                <Card key={test.id} className="flex flex-col overflow-hidden hover:shadow-lg transition-shadow duration-300">
-                <CardHeader>
-                    <CardTitle>{test.title}</CardTitle>
-                    <CardDescription>{test.description}</CardDescription>
-                </CardHeader>
-                <CardContent className="flex-grow">
-                    <div className="flex items-center gap-2">
-                        <p className="text-sm text-muted-foreground">{t('total_of_questions', { count: test.questionIds.length})}</p>
-                        <TestProgressBadge testId={test.id} />
-                    </div>
-                </CardContent>
-                <CardFooter>
-                    <TestStartControl test={test} />
-                </CardFooter>
-                </Card>
-            ))}
-            </div>
-        ) : (
-            !isLoading && <div className="text-center py-16">
-            <p className="text-muted-foreground">No subject-wise tests are available at the moment.</p>
-            </div>
-        )}
+            {!isLoading && subjects && subjects.length > 0 ? (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {subjects.map((subject) => (
+                        <Card key={subject.id} className="flex flex-col overflow-hidden hover:shadow-lg transition-shadow duration-300">
+                            <CardHeader>
+                                <CardTitle>{language === 'ta' && subject.name_ta ? subject.name_ta : subject.name}</CardTitle>
+                                <CardDescription>{language === 'ta' && subject.description_ta ? subject.description_ta : subject.description}</CardDescription>
+                            </CardHeader>
+                            <CardContent className="flex-grow"></CardContent>
+                            <CardFooter>
+                                 <Button asChild className="w-full" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
+                                    <Link href={`/subject-wise/${subject.id}`}>
+                                        {t('view_tests')} <ArrowRight className="ml-2 h-4 w-4" />
+                                    </Link>
+                                </Button>
+                            </CardFooter>
+                        </Card>
+                    ))}
+                </div>
+            ) : (
+                !isLoading && <div className="text-center py-16">
+                <p className="text-muted-foreground">No subject-wise tests are available at the moment.</p>
+                </div>
+            )}
         </div>
     );
 }
