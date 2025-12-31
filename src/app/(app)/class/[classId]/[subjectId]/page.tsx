@@ -90,6 +90,8 @@ function TestProgressBadge({ testId }: { testId: string }) {
     if (isLoading) {
         return <Badge variant="outline">Loading...</Badge>;
     }
+    
+    if (answeredCount === 0) return null;
 
     return (
          <Badge variant="secondary">
@@ -133,45 +135,53 @@ export default function SubjectTestsPage() {
 
   const { data: subjectTests, isLoading: testsLoading } = useCollection<Test>(subjectTestsQuery);
   
-  const unitIds = useMemo(() => {
-    if (!subjectTests) return [];
-    return [...new Set(subjectTests.map(t => t.unitId).filter(Boolean) as string[])];
-  }, [subjectTests]);
-
-  const unitsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'units') : null, [firestore]);
-  
   const [unitsMap, setUnitsMap] = useState<Map<string, Unit>>(new Map());
   const [unitsLoading, setUnitsLoading] = useState(true);
 
   useEffect(() => {
     const fetchUnits = async () => {
-        if (!firestore || unitIds.length === 0) {
+        if (!firestore || !subjectTests) {
             setUnitsLoading(false);
             return;
         }
+
+        const unitIds = [...new Set(subjectTests.map(t => t.unitId).filter(Boolean) as string[])];
+
+        if (unitIds.length === 0) {
+            setUnitsLoading(false);
+            return;
+        }
+
         setUnitsLoading(true);
         const map = new Map<string, Unit>();
         const unitIdChunks = [];
         for (let i = 0; i < unitIds.length; i += 30) {
             unitIdChunks.push(unitIds.slice(i, i + 30));
         }
+        
+        const unitsCollectionRef = collection(firestore, 'units');
 
-        for (const chunk of unitIdChunks) {
-            const unitsQuery = query(unitsCollection!, where('__name__', 'in', chunk));
-            const unitsSnapshot = await getDocs(unitsQuery);
-            unitsSnapshot.forEach(doc => {
-                map.set(doc.id, { id: doc.id, ...doc.data() } as Unit);
-            });
+        try {
+            for (const chunk of unitIdChunks) {
+                const unitsQuery = query(unitsCollectionRef, where('__name__', 'in', chunk));
+                const unitsSnapshot = await getDocs(unitsQuery);
+                unitsSnapshot.forEach(doc => {
+                    map.set(doc.id, { id: doc.id, ...doc.data() } as Unit);
+                });
+            }
+        } catch (error) {
+            console.error("Error fetching units: ", error);
+        } finally {
+            setUnitsMap(map);
+            setUnitsLoading(false);
         }
-        setUnitsMap(map);
-        setUnitsLoading(false);
     };
 
     fetchUnits();
-  }, [firestore, unitIds, unitsCollection]);
+  }, [firestore, subjectTests]);
 
   const groupedAndSortedTests = useMemo(() => {
-    if (!subjectTests) return {};
+    if (!subjectTests || testsLoading || unitsLoading) return {};
 
     const grouped = subjectTests.reduce((acc, test) => {
         const unit = test.unitId ? unitsMap.get(test.unitId) : undefined;
@@ -185,13 +195,13 @@ export default function SubjectTestsPage() {
         return acc;
     }, {} as Record<string, Test[]>);
     
-    // Sort tests within each category
+    // Sort tests within each category by unit number
     for (const category in grouped) {
         grouped[category].sort((a, b) => (a.unitNumber || 0) - (b.unitNumber || 0));
     }
     
     return grouped;
-  }, [subjectTests, unitsMap]);
+  }, [subjectTests, unitsMap, testsLoading, unitsLoading]);
 
 
   useEffect(() => {
@@ -231,18 +241,14 @@ export default function SubjectTestsPage() {
     }
   }, [firestore, classId, subjectId, t, language]);
 
-  const getShortTestTitle = (test: Test, pageTitle: string) => {
-    if (!pageTitle) return test.title;
-    
+  const getShortTestTitle = (test: Test) => {
     const unit = test.unitId ? unitsMap.get(test.unitId) : undefined;
     if (unit) {
         return `இயல் ${unit.unitNumber}: ${unit.unitName}`;
     }
-    
     // Fallback logic
-    const prefix = `${pageTitle} - `;
-    if (test.title.startsWith(prefix)) {
-      return test.title.substring(prefix.length);
+    if (pageTitle && test.title.startsWith(`${pageTitle} - `)) {
+      return test.title.substring(`${pageTitle} - `.length);
     }
     return test.title;
   };
@@ -297,7 +303,7 @@ export default function SubjectTestsPage() {
               <TableBody>
                 {groupedAndSortedTests[selectedCategory].map((test) => (
                   <TableRow key={test.id}>
-                    <TableCell className="font-medium">{getShortTestTitle(test, pageTitle)}</TableCell>
+                    <TableCell className="font-medium">{getShortTestTitle(test)}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <span>{test.questionIds.length}</span>
