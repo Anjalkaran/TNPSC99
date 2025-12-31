@@ -364,7 +364,11 @@ export default function UploadMcqPage() {
 
 
   const subjectNameValue = form.watch('subjectName');
-
+  const showTamilCategories = subjectNameValue === 'தமிழ்' || subjectNameValue === 'Tamil';
+  const tamilCategories = useMemo(() => {
+    if (!categories) return [];
+    return categories.filter(c => c.subjectId === 'tamil');
+  }, [categories]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -584,7 +588,7 @@ export default function UploadMcqPage() {
                         </FormItem>
                         )}
                     />
-                    {subjectNameValue === 'தமிழ்' && (
+                    {showTamilCategories && (
                         <FormField
                             control={form.control}
                             name="categoryId"
@@ -598,7 +602,7 @@ export default function UploadMcqPage() {
                                     </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                    {categories?.filter(c => c.subjectId === 'tamil').map(c => <SelectItem key={c.id} value={c.id}>{c.name_ta || c.name}</SelectItem>)}
+                                    {tamilCategories.map(c => <SelectItem key={c.id} value={c.id}>{c.name_ta || c.name}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
                                 <FormMessage />
@@ -711,4 +715,3 @@ export default function UploadMcqPage() {
     </div>
   );
 }
-

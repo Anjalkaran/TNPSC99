@@ -74,11 +74,7 @@ function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, cla
 
     const subjectNameValue = form.watch('subjectName');
     
-    const selectedSubject = useMemo(() => {
-        return subjects?.find(s => s.name === subjectNameValue || s.name_ta === subjectNameValue);
-    }, [subjectNameValue, subjects]);
-
-    const showTamilCategories = selectedSubject?.id === 'tamil';
+    const showTamilCategories = subjectNameValue === 'தமிழ்' || subjectNameValue === 'Tamil';
 
     const tamilCategories = useMemo(() => {
       if (!categories) return [];
@@ -181,22 +177,16 @@ function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, cla
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Category</FormLabel>
-                        {categoriesLoading || tamilCategories.length > 0 ? (
-                           <Select onValueChange={field.onChange} value={field.value} disabled={categoriesLoading}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select a category" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {tamilCategories.map(c => <SelectItem key={c.id} value={c.id}>{c.name_ta || c.name}</SelectItem>)}
-                            </SelectContent>
-                          </Select>
-                        ) : (
-                           <FormControl>
-                                <Input placeholder="Enter category manually" {...field} />
-                            </FormControl>
-                        )}
+                        <Select onValueChange={field.onChange} value={field.value} disabled={categoriesLoading}>
+                        <FormControl>
+                            <SelectTrigger>
+                            <SelectValue placeholder="Select a category" />
+                            </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                            {tamilCategories.map(c => <SelectItem key={c.id} value={c.id}>{c.name_ta || c.name}</SelectItem>)}
+                        </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -420,11 +410,7 @@ export default function TopicManagementPage() {
 
   const subjectNameValue = form.watch('subjectName');
   
-  const selectedSubject = useMemo(() => {
-    return subjects?.find(s => s.name === subjectNameValue || s.name_ta === subjectNameValue);
-  }, [subjectNameValue, subjects]);
-
-  const showTamilCategories = selectedSubject?.id === 'tamil';
+  const showTamilCategories = subjectNameValue === 'தமிழ்' || subjectNameValue === 'Tamil';
 
   const tamilCategories = useMemo(() => {
     if (!categories) return [];
@@ -480,7 +466,7 @@ export default function TopicManagementPage() {
 
         toast({
             title: t('Unit Created!'),
-            description: t('The unit "{{unitName}}" has been successfully created.', { unitName: unit.unitName }),
+            description: t('The unit "{{unitName}}" has been successfully created.', { unitName: values.unitName }),
         });
         resetForm();
 
@@ -554,22 +540,16 @@ export default function TopicManagementPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Category</FormLabel>
-                        {categoriesLoading || tamilCategories.length > 0 ? (
-                           <Select onValueChange={field.onChange} value={field.value} disabled={categoriesLoading}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select a category" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {tamilCategories.map(c => <SelectItem key={c.id} value={c.id}>{c.name_ta || c.name}</SelectItem>)}
-                            </SelectContent>
-                          </Select>
-                        ) : (
-                           <FormControl>
-                                <Input placeholder="Enter category manually" {...field} />
-                            </FormControl>
-                        )}
+                        <Select onValueChange={field.onChange} value={field.value} disabled={categoriesLoading}>
+                        <FormControl>
+                            <SelectTrigger>
+                            <SelectValue placeholder="Select a category" />
+                            </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                            {tamilCategories.map(c => <SelectItem key={c.id} value={c.id}>{c.name_ta || c.name}</SelectItem>)}
+                        </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
