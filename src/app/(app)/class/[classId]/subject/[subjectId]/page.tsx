@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useCollection, useFirestore, useMemoFirebase, useDoc, useUser } from "@/firebase";
 import { collection, query, where, doc, getDocs, getDoc } from "firebase/firestore";
-import type { Test, Subject, UserTestAttempt, Unit, Class } from "@/lib/types";
+import type { Test, Subject, UserTestAttempt, Unit, Class, Category } from "@/lib/types";
 import {
   Select,
   SelectContent,
@@ -137,8 +137,43 @@ export default function SubjectTestsPage() {
       where('subjectId', '==', subjectId),
     );
   }, [testsCollection, classId, subjectId]);
+  
+  const categoriesCollection = useMemoFirebase(() => collection(firestore, 'categories'), [firestore]);
+  const subjectCategoriesQuery = useMemoFirebase(() => {
+      if (!categoriesCollection || !subjectId) return null;
+      return query(categoriesCollection, where('subjectId', '==', subjectId));
+  }, [categoriesCollection, subjectId]);
+
 
   const { data: subjectTests, isLoading: testsLoading } = useCollection<Test>(subjectTestsQuery);
+  const { data: categories, isLoading: categoriesLoading } = useCollection<Category>(subjectCategoriesQuery);
+  
+  const categoryMap = useMemo(() => {
+      if (!categories) return new Map<string, string>();
+      return new Map(categories.map(cat => [cat.id, language === 'ta' && cat.name_ta ? cat.name_ta : cat.name]));
+  }, [categories, language]);
+  
+  const testsByCategory = useMemo(() => {
+    if (!subjectTests) return {};
+    
+    return subjectTests.reduce((acc, test) => {
+        const categoryId = test.categoryId || 'uncategorized';
+        if (!acc[categoryId]) {
+            acc[categoryId] = [];
+        }
+        acc[categoryId].push(test);
+        // Sort tests within category by unit number
+        acc[categoryId].sort((a,b) => (a.unitNumber || 0) - (b.unitNumber || 0));
+        return acc;
+    }, {} as Record<string, Test[]>);
+
+  }, [subjectTests]);
+  
+  const sortedCategoryIds = useMemo(() => Object.keys(testsByCategory).sort((a, b) => {
+    if (a === 'uncategorized') return 1;
+    if (b === 'uncategorized') return -1;
+    return (categoryMap.get(a) || '').localeCompare(categoryMap.get(b) || '');
+  }), [testsByCategory, categoryMap]);
 
   useEffect(() => {
     async function fetchMetadata() {
@@ -173,11 +208,6 @@ export default function SubjectTestsPage() {
     fetchMetadata();
   }, [firestore, classId, subjectId, t, language, router]);
 
-  const sortedTests = useMemo(() => {
-    if (!subjectTests) return [];
-    return [...subjectTests].sort((a, b) => (a.unitNumber || 0) - (b.unitNumber || 0));
-  }, [subjectTests]);
-
   const getShortTestTitle = (test: Test) => {
     if (test.unitNumber && test.unitName) {
         return `இயல் ${test.unitNumber}: ${test.unitName}`;
@@ -187,8 +217,10 @@ export default function SubjectTestsPage() {
     }
     return test.title;
   };
+  
+  const isLoading = testsLoading || categoriesLoading;
 
-  if (testsLoading) {
+  if (isLoading) {
     return (
         <div className="container mx-auto px-4 py-8 md:py-12">
             <h1 className="text-3xl md:text-4xl font-bold mb-8">Loading...</h1>
@@ -203,38 +235,49 @@ export default function SubjectTestsPage() {
         <h1 className="text-3xl md:text-4xl font-bold">{pageTitle}</h1>
       </div>
       
-      {sortedTests.length > 0 ? (
+      {subjectTests && subjectTests.length > 0 ? (
          <Card>
             <CardHeader>
                 <CardTitle>{t('available_tests', { category: pageTitle })}</CardTitle>
                 <CardDescription>{t('select_a_test_to_start')}</CardDescription>
             </CardHeader>
             <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Test Title</TableHead>
-                            <TableHead>Questions</TableHead>
-                            <TableHead className="text-right">Action</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {sortedTests.map((test) => (
-                            <TableRow key={test.id}>
-                                <TableCell className="font-medium">{getShortTestTitle(test)}</TableCell>
-                                <TableCell>
-                                <div className="flex items-center gap-2">
-                                    <span>{test.questionIds.length}</span>
-                                    <TestProgressBadge testId={test.id} />
-                                </div>
-                                </TableCell>
-                                <TableCell className="text-right">
-                                <TestStartControl test={test} />
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                <Accordion type="multiple" defaultValue={sortedCategoryIds} className="w-full">
+                 {sortedCategoryIds.map(categoryId => (
+                     <AccordionItem value={categoryId} key={categoryId}>
+                        <AccordionTrigger className="text-lg font-semibold">
+                            {categoryId === 'uncategorized' ? 'Tests' : categoryMap.get(categoryId) || 'Category'}
+                        </AccordionTrigger>
+                        <AccordionContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Test Title</TableHead>
+                                        <TableHead>Questions</TableHead>
+                                        <TableHead className="text-right">Action</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {testsByCategory[categoryId].map((test) => (
+                                        <TableRow key={test.id}>
+                                            <TableCell className="font-medium">{getShortTestTitle(test)}</TableCell>
+                                            <TableCell>
+                                            <div className="flex items-center gap-2">
+                                                <span>{test.questionIds.length}</span>
+                                                <TestProgressBadge testId={test.id} />
+                                            </div>
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                            <TestStartControl test={test} />
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </AccordionContent>
+                     </AccordionItem>
+                 ))}
+                </Accordion>
             </CardContent>
          </Card>
       ) : (

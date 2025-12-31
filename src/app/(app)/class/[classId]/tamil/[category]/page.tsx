@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
 import { collection, query, where, getDoc, doc, getDocs } from "firebase/firestore";
-import type { Test, Subject, Class, UserTestAttempt } from "@/lib/types";
+import type { Test, Subject, Class, UserTestAttempt, Category } from "@/lib/types";
 import { useParams } from "next/navigation";
 import { useEffect, useState, useMemo } from "react";
 import {
@@ -106,13 +106,14 @@ export default function TamilCategoryTestsPage() {
 
   const [pageTitle, setPageTitle] = useState('');
   const [subjectId, setSubjectId] = useState('');
+  const [categoryId, setCategoryId] = useState('');
   
   const classId = useMemo(() => {
     const classIdParam = Array.isArray(params.classId) ? params.classId[0] : params.classId;
     return classIdParam ? decodeURIComponent(classIdParam) : '';
   }, [params.classId]);
   
-  const category = useMemo(() => {
+  const categorySlug = useMemo(() => {
     const categoryParam = Array.isArray(params.category) ? params.category[0] : params.category;
     return categoryParam ? decodeURIComponent(categoryParam) : '';
   }, [params.category]);
@@ -121,65 +122,46 @@ export default function TamilCategoryTestsPage() {
   const testsCollection = useMemoFirebase(() => collection(firestore, 'tests'), [firestore]);
 
   const categoryTestsQuery = useMemoFirebase(() => {
-    if (!testsCollection || !classId || !subjectId) return null;
+    if (!testsCollection || !classId || !subjectId || !categoryId) return null;
     
-    const isIlakkanam = category === 'ilakkanam';
-    const targetCategory = isIlakkanam ? 'இலக்கணம்' : 'உரைநடை & செய்யுள்';
-
     return query(
       testsCollection, 
       where('classId', '==', classId),
       where('subjectId', '==', subjectId),
-      where('category', '==', targetCategory)
+      where('categoryId', '==', categoryId)
     );
-  }, [testsCollection, classId, subjectId, category]);
+  }, [testsCollection, classId, subjectId, categoryId]);
   
-  const { data: allTamilTests, isLoading: allTestsLoading } = useCollection<Test>(useMemoFirebase(() => {
-    if (!testsCollection || !classId || !subjectId) return null;
-     return query(
-      testsCollection, 
-      where('classId', '==', classId),
-      where('subjectId', '==', subjectId),
-    );
-  }, [testsCollection, classId, subjectId]));
-
-  const { data: categoryTests, isLoading: testsLoading } = useCollection<Test>(categoryTestsQuery);
-
-  const tests = useMemo(() => {
-    const isIlakkanam = category === 'ilakkanam';
-    
-    const fromCategoryField = categoryTests || [];
-
-    const fromUnitId = (allTamilTests || []).filter(test => {
-        if (test.category) return false; // Already handled by categoryTestsQuery
-        if (!test.unitId) return false;
-
-        const unitIdEndsWithG = test.unitId.endsWith('g');
-        return isIlakkanam ? unitIdEndsWithG : !unitIdEndsWithG;
-    });
-
-    const combined = [...fromCategoryField, ...fromUnitId];
-    const uniqueTests = Array.from(new Map(combined.map(item => [item.id, item])).values());
-    
-    return uniqueTests.sort((a,b) => (a.unitNumber || 0) - (b.unitNumber || 0));
-
-  }, [category, categoryTests, allTamilTests]);
+  const { data: tests, isLoading: testsLoading } = useCollection<Test>(categoryTestsQuery);
 
 
   useEffect(() => {
     async function fetchMetadata() {
-        if (!firestore) return;
+        if (!firestore || !categorySlug) return;
+        let categoryName = categorySlug;
 
         try {
+            // Find Subject ID for 'Tamil'
             const subjectsRef = collection(firestore, 'subjects');
             const subjectQuery = query(subjectsRef, where('name', '==', 'Tamil'));
             const subjectSnap = await getDocs(subjectQuery);
             if(!subjectSnap.empty){
-                setSubjectId(subjectSnap.docs[0].id);
+                const foundSubjectId = subjectSnap.docs[0].id
+                setSubjectId(foundSubjectId);
+                
+                // Find Category ID
+                const categoriesRef = collection(firestore, 'categories');
+                const catName = categorySlug === 'ilakkanam' ? 'இலக்கணம்' : 'உரைநடை & செய்யுள்';
+                const categoryQuery = query(categoriesRef, where('subjectId', '==', foundSubjectId), where('name', '==', catName));
+                const catSnap = await getDocs(categoryQuery);
+                if (!catSnap.empty) {
+                    const foundCategory = catSnap.docs[0].data() as Category;
+                    setCategoryId(catSnap.docs[0].id);
+                    categoryName = language === 'ta' && foundCategory.name_ta ? foundCategory.name_ta : foundCategory.name;
+                }
             }
-        } catch (e) { console.error("Failed to fetch subject Id", e)}
+        } catch (e) { console.error("Failed to fetch subject/category Id", e)}
         
-        const categoryName = category === 'ilakkanam' ? 'இலக்கணம்' : 'உரைநடை & செய்யுள்';
         let className = `Class ${classId}`;
         try {
             const classDocRef = doc(firestore, 'classes', classId);
@@ -196,7 +178,12 @@ export default function TamilCategoryTestsPage() {
     }
 
     fetchMetadata();
-  }, [firestore, classId, t, language, category]);
+  }, [firestore, classId, t, language, categorySlug]);
+
+  const sortedTests = useMemo(() => {
+    if (!tests) return [];
+    return [...tests].sort((a,b) => (a.unitNumber || 0) - (b.unitNumber || 0));
+  }, [tests]);
 
   const getShortTestTitle = (test: Test) => {
     if (test.unitNumber && test.unitName) {
@@ -205,7 +192,9 @@ export default function TamilCategoryTestsPage() {
     return test.title;
   };
 
-  if (testsLoading || allTestsLoading || !subjectId) {
+  const isLoading = testsLoading || !subjectId || !categoryId;
+
+  if (isLoading) {
     return (
         <div className="container mx-auto px-4 py-8 md:py-12">
             <h1 className="text-3xl md:text-4xl font-bold mb-8">Loading...</h1>
@@ -214,7 +203,7 @@ export default function TamilCategoryTestsPage() {
     );
   }
 
-  const categoryName = category === 'ilakkanam' ? 'இலக்கணம்' : 'உரைநடை & செய்யுள்';
+  const categoryName = categorySlug === 'ilakkanam' ? 'இலக்கணம்' : 'உரைநடை & செய்யுள்';
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
@@ -222,7 +211,7 @@ export default function TamilCategoryTestsPage() {
         <h1 className="text-3xl md:text-4xl font-bold">{pageTitle}</h1>
       </div>
       
-      {tests.length > 0 ? (
+      {sortedTests.length > 0 ? (
         <Card>
             <CardHeader>
                 <CardTitle>{t('available_tests', { category: categoryName })}</CardTitle>
@@ -238,7 +227,7 @@ export default function TamilCategoryTestsPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {tests.map((test) => (
+                        {sortedTests.map((test) => (
                             <TableRow key={test.id}>
                                 <TableCell className="font-medium">{getShortTestTitle(test)}</TableCell>
                                 <TableCell>
