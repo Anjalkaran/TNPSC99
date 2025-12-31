@@ -121,15 +121,14 @@ export default function TamilCategoryTestsPage() {
   const testsCollection = useMemoFirebase(() => collection(firestore, 'tests'), [firestore]);
 
   const categoryTestsQuery = useMemoFirebase(() => {
-    if (!testsCollection || !classId || !subjectId || !category) return null;
+    if (!testsCollection || !classId || !subjectId) return null;
     
-    const q = query(
+    return query(
       testsCollection, 
       where('classId', '==', classId),
-      where('subjectId', '==', subjectId)
+      where('subjectId', '==', subjectId),
     );
-    return q;
-  }, [testsCollection, classId, subjectId, category]);
+  }, [testsCollection, classId, subjectId]);
 
   const { data: tests, isLoading: testsLoading } = useCollection<Test>(categoryTestsQuery);
 
@@ -138,12 +137,14 @@ export default function TamilCategoryTestsPage() {
     
     const isIlakkanam = category === 'ilakkanam';
 
-    return tests.filter(test => {
-        if(test.category) {
+    const categorizedTests = tests.filter(test => {
+        // Fallback logic for existing tests without a category field
+        if (test.category) {
             if (isIlakkanam) return test.category === 'இலக்கணம்';
             return test.category === 'உரைநடை & செய்யுள்';
         }
-
+        
+        // This is the old logic for already created tests
         if(test.unitId) {
             const unitEndsWithG = test.unitId.endsWith('g');
             if (isIlakkanam) return unitEndsWithG;
@@ -152,7 +153,9 @@ export default function TamilCategoryTestsPage() {
 
         return false;
 
-    }).sort((a,b) => (a.unitNumber || 0) - (b.unitNumber || 0));
+    });
+
+    return categorizedTests.sort((a,b) => (a.unitNumber || 0) - (b.unitNumber || 0));
 
   }, [tests, category]);
 
@@ -186,7 +189,7 @@ export default function TamilCategoryTestsPage() {
     }
 
     fetchMetadata();
-  }, [firestore, classId, subjectId, t, language, category]);
+  }, [firestore, classId, t, language, category]);
 
   const getShortTestTitle = (test: Test) => {
     if (test.unitNumber && test.unitName) {
@@ -195,7 +198,7 @@ export default function TamilCategoryTestsPage() {
     return test.title;
   };
 
-  if (testsLoading) {
+  if (testsLoading || !subjectId) {
     return (
         <div className="container mx-auto px-4 py-8 md:py-12">
             <h1 className="text-3xl md:text-4xl font-bold mb-8">Loading...</h1>

@@ -93,7 +93,7 @@ export default function GenerateMcqPage() {
                 ) : subjects.length > 0 ? (
                     <Accordion type="single" collapsible className="w-full">
                         {subjects.map(subject => {
-                            const isTamil = subject.name === 'Tamil' || subject.name_ta === 'தமிழ்';
+                            const isTamil = subject.name === 'Tamil' || subject.name === 'tamil' || subject.name_ta === 'தமிழ்';
                             const href = isTamil ? `/class/${classId}/tamil` : `/class/${classId}/${subject.id}`;
                             
                             return (
