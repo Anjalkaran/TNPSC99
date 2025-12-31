@@ -150,6 +150,22 @@ export default function SubjectTestsPage() {
       if (!categories) return new Map<string, string>();
       return new Map(categories.map(cat => [cat.id, language === 'ta' && cat.name_ta ? cat.name_ta : cat.name]));
   }, [categories, language]);
+
+  const sortTests = (tests: Test[]) => {
+    return tests.sort((a, b) => {
+        const termA = a.term || '';
+        const termB = b.term || '';
+        const unitA = a.unitNumber || 0;
+        const unitB = b.unitNumber || 0;
+
+        // Primary sort by term
+        if (termA.localeCompare(termB) !== 0) {
+            return termA.localeCompare(termB);
+        }
+        // Secondary sort by unit number
+        return unitA - unitB;
+    });
+  };
   
   const testsByCategory = useMemo(() => {
     if (!subjectTests) return {};
@@ -160,12 +176,15 @@ export default function SubjectTestsPage() {
             acc[categoryId] = [];
         }
         acc[categoryId].push(test);
-        // Sort tests within category by unit number
-        acc[categoryId].sort((a,b) => (a.unitNumber || 0) - (b.unitNumber || 0));
         return acc;
     }, {} as Record<string, Test[]>);
 
   }, [subjectTests]);
+
+  // Sort tests within each category
+  Object.keys(testsByCategory).forEach(categoryId => {
+      testsByCategory[categoryId] = sortTests(testsByCategory[categoryId]);
+  });
   
   const sortedCategoryIds = useMemo(() => Object.keys(testsByCategory).sort((a, b) => {
     if (a === 'uncategorized') return 1;

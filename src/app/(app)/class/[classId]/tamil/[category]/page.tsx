@@ -149,9 +149,17 @@ export default function TamilCategoryTestsPage() {
                 const foundSubjectId = subjectSnap.docs[0].id
                 setSubjectId(foundSubjectId);
                 
-                // Find Category ID
+                // Find Category ID based on slug
+                let catName: string;
+                if (categorySlug === 'ilakkanam') {
+                    catName = 'இலக்கணம்';
+                } else if (categorySlug === 'urai-seyyul') {
+                    catName = 'உரைநடை & செய்யுள்';
+                } else {
+                    catName = 'மற்றவை';
+                }
+
                 const categoriesRef = collection(firestore, 'categories');
-                const catName = categorySlug === 'ilakkanam' ? 'இலக்கணம்' : 'உரைநடை & செய்யுள்';
                 const categoryQuery = query(categoriesRef, where('subjectId', '==', foundSubjectId), where('name_ta', '==', catName));
                 const catSnap = await getDocs(categoryQuery);
                 if (!catSnap.empty) {
@@ -182,7 +190,17 @@ export default function TamilCategoryTestsPage() {
 
   const sortedTests = useMemo(() => {
     if (!tests) return [];
-    return [...tests].sort((a,b) => (a.unitNumber || 0) - (b.unitNumber || 0));
+    return [...tests].sort((a,b) => {
+        const termA = a.term || '';
+        const termB = b.term || '';
+        const unitA = a.unitNumber || 0;
+        const unitB = b.unitNumber || 0;
+
+        if (termA.localeCompare(termB) !== 0) {
+            return termA.localeCompare(termB);
+        }
+        return unitA - unitB;
+    });
   }, [tests]);
 
   const getShortTestTitle = (test: Test) => {
