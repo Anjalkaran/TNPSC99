@@ -45,7 +45,7 @@ const unitFormSchema = z.object({
   term: z.string().min(1, { message: "Please select a term." }),
   unitNumber: z.coerce.number().min(1, "Unit number must be at least 1."),
   unitName: z.string().min(1, { message: 'Unit name must be at least 1 character.' }),
-  categoryName: z.string().optional(),
+  categoryId: z.string().optional(),
 });
 
 
@@ -65,9 +65,12 @@ function EditUnitForm({ unit, classes, onFinished }: { unit: Unit, classes: Clas
             term: unit.term,
             unitNumber: unit.unitNumber,
             unitName: unit.unitName,
-            categoryName: unit.categoryName || '',
+            categoryId: unit.categoryId || '',
         },
     });
+
+    const categoriesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'categories') : null, [firestore]);
+    const { data: categories } = useCollection<Category>(categoriesCollection);
 
     const subjectNameValue = form.watch('subjectName');
 
@@ -76,7 +79,7 @@ function EditUnitForm({ unit, classes, onFinished }: { unit: Unit, classes: Clas
         setIsSubmitting(true);
 
         try {
-            const { classId, subjectName, term, unitNumber, unitName, categoryName } = values;
+            const { classId, subjectName, term, unitNumber, unitName, categoryId } = values;
             
             const subjectsRef = collection(firestore, 'subjects');
             const subjectQuery = query(subjectsRef, where('name', '==', subjectName));
@@ -90,21 +93,6 @@ function EditUnitForm({ unit, classes, onFinished }: { unit: Unit, classes: Clas
                 subjectId = newSubjectRef.id;
             } else {
                 subjectId = subjectSnapshot.docs[0].id;
-            }
-
-            let categoryId: string | undefined = undefined;
-            if (categoryName) {
-                const categoriesRef = collection(firestore, 'categories');
-                const categoryQuery = query(categoriesRef, where('name', '==', categoryName), where('subjectId', '==', subjectId));
-                const categorySnapshot = await getDocs(categoryQuery);
-                if (categorySnapshot.empty) {
-                    const newCategoryRef = doc(categoriesRef);
-                    const newCategory: Category = { id: newCategoryRef.id, name: categoryName, subjectId };
-                    await setDoc(newCategoryRef, newCategory);
-                    categoryId = newCategoryRef.id;
-                } else {
-                    categoryId = categorySnapshot.docs[0].id;
-                }
             }
 
 
@@ -176,19 +164,26 @@ function EditUnitForm({ unit, classes, onFinished }: { unit: Unit, classes: Clas
                 />
 
                 {subjectNameValue === 'தமிழ்' && (
-                    <FormField
-                        control={form.control}
-                        name="categoryName"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Category</FormLabel>
-                                 <FormControl>
-                                    <Input placeholder="e.g. இலக்கணம்" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                  <FormField
+                    control={form.control}
+                    name="categoryId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Category</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value} disabled={!categories}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a category" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {categories?.filter(c => c.subjectId === 'tamil').map(c => <SelectItem key={c.id} value={c.id}>{c.name_ta || c.name}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 )}
 
                 <FormField
@@ -395,9 +390,12 @@ export default function TopicManagementPage() {
   const classesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'classes') : null, [firestore]);
   const { data: classes, isLoading: classesLoading } = useCollection<Class>(classesCollection);
   
+  const categoriesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'categories') : null, [firestore]);
+  const { data: categories, isLoading: categoriesLoading } = useCollection<Category>(categoriesCollection);
+
   const form = useForm<UnitFormValues>({
     resolver: zodResolver(unitFormSchema),
-    defaultValues: { classId: '', subjectName: '', term: '', unitNumber: 1, unitName: '', categoryName: '' },
+    defaultValues: { classId: '', subjectName: '', term: '', unitNumber: 1, unitName: '', categoryId: '' },
   });
 
   const subjectNameValue = form.watch('subjectName');
@@ -412,7 +410,7 @@ export default function TopicManagementPage() {
     setIsSubmitting(true);
     
     try {
-        const { classId, subjectName, term, unitNumber, unitName, categoryName } = values;
+        const { classId, subjectName, term, unitNumber, unitName, categoryId } = values;
         
         const subjectsRef = collection(firestore, 'subjects');
         const subjectQuery = query(subjectsRef, where('name', '==', subjectName));
@@ -435,22 +433,6 @@ export default function TopicManagementPage() {
         } else {
             subjectId = subjectSnapshot.docs[0].id;
         }
-
-        let categoryId: string | undefined = undefined;
-        if (categoryName) {
-            const categoriesRef = collection(firestore, 'categories');
-            const categoryQuery = query(categoriesRef, where('name', '==', categoryName), where('subjectId', '==', subjectId));
-            const categorySnapshot = await getDocs(categoryQuery);
-            if (categorySnapshot.empty) {
-                const newCategoryRef = doc(categoriesRef);
-                const newCategory: Category = { id: newCategoryRef.id, name: categoryName, subjectId };
-                await setDoc(newCategoryRef, newCategory);
-                categoryId = newCategoryRef.id;
-            } else {
-                categoryId = categorySnapshot.docs[0].id;
-            }
-        }
-
 
         const unitDocRef = doc(collection(firestore, 'units'));
         
@@ -537,17 +519,24 @@ export default function TopicManagementPage() {
                 
                 {subjectNameValue === 'தமிழ்' && (
                   <FormField
-                      control={form.control}
-                      name="categoryName"
-                      render={({ field }) => (
-                          <FormItem>
-                          <FormLabel>Category</FormLabel>
-                              <FormControl>
-                                <Input placeholder="e.g. இலக்கணம்" {...field} />
-                              </FormControl>
-                          <FormMessage />
-                          </FormItem>
-                      )}
+                    control={form.control}
+                    name="categoryId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Category</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value} disabled={categoriesLoading}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a category" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {categories?.filter(c => c.subjectId === 'tamil').map(c => <SelectItem key={c.id} value={c.id}>{c.name_ta || c.name}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
                   />
                 )}
 
@@ -627,3 +616,4 @@ export default function TopicManagementPage() {
     </div>
   );
 }
+
