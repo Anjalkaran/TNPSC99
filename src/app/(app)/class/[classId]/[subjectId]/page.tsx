@@ -186,11 +186,11 @@ export default function SubjectTestsPage() {
     if (!subjectTests || testsLoading) return {};
 
     const grouped = subjectTests.reduce((acc, test) => {
-        let category = "Uncategorized";
+        let category: string;
         if (test.unitId) {
             category = test.unitId.endsWith('g') ? 'இலக்கணம்' : 'உரைநடை & செய்யுள்';
-        } else if (test.category) {
-            category = test.category;
+        } else {
+            category = "Uncategorized";
         }
         
         if (!acc[category]) {
