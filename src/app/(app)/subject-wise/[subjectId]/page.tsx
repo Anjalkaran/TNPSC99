@@ -136,8 +136,12 @@ export default function SubjectTestsForSubjectPage() {
     if (!subjectTests) return {};
 
     const grouped = subjectTests.reduce((acc, test) => {
-        const unit = test.unitId ? unitsMap.get(test.unitId) : undefined;
-        const category = unit?.category || 'Uncategorized';
+        let category = "Uncategorized";
+        if (test.unitId) {
+            category = test.unitId.endsWith('g') ? 'இலக்கணம்' : 'உரைநடை & செய்யுள்';
+        } else if (test.category) {
+            category = test.category;
+        }
         
         if (!acc[category]) {
             acc[category] = [];
@@ -160,7 +164,7 @@ export default function SubjectTestsForSubjectPage() {
     }
     
     return result;
-  }, [subjectTests, unitsMap]);
+  }, [subjectTests]);
 
 
   if (subjectLoading || testsLoading || unitsLoading) {

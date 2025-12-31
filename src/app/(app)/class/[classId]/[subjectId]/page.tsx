@@ -163,11 +163,13 @@ export default function SubjectTestsPage() {
 
         try {
             for (const chunk of unitIdChunks) {
-                const unitsQuery = query(unitsCollectionRef, where('__name__', 'in', chunk));
-                const unitsSnapshot = await getDocs(unitsQuery);
-                unitsSnapshot.forEach(doc => {
-                    map.set(doc.id, { id: doc.id, ...doc.data() } as Unit);
-                });
+                if (chunk.length > 0) {
+                    const unitsQuery = query(unitsCollectionRef, where('__name__', 'in', chunk));
+                    const unitsSnapshot = await getDocs(unitsQuery);
+                    unitsSnapshot.forEach(doc => {
+                        map.set(doc.id, { id: doc.id, ...doc.data() } as Unit);
+                    });
+                }
             }
         } catch (error) {
             console.error("Error fetching units: ", error);
@@ -181,12 +183,15 @@ export default function SubjectTestsPage() {
   }, [firestore, subjectTests]);
 
   const groupedAndSortedTests = useMemo(() => {
-    if (!subjectTests || testsLoading || unitsLoading) return {};
+    if (!subjectTests || testsLoading) return {};
 
     const grouped = subjectTests.reduce((acc, test) => {
-        const unit = test.unitId ? unitsMap.get(test.unitId) : undefined;
-        // Fallback to "Uncategorized" if unit or category is missing
-        const category = unit?.category || 'Uncategorized';
+        let category = "Uncategorized";
+        if (test.unitId) {
+            category = test.unitId.endsWith('g') ? 'இலக்கணம்' : 'உரைநடை & செய்யுள்';
+        } else if (test.category) {
+            category = test.category;
+        }
         
         if (!acc[category]) {
             acc[category] = [];
@@ -201,7 +206,7 @@ export default function SubjectTestsPage() {
     }
     
     return grouped;
-  }, [subjectTests, unitsMap, testsLoading, unitsLoading]);
+  }, [subjectTests, testsLoading]);
 
 
   useEffect(() => {
