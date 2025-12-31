@@ -737,5 +737,3 @@ export default function UploadMcqPage() {
     </div>
   );
 }
-
-    
