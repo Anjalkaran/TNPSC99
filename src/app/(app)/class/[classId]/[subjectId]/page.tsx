@@ -129,7 +129,6 @@ export default function SubjectTestsPage() {
       testsCollection, 
       where('classId', '==', classId),
       where('subjectId', '==', subjectId),
-      where('category', '==', 'class')
     );
   }, [testsCollection, classId, subjectId]);
 
@@ -140,7 +139,7 @@ export default function SubjectTestsPage() {
 
   useEffect(() => {
     const fetchUnits = async () => {
-        if (!firestore || !subjectTests) {
+        if (!firestore || !subjectTests || subjectTests.length === 0) {
             setUnitsLoading(false);
             return;
         }
@@ -154,7 +153,7 @@ export default function SubjectTestsPage() {
 
         setUnitsLoading(true);
         const map = new Map<string, Unit>();
-        const unitIdChunks = [];
+        const unitIdChunks: string[][] = [];
         for (let i = 0; i < unitIds.length; i += 30) {
             unitIdChunks.push(unitIds.slice(i, i + 30));
         }
@@ -183,15 +182,11 @@ export default function SubjectTestsPage() {
   }, [firestore, subjectTests]);
 
   const groupedAndSortedTests = useMemo(() => {
-    if (!subjectTests || testsLoading) return {};
+    if (!subjectTests || testsLoading || unitsLoading) return {};
 
     const grouped = subjectTests.reduce((acc, test) => {
-        let category: string;
-        if (test.unitId) {
-            category = test.unitId.endsWith('g') ? 'இலக்கணம்' : 'உரைநடை & செய்யுள்';
-        } else {
-            category = "Uncategorized";
-        }
+        const unit = test.unitId ? unitsMap.get(test.unitId) : undefined;
+        const category = unit?.category || "Uncategorized";
         
         if (!acc[category]) {
             acc[category] = [];
@@ -206,7 +201,7 @@ export default function SubjectTestsPage() {
     }
     
     return grouped;
-  }, [subjectTests, testsLoading]);
+  }, [subjectTests, testsLoading, unitsLoading, unitsMap]);
 
 
   useEffect(() => {
