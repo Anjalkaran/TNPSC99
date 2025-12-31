@@ -51,7 +51,7 @@ const unitFormSchema = z.object({
 
 type UnitFormValues = z.infer<typeof unitFormSchema>;
 
-function EditUnitForm({ unit, classes, onFinished }: { unit: Unit, classes: Class[] | null | undefined, onFinished: () => void }) {
+function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, classes: Class[] | null | undefined, subjects: Subject[] | null | undefined, onFinished: () => void }) {
     const { t, language } = useTranslation();
     const firestore = useFirestore();
     const { toast } = useToast();
@@ -70,9 +70,20 @@ function EditUnitForm({ unit, classes, onFinished }: { unit: Unit, classes: Clas
     });
 
     const categoriesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'categories') : null, [firestore]);
-    const { data: categories } = useCollection<Category>(categoriesCollection);
+    const { data: categories, isLoading: categoriesLoading } = useCollection<Category>(categoriesCollection);
 
     const subjectNameValue = form.watch('subjectName');
+    
+    const selectedSubject = useMemo(() => {
+        return subjects?.find(s => s.name === subjectNameValue || s.name_ta === subjectNameValue);
+    }, [subjectNameValue, subjects]);
+
+    const showTamilCategories = selectedSubject?.id === 'tamil';
+
+    const tamilCategories = useMemo(() => {
+      if (!categories) return [];
+      return categories.filter(c => c.subjectId === 'tamil');
+    }, [categories]);
 
     const onSubmit: SubmitHandler<UnitFormValues> = async (values) => {
         if (!firestore) return;
@@ -110,7 +121,7 @@ function EditUnitForm({ unit, classes, onFinished }: { unit: Unit, classes: Clas
 
             toast({
                 title: t('Unit Updated!'),
-                description: t('The unit "{{unitName}}" has been successfully updated.', { unitName }),
+                description: t('The unit "{{unitName}}" has been successfully updated.', { unitName: unit.unitName }),
             });
             onFinished();
         } catch (error) {
@@ -163,23 +174,29 @@ function EditUnitForm({ unit, classes, onFinished }: { unit: Unit, classes: Clas
                     )}
                 />
 
-                {(subjectNameValue === 'தமிழ்' || subjectNameValue === 'Tamil') && (
+               {showTamilCategories && (
                   <FormField
                     control={form.control}
                     name="categoryId"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Category</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value} disabled={!categories}>
+                        {categoriesLoading || tamilCategories.length > 0 ? (
+                           <Select onValueChange={field.onChange} value={field.value} disabled={categoriesLoading}>
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Select a category" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {categories?.filter(c => c.subjectId === 'tamil').map(c => <SelectItem key={c.id} value={c.id}>{c.name_ta || c.name}</SelectItem>)}
+                              {tamilCategories.map(c => <SelectItem key={c.id} value={c.id}>{c.name_ta || c.name}</SelectItem>)}
                             </SelectContent>
                           </Select>
+                        ) : (
+                           <FormControl>
+                                <Input placeholder="Enter category manually" {...field} />
+                            </FormControl>
+                        )}
                         <FormMessage />
                       </FormItem>
                     )}
@@ -346,7 +363,7 @@ function ExistingUnitsList() {
                                                     {t("Make changes to the unit details below.")}
                                                 </DialogDescription>
                                             </DialogHeader>
-                                            <EditUnitForm unit={unit} classes={classes} onFinished={() => setDialogState(unit.id, false)} />
+                                            <EditUnitForm unit={unit} classes={classes} subjects={subjects} onFinished={() => setDialogState(unit.id, false)} />
                                         </DialogContent>
                                     </Dialog>
                                     <AlertDialog>
@@ -389,6 +406,9 @@ export default function TopicManagementPage() {
   
   const classesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'classes') : null, [firestore]);
   const { data: classes, isLoading: classesLoading } = useCollection<Class>(classesCollection);
+
+  const subjectsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'subjects') : null, [firestore]);
+  const { data: subjects, isLoading: subjectsLoading } = useCollection<Subject>(subjectsCollection);
   
   const categoriesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'categories') : null, [firestore]);
   const { data: categories, isLoading: categoriesLoading } = useCollection<Category>(categoriesCollection);
@@ -399,7 +419,17 @@ export default function TopicManagementPage() {
   });
 
   const subjectNameValue = form.watch('subjectName');
+  
+  const selectedSubject = useMemo(() => {
+    return subjects?.find(s => s.name === subjectNameValue || s.name_ta === subjectNameValue);
+  }, [subjectNameValue, subjects]);
 
+  const showTamilCategories = selectedSubject?.id === 'tamil';
+
+  const tamilCategories = useMemo(() => {
+    if (!categories) return [];
+    return categories.filter(c => c.subjectId === 'tamil');
+  }, [categories]);
 
   const resetForm = () => {
     form.reset();
@@ -450,7 +480,7 @@ export default function TopicManagementPage() {
 
         toast({
             title: t('Unit Created!'),
-            description: t('The unit "{{unitName}}" has been successfully created.', { unitName }),
+            description: t('The unit "{{unitName}}" has been successfully created.', { unitName: unit.unitName }),
         });
         resetForm();
 
@@ -517,23 +547,29 @@ export default function TopicManagementPage() {
                   )}
                 />
                 
-                {(subjectNameValue === 'தமிழ்' || subjectNameValue === 'Tamil') && (
+                {showTamilCategories && (
                   <FormField
                     control={form.control}
                     name="categoryId"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Category</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value} disabled={categoriesLoading}>
+                        {categoriesLoading || tamilCategories.length > 0 ? (
+                           <Select onValueChange={field.onChange} value={field.value} disabled={categoriesLoading}>
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Select a category" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {categories?.filter(c => c.subjectId === 'tamil').map(c => <SelectItem key={c.id} value={c.id}>{c.name_ta || c.name}</SelectItem>)}
+                              {tamilCategories.map(c => <SelectItem key={c.id} value={c.id}>{c.name_ta || c.name}</SelectItem>)}
                             </SelectContent>
                           </Select>
+                        ) : (
+                           <FormControl>
+                                <Input placeholder="Enter category manually" {...field} />
+                            </FormControl>
+                        )}
                         <FormMessage />
                       </FormItem>
                     )}
