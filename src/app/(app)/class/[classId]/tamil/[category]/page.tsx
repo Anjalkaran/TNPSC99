@@ -27,7 +27,7 @@ function TestStartControl({ test }: { test: Test }) {
   const options = [10, 25, 50].filter(o => o < questionCount);
 
   return (
-    <div className="flex flex-col sm:flex-row gap-2 w-full">
+    <div className="flex flex-col sm:flex-row gap-2 w-full justify-end">
       <Select onValueChange={setLimit} value={limit}>
         <SelectTrigger className="w-full sm:w-[180px]">
           <SelectValue placeholder="Select Questions" />
@@ -152,7 +152,7 @@ export default function TamilCategoryTestsPage() {
                 // Find Category ID
                 const categoriesRef = collection(firestore, 'categories');
                 const catName = categorySlug === 'ilakkanam' ? 'இலக்கணம்' : 'உரைநடை & செய்யுள்';
-                const categoryQuery = query(categoriesRef, where('subjectId', '==', foundSubjectId), where('name', '==', catName));
+                const categoryQuery = query(categoriesRef, where('subjectId', '==', foundSubjectId), where('name_ta', '==', catName));
                 const catSnap = await getDocs(categoryQuery);
                 if (!catSnap.empty) {
                     const foundCategory = catSnap.docs[0].data() as Category;
@@ -225,9 +225,9 @@ export default function TamilCategoryTestsPage() {
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Test Title</TableHead>
-                            <TableHead>Questions</TableHead>
-                            <TableHead className="text-right">Action</TableHead>
+                            <TableHead className="w-[50%]">Test Title</TableHead>
+                            <TableHead className="w-[15%]">Questions</TableHead>
+                            <TableHead className="text-right w-[35%]">Action</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>

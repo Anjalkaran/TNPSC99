@@ -33,7 +33,7 @@ function TestStartControl({ test }: { test: Test }) {
   const options = [10, 25, 50].filter(o => o < questionCount);
 
   return (
-    <div className="flex flex-col sm:flex-row gap-2 w-full">
+    <div className="flex flex-col sm:flex-row gap-2 w-full justify-end">
       <Select onValueChange={setLimit} value={limit}>
         <SelectTrigger className="w-full sm:w-[180px]">
           <SelectValue placeholder="Select Questions" />
@@ -228,16 +228,16 @@ export default function SubjectTestsPage() {
   if (subjectId === 'tamil') {
     const tamilCategories = [
       {
-        id: "urai",
-        name: "உரைநடை & செய்யுள்",
-        slug: "urai-seyyul",
-        description: "உரைநடை மற்றும் செய்யுள் பகுதியிலிருந்து வரும் கேள்விகள்.",
-      },
-      {
         id: "ilakkanam",
         name: "இலக்கணம்",
         slug: "ilakkanam",
         description: "தமிழ் இலக்கண விதிகளின் அடிப்படையில் கேள்விகள்.",
+      },
+      {
+        id: "urai",
+        name: "உரைநடை & செய்யுள்",
+        slug: "urai-seyyul",
+        description: "உரைநடை மற்றும் செய்யுள் பகுதியிலிருந்து வரும் கேள்விகள்.",
       },
     ];
 
@@ -303,9 +303,9 @@ export default function SubjectTestsPage() {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Test Title</TableHead>
-                                        <TableHead>Questions</TableHead>
-                                        <TableHead className="text-right">Action</TableHead>
+                                        <TableHead className="w-[50%]">Test Title</TableHead>
+                                        <TableHead className="w-[15%]">Questions</TableHead>
+                                        <TableHead className="text-right w-[35%]">Action</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
