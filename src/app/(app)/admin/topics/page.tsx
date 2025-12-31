@@ -163,7 +163,7 @@ function EditUnitForm({ unit, classes, onFinished }: { unit: Unit, classes: Clas
                     )}
                 />
 
-                {subjectNameValue === 'தமிழ்' && (
+                {(subjectNameValue === 'தமிழ்' || subjectNameValue === 'Tamil') && (
                   <FormField
                     control={form.control}
                     name="categoryId"
@@ -517,7 +517,7 @@ export default function TopicManagementPage() {
                   )}
                 />
                 
-                {subjectNameValue === 'தமிழ்' && (
+                {(subjectNameValue === 'தமிழ்' || subjectNameValue === 'Tamil') && (
                   <FormField
                     control={form.control}
                     name="categoryId"
@@ -616,4 +616,3 @@ export default function TopicManagementPage() {
     </div>
   );
 }
-
