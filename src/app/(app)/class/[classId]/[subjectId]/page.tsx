@@ -139,16 +139,36 @@ export default function SubjectTestsPage() {
   }, [subjectTests]);
 
   const unitsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'units') : null, [firestore]);
-  const unitsQuery = useMemoFirebase(() => {
-    if (!unitsCollection || unitIds.length === 0) return null;
-    return query(unitsCollection, where('__name__', 'in', unitIds));
-  }, [unitsCollection, unitIds]);
-  const { data: units, isLoading: unitsLoading } = useCollection<Unit>(unitsQuery);
+  
+  const [unitsMap, setUnitsMap] = useState<Map<string, Unit>>(new Map());
+  const [unitsLoading, setUnitsLoading] = useState(true);
 
-  const unitsMap = useMemo(() => {
-    if (!units) return new Map<string, Unit>();
-    return new Map(units.map(u => [u.id, u]));
-  }, [units]);
+  useEffect(() => {
+    const fetchUnits = async () => {
+        if (!firestore || unitIds.length === 0) {
+            setUnitsLoading(false);
+            return;
+        }
+        setUnitsLoading(true);
+        const map = new Map<string, Unit>();
+        const unitIdChunks = [];
+        for (let i = 0; i < unitIds.length; i += 30) {
+            unitIdChunks.push(unitIds.slice(i, i + 30));
+        }
+
+        for (const chunk of unitIdChunks) {
+            const unitsQuery = query(unitsCollection!, where('__name__', 'in', chunk));
+            const unitsSnapshot = await getDocs(unitsQuery);
+            unitsSnapshot.forEach(doc => {
+                map.set(doc.id, { id: doc.id, ...doc.data() } as Unit);
+            });
+        }
+        setUnitsMap(map);
+        setUnitsLoading(false);
+    };
+
+    fetchUnits();
+  }, [firestore, unitIds, unitsCollection]);
 
   const groupedAndSortedTests = useMemo(() => {
     if (!subjectTests) return {};
@@ -211,13 +231,20 @@ export default function SubjectTestsPage() {
     }
   }, [firestore, classId, subjectId, t, language]);
 
-  const getShortTestTitle = (fullTitle: string, pageTitle: string) => {
-    if (!pageTitle) return fullTitle;
-    const prefix = `${pageTitle} - `;
-    if (fullTitle.startsWith(prefix)) {
-      return fullTitle.substring(prefix.length);
+  const getShortTestTitle = (test: Test, pageTitle: string) => {
+    if (!pageTitle) return test.title;
+    
+    const unit = test.unitId ? unitsMap.get(test.unitId) : undefined;
+    if (unit) {
+        return `இயல் ${unit.unitNumber}: ${unit.unitName}`;
     }
-    return fullTitle;
+    
+    // Fallback logic
+    const prefix = `${pageTitle} - `;
+    if (test.title.startsWith(prefix)) {
+      return test.title.substring(prefix.length);
+    }
+    return test.title;
   };
 
   const isLoading = testsLoading || unitsLoading;
@@ -270,7 +297,7 @@ export default function SubjectTestsPage() {
               <TableBody>
                 {groupedAndSortedTests[selectedCategory].map((test) => (
                   <TableRow key={test.id}>
-                    <TableCell className="font-medium">{getShortTestTitle(test.title, pageTitle)}</TableCell>
+                    <TableCell className="font-medium">{getShortTestTitle(test, pageTitle)}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <span>{test.questionIds.length}</span>
