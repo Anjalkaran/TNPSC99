@@ -1,7 +1,6 @@
 'use client';
-import { notFound, useParams, useRouter } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import Link from "next/link";
-import Image from "next/image";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
@@ -112,9 +111,8 @@ export default function SubjectTestsPage() {
   const params = useParams();
   const firestore = useFirestore();
   const { t, language } = useTranslation();
-  const router = useRouter();
 
-  const [pageTitle, setPageTitle] = useState('');
+  const [className, setClassName] = useState('');
   
   const classId = useMemo(() => {
     const classIdParam = Array.isArray(params.classId) ? params.classId[0] : params.classId;
@@ -175,19 +173,21 @@ export default function SubjectTestsPage() {
     return (categoryMap.get(a) || '').localeCompare(categoryMap.get(b) || '');
   }), [testsByCategory, categoryMap]);
 
+  const [subjectName, setSubjectName] = useState(subjectId);
+
   useEffect(() => {
     async function fetchMetadata() {
         if (!firestore || !classId || !subjectId) return;
-
-        let className = `Class ${classId}`;
-        let subjectName = subjectId;
+        
+        let fetchedClassName = `Class ${classId}`;
+        let fetchedSubjectName = subjectId;
 
         try {
             const classDocRef = doc(firestore, 'classes', classId);
             const classSnap = await getDoc(classDocRef);
             if (classSnap.exists()) {
                 const classData = classSnap.data() as Class;
-                className = language === 'ta' && classData.name_ta ? classData.name_ta : classData.name;
+                fetchedClassName = language === 'ta' && classData.name_ta ? classData.name_ta : classData.name;
             }
         } catch (e) { console.error("Failed to fetch class name", e)}
 
@@ -196,29 +196,76 @@ export default function SubjectTestsPage() {
              const subjectSnap = await getDoc(subjectDocRef);
              if(subjectSnap.exists()){
                  const subjectData = subjectSnap.data() as Subject;
-                 subjectName = language === 'ta' && subjectData.name_ta ? subjectData.name_ta : subjectData.name;
+                 fetchedSubjectName = language === 'ta' && subjectData.name_ta ? subjectData.name_ta : subjectData.name;
              }
         } catch (e) { console.error("Failed to fetch subject name", e)}
 
-        const title = `${className} - ${subjectName}`;
-        setPageTitle(title);
-        document.title = title;
+        setClassName(fetchedClassName);
+        setSubjectName(fetchedSubjectName);
+        document.title = `${fetchedClassName} - ${fetchedSubjectName}`;
     }
 
     fetchMetadata();
-  }, [firestore, classId, subjectId, t, language, router]);
+  }, [firestore, classId, subjectId, language]);
 
   const getShortTestTitle = (test: Test) => {
     if (test.unitNumber && test.unitName) {
         return `இயல் ${test.unitNumber}: ${test.unitName}`;
     }
-    if (pageTitle && test.title.startsWith(`${pageTitle} - `)) {
+    const pageTitle = `${className} - ${subjectName}`;
+    if (test.title.startsWith(`${pageTitle} - `)) {
       return test.title.substring(`${pageTitle} - `.length);
     }
     return test.title;
   };
   
   const isLoading = testsLoading || categoriesLoading;
+
+  if (subjectId === 'tamil') {
+    const tamilCategories = [
+      {
+        id: "urai",
+        name: "உரைநடை & செய்யுள்",
+        slug: "urai-seyyul",
+        description: "உரைநடை மற்றும் செய்யுள் பகுதியிலிருந்து வரும் கேள்விகள்.",
+      },
+      {
+        id: "ilakkanam",
+        name: "இலக்கணம்",
+        slug: "ilakkanam",
+        description: "தமிழ் இலக்கண விதிகளின் அடிப்படையில் கேள்விகள்.",
+      },
+    ];
+
+    return (
+      <div className="container mx-auto px-4 py-8 md:py-12">
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl md:text-4xl font-bold">{className} - {subjectName}</h1>
+          <p className="text-muted-foreground mt-2">நீங்கள் பயிற்சி செய்ய விரும்பும் வகையைத் தேர்ந்தெடுக்கவும்.</p>
+        </div>
+        
+        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          {tamilCategories.map((category) => (
+            <Card key={category.id} className="flex flex-col overflow-hidden hover:shadow-xl transition-shadow duration-300">
+              <CardHeader>
+                <CardTitle className="text-2xl">{category.name}</CardTitle>
+              </CardHeader>
+              <CardContent className="flex-grow">
+                  <p className="text-muted-foreground">{category.description}</p>
+              </CardContent>
+              <CardFooter>
+                <Button asChild className="w-full mt-4" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
+                  <Link href={`/class/${classId}/tamil/${category.slug}`}>
+                    {t('view_tests')} <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -232,13 +279,13 @@ export default function SubjectTestsPage() {
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
       <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold">{pageTitle}</h1>
+        <h1 className="text-3xl md:text-4xl font-bold">{className} - {subjectName}</h1>
       </div>
       
       {subjectTests && subjectTests.length > 0 ? (
          <Card>
             <CardHeader>
-                <CardTitle>{t('available_tests', { category: pageTitle })}</CardTitle>
+                <CardTitle>{t('available_tests', { category: subjectName })}</CardTitle>
                 <CardDescription>{t('select_a_test_to_start')}</CardDescription>
             </CardHeader>
             <CardContent>

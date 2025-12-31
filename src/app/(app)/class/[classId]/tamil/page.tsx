@@ -1,6 +1,6 @@
 'use client';
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, BookText } from "lucide-react";
 import { useParams } from "next/navigation";
@@ -15,14 +15,14 @@ export default function TamilCategoryPage() {
     {
       id: "urai",
       name: "உரைநடை & செய்யுள்",
+      slug: "urai-seyyul",
       description: "உரைநடை மற்றும் செய்யுள் பகுதியிலிருந்து வரும் கேள்விகள்.",
-      href: `/class/${classId}/tamil/urai`
     },
     {
       id: "ilakkanam",
       name: "இலக்கணம்",
+      slug: "ilakkanam",
       description: "தமிழ் இலக்கண விதிகளின் அடிப்படையில் கேள்விகள்.",
-      href: `/class/${classId}/tamil/ilakkanam`
     },
   ];
 
@@ -42,13 +42,13 @@ export default function TamilCategoryPage() {
             <CardContent className="flex-grow">
                 <p className="text-muted-foreground">{category.description}</p>
             </CardContent>
-            <CardContent>
+            <CardFooter>
               <Button asChild className="w-full mt-4" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
-                <Link href={category.href}>
+                <Link href={`/class/${classId}/tamil/${category.slug}`}>
                   {t('view_tests')} <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
-            </CardContent>
+            </CardFooter>
           </Card>
         ))}
       </div>
