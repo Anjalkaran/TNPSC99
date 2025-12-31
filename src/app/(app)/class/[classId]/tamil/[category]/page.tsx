@@ -138,23 +138,26 @@ export default function TamilCategoryTestsPage() {
     const isIlakkanam = category === 'ilakkanam';
 
     const categorizedTests = tests.filter(test => {
-        // Fallback logic for existing tests without a category field
+        // First, check the explicit category field on the test itself.
         if (test.category) {
             if (isIlakkanam) return test.category === 'இலக்கணம்';
+            // Assuming 'urai' corresponds to this category.
             return test.category === 'உரைநடை & செய்யுள்';
         }
         
-        // This is the old logic for already created tests
+        // Fallback logic for older tests without a category field, using unitId.
         if(test.unitId) {
             const unitEndsWithG = test.unitId.endsWith('g');
-            if (isIlakkanam) return unitEndsWithG;
-            return !unitEndsWithG;
+            if (isIlakkanam) return unitEndsWithG; // unitId ending with 'g' is for 'இலக்கணம்'
+            return !unitEndsWithG; // Everything else is for 'உரைநடை & செய்யுள்'
         }
 
+        // If no category and no unitId, it doesn't belong here.
         return false;
 
     });
 
+    // Sort the filtered tests by their unit number for a logical order.
     return categorizedTests.sort((a,b) => (a.unitNumber || 0) - (b.unitNumber || 0));
 
   }, [tests, category]);
@@ -214,31 +217,39 @@ export default function TamilCategoryTestsPage() {
       </div>
       
       {filteredTests.length > 0 ? (
-         <Table>
-            <TableHeader>
-                <TableRow>
-                    <TableHead>Test Title</TableHead>
-                    <TableHead>Questions</TableHead>
-                    <TableHead className="text-right">Action</TableHead>
-                </TableRow>
-            </TableHeader>
-            <TableBody>
-                {filteredTests.map((test) => (
-                    <TableRow key={test.id}>
-                        <TableCell className="font-medium">{getShortTestTitle(test)}</TableCell>
-                        <TableCell>
-                        <div className="flex items-center gap-2">
-                            <span>{test.questionIds.length}</span>
-                            <TestProgressBadge testId={test.id} />
-                        </div>
-                        </TableCell>
-                        <TableCell className="text-right">
-                        <TestStartControl test={test} />
-                        </TableCell>
-                    </TableRow>
-                ))}
-            </TableBody>
-         </Table>
+         <Card>
+            <CardHeader>
+                <CardTitle>{t('available_tests', { category: category === 'ilakkanam' ? 'இலக்கணம்' : 'உரைநடை & செய்யுள்' })}</CardTitle>
+                <CardDescription>{t('select_a_test_to_start')}</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Test Title</TableHead>
+                            <TableHead>Questions</TableHead>
+                            <TableHead className="text-right">Action</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {filteredTests.map((test) => (
+                            <TableRow key={test.id}>
+                                <TableCell className="font-medium">{getShortTestTitle(test)}</TableCell>
+                                <TableCell>
+                                <div className="flex items-center gap-2">
+                                    <span>{test.questionIds.length}</span>
+                                    <TestProgressBadge testId={test.id} />
+                                </div>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                <TestStartControl test={test} />
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </CardContent>
+         </Card>
       ) : (
          <div className="text-center py-16">
           <p className="text-muted-foreground">No tests are available for this category yet.</p>

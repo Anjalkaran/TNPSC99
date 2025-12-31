@@ -181,5 +181,7 @@
     "Edit Unit": "Edit Unit",
     "Make changes to the unit details below.": "Make changes to the unit details below.",
     "Updating Unit...": "Updating Unit...",
-    "Update Unit": "Update Unit"
+    "Update Unit": "Update Unit",
+    "available_tests": "Available Tests for {{category}}",
+    "select_a_test_to_start": "Select a test from the list below to begin."
 }
