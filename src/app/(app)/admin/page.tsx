@@ -1,3 +1,4 @@
+
 'use client';
 import { useFirestore, useCollection } from '@/firebase';
 import { collection } from 'firebase/firestore';
@@ -14,98 +15,17 @@ import { IconMcqBank, IconQuestionBank, IconTopicManagement } from '@/components
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
-
-function UserManagementTab() {
-    const firestore = useFirestore();
-    const { t } = useTranslation();
-    const [searchTerm, setSearchTerm] = useState('');
-
-    const usersCollection = useMemoFirebase(() => firestore ? collection(firestore, 'users') : null, [firestore]);
-    const { data: users, isLoading: usersLoading } = useCollection<UserProfile>(usersCollection);
-
-    const filteredUsers = useMemo(() => {
-        if (!users) return [];
-        return users.filter(user =>
-            user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.email.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-    }, [users, searchTerm]);
-
-
-    if (usersLoading) return <div className="p-4">{t('loading_users')}</div>
-
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle>{t('users')}</CardTitle>
-                <CardDescription>{t('all_users_desc')}</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="flex justify-between items-center mb-4">
-                     <div className="relative w-full max-w-sm">
-                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            type="search"
-                            placeholder={t('search_by_name_email')}
-                            className="pl-8"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-                </div>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>{t('username')}</TableHead>
-                            <TableHead>{t('email')}</TableHead>
-                            <TableHead>{t('phone')}</TableHead>
-                            <TableHead>{t('city')}</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {filteredUsers?.map((user) => (
-                            <TableRow key={user.id}>
-                                <TableCell className="font-medium">{user.username}</TableCell>
-                                <TableCell>{user.email}</TableCell>
-                                <TableCell>{user.phone || 'N/A'}</TableCell>
-                                <TableCell>{user.city || 'N/A'}</TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-                 {filteredUsers?.length === 0 && <p className="text-center text-muted-foreground p-8">{t('no_users_found')}</p>}
-            </CardContent>
-        </Card>
-    )
-}
-
-function PlaceholderTab({ title, link }: { title: string, link?: string }) {
-    const { t } = useTranslation();
-    return (
-        <div className="flex flex-col items-center justify-center h-64 gap-4">
-            <p className="text-muted-foreground">{t(title as any)}</p>
-            {link ? (
-                 <Button asChild>
-                    <Link href={link}>{t('manage')} {t(title as any)}</Link>
-                </Button>
-            ) : (
-                <p className="text-sm text-muted-foreground">{t('coming_soon')}</p>
-            )}
-        </div>
-    );
-}
-
 export default function AdminPage() {
     const { t } = useTranslation();
 
-    const adminTabs = [
-        { value: 'user-management', label: t('user_management'), icon: <Shield /> },
-        { value: 'topic-management', label: t('topic_management'), icon: <IconTopicManagement />, link: '/admin/topics'},
-        { value: 'study-material', label: t('study_material'), icon: <BookOpen /> },
-        { value: 'mcq-bank', label: t('mcq_bank'), icon: <IconMcqBank />, link: '/admin/upload' },
-        { value: 'question-bank', label: t('question_bank'), icon: <IconQuestionBank /> },
-        { value: 'live-test', label: t('live_test'), icon: <Trophy /> },
-        { value: 'analytics', label: t('analytics'), icon: <BarChart /> },
+    const adminSections = [
+        { href: '/admin', label: t('user_management'), icon: <Shield /> },
+        { href: '/admin/topics', label: t('topic_management'), icon: <IconTopicManagement />},
+        { href: '#', label: t('study_material'), icon: <BookOpen />, comingSoon: true },
+        { href: '/admin/upload', label: t('mcq_bank'), icon: <IconMcqBank /> },
+        { href: '#', label: t('question_bank'), icon: <IconQuestionBank />, comingSoon: true },
+        { href: '#', label: t('live_test'), icon: <Trophy />, comingSoon: true },
+        { href: '#', label: t('analytics'), icon: <BarChart />, comingSoon: true },
     ];
 
   return (
@@ -115,28 +35,19 @@ export default function AdminPage() {
             <p className="text-muted-foreground">{t('admin_panel_desc')}</p>
         </div>
         
-        <Tabs defaultValue="user-management" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2 h-auto bg-transparent p-0">
-                {adminTabs.map(tab => (
-                     <TabsTrigger key={tab.value} value={tab.value} asChild>
-                         <Card className="cursor-pointer data-[state=active]:border-primary data-[state=active]:ring-2 data-[state=active]:ring-primary">
-                            <CardContent className="p-4 flex flex-col items-center justify-center gap-2">
-                                {tab.icon}
-                                <span className="text-sm font-medium">{tab.label}</span>
-                            </CardContent>
-                         </Card>
-                     </TabsTrigger>
-                ))}
-            </TabsList>
-            <TabsContent value="user-management" className="mt-6">
-                <UserManagementTab />
-            </TabsContent>
-            {adminTabs.slice(1).map(tab => (
-                 <TabsContent key={tab.value} value={tab.value} className="mt-6">
-                    <PlaceholderTab title={tab.label} link={tab.link}/>
-                </TabsContent>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {adminSections.map(section => (
+                <Link key={section.label} href={section.href} className={section.comingSoon ? "pointer-events-none" : ""}>
+                    <Card className="h-full hover:border-primary hover:ring-2 hover:ring-primary transition-all">
+                        <CardContent className="p-4 flex flex-col items-center justify-center text-center gap-2">
+                            <div className="text-primary">{section.icon}</div>
+                            <span className="font-semibold">{section.label}</span>
+                            {section.comingSoon && <span className="text-xs text-muted-foreground">({t('coming_soon')})</span>}
+                        </CardContent>
+                    </Card>
+                </Link>
             ))}
-        </Tabs>
+        </div>
     </div>
   );
 }
