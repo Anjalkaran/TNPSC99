@@ -41,7 +41,6 @@ const subjects = [
 ];
 
 const classes = [
-    { id: '5', name: 'Class V', name_ta: '5ஆம் வகுப்பு', description: '5th Standard' },
     { id: '6', name: 'Class VI', name_ta: '6ஆம் வகுப்பு', description: '6th Standard' },
     { id: '7', name: 'Class VII', name_ta: '7ஆம் வகுப்பு', description: '7th Standard' },
     { id: '8', name: 'Class VIII', name_ta: '8ஆம் வகுப்பு', description: '8th Standard' },
@@ -53,6 +52,7 @@ const classes = [
 const categories = [
     { id: 'ilakkanam', name: 'Ilakkanam', name_ta: 'இலக்கணம்', subjectId: 'tamil'},
     { id: 'urai-seyyul', name: 'Urainadai & Seyyul', name_ta: 'உரைநடை & செய்யுள்', subjectId: 'tamil'},
+    { id: 'matravai', name: 'Matravai', name_ta: 'மற்றவை', subjectId: 'tamil'}
 ]
 
 const questions = [
@@ -410,5 +410,7 @@ export async function seedDatabase() {
     
 
 
+
+    
 
     
