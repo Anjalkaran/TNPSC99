@@ -88,7 +88,7 @@ const uploadFormSchema = z.object({
   term: z.string().min(1, { message: "Please select a term." }),
   unitNumber: z.coerce.number().min(1, "Unit number must be at least 1."),
   unitName: z.string().min(1, { message: 'Unit name must be at least 1 character.' }),
-  categoryId: z.string().optional(),
+  categoryName: z.string().optional(),
   jsonInput: z.string().min(1, { message: 'JSON data is required.' }),
 });
 
@@ -353,17 +353,13 @@ export default function UploadMcqPage() {
   const form = useForm<UploadFormValues>({
     resolver: zodResolver(uploadFormSchema),
     defaultValues: {
-      classId: '', subjectName: '', term: '', unitNumber: 1, unitName: '', categoryId: '', jsonInput: ''
+      classId: '', subjectName: '', term: '', unitNumber: 1, unitName: '', categoryName: '', jsonInput: ''
     },
   });
 
   const classesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'classes') : null, [firestore]);
   const { data: classes, isLoading: classesLoading } = useCollection<Class>(classesCollection);
-  const categoriesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'categories') : null, [firestore]);
-  const tamilCategoriesQuery = useMemoFirebase(() => categoriesCollection ? query(categoriesCollection, where('subjectId', '==', 'tamil')) : null, [categoriesCollection]);
-  const { data: tamilCategories, isLoading: categoriesLoading } = useCollection<Category>(tamilCategoriesQuery);
-
-
+  
   const subjectNameValue = form.watch('subjectName');
   const showTamilCategories = subjectNameValue === 'தமிழ்' || subjectNameValue === 'Tamil';
 
@@ -385,7 +381,7 @@ export default function UploadMcqPage() {
         form.setValue('term', unit.term);
         form.setValue('unitNumber', unit.unitNumber);
         form.setValue('unitName', unit.unitName);
-        form.setValue('categoryId', unit.categoryId || '');
+        form.setValue('categoryName', unit.categoryName || '');
     };
 
 
@@ -415,7 +411,7 @@ export default function UploadMcqPage() {
     try {
       if (!firestore) throw new Error('Firestore is not initialized');
 
-      const { classId, subjectName, term, unitNumber, unitName, categoryId } = values;
+      const { classId, subjectName, term, unitNumber, unitName, categoryName } = values;
 
       // 1. Find or Create Subject
       let subjectId: string;
@@ -431,8 +427,25 @@ export default function UploadMcqPage() {
       } else {
           subjectId = subjectSnapshot.docs[0].id;
       }
+      
+      // 2. Find or Create Category
+      let categoryId: string | undefined = undefined;
+      if (categoryName && subjectId) {
+        const categoriesRef = collection(firestore, 'categories');
+        const categoryQuery = query(categoriesRef, where('name', '==', categoryName), where('subjectId', '==', subjectId));
+        const categorySnapshot = await getDocs(categoryQuery);
 
-      // 2. Find or Create Unit
+        if(categorySnapshot.empty) {
+            const newCategoryRef = doc(categoriesRef);
+            const newCategory: Category = { id: newCategoryRef.id, name: categoryName, subjectId: subjectId };
+            await setDoc(newCategoryRef, newCategory);
+            categoryId = newCategoryRef.id;
+        } else {
+            categoryId = categorySnapshot.docs[0].id;
+        }
+      }
+
+      // 3. Find or Create Unit
       let unitId: string;
       const unitQuery = query(collection(firestore, 'units'), 
         where('classId', '==', classId),
@@ -456,7 +469,7 @@ export default function UploadMcqPage() {
       }
 
 
-      // 3. Add Questions
+      // 4. Add Questions
       const batch = writeBatch(firestore);
       const questionsCollectionRef = collection(firestore, 'questions');
       const newQuestionIds: string[] = [];
@@ -468,7 +481,7 @@ export default function UploadMcqPage() {
       });
       await batch.commit();
       
-      // 4. Find or create test and update it
+      // 5. Find or create test and update it
       const testsCollectionRef = collection(firestore, 'tests');
       const selectedClass = classes?.find(c => c.id === classId);
       const className = language === 'ta' && selectedClass?.name_ta ? selectedClass.name_ta : selectedClass?.name;
@@ -588,21 +601,14 @@ export default function UploadMcqPage() {
                     {showTamilCategories && (
                         <FormField
                             control={form.control}
-                            name="categoryId"
+                            name="categoryName"
                             render={({ field }) => (
                                 <FormItem>
-                                <FormLabel>Category</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value} disabled={categoriesLoading}>
+                                    <FormLabel>Category Name</FormLabel>
                                     <FormControl>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select a category" />
-                                    </SelectTrigger>
+                                        <Input placeholder="e.g., இலக்கணம்" {...field} />
                                     </FormControl>
-                                    <SelectContent>
-                                    {tamilCategories?.map(c => <SelectItem key={c.id} value={c.id}>{c.name_ta || c.name}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
-                                <FormMessage />
+                                    <FormMessage />
                                 </FormItem>
                             )}
                         />
