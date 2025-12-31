@@ -1,11 +1,11 @@
 'use client';
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
 import { collection, query, where, getDoc, doc, getDocs } from "firebase/firestore";
-import type { Test, Subject, Class, UserTestAttempt } from "@/lib/types";
+import type { Test, Subject, Class, UserTestAttempt, Unit } from "@/lib/types";
 import { useParams } from "next/navigation";
 import { useEffect, useState, useMemo } from "react";
 import {
@@ -105,6 +105,7 @@ export default function SubjectTestsPage() {
   const { t, language } = useTranslation();
 
   const [pageTitle, setPageTitle] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const classId = useMemo(() => {
     const classIdParam = Array.isArray(params.classId) ? params.classId[0] : params.classId;
@@ -130,32 +131,48 @@ export default function SubjectTestsPage() {
     );
   }, [testsCollection, classId, subjectId]);
 
-  const { data: subjectTests, isLoading } = useCollection<Test>(subjectTestsQuery);
+  const { data: subjectTests, isLoading: testsLoading } = useCollection<Test>(subjectTestsQuery);
   
-  const sortedTests = useMemo(() => {
+  const unitIds = useMemo(() => {
     if (!subjectTests) return [];
-    
-    const termOrder: { [key: string]: number } = {
-        "பருவம் 1": 1,
-        "பருவம் 2": 2,
-        "பருவம் 3": 3,
-        "Full Book": 4,
-    };
-
-    return [...subjectTests].sort((a, b) => {
-        const termA = a.term ? termOrder[a.term] || 99 : 99;
-        const termB = b.term ? termOrder[b.term] || 99 : 99;
-
-        if (termA !== termB) {
-            return termA - termB;
-        }
-        
-        const unitA = a.unitNumber || 99;
-        const unitB = b.unitNumber || 99;
-        
-        return unitA - unitB;
-    });
+    return [...new Set(subjectTests.map(t => t.unitId).filter(Boolean) as string[])];
   }, [subjectTests]);
+
+  const unitsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'units') : null, [firestore]);
+  const unitsQuery = useMemoFirebase(() => {
+    if (!unitsCollection || unitIds.length === 0) return null;
+    return query(unitsCollection, where('__name__', 'in', unitIds));
+  }, [unitsCollection, unitIds]);
+  const { data: units, isLoading: unitsLoading } = useCollection<Unit>(unitsQuery);
+
+  const unitsMap = useMemo(() => {
+    if (!units) return new Map<string, Unit>();
+    return new Map(units.map(u => [u.id, u]));
+  }, [units]);
+
+  const groupedAndSortedTests = useMemo(() => {
+    if (!subjectTests) return {};
+
+    const grouped = subjectTests.reduce((acc, test) => {
+        const unit = test.unitId ? unitsMap.get(test.unitId) : undefined;
+        // Fallback to "Uncategorized" if unit or category is missing
+        const category = unit?.category || 'Uncategorized';
+        
+        if (!acc[category]) {
+            acc[category] = [];
+        }
+        acc[category].push(test);
+        return acc;
+    }, {} as Record<string, Test[]>);
+    
+    // Sort tests within each category
+    for (const category in grouped) {
+        grouped[category].sort((a, b) => (a.unitNumber || 0) - (b.unitNumber || 0));
+    }
+    
+    return grouped;
+  }, [subjectTests, unitsMap]);
+
 
   useEffect(() => {
     async function fetchMetadataAndSetTitle() {
@@ -187,7 +204,7 @@ export default function SubjectTestsPage() {
 
         const title = `${className} - ${subjectName}`;
         setPageTitle(title);
-        document.title = title; // Set document title directly
+        document.title = title;
     }
     if (classId && subjectId) {
       fetchMetadataAndSetTitle();
@@ -196,9 +213,6 @@ export default function SubjectTestsPage() {
 
   const getShortTestTitle = (fullTitle: string, pageTitle: string) => {
     if (!pageTitle) return fullTitle;
-    // The page title is like "Class Name - Subject Name"
-    // The full title is like "Class Name - Subject Name - Term - Unit - Unit Name"
-    // We want to remove the "Class Name - Subject Name - " part
     const prefix = `${pageTitle} - `;
     if (fullTitle.startsWith(prefix)) {
       return fullTitle.substring(prefix.length);
@@ -206,16 +220,44 @@ export default function SubjectTestsPage() {
     return fullTitle;
   };
 
+  const isLoading = testsLoading || unitsLoading;
+
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
       <div className="mb-8">
         <h1 className="text-3xl md:text-4xl font-bold">{isLoading ? 'Loading...' : pageTitle}</h1>
+        {selectedCategory && (
+            <Button variant="ghost" onClick={() => setSelectedCategory(null)} className="mt-2">
+                <ArrowLeft className="mr-2 h-4 w-4" /> Back to Categories
+            </Button>
+        )}
       </div>
       
       {isLoading && <p>Loading tests...</p>}
 
-      {!isLoading && sortedTests && sortedTests.length > 0 ? (
+      {!isLoading && !selectedCategory && Object.keys(groupedAndSortedTests).length > 0 ? (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Object.entries(groupedAndSortedTests).map(([category, tests]) => (
+                 <Card key={category} className="flex flex-col overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer" onClick={() => setSelectedCategory(category)}>
+                    <CardHeader>
+                        <CardTitle>{category}</CardTitle>
+                        <CardDescription>{tests.length} {tests.length === 1 ? 'test' : 'tests'} available</CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex-grow flex items-end">
+                        <Button variant="link" className="p-0">
+                            View Tests <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                    </CardContent>
+                 </Card>
+            ))}
+        </div>
+      ) : null}
+
+      {!isLoading && selectedCategory && groupedAndSortedTests[selectedCategory] ? (
         <Card>
+          <CardHeader>
+            <CardTitle>{selectedCategory}</CardTitle>
+          </CardHeader>
           <CardContent className="p-0">
             <Table>
               <TableHeader>
@@ -226,7 +268,7 @@ export default function SubjectTestsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sortedTests.map((test) => (
+                {groupedAndSortedTests[selectedCategory].map((test) => (
                   <TableRow key={test.id}>
                     <TableCell className="font-medium">{getShortTestTitle(test.title, pageTitle)}</TableCell>
                     <TableCell>
@@ -244,8 +286,10 @@ export default function SubjectTestsPage() {
             </Table>
           </CardContent>
         </Card>
-      ) : (
-        !isLoading && <div className="text-center py-16">
+      ) : null}
+
+      {!isLoading && Object.keys(groupedAndSortedTests).length === 0 && (
+         <div className="text-center py-16">
           <p className="text-muted-foreground">No tests are available for this subject yet.</p>
         </div>
       )}
