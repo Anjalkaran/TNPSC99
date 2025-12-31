@@ -108,6 +108,8 @@ export default function SubjectTestsPage() {
 
   const [pageTitle, setPageTitle] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [unitsMap, setUnitsMap] = useState<Map<string, Unit>>(new Map());
+  const [isLoading, setIsLoading] = useState(true);
 
   const classId = useMemo(() => {
     const classIdParam = Array.isArray(params.classId) ? params.classId[0] : params.classId;
@@ -124,7 +126,6 @@ export default function SubjectTestsPage() {
 
   const subjectTestsQuery = useMemoFirebase(() => {
     if (!testsCollection || !classId || !subjectId) return null;
-    
     return query(
       testsCollection, 
       where('classId', '==', classId),
@@ -133,56 +134,76 @@ export default function SubjectTestsPage() {
   }, [testsCollection, classId, subjectId]);
 
   const { data: subjectTests, isLoading: testsLoading } = useCollection<Test>(subjectTestsQuery);
-  
-  const [unitsMap, setUnitsMap] = useState<Map<string, Unit>>(new Map());
-  const [unitsLoading, setUnitsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchUnits = async () => {
-        if (!firestore || !subjectTests || subjectTests.length === 0) {
-            setUnitsLoading(false);
-            return;
-        }
+    async function fetchMetadata() {
+        if (!firestore || !classId || !subjectId) return;
+        setIsLoading(true);
 
-        const unitIds = [...new Set(subjectTests.map(t => t.unitId).filter(Boolean) as string[])];
-
-        if (unitIds.length === 0) {
-            setUnitsLoading(false);
-            return;
-        }
-
-        setUnitsLoading(true);
-        const map = new Map<string, Unit>();
-        const unitIdChunks: string[][] = [];
-        for (let i = 0; i < unitIds.length; i += 30) {
-            unitIdChunks.push(unitIds.slice(i, i + 30));
-        }
-        
-        const unitsCollectionRef = collection(firestore, 'units');
+        let className = `Class ${classId}`;
+        let subjectName = subjectId;
 
         try {
-            for (const chunk of unitIdChunks) {
-                if (chunk.length > 0) {
-                    const unitsQuery = query(unitsCollectionRef, where('__name__', 'in', chunk));
-                    const unitsSnapshot = await getDocs(unitsQuery);
-                    unitsSnapshot.forEach(doc => {
-                        map.set(doc.id, { id: doc.id, ...doc.data() } as Unit);
-                    });
+            const classDocRef = doc(firestore, 'classes', classId);
+            const classSnap = await getDoc(classDocRef);
+            if (classSnap.exists()) {
+                const classData = classSnap.data() as Class;
+                className = language === 'ta' && classData.name_ta ? classData.name_ta : classData.name;
+            }
+        } catch (e) { console.error("Failed to fetch class name", e)}
+
+        try {
+             const subjectDocRef = doc(firestore, 'subjects', subjectId);
+             const subjectSnap = await getDoc(subjectDocRef);
+             if(subjectSnap.exists()){
+                 const subjectData = subjectSnap.data() as Subject;
+                 subjectName = language === 'ta' && subjectData.name_ta ? subjectData.name_ta : subjectData.name;
+             }
+        } catch (e) { console.error("Failed to fetch subject name", e)}
+
+        const title = `${className} - ${subjectName}`;
+        setPageTitle(title);
+        document.title = title;
+        
+        // Now handle units, but only after tests are loaded
+        if (!testsLoading && subjectTests) {
+            const unitIds = [...new Set(subjectTests.map(t => t.unitId).filter(Boolean) as string[])];
+            
+            if (unitIds.length > 0) {
+                const map = new Map<string, Unit>();
+                const unitIdChunks: string[][] = [];
+                for (let i = 0; i < unitIds.length; i += 30) {
+                    unitIdChunks.push(unitIds.slice(i, i + 30));
+                }
+                
+                const unitsCollectionRef = collection(firestore, 'units');
+                try {
+                    for (const chunk of unitIdChunks) {
+                        if (chunk.length > 0) {
+                            const unitsQuery = query(unitsCollectionRef, where('__name__', 'in', chunk));
+                            const unitsSnapshot = await getDocs(unitsQuery);
+                            unitsSnapshot.forEach(doc => {
+                                map.set(doc.id, { id: doc.id, ...doc.data() } as Unit);
+                            });
+                        }
+                    }
+                    setUnitsMap(map);
+                } catch (error) {
+                    console.error("Error fetching units: ", error);
                 }
             }
-        } catch (error) {
-            console.error("Error fetching units: ", error);
-        } finally {
-            setUnitsMap(map);
-            setUnitsLoading(false);
+            setIsLoading(false);
+        } else if (!testsLoading) {
+            // No tests, so no units to fetch
+            setIsLoading(false);
         }
-    };
+    }
 
-    fetchUnits();
-  }, [firestore, subjectTests]);
+    fetchMetadata();
+  }, [firestore, classId, subjectId, t, language, testsLoading, subjectTests]);
 
   const groupedAndSortedTests = useMemo(() => {
-    if (!subjectTests || testsLoading || unitsLoading) return {};
+    if (!subjectTests || testsLoading) return {};
 
     const grouped = subjectTests.reduce((acc, test) => {
         const unit = test.unitId ? unitsMap.get(test.unitId) : undefined;
@@ -201,45 +222,8 @@ export default function SubjectTestsPage() {
     }
     
     return grouped;
-  }, [subjectTests, testsLoading, unitsLoading, unitsMap]);
+  }, [subjectTests, testsLoading, unitsMap]);
 
-
-  useEffect(() => {
-    async function fetchMetadataAndSetTitle() {
-        if (!firestore) return;
-        let className = `Class ${classId}`;
-        let subjectName = subjectId;
-
-        try {
-            if (classId) {
-                const classDocRef = doc(firestore, 'classes', classId);
-                const classSnap = await getDoc(classDocRef);
-                if (classSnap.exists()) {
-                    const classData = classSnap.data() as Class;
-                    className = language === 'ta' && classData.name_ta ? classData.name_ta : classData.name;
-                }
-            }
-        } catch (e) { console.error("Failed to fetch class name", e)}
-
-        try {
-             if (subjectId) {
-                const subjectDocRef = doc(firestore, 'subjects', subjectId);
-                const subjectSnap = await getDoc(subjectDocRef);
-                if(subjectSnap.exists()){
-                    const subjectData = subjectSnap.data() as Subject;
-                    subjectName = language === 'ta' && subjectData.name_ta ? subjectData.name_ta : subjectData.name;
-                }
-            }
-        } catch (e) { console.error("Failed to fetch subject name", e)}
-
-        const title = `${className} - ${subjectName}`;
-        setPageTitle(title);
-        document.title = title;
-    }
-    if (classId && subjectId) {
-      fetchMetadataAndSetTitle();
-    }
-  }, [firestore, classId, subjectId, t, language]);
 
   const getShortTestTitle = (test: Test) => {
     const unit = test.unitId ? unitsMap.get(test.unitId) : undefined;
@@ -253,12 +237,19 @@ export default function SubjectTestsPage() {
     return test.title;
   };
 
-  const isLoading = testsLoading || unitsLoading;
+  if (isLoading) {
+    return (
+        <div className="container mx-auto px-4 py-8 md:py-12">
+            <h1 className="text-3xl md:text-4xl font-bold mb-8">Loading...</h1>
+            <p>Loading tests...</p>
+        </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
       <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold">{isLoading ? 'Loading...' : pageTitle}</h1>
+        <h1 className="text-3xl md:text-4xl font-bold">{pageTitle}</h1>
         {selectedCategory && (
             <Button variant="ghost" onClick={() => setSelectedCategory(null)} className="mt-2">
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back to Categories
@@ -266,9 +257,7 @@ export default function SubjectTestsPage() {
         )}
       </div>
       
-      {isLoading && <p>Loading tests...</p>}
-
-      {!isLoading && !selectedCategory && Object.keys(groupedAndSortedTests).length > 0 ? (
+      {!selectedCategory && Object.keys(groupedAndSortedTests).length > 0 ? (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {Object.entries(groupedAndSortedTests).map(([category, tests]) => (
                  <Card key={category} className="flex flex-col overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer" onClick={() => setSelectedCategory(category)}>
@@ -286,7 +275,7 @@ export default function SubjectTestsPage() {
         </div>
       ) : null}
 
-      {!isLoading && selectedCategory && groupedAndSortedTests[selectedCategory] ? (
+      {selectedCategory && groupedAndSortedTests[selectedCategory] ? (
         <Card>
           <CardHeader>
             <CardTitle>{selectedCategory}</CardTitle>
@@ -321,7 +310,7 @@ export default function SubjectTestsPage() {
         </Card>
       ) : null}
 
-      {!isLoading && Object.keys(groupedAndSortedTests).length === 0 && (
+      {Object.keys(groupedAndSortedTests).length === 0 && (
          <div className="text-center py-16">
           <p className="text-muted-foreground">No tests are available for this subject yet.</p>
         </div>
