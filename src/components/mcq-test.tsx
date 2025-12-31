@@ -215,7 +215,20 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
     window.location.reload();
   };
 
-  const returnHref = (test.classId && test.subjectId) ? `/class/${test.classId}/${test.subjectId}` : '/dashboard';
+    const getReturnHref = () => {
+        if (test.classId && test.subjectId) {
+            if (test.subjectId === 'tamil' && test.categoryId) {
+                // Handle special case for Tamil category pages
+                const categorySlug = test.categoryId === 'ilakkanam' ? 'ilakkanam' : 'urai-seyyul';
+                return `/class/${test.classId}/tamil/${categorySlug}`;
+            }
+            return `/class/${test.classId}/subject/${test.subjectId}`;
+        }
+        return '/dashboard';
+    };
+
+    const returnHref = getReturnHref();
+
 
   if (questions.length === 0) {
     return (
