@@ -133,13 +133,38 @@ export default function TamilCategoryTestsPage() {
       where('category', '==', targetCategory)
     );
   }, [testsCollection, classId, subjectId, category]);
+  
+  const { data: allTamilTests, isLoading: allTestsLoading } = useCollection<Test>(useMemoFirebase(() => {
+    if (!testsCollection || !classId || !subjectId) return null;
+     return query(
+      testsCollection, 
+      where('classId', '==', classId),
+      where('subjectId', '==', subjectId),
+    );
+  }, [testsCollection, classId, subjectId]));
 
-  const { data: tests, isLoading: testsLoading } = useCollection<Test>(categoryTestsQuery);
+  const { data: categoryTests, isLoading: testsLoading } = useCollection<Test>(categoryTestsQuery);
 
-  const sortedTests = useMemo(() => {
-    if (!tests) return [];
-    return tests.sort((a,b) => (a.unitNumber || 0) - (b.unitNumber || 0));
-  }, [tests]);
+  const tests = useMemo(() => {
+    const isIlakkanam = category === 'ilakkanam';
+    
+    const fromCategoryField = categoryTests || [];
+
+    const fromUnitId = (allTamilTests || []).filter(test => {
+        if (test.category) return false; // Already handled by categoryTestsQuery
+        if (!test.unitId) return false;
+
+        const unitIdEndsWithG = test.unitId.endsWith('g');
+        return isIlakkanam ? unitIdEndsWithG : !unitIdEndsWithG;
+    });
+
+    const combined = [...fromCategoryField, ...fromUnitId];
+    const uniqueTests = Array.from(new Map(combined.map(item => [item.id, item])).values());
+    
+    return uniqueTests.sort((a,b) => (a.unitNumber || 0) - (b.unitNumber || 0));
+
+  }, [category, categoryTests, allTamilTests]);
+
 
   useEffect(() => {
     async function fetchMetadata() {
@@ -180,7 +205,7 @@ export default function TamilCategoryTestsPage() {
     return test.title;
   };
 
-  if (testsLoading || !subjectId) {
+  if (testsLoading || allTestsLoading || !subjectId) {
     return (
         <div className="container mx-auto px-4 py-8 md:py-12">
             <h1 className="text-3xl md:text-4xl font-bold mb-8">Loading...</h1>
@@ -197,7 +222,7 @@ export default function TamilCategoryTestsPage() {
         <h1 className="text-3xl md:text-4xl font-bold">{pageTitle}</h1>
       </div>
       
-      {sortedTests.length > 0 ? (
+      {tests.length > 0 ? (
         <Card>
             <CardHeader>
                 <CardTitle>{t('available_tests', { category: categoryName })}</CardTitle>
@@ -213,7 +238,7 @@ export default function TamilCategoryTestsPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {sortedTests.map((test) => (
+                        {tests.map((test) => (
                             <TableRow key={test.id}>
                                 <TableCell className="font-medium">{getShortTestTitle(test)}</TableCell>
                                 <TableCell>
