@@ -70,16 +70,12 @@ function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, cla
     });
 
     const categoriesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'categories') : null, [firestore]);
-    const { data: categories, isLoading: categoriesLoading } = useCollection<Category>(categoriesCollection);
+    const tamilCategoriesQuery = useMemoFirebase(() => categoriesCollection ? query(categoriesCollection, where('subjectId', '==', 'tamil')) : null, [categoriesCollection]);
+    const { data: tamilCategories, isLoading: categoriesLoading } = useCollection<Category>(tamilCategoriesQuery);
 
     const subjectNameValue = form.watch('subjectName');
     
     const showTamilCategories = subjectNameValue === 'தமிழ்' || subjectNameValue === 'Tamil';
-
-    const tamilCategories = useMemo(() => {
-      if (!categories) return [];
-      return categories.filter(c => c.subjectId === 'tamil');
-    }, [categories]);
 
     const onSubmit: SubmitHandler<UnitFormValues> = async (values) => {
         if (!firestore) return;
@@ -184,7 +180,7 @@ function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, cla
                             </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                            {tamilCategories.map(c => <SelectItem key={c.id} value={c.id}>{c.name_ta || c.name}</SelectItem>)}
+                            {tamilCategories?.map(c => <SelectItem key={c.id} value={c.id}>{c.name_ta || c.name}</SelectItem>)}
                         </SelectContent>
                         </Select>
                         <FormMessage />
@@ -397,11 +393,9 @@ export default function TopicManagementPage() {
   const classesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'classes') : null, [firestore]);
   const { data: classes, isLoading: classesLoading } = useCollection<Class>(classesCollection);
 
-  const subjectsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'subjects') : null, [firestore]);
-  const { data: subjects, isLoading: subjectsLoading } = useCollection<Subject>(subjectsCollection);
-  
   const categoriesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'categories') : null, [firestore]);
-  const { data: categories, isLoading: categoriesLoading } = useCollection<Category>(categoriesCollection);
+  const tamilCategoriesQuery = useMemoFirebase(() => categoriesCollection ? query(categoriesCollection, where('subjectId', '==', 'tamil')) : null, [categoriesCollection]);
+  const { data: tamilCategories, isLoading: categoriesLoading } = useCollection<Category>(tamilCategoriesQuery);
 
   const form = useForm<UnitFormValues>({
     resolver: zodResolver(unitFormSchema),
@@ -411,11 +405,6 @@ export default function TopicManagementPage() {
   const subjectNameValue = form.watch('subjectName');
   
   const showTamilCategories = subjectNameValue === 'தமிழ்' || subjectNameValue === 'Tamil';
-
-  const tamilCategories = useMemo(() => {
-    if (!categories) return [];
-    return categories.filter(c => c.subjectId === 'tamil');
-  }, [categories]);
 
   const resetForm = () => {
     form.reset();
@@ -547,7 +536,7 @@ export default function TopicManagementPage() {
                             </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                            {tamilCategories.map(c => <SelectItem key={c.id} value={c.id}>{c.name_ta || c.name}</SelectItem>)}
+                            {tamilCategories?.map(c => <SelectItem key={c.id} value={c.id}>{c.name_ta || c.name}</SelectItem>)}
                         </SelectContent>
                         </Select>
                         <FormMessage />

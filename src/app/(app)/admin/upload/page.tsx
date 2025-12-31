@@ -360,15 +360,12 @@ export default function UploadMcqPage() {
   const classesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'classes') : null, [firestore]);
   const { data: classes, isLoading: classesLoading } = useCollection<Class>(classesCollection);
   const categoriesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'categories') : null, [firestore]);
-  const { data: categories, isLoading: categoriesLoading } = useCollection<Category>(categoriesCollection);
+  const tamilCategoriesQuery = useMemoFirebase(() => categoriesCollection ? query(categoriesCollection, where('subjectId', '==', 'tamil')) : null, [categoriesCollection]);
+  const { data: tamilCategories, isLoading: categoriesLoading } = useCollection<Category>(tamilCategoriesQuery);
 
 
   const subjectNameValue = form.watch('subjectName');
   const showTamilCategories = subjectNameValue === 'தமிழ்' || subjectNameValue === 'Tamil';
-  const tamilCategories = useMemo(() => {
-    if (!categories) return [];
-    return categories.filter(c => c.subjectId === 'tamil');
-  }, [categories]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -602,7 +599,7 @@ export default function UploadMcqPage() {
                                     </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                    {tamilCategories.map(c => <SelectItem key={c.id} value={c.id}>{c.name_ta || c.name}</SelectItem>)}
+                                    {tamilCategories?.map(c => <SelectItem key={c.id} value={c.id}>{c.name_ta || c.name}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
                                 <FormMessage />
