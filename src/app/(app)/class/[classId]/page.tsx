@@ -92,23 +92,28 @@ export default function GenerateMcqPage() {
                     <p>Loading subjects...</p>
                 ) : subjects.length > 0 ? (
                     <Accordion type="single" collapsible className="w-full">
-                        {subjects.map(subject => (
-                            <AccordionItem value={subject.id} key={subject.id}>
-                                <AccordionTrigger className="text-lg">
-                                  {language === 'ta' && subject.name_ta ? subject.name_ta : subject.name}
-                                </AccordionTrigger>
-                                <AccordionContent>
-                                    <p className="text-muted-foreground mb-4">
-                                        {language === 'ta' && subject.description_ta ? subject.description_ta : subject.description}
-                                    </p>
-                                    <Button asChild>
-                                        <Link href={`/class/${classId}/${subject.id}`}>
-                                            {t('view_tests')} <ArrowRight className="ml-2 h-4 w-4" />
-                                        </Link>
-                                    </Button>
-                                </AccordionContent>
-                            </AccordionItem>
-                        ))}
+                        {subjects.map(subject => {
+                            const isTamil = subject.name === 'Tamil' || subject.name_ta === 'தமிழ்';
+                            const href = isTamil ? `/class/${classId}/tamil` : `/class/${classId}/${subject.id}`;
+                            
+                            return (
+                                <AccordionItem value={subject.id} key={subject.id}>
+                                    <AccordionTrigger className="text-lg">
+                                    {language === 'ta' && subject.name_ta ? subject.name_ta : subject.name}
+                                    </AccordionTrigger>
+                                    <AccordionContent>
+                                        <p className="text-muted-foreground mb-4">
+                                            {language === 'ta' && subject.description_ta ? subject.description_ta : subject.description}
+                                        </p>
+                                        <Button asChild>
+                                            <Link href={href}>
+                                                {t('view_tests')} <ArrowRight className="ml-2 h-4 w-4" />
+                                            </Link>
+                                        </Button>
+                                    </AccordionContent>
+                                </AccordionItem>
+                            );
+                        })}
                     </Accordion>
                 ) : (
                     <p className="text-muted-foreground text-center">No subjects with available tests for this class.</p>
