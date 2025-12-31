@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { Test, UserTestAttempt, Score, Question } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, ArrowRight, CheckCircle2, XCircle, RotateCw, LogOut } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, XCircle, RotateCw, LogOut, Timer } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth, useFirestore, useUser } from '@/firebase';
 import { addDoc, collection, doc, setDoc } from 'firebase/firestore';
@@ -36,6 +36,9 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [score, setScore] = useState(0);
   const [isAnswered, setIsAnswered] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(45);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
 
   const { user } = useUser();
   const firestore = useFirestore();
@@ -43,10 +46,19 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
   
   const decodedTitle = decodeURIComponent(test.title);
 
+  const handleNext = () => {
+    if (currentQuestionIndex < questions.length - 1) {
+        setCurrentQuestionIndex(currentQuestionIndex + 1);
+    } else {
+        handleSubmit();
+    }
+  };
+
   useEffect(() => {
     // When the question index changes, check if an answer already exists for the new question.
     // If it does, it means the user is reviewing a previously answered question.
     setIsAnswered(answers[currentQuestionIndex] !== undefined);
+    setTimeLeft(45); // Reset timer for new question
   }, [currentQuestionIndex, answers]);
   
   useEffect(() => {
@@ -55,6 +67,28 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
     }
   }, [decodedTitle]);
 
+  useEffect(() => {
+    if (isSubmitted || isAnswered) {
+      if (timerRef.current) clearInterval(timerRef.current);
+      return;
+    }
+
+    timerRef.current = setInterval(() => {
+      setTimeLeft(prevTime => {
+        if (prevTime <= 1) {
+          if (timerRef.current) clearInterval(timerRef.current);
+          handleNext();
+          return 0;
+        }
+        return prevTime - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [currentQuestionIndex, isSubmitted, isAnswered]);
+
 
   const handleAnswerChange = (value: string) => {
     if (isAnswered) return; // Don't allow changing answer after it's been revealed
@@ -62,10 +96,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
     newAnswers[currentQuestionIndex] = parseInt(value, 10);
     setAnswers(newAnswers);
     setIsAnswered(true);
-  };
-
-  const handleNext = () => {
-    setCurrentQuestionIndex(currentQuestionIndex + 1);
+    if (timerRef.current) clearInterval(timerRef.current);
   };
   
   const handlePrevious = () => {
@@ -90,6 +121,9 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
             } else {
                 incorrectlyAnsweredQuestionIds.push(q.id);
             }
+        } else {
+            // Also count unanswered as incorrect
+            incorrectlyAnsweredQuestionIds.push(q.id);
         }
     });
     setScore(calculatedScore);
@@ -274,23 +308,29 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
                     </Badge>
                 </div>
             </div>
-             <AlertDialog>
-                <AlertDialogTrigger asChild>
-                   <Button variant="link" className="text-destructive">வெளியேறு</Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>தேர்விலிருந்து வெளியேற விரும்புகிறீர்களா?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                           உங்கள் தற்போதைய முன்னேற்றம் சேமிக்கப்படும், உங்கள் மதிப்பெண் இதுவரை நீங்கள் பதிலளித்த கேள்விகளுக்குக் கணக்கிடப்படும்.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>தொடரவும்</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleExit} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">வெளியேறு</AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+            <div className="flex items-center gap-4">
+                 <div className={cn("flex items-center gap-2 font-mono text-lg", timeLeft < 10 && "text-destructive")}>
+                    <Timer className="h-5 w-5" />
+                    <span>00:{timeLeft.toString().padStart(2, '0')}</span>
+                </div>
+                 <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                       <Button variant="link" className="text-destructive">வெளியேறு</Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>தேர்விலிருந்து வெளியேற விரும்புகிறீர்களா?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                               உங்கள் தற்போதைய முன்னேற்றம் சேமிக்கப்படும், உங்கள் மதிப்பெண் இதுவரை நீங்கள் பதிலளித்த கேள்விகளுக்குக் கணக்கிடப்படும்.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>தொடரவும்</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleExit} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">வெளியேறு</AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            </div>
         </div>
         <Progress value={progress} className="mt-4" />
       </CardHeader>
