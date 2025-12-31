@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { useCollection, useFirestore, useMemoFirebase, useDoc, useUser } from "@/firebase";
-import { collection, query, where, doc, getDocs } from "firebase/firestore";
+import { collection, query, where, doc, getDocs, getDoc } from "firebase/firestore";
 import type { Test, Subject, UserTestAttempt, Unit, Class } from "@/lib/types";
 import {
   Select,
