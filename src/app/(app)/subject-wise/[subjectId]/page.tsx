@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/select';
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from "@/hooks/use-translation";
-import { Badge } from "@/components/ui/badge';
+import { Badge } from '@/components/ui/badge';
 import {
   Accordion,
   AccordionContent,
