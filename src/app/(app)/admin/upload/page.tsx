@@ -70,7 +70,8 @@ const jsonStructureExample = `[
     "answerOptions": ["Option A", "Option B", "Option C", "Option D"],
     "correctAnswerIndex": 0,
     "reference": "Source or hint for the question (optional)",
-    "unitId": "your-unit-id-here"
+    "unitId": "your-unit-id-here",
+    "explanation": "Detailed explanation for the correct answer (optional)"
   },
   {
     "text": "Another question?",
@@ -503,7 +504,7 @@ export default function UploadMcqPage() {
       const newQuestionIds: string[] = [];
       questions.forEach(q => {
           const questionRef = doc(questionsCollectionRef);
-          const questionData: Question = { ...q, id: questionRef.id, classId, subjectId, unitId: q.unitId || unitId, reference: q.reference || '' };
+          const questionData: Question = { ...q, id: questionRef.id, classId, subjectId, unitId: q.unitId || unitId, reference: q.reference || '', explanation: q.explanation || '' };
           batch.set(questionRef, questionData);
           newQuestionIds.push(questionRef.id);
       });
@@ -740,3 +741,5 @@ export default function UploadMcqPage() {
     </div>
   );
 }
+
+    

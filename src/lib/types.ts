@@ -11,6 +11,7 @@ export interface Question {
   correctAnswerIndex: number;
   answerOptions: string[];
   reference?: string;
+  explanation?: string;
 }
 
 // Type for uploading questions, ID is optional as it will be generated.
@@ -101,5 +102,7 @@ export interface Score {
   testTitle: string;
   createdAt: string;
 }
+
+    
 
     

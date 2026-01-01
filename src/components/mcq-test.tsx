@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, ArrowRight, CheckCircle2, XCircle, RotateCw, LogOut, Timer } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, XCircle, RotateCw, LogOut, Timer, Info } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth, useFirestore, useUser } from '@/firebase';
 import { addDoc, collection, doc, setDoc } from 'firebase/firestore';
@@ -218,9 +218,10 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
     const getReturnHref = () => {
         if (test.classId && test.subjectId) {
             if (test.subjectId === 'tamil' && test.categoryId) {
-                // Handle special case for Tamil category pages
-                const categorySlug = test.categoryId === 'ilakkanam' ? 'ilakkanam' : 'urai-seyyul';
-                return `/class/${test.classId}/tamil/${categorySlug}`;
+                // Determine category slug from category ID or name heuristic
+                // This part might need to be more robust depending on your data
+                const categoryName = test.title.includes('இலக்கணம்') ? 'ilakkanam' : 'urai-seyyul';
+                return `/class/${test.classId}/tamil/${categoryName}`;
             }
             return `/class/${test.classId}/subject/${test.subjectId}`;
         }
@@ -298,6 +299,12 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
                 </p>
                 <p className="text-sm pl-8">உங்கள் பதில்: <span className={answers[index] === q.correctAnswerIndex ? 'text-green-600' : 'text-red-600'}>{answers[index] !== undefined ? q.answerOptions[answers[index]!] : 'பதிலளிக்கப்படவில்லை'}</span></p>
                 <p className="text-sm pl-8">சரியான பதில்: <span className="text-green-600">{q.answerOptions[q.correctAnswerIndex]}</span></p>
+                 {q.explanation && (
+                    <div className="mt-2 text-xs text-muted-foreground pl-8 flex gap-2">
+                        <Info className="h-4 w-4 flex-shrink-0" />
+                        <span>{q.explanation}</span>
+                    </div>
+                )}
               </div>
             ))}
           </div>
@@ -390,6 +397,12 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
             <p className="text-sm text-muted-foreground">{currentQuestion.reference}</p>
           </div>
         )}
+        {isAnswered && currentQuestion.explanation && (
+          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg dark:bg-blue-950 dark:border-blue-800">
+            <p className="text-sm font-semibold text-blue-800 dark:text-blue-300">விளக்கம்</p>
+            <p className="text-sm text-blue-700 dark:text-blue-400">{currentQuestion.explanation}</p>
+          </div>
+        )}
       </CardContent>
       <CardFooter className="flex justify-between">
         <Button
@@ -414,3 +427,5 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
     </Card>
   );
 }
+
+    
