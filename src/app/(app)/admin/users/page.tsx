@@ -232,7 +232,10 @@ export default function UserManagementPage() {
 
             <Card>
                 <CardHeader>
-                    <CardTitle>{t('users')}</CardTitle>
+                    <CardTitle className="flex items-center gap-2">
+                        {t('users')}
+                        {users && <span className="text-sm font-normal text-muted-foreground">({users.length})</span>}
+                    </CardTitle>
                 </CardHeader>
                 <CardContent>
                      {isLoading ? (
