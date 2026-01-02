@@ -5,7 +5,7 @@ import type { UserProfile } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useTranslation } from '@/hooks/use-translation';
-import { History } from 'lucide-react';
+import { History, BarChart2 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
@@ -44,11 +44,17 @@ export default function UserManagementPage() {
                                     <TableRow key={user.id}>
                                         <TableCell>{user.username}</TableCell>
                                         <TableCell>{user.email}</TableCell>
-                                        <TableCell className="text-right">
+                                        <TableCell className="text-right space-x-2">
                                             <Button asChild variant="outline" size="sm">
                                                 <Link href={`/admin/users/${user.id}/history`}>
                                                     <History className="mr-2 h-4 w-4" />
                                                     View History
+                                                </Link>
+                                            </Button>
+                                            <Button asChild variant="outline" size="sm">
+                                                <Link href={`/admin/users/${user.id}/performance`}>
+                                                    <BarChart2 className="mr-2 h-4 w-4" />
+                                                    View Performance
                                                 </Link>
                                             </Button>
                                         </TableCell>
