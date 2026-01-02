@@ -1,9 +1,9 @@
 'use client';
 
-import { useFirestore, useCollection, useMemoFirebase, useDoc } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { collection, getDocs, query, where, doc } from 'firebase/firestore';
-import type { UserTestAttempt, Test, UserProfile } from '@/lib/types';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import type { UserTestAttempt, Test } from '@/lib/types';
 import { useMemo, useState, useEffect } from 'react';
 import { useTranslation } from '@/hooks/use-translation';
 import { Progress } from '@/components/ui/progress';
@@ -12,7 +12,7 @@ import { analyzePerformance, type PerformanceInput, type PerformanceOutput } fro
 import { Skeleton } from '@/components/ui/skeleton';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
-import { useParams, notFound } from 'next/navigation';
+import { useParams } from 'next/navigation';
 
 
 interface SubjectPerformance {
@@ -137,9 +137,6 @@ export default function UserPerformancePage() {
   const [performanceData, setPerformanceData] = useState<SubjectPerformance[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const userRef = useMemoFirebase(() => (userId && firestore ? doc(firestore, 'users', userId) : null), [userId, firestore]);
-  const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userRef);
-
   const testAttemptsCollection = useMemoFirebase(() => 
     userId ? collection(firestore, `users/${userId}/testAttempts`) : null, 
     [userId, firestore]
@@ -221,60 +218,50 @@ export default function UserPerformancePage() {
     proficiency: p.proficiency,
   })).reverse(), [performanceData]);
 
-  if (isProfileLoading || isLoading) {
-    return <div className="container mx-auto p-4">{t('loading_performance_data')}</div>;
+  if (isLoading) {
+    return <div className="text-center p-8">{t('loading_performance_data')}</div>;
   }
-
-  if (!userProfile) {
-    return notFound();
-  }
-
 
   return (
-    <div className="container mx-auto p-4 sm:p-6 md:p-8 space-y-8">
-        <div className="mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold">Performance Report for {userProfile.username}</h1>
-            <p className="text-muted-foreground mt-2">{t('performance_desc')}</p>
-        </div>
-        
-        <AiAnalysis performanceData={performanceData} />
+    <div className="space-y-8">
+      <AiAnalysis performanceData={performanceData} />
 
-        {performanceData.length > 0 ? (
-            <Card>
-                <CardHeader>
-                    <CardTitle>{t('subject_wise_proficiency')}</CardTitle>
-                    <CardDescription>{t('subject_wise_proficiency_desc')}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <ChartContainer config={{
-                        proficiency: {
-                            label: t('proficiency'),
-                            color: "hsl(var(--primary))",
-                        },
-                    }} className="h-[500px] w-full">
-                        <BarChart data={chartData} layout="vertical" margin={{ left: 50 }}>
-                            <CartesianGrid horizontal={false} />
-                            <XAxis type="number" dataKey="proficiency" unit="%" />
-                            <YAxis type="category" dataKey="name" tickLine={false} axisLine={false} tickMargin={10} width={150} />
-                            <ChartTooltip 
-                                content={<ChartTooltipContent 
-                                    nameKey="proficiency"
-                                    labelKey="name"
-                                    indicator="dot"
-                                    formatter={(value) => `${Number(value).toFixed(1)}%`}
-                                />}
-                            />
-                            <Bar dataKey="proficiency" fill="var(--color-proficiency)" radius={4} />
-                        </BarChart>
-                    </ChartContainer>
-                </CardContent>
-            </Card>
-        ) : (
-            <div className="text-center py-16 border-2 border-dashed rounded-lg">
-                <h3 className="text-xl font-semibold">No Performance Data</h3>
-                <p className="text-muted-foreground mt-2">This user has not attempted any tests yet.</p>
-            </div>
-        )}
+      {performanceData.length > 0 ? (
+          <Card>
+              <CardHeader>
+                  <CardTitle>{t('subject_wise_proficiency')}</CardTitle>
+                  <CardDescription>{t('subject_wise_proficiency_desc')}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                  <ChartContainer config={{
+                      proficiency: {
+                          label: t('proficiency'),
+                          color: "hsl(var(--primary))",
+                      },
+                  }} className="h-[500px] w-full">
+                      <BarChart data={chartData} layout="vertical" margin={{ left: 50 }}>
+                          <CartesianGrid horizontal={false} />
+                          <XAxis type="number" dataKey="proficiency" unit="%" />
+                          <YAxis type="category" dataKey="name" tickLine={false} axisLine={false} tickMargin={10} width={150} />
+                          <ChartTooltip 
+                              content={<ChartTooltipContent 
+                                  nameKey="proficiency"
+                                  labelKey="name"
+                                  indicator="dot"
+                                  formatter={(value) => `${Number(value).toFixed(1)}%`}
+                              />}
+                          />
+                          <Bar dataKey="proficiency" fill="var(--color-proficiency)" radius={4} />
+                      </BarChart>
+                  </ChartContainer>
+              </CardContent>
+          </Card>
+      ) : (
+          <div className="text-center py-16 border-2 border-dashed rounded-lg">
+              <h3 className="text-xl font-semibold">No Performance Data</h3>
+              <p className="text-muted-foreground mt-2">This user has not attempted any tests yet.</p>
+          </div>
+      )}
     </div>
   );
 }
