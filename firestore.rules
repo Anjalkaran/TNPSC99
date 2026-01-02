@@ -1,6 +1,6 @@
 /**
  * @file Firestore Security Rules for TNPSC Ace Application
- * @description This ruleset enforces a user-ownership model for user profiles and test attempts,
+ * @description This ruleset enforces a user-ownership model for user profiles, test attempts, and bookmarks,
  *              while allowing public read access to subjects, classes, questions, and tests.
  *              Admin users have write access to core content collections.
  *
@@ -13,10 +13,11 @@
  * - /questions/{questionId}: Stores question data, publicly readable. Writable by admins.
  * - /tests/{testId}: Stores test data, publicly readable. Writable by admins.
  * - /users/{userId}/testAttempts/{testAttemptId}: Stores user's test attempts, accessible by the user and admins.
+ * - /users/{userId}/bookmarkedQuestions/{bookmarkId}: Stores user's bookmarks, accessible only by the owner.
  * - /scores/{scoreId}: Publicly readable leaderboard scores. Writable only by the user who owns the score.
  *
  * Key Security Decisions:
- * - Users can only read and write their own profiles and test attempts.
+ * - Users can only read and write their own profiles, test attempts, and bookmarks.
  * - Admins can read all user data and write to content collections.
  * - Subjects, classes, questions, and tests are publicly readable.
  * - Leaderboard scores are public, but can only be created by the user associated with the score.
@@ -64,6 +65,12 @@ service cloud.firestore {
         allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
         // Owner can delete their own test attempt
         allow delete: if isExistingOwner(userId);
+      }
+      
+      match /bookmarkedQuestions/{bookmarkId} {
+        // Owner can manage their own bookmarks
+        allow get, list, create, delete: if isOwner(userId) && request.resource.data.userId == userId;
+        allow update: if false; // Bookmarks are not updatable
       }
     }
     

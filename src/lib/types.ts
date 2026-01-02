@@ -93,6 +93,13 @@ export interface UserTestAttempt {
   sessionQuestionIds?: string[];
 }
 
+export interface BookmarkedQuestion {
+  id: string;
+  userId: string;
+  questionId: string;
+  createdAt: string;
+}
+
 export interface Score {
   id?: string;
   userId: string;
@@ -102,7 +109,3 @@ export interface Score {
   testTitle: string;
   createdAt: string;
 }
-
-    
-
-    

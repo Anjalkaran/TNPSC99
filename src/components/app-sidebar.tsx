@@ -23,7 +23,8 @@ import {
   Star,
   MessageSquare,
   LogOut,
-  BookOpenCheck
+  BookOpenCheck,
+  Bookmark
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useAuth, useUser, useDoc, useMemoFirebase, useFirestore } from '@/firebase';
@@ -51,6 +52,7 @@ export function AppSidebar() {
   const allSidebarLinks = [
       { href: '/dashboard', label: t('dashboard'), icon: LayoutDashboard },
       { href: '/online-tests', label: t('online_tests'), icon: FilePenLine },
+      { href: '/bookmarks', label: 'Bookmarks', icon: Bookmark },
       { href: '/study-material', label: t('study_material'), icon: BookOpen, adminOnly: true },
       { href: '/ask-your-doubt', label: t('ask_your_doubt'), icon: HelpCircle, adminOnly: true },
       { href: '/profile', label: t('profile'), icon: User },

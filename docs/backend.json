@@ -325,6 +325,37 @@
         "answers"
       ]
     },
+    "BookmarkedQuestion": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "BookmarkedQuestion",
+      "type": "object",
+      "description": "Represents a question that a user has bookmarked for future reference.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the bookmark entry."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User who bookmarked the question."
+        },
+        "questionId": {
+          "type": "string",
+          "description": "Reference to the Question that was bookmarked."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp of when the bookmark was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "questionId",
+        "createdAt"
+      ]
+    },
     "Score": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Score",
@@ -507,6 +538,26 @@
         }
       },
       {
+        "path": "/users/{userId}/bookmarkedQuestions/{bookmarkId}",
+        "definition": {
+          "entityName": "BookmarkedQuestion",
+          "schema": {
+            "$ref": "#/backend/entities/BookmarkedQuestion"
+          },
+          "description": "Stores questions bookmarked by a user. Uses path-based ownership.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "bookmarkId",
+              "description": "The unique identifier of the bookmark."
+            }
+          ]
+        }
+      },
+      {
         "path": "/scores/{scoreId}",
         "definition": {
           "entityName": "Score",
@@ -523,8 +574,6 @@
         }
       }
     ],
-    "reasoning": "The Firestore structure is designed to support the TNPSC Ace application, focusing on class-wise, subject-wise, and previous year MCQ tests. The design emphasizes authorization independence, clarity, and scalability.  We are using path-based ownership for user data and a membership map approach for collaborative data. The key collections are `users`, `subjects`, `classes`, `questions`, `tests`, `userTestAttempts`, and a new `scores` collection for the leaderboard. User-specific data is stored under `/users/{userId}`. The `scores` collection is publicly readable to build the leaderboard, but write access is restricted. This structure allows for efficient score tracking and personalized insights while maintaining a public, competitive element."
+    "reasoning": "The Firestore structure is designed to support the TNPSC Ace application, focusing on class-wise, subject-wise, and previous year MCQ tests. The design emphasizes authorization independence, clarity, and scalability.  We are using path-based ownership for user data and a membership map approach for collaborative data. The key collections are `users`, `subjects`, `classes`, `questions`, `tests`, `userTestAttempts`, a new `scores` collection for the leaderboard, and a `bookmarkedQuestions` subcollection under each user to store their bookmarks. User-specific data is stored under `/users/{userId}`. The `scores` collection is publicly readable to build the leaderboard, but write access is restricted. This structure allows for efficient score tracking and personalized insights while maintaining a public, competitive element."
   }
 }
-
-    

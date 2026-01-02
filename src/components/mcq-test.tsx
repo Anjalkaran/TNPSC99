@@ -1,16 +1,16 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import type { Test, UserTestAttempt, Score, Question } from '@/lib/types';
+import type { Test, UserTestAttempt, Score, Question, BookmarkedQuestion } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, ArrowRight, CheckCircle2, XCircle, RotateCw, LogOut, Timer, Info } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, XCircle, RotateCw, LogOut, Timer, Info, Bookmark } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth, useFirestore, useUser } from '@/firebase';
-import { addDoc, collection, doc, setDoc } from 'firebase/firestore';
+import { addDoc, collection, doc, setDoc, getDocs, query, where, deleteDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -37,6 +37,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
   const [score, setScore] = useState(0);
   const [isAnswered, setIsAnswered] = useState(false);
   const [totalTimeLeft, setTotalTimeLeft] = useState(questions.length * 45);
+  const [bookmarks, setBookmarks] = useState<string[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
 
@@ -45,6 +46,46 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
   const { toast } = useToast();
   
   const decodedTitle = decodeURIComponent(test.title);
+
+  useEffect(() => {
+    if (!user || !firestore) return;
+    const fetchBookmarks = async () => {
+        const q = query(collection(firestore, `users/${user.uid}/bookmarkedQuestions`));
+        const querySnapshot = await getDocs(q);
+        const questionIds = querySnapshot.docs.map(doc => doc.data().questionId);
+        setBookmarks(questionIds);
+    };
+    fetchBookmarks();
+  }, [user, firestore]);
+
+  const toggleBookmark = async (questionId: string) => {
+    if (!user || !firestore) return;
+
+    const isBookmarked = bookmarks.includes(questionId);
+    const bookmarksRef = collection(firestore, `users/${user.uid}/bookmarkedQuestions`);
+    
+    if (isBookmarked) {
+        // Remove bookmark
+        const q = query(bookmarksRef, where('questionId', '==', questionId));
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach(async (doc) => {
+            await deleteDoc(doc.ref);
+        });
+        setBookmarks(bookmarks.filter(id => id !== questionId));
+         toast({ description: "Bookmark removed." });
+    } else {
+        // Add bookmark
+        const newBookmark: Omit<BookmarkedQuestion, 'id'> = {
+            userId: user.uid,
+            questionId,
+            createdAt: new Date().toISOString()
+        };
+        await addDoc(bookmarksRef, newBookmark);
+        setBookmarks([...bookmarks, questionId]);
+        toast({ description: "Question bookmarked!" });
+    }
+  };
+
 
   const handleNext = () => {
     if (currentQuestionIndex < questions.length - 1) {
@@ -362,7 +403,12 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
         <Progress value={progress} className="mt-4" />
       </CardHeader>
       <CardContent className="py-6">
-        <p className="font-semibold text-lg mb-6">{currentQuestion.text}</p>
+        <div className="flex justify-between items-start">
+            <p className="font-semibold text-lg mb-6 flex-1">{currentQuestion.text}</p>
+            <Button variant="ghost" size="icon" onClick={() => toggleBookmark(currentQuestion.id)}>
+                <Bookmark className={cn("h-6 w-6", bookmarks.includes(currentQuestion.id) ? "fill-primary text-primary" : "text-muted-foreground")} />
+            </Button>
+        </div>
         <RadioGroup
             key={currentQuestionIndex}
             onValueChange={handleAnswerChange}
@@ -427,5 +473,3 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
     </Card>
   );
 }
-
-    
