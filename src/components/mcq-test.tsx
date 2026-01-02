@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { ArrowLeft, ArrowRight, CheckCircle2, XCircle, RotateCw, LogOut, Timer, Info, Bookmark } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth, useFirestore, useUser } from '@/firebase';
-import { addDoc, collection, doc, setDoc, getDocs, query, where, deleteDoc } from 'firebase/firestore';
+import { addDoc, collection, doc, setDoc, getDocs, query, where, deleteDoc, writeBatch } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -60,29 +60,48 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
 
   const toggleBookmark = async (questionId: string) => {
     if (!user || !firestore) return;
-
+  
     const isBookmarked = bookmarks.includes(questionId);
     const bookmarksRef = collection(firestore, `users/${user.uid}/bookmarkedQuestions`);
-    
+  
     if (isBookmarked) {
-        // Remove bookmark
-        const q = query(bookmarksRef, where('questionId', '==', questionId));
-        const querySnapshot = await getDocs(q);
-        querySnapshot.forEach(async (doc) => {
-            await deleteDoc(doc.ref);
-        });
+      // Find the specific bookmark document to delete
+      const q = query(bookmarksRef, where('questionId', '==', questionId));
+      const querySnapshot = await getDocs(q);
+      
+      const batch = writeBatch(firestore);
+      querySnapshot.forEach((doc) => {
+        batch.delete(doc.ref);
+      });
+      
+      batch.commit().then(() => {
         setBookmarks(bookmarks.filter(id => id !== questionId));
-         toast({ description: "Bookmark removed." });
+        toast({ description: "Bookmark removed." });
+      }).catch(error => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: bookmarksRef.path, // Use collection path for a query-based delete
+          operation: 'delete'
+        }));
+      });
+  
     } else {
-        // Add bookmark
-        const newBookmark: Omit<BookmarkedQuestion, 'id'> = {
-            userId: user.uid,
-            questionId,
-            createdAt: new Date().toISOString()
-        };
-        await addDoc(bookmarksRef, newBookmark);
+      // Add bookmark
+      const newBookmark: Omit<BookmarkedQuestion, 'id'> = {
+        userId: user.uid,
+        questionId,
+        createdAt: new Date().toISOString()
+      };
+      
+      addDoc(bookmarksRef, newBookmark).then((docRef) => {
         setBookmarks([...bookmarks, questionId]);
         toast({ description: "Question bookmarked!" });
+      }).catch(error => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: bookmarksRef.path,
+          operation: 'create',
+          requestResourceData: newBookmark
+        }));
+      });
     }
   };
 
