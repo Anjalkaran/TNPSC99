@@ -106,15 +106,14 @@ export default function LoginPage() {
       router.push('/');
     } catch (error: any) {
       console.error('Login error', error);
+      let description = 'ஏதோ தவறு நடந்துவிட்டது. மீண்டும் முயற்சிக்கவும்.';
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+        description = 'தவறான மின்னஞ்சல் அல்லது கடவுச்சொல். தயவுசெய்து உங்கள் சான்றுகளைச் சரிபார்த்து மீண்டும் முயற்சிக்கவும்.';
+      }
       toast({
         variant: 'destructive',
         title: 'உள்நுழைவதில் பிழை',
-        description:
-          error.code === 'auth/user-not-found' ||
-          error.code === 'auth/wrong-password' ||
-          error.code === 'auth/invalid-credential'
-            ? 'தவறான மின்னஞ்சல் அல்லது கடவுச்சொல்.'
-            : 'ஏதோ தவறு நடந்துவிட்டது. மீண்டும் முயற்சிக்கவும்.',
+        description: description,
       });
     } finally {
       setIsSubmitting(false);
