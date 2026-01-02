@@ -3,19 +3,17 @@
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { collection, getDocs, query, where } from 'firebase/firestore';
-import type { UserTestAttempt, Test } from '@/lib/types';
+import type { UserTestAttempt, Test, Subject, Category } from '@/lib/types';
 import { useMemo, useState, useEffect } from 'react';
 import { useTranslation } from '@/hooks/use-translation';
 import { Progress } from '@/components/ui/progress';
-import { BrainCircuit, Sparkles, Target, TrendingUp, BookCheck } from 'lucide-react';
+import { Sparkles, Target, TrendingUp, BookCheck, Shapes, FolderKanban } from 'lucide-react';
 import { analyzePerformance, type PerformanceInput, type PerformanceOutput } from '@/ai/flows/performance-analysis-flow';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
 
-interface SubjectPerformance {
-  subjectId: string;
-  subjectName: string;
+interface PerformanceMetric {
+  id: string;
+  name: string;
   totalAttempts: number;
   totalScore: number;
   totalQuestionsAttempted: number;
@@ -23,7 +21,8 @@ interface SubjectPerformance {
   proficiency: number;
 }
 
-function AiAnalysis({ performanceData }: { performanceData: SubjectPerformance[] }) {
+
+function AiAnalysis({ performanceData }: { performanceData: PerformanceMetric[] }) {
     const { t, language } = useTranslation();
     const [analysis, setAnalysis] = useState<PerformanceOutput | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -39,7 +38,7 @@ function AiAnalysis({ performanceData }: { performanceData: SubjectPerformance[]
             try {
                 const input: PerformanceInput = {
                     subjects: performanceData.map(p => ({
-                        name: p.subjectName,
+                        name: p.name,
                         proficiency: p.proficiency,
                         attempts: p.totalAttempts,
                     })),
@@ -128,9 +127,10 @@ function AiAnalysis({ performanceData }: { performanceData: SubjectPerformance[]
 export default function PerformancePage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
 
-  const [performanceData, setPerformanceData] = useState<SubjectPerformance[]>([]);
+  const [subjectPerformance, setSubjectPerformance] = useState<PerformanceMetric[]>([]);
+  const [categoryPerformance, setCategoryPerformance] = useState<PerformanceMetric[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const testAttemptsCollection = useMemoFirebase(() => 
@@ -146,22 +146,23 @@ export default function PerformancePage() {
     const calculatePerformance = async () => {
         setIsLoading(true);
         if (!testAttempts || testAttempts.length === 0) {
-            setPerformanceData([]);
+            setSubjectPerformance([]);
+            setCategoryPerformance([]);
             setIsLoading(false);
             return;
         }
 
-        // 1. Get all unique test IDs from attempts
         const testIds = [...new Set(testAttempts.map(attempt => attempt.testId))];
-
-        // 2. Fetch all corresponding test documents
         const testsMap = new Map<string, Test>();
+        const subjectsMap = new Map<string, Subject>();
+        const categoriesMap = new Map<string, Category>();
+        
+        // Fetch all tests
         if(testIds.length > 0) {
             const testIdChunks = [];
             for (let i = 0; i < testIds.length; i += 30) {
                 testIdChunks.push(testIds.slice(i, i + 30));
             }
-            
             for(const chunk of testIdChunks) {
                 const testsQuery = query(collection(firestore, 'tests'), where('__name__', 'in', chunk));
                 const testsSnapshot = await getDocs(testsQuery);
@@ -170,55 +171,82 @@ export default function PerformancePage() {
                 });
             }
         }
+        
+        const subjectIds = new Set<string>();
+        const categoryIds = new Set<string>();
+        testsMap.forEach(test => {
+            if (test.subjectId) subjectIds.add(test.subjectId);
+            if (test.categoryId) categoryIds.add(test.categoryId);
+        });
+
+        // Fetch all subjects
+        if (subjectIds.size > 0) {
+            const subjectsQuery = query(collection(firestore, 'subjects'), where('__name__', 'in', Array.from(subjectIds)));
+            const subjectsSnapshot = await getDocs(subjectsQuery);
+            subjectsSnapshot.forEach(doc => subjectsMap.set(doc.id, doc.data() as Subject));
+        }
+        
+        // Fetch all categories
+        if (categoryIds.size > 0) {
+            const categoriesQuery = query(collection(firestore, 'categories'), where('__name__', 'in', Array.from(categoryIds)));
+            const categoriesSnapshot = await getDocs(categoriesQuery);
+            categoriesSnapshot.forEach(doc => categoriesMap.set(doc.id, doc.data() as Category));
+        }
        
-        // 3. Aggregate performance by subject
-        const subjectStats: { [key: string]: { totalScore: number, totalAttempts: number, totalQuestions: number, subjectName: string } } = {};
+        const subjectStats: { [key: string]: { totalScore: number, totalAttempts: number, totalQuestions: number } } = {};
+        const categoryStats: { [key: string]: { totalScore: number, totalAttempts: number, totalQuestions: number } } = {};
 
         testAttempts.forEach(attempt => {
             const test = testsMap.get(attempt.testId);
-            if (test && test.subjectId) {
-                const subjectId = test.subjectId;
-                const subjectName = test.title.split(' - ')[1] || test.subjectId; // Heuristic for name
+            if (test) {
+                const numQuestions = Array.isArray(attempt.answers) ? attempt.answers.length : 0;
                 
-                if (!subjectStats[subjectId]) {
-                    subjectStats[subjectId] = { totalScore: 0, totalAttempts: 0, totalQuestions: 0, subjectName };
+                // Aggregate by subject
+                if (test.subjectId) {
+                    if (!subjectStats[test.subjectId]) {
+                        subjectStats[test.subjectId] = { totalScore: 0, totalAttempts: 0, totalQuestions: 0 };
+                    }
+                    subjectStats[test.subjectId].totalScore += attempt.score;
+                    subjectStats[test.subjectId].totalAttempts += 1;
+                    subjectStats[test.subjectId].totalQuestions += numQuestions;
                 }
-
-                subjectStats[subjectId].totalScore += attempt.score;
-                subjectStats[subjectId].totalAttempts += 1;
-                // Ensure answers is an array before getting length
-                subjectStats[subjectId].totalQuestions += Array.isArray(attempt.answers) ? attempt.answers.length : 0;
-
+                
+                // Aggregate by category
+                if (test.categoryId) {
+                     if (!categoryStats[test.categoryId]) {
+                        categoryStats[test.categoryId] = { totalScore: 0, totalAttempts: 0, totalQuestions: 0 };
+                    }
+                    categoryStats[test.categoryId].totalScore += attempt.score;
+                    categoryStats[test.categoryId].totalAttempts += 1;
+                    categoryStats[test.categoryId].totalQuestions += numQuestions;
+                }
             }
         });
         
-        // 4. Format for display
-        const formattedData: SubjectPerformance[] = Object.entries(subjectStats).map(([subjectId, stats]) => {
-            const averageScore = stats.totalAttempts > 0 ? stats.totalScore / stats.totalAttempts : 0;
-            const proficiency = stats.totalQuestions > 0 ? (stats.totalScore / stats.totalQuestions) * 100 : 0;
-            return {
-                subjectId,
-                subjectName: stats.subjectName,
-                totalAttempts: stats.totalAttempts,
-                totalScore: stats.totalScore,
-                totalQuestionsAttempted: stats.totalQuestions,
-                averageScore,
-                proficiency,
-            };
-        }).sort((a, b) => b.proficiency - a.proficiency); // Sort by proficiency
+        const formatData = (stats: { [key: string]: { totalScore: number, totalAttempts: number, totalQuestions: number } }, map: Map<string, Subject | Category>): PerformanceMetric[] => {
+            return Object.entries(stats).map(([id, statData]) => {
+                const item = map.get(id);
+                const proficiency = statData.totalQuestions > 0 ? (statData.totalScore / statData.totalQuestions) * 100 : 0;
+                return {
+                    id,
+                    name: item ? (language === 'ta' && item.name_ta ? item.name_ta : item.name) : id,
+                    totalAttempts: statData.totalAttempts,
+                    totalScore: statData.totalScore,
+                    totalQuestionsAttempted: statData.totalQuestions,
+                    averageScore: statData.totalAttempts > 0 ? statData.totalScore / statData.totalAttempts : 0,
+                    proficiency,
+                };
+            }).sort((a, b) => b.proficiency - a.proficiency);
+        };
 
-        setPerformanceData(formattedData);
+        setSubjectPerformance(formatData(subjectStats, subjectsMap));
+        setCategoryPerformance(formatData(categoryStats, categoriesMap));
         setIsLoading(false);
     }
 
     calculatePerformance();
 
-  }, [testAttempts, attemptsLoading, firestore]);
-  
-  const chartData = useMemo(() => performanceData.map(p => ({
-    name: p.subjectName,
-    proficiency: p.proficiency,
-  })).reverse(), [performanceData]); // Reverse for horizontal bar chart
+  }, [testAttempts, attemptsLoading, firestore, language]);
 
   if (isUserLoading || isLoading) {
     return <div className="container mx-auto p-4">{t('loading_performance_data')}</div>;
@@ -228,7 +256,6 @@ export default function PerformancePage() {
     return <div className="container mx-auto p-4">{t('login_to_view_performance')}</div>;
   }
 
-
   return (
     <div className="container mx-auto p-4 sm:p-6 md:p-8 space-y-8">
         <div className="mb-8">
@@ -236,39 +263,55 @@ export default function PerformancePage() {
             <p className="text-muted-foreground mt-2">{t('performance_desc')}</p>
         </div>
         
-        <AiAnalysis performanceData={performanceData} />
-
-        {performanceData.length > 0 ? (
+        <AiAnalysis performanceData={subjectPerformance} />
+        
+        <div className="grid md:grid-cols-2 gap-8">
             <Card>
                 <CardHeader>
-                    <CardTitle>{t('subject_wise_proficiency')}</CardTitle>
+                    <CardTitle className='flex items-center gap-2'><Shapes /> {t('subject_wise_proficiency')}</CardTitle>
                     <CardDescription>{t('subject_wise_proficiency_desc')}</CardDescription>
                 </CardHeader>
-                <CardContent>
-                    <ChartContainer config={{
-                        proficiency: {
-                            label: t('proficiency'),
-                            color: "hsl(var(--primary))",
-                        },
-                    }} className="h-[500px] w-full">
-                        <BarChart data={chartData} layout="vertical" margin={{ left: 50 }}>
-                            <CartesianGrid horizontal={false} />
-                            <XAxis type="number" dataKey="proficiency" unit="%" />
-                            <YAxis type="category" dataKey="name" tickLine={false} axisLine={false} tickMargin={10} width={150} />
-                            <ChartTooltip 
-                                content={<ChartTooltipContent 
-                                    nameKey="proficiency"
-                                    labelKey="name"
-                                    indicator="dot"
-                                    formatter={(value) => `${Number(value).toFixed(1)}%`}
-                                />}
-                            />
-                            <Bar dataKey="proficiency" fill="var(--color-proficiency)" radius={4} />
-                        </BarChart>
-                    </ChartContainer>
+                <CardContent className='space-y-4'>
+                    {subjectPerformance.length > 0 ? (
+                      subjectPerformance.map(p => (
+                        <div key={p.id}>
+                            <div className='flex justify-between items-center mb-1'>
+                                <span className='font-medium text-sm'>{p.name}</span>
+                                <span className='text-sm text-muted-foreground'>{p.proficiency.toFixed(0)}%</span>
+                            </div>
+                            <Progress value={p.proficiency} />
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-muted-foreground text-sm">{t('no_performance_data_desc')}</p>
+                    )}
                 </CardContent>
             </Card>
-        ) : (
+
+            <Card>
+                <CardHeader>
+                    <CardTitle className='flex items-center gap-2'><FolderKanban /> Category-wise Proficiency</CardTitle>
+                    <CardDescription>Your proficiency score in each category you've attempted.</CardDescription>
+                </CardHeader>
+                <CardContent className='space-y-4'>
+                    {categoryPerformance.length > 0 ? (
+                      categoryPerformance.map(p => (
+                        <div key={p.id}>
+                            <div className='flex justify-between items-center mb-1'>
+                                <span className='font-medium text-sm'>{p.name}</span>
+                                <span className='text-sm text-muted-foreground'>{p.proficiency.toFixed(0)}%</span>
+                            </div>
+                            <Progress value={p.proficiency} />
+                        </div>
+                      ))
+                    ) : (
+                       <p className="text-muted-foreground text-sm">No category performance data yet. Some tests may not be assigned to a category.</p>
+                    )}
+                </CardContent>
+            </Card>
+        </div>
+        
+        {(subjectPerformance.length === 0 && categoryPerformance.length === 0) && (
             <div className="text-center py-16 border-2 border-dashed rounded-lg">
                 <h3 className="text-xl font-semibold">{t('no_performance_data_title')}</h3>
                 <p className="text-muted-foreground mt-2">{t('no_performance_data_desc')}</p>
