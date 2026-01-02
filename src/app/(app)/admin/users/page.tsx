@@ -48,6 +48,7 @@ import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { setDoc } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 
 const addUserSchema = z.object({
@@ -253,45 +254,65 @@ export default function UserManagementPage() {
                                         <TableCell>{user.email}</TableCell>
                                         <TableCell>{user.isAdmin ? 'Admin' : 'User'}</TableCell>
                                         <TableCell className="text-right">
-                                            <div className="flex justify-end items-center gap-2">
-                                                <Button asChild variant="outline" size="sm">
-                                                    <Link href={`/admin/users/${encodeURIComponent(user.id)}/history`}>
-                                                        <History className="mr-2 h-4 w-4" />
-                                                        View History
-                                                    </Link>
-                                                </Button>
-                                                <Button asChild variant="outline" size="sm">
-                                                    <Link href={`/admin/users/${encodeURIComponent(user.id)}/performance`}>
-                                                        <BarChart2 className="mr-2 h-4 w-4" />
-                                                        View Performance
-                                                    </Link>
-                                                </Button>
-                                                <AlertDialog>
-                                                    <AlertDialogTrigger asChild>
-                                                        <Button variant="destructive" size="sm">
-                                                            <Trash className="mr-2 h-4 w-4" />
-                                                            Delete
-                                                        </Button>
-                                                    </AlertDialogTrigger>
-                                                    <AlertDialogContent>
-                                                    <AlertDialogHeader>
-                                                        <AlertDialogTitle>Delete user data for '{user.username}'?</AlertDialogTitle>
-                                                        <AlertDialogDescription>
-                                                            This will delete the user's profile from Firestore but will NOT delete their authentication account. The user will still be able to log in. This action is irreversible.
-                                                        </AlertDialogDescription>
-                                                    </AlertDialogHeader>
-                                                    <AlertDialogFooter>
-                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                        <AlertDialogAction
-                                                            onClick={() => handleDeleteUser(user.id, user.username)}
-                                                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                                        >
-                                                        Confirm Deletion
-                                                        </AlertDialogAction>
-                                                    </AlertDialogFooter>
-                                                    </AlertDialogContent>
-                                                </AlertDialog>
-                                            </div>
+                                            <TooltipProvider>
+                                                <div className="flex justify-end items-center gap-2">
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Button asChild variant="ghost" size="icon">
+                                                                <Link href={`/admin/users/${encodeURIComponent(user.id)}/history`}>
+                                                                    <History className="h-4 w-4" />
+                                                                </Link>
+                                                            </Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>View History</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Button asChild variant="ghost" size="icon">
+                                                                <Link href={`/admin/users/${encodeURIComponent(user.id)}/performance`}>
+                                                                    <BarChart2 className="h-4 w-4" />
+                                                                </Link>
+                                                            </Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>View Performance</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                    <AlertDialog>
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <AlertDialogTrigger asChild>
+                                                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                                                        <Trash className="h-4 w-4" />
+                                                                    </Button>
+                                                                </AlertDialogTrigger>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>Delete User</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                        <AlertDialogContent>
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle>Delete user data for '{user.username}'?</AlertDialogTitle>
+                                                            <AlertDialogDescription>
+                                                                This will delete the user's profile from Firestore but will NOT delete their authentication account. The user will still be able to log in. This action is irreversible.
+                                                            </AlertDialogDescription>
+                                                        </AlertDialogHeader>
+                                                        <AlertDialogFooter>
+                                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                            <AlertDialogAction
+                                                                onClick={() => handleDeleteUser(user.id, user.username)}
+                                                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                                            >
+                                                            Confirm Deletion
+                                                            </AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                        </AlertDialogContent>
+                                                    </AlertDialog>
+                                                </div>
+                                            </TooltipProvider>
                                         </TableCell>
                                     </TableRow>
                                 ))}
