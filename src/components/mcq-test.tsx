@@ -65,7 +65,6 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
     const bookmarksRef = collection(firestore, `users/${user.uid}/bookmarkedQuestions`);
   
     if (isBookmarked) {
-      // Find the specific bookmark document to delete
       const q = query(bookmarksRef, where('questionId', '==', questionId));
       const querySnapshot = await getDocs(q);
       
@@ -78,6 +77,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
         setBookmarks(bookmarks.filter(id => id !== questionId));
         toast({ description: "Bookmark removed." });
       }).catch(error => {
+        // This will emit a contextual error for debugging security rules
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: bookmarksRef.path, // Use collection path for a query-based delete
           operation: 'delete'
@@ -85,7 +85,6 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
       });
   
     } else {
-      // Add bookmark
       const newBookmark: Omit<BookmarkedQuestion, 'id'> = {
         userId: user.uid,
         questionId,
@@ -96,6 +95,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
         setBookmarks([...bookmarks, questionId]);
         toast({ description: "Question bookmarked!" });
       }).catch(error => {
+        // This will emit a contextual error for debugging security rules
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: bookmarksRef.path,
           operation: 'create',
