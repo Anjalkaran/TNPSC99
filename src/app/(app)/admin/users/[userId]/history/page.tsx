@@ -12,7 +12,8 @@ export default function UserExamHistoryPage() {
   const { t } = useTranslation();
   const firestore = useFirestore();
   const params = useParams();
-  const userId = Array.isArray(params.userId) ? params.userId[0] : params.userId;
+  const userIdParam = Array.isArray(params.userId) ? params.userId[0] : params.userId;
+  const userId = userIdParam ? decodeURIComponent(userIdParam) : undefined;
 
   const userRef = useMemoFirebase(() => (userId && firestore ? doc(firestore, 'users', userId) : null), [userId, firestore]);
   const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userRef);

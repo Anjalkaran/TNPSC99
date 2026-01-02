@@ -46,13 +46,13 @@ export default function UserManagementPage() {
                                         <TableCell>{user.email}</TableCell>
                                         <TableCell className="text-right space-x-2">
                                             <Button asChild variant="outline" size="sm">
-                                                <Link href={`/admin/users/${user.id}/history`}>
+                                                <Link href={`/admin/users/${encodeURIComponent(user.id)}/history`}>
                                                     <History className="mr-2 h-4 w-4" />
                                                     View History
                                                 </Link>
                                             </Button>
                                             <Button asChild variant="outline" size="sm">
-                                                <Link href={`/admin/users/${user.id}/performance`}>
+                                                <Link href={`/admin/users/${encodeURIComponent(user.id)}/performance`}>
                                                     <BarChart2 className="mr-2 h-4 w-4" />
                                                     View Performance
                                                 </Link>

@@ -131,7 +131,8 @@ export default function UserPerformancePage() {
   const firestore = useFirestore();
   const { t } = useTranslation();
   const params = useParams();
-  const userId = Array.isArray(params.userId) ? params.userId[0] : params.userId;
+  const userIdParam = Array.isArray(params.userId) ? params.userId[0] : params.userId;
+  const userId = userIdParam ? decodeURIComponent(userIdParam) : undefined;
 
   const [performanceData, setPerformanceData] = useState<SubjectPerformance[]>([]);
   const [isLoading, setIsLoading] = useState(true);
