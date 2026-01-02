@@ -332,12 +332,12 @@ function ExistingTestsList() {
                                         <span className="sr-only">Download</span>
                                     </Button>
                                      <Button asChild variant="outline" size="icon">
-                                        <Link href={`/admin/upload/${test.id}/view`}>
+                                        <Link href={`/admin/upload/${encodeURIComponent(test.id)}/view`}>
                                             <View className="h-4 w-4" />
                                         </Link>
                                     </Button>
                                     <Button asChild variant="outline" size="icon">
-                                        <Link href={`/admin/upload/${test.id}/edit`}>
+                                        <Link href={`/admin/upload/${encodeURIComponent(test.id)}/edit`}>
                                             <Edit className="h-4 w-4" />
                                         </Link>
                                     </Button>
@@ -741,5 +741,3 @@ export default function UploadMcqPage() {
     </div>
   );
 }
-
-    
