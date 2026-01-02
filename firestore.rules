@@ -69,7 +69,7 @@ service cloud.firestore {
       
       match /bookmarkedQuestions/{bookmarkId} {
         // Owner can read their own bookmarks
-        allow get, list: if isOwner(userId);
+        allow get, list: if request.auth.uid == userId;
         // Owner can create and delete bookmarks that belong to them
         allow create, delete: if isOwner(userId) && request.resource.data.userId == userId;
         // Bookmarks are not updatable
