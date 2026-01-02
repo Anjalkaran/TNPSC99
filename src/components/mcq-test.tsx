@@ -58,44 +58,41 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
     fetchBookmarks();
   }, [user, firestore]);
 
-  const toggleBookmark = async (questionId: string) => {
+  const toggleBookmark = (questionId: string) => {
     if (!user || !firestore) return;
-  
+
     const isBookmarked = bookmarks.includes(questionId);
     const bookmarksRef = collection(firestore, `users/${user.uid}/bookmarkedQuestions`);
-  
+
     if (isBookmarked) {
       const q = query(bookmarksRef, where('questionId', '==', questionId));
-      const querySnapshot = await getDocs(q);
-      
-      const batch = writeBatch(firestore);
-      querySnapshot.forEach((doc) => {
-        batch.delete(doc.ref);
-      });
-      
-      batch.commit().then(() => {
+      getDocs(q).then((querySnapshot) => {
+        const batch = writeBatch(firestore);
+        querySnapshot.forEach((doc) => {
+          batch.delete(doc.ref);
+        });
+        return batch.commit();
+      }).then(() => {
         setBookmarks(bookmarks.filter(id => id !== questionId));
         toast({ description: "Bookmark removed." });
       }).catch(error => {
-        // This will emit a contextual error for debugging security rules
         errorEmitter.emit('permission-error', new FirestorePermissionError({
-          path: bookmarksRef.path, // Use collection path for a query-based delete
+          path: bookmarksRef.path,
           operation: 'delete'
         }));
       });
-  
+
     } else {
       const newBookmark: Omit<BookmarkedQuestion, 'id'> = {
         userId: user.uid,
         questionId,
         createdAt: new Date().toISOString()
       };
-      
+
       addDoc(bookmarksRef, newBookmark).then((docRef) => {
         setBookmarks([...bookmarks, questionId]);
         toast({ description: "Question bookmarked!" });
       }).catch(error => {
-        // This will emit a contextual error for debugging security rules
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: bookmarksRef.path,
           operation: 'create',
