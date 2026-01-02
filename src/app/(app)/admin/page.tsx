@@ -1,25 +1,15 @@
-
 'use client';
-import { useFirestore, useCollection } from '@/firebase';
-import { collection } from 'firebase/firestore';
-import { useEffect, useState, useMemo } from 'react';
-import type { UserProfile } from '@/lib/types';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
-import { Search, Shield, BookOpen, FileQuestion, BarChart, Trophy, FileText, BrainCircuit } from 'lucide-react';
-import { useMemoFirebase } from '@/firebase/provider';
 import { useTranslation } from '@/hooks/use-translation';
 import { IconMcqBank, IconQuestionBank, IconTopicManagement } from '@/components/icons';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Shield, BookOpen, Trophy, BarChart } from 'lucide-react';
 
 export default function AdminPage() {
     const { t } = useTranslation();
 
     const adminSections = [
-        { href: '/admin', label: t('user_management'), icon: <Shield /> },
+        { href: '/admin/users', label: t('user_management'), icon: <Shield /> },
         { href: '/admin/topics', label: t('topic_management'), icon: <IconTopicManagement />},
         { href: '#', label: t('study_material'), icon: <BookOpen />, comingSoon: true },
         { href: '/admin/upload', label: t('mcq_bank'), icon: <IconMcqBank /> },
