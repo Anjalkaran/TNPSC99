@@ -50,8 +50,9 @@ service cloud.firestore {
       allow create: if isOwner(userId) && request.resource.data.id == userId;
       // Users can update their own profile, ensuring they don't grant themselves admin rights
       allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id && (!('isAdmin' in request.resource.data) || request.resource.data.isAdmin == resource.data.isAdmin);
-      // Users can delete their own profile
-      allow delete: if isExistingOwner(userId);
+      
+      // Admins can delete user profiles, users can delete their own
+      allow delete: if isAdmin() || isExistingOwner(userId);
 
       match /testAttempts/{testAttemptId} {
         // Owner or admin can get a specific test attempt
@@ -71,7 +72,8 @@ service cloud.firestore {
         // Owner can read their own bookmarks
         allow get, list: if request.auth.uid == userId;
         // Owner can create and delete bookmarks that belong to them
-        allow create, delete: if isOwner(userId) && request.resource.data.userId == userId;
+        allow create: if isOwner(userId) && request.resource.data.userId == userId;
+        allow delete: if isOwner(userId);
         // Bookmarks are not updatable
         allow update: if false;
       }
