@@ -252,44 +252,46 @@ export default function UserManagementPage() {
                                         <TableCell>{user.username}</TableCell>
                                         <TableCell>{user.email}</TableCell>
                                         <TableCell>{user.isAdmin ? 'Admin' : 'User'}</TableCell>
-                                        <TableCell className="text-right space-x-2">
-                                            <Button asChild variant="outline" size="sm">
-                                                <Link href={`/admin/users/${encodeURIComponent(user.id)}/history`}>
-                                                    <History className="mr-2 h-4 w-4" />
-                                                    View History
-                                                </Link>
-                                            </Button>
-                                            <Button asChild variant="outline" size="sm">
-                                                <Link href={`/admin/users/${encodeURIComponent(user.id)}/performance`}>
-                                                    <BarChart2 className="mr-2 h-4 w-4" />
-                                                    View Performance
-                                                </Link>
-                                            </Button>
-                                             <AlertDialog>
-                                                <AlertDialogTrigger asChild>
-                                                    <Button variant="destructive" size="sm">
-                                                        <Trash className="mr-2 h-4 w-4" />
-                                                        Delete
-                                                    </Button>
-                                                </AlertDialogTrigger>
-                                                <AlertDialogContent>
-                                                <AlertDialogHeader>
-                                                    <AlertDialogTitle>Delete user data for '{user.username}'?</AlertDialogTitle>
-                                                    <AlertDialogDescription>
-                                                        This will delete the user's profile from Firestore but will NOT delete their authentication account. The user will still be able to log in. This action is irreversible.
-                                                    </AlertDialogDescription>
-                                                </AlertDialogHeader>
-                                                <AlertDialogFooter>
-                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                    <AlertDialogAction
-                                                        onClick={() => handleDeleteUser(user.id, user.username)}
-                                                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                                    >
-                                                    Confirm Deletion
-                                                    </AlertDialogAction>
-                                                </AlertDialogFooter>
-                                                </AlertDialogContent>
-                                            </AlertDialog>
+                                        <TableCell className="text-right">
+                                            <div className="flex justify-end items-center gap-2">
+                                                <Button asChild variant="outline" size="sm">
+                                                    <Link href={`/admin/users/${encodeURIComponent(user.id)}/history`}>
+                                                        <History className="mr-2 h-4 w-4" />
+                                                        View History
+                                                    </Link>
+                                                </Button>
+                                                <Button asChild variant="outline" size="sm">
+                                                    <Link href={`/admin/users/${encodeURIComponent(user.id)}/performance`}>
+                                                        <BarChart2 className="mr-2 h-4 w-4" />
+                                                        View Performance
+                                                    </Link>
+                                                </Button>
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger asChild>
+                                                        <Button variant="destructive" size="sm">
+                                                            <Trash className="mr-2 h-4 w-4" />
+                                                            Delete
+                                                        </Button>
+                                                    </AlertDialogTrigger>
+                                                    <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>Delete user data for '{user.username}'?</AlertDialogTitle>
+                                                        <AlertDialogDescription>
+                                                            This will delete the user's profile from Firestore but will NOT delete their authentication account. The user will still be able to log in. This action is irreversible.
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                        <AlertDialogAction
+                                                            onClick={() => handleDeleteUser(user.id, user.username)}
+                                                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                                        >
+                                                        Confirm Deletion
+                                                        </AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ))}
