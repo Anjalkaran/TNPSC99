@@ -42,7 +42,7 @@ import {
 const unitFormSchema = z.object({
   classId: z.string().min(1, { message: "Please select a class." }),
   subjectName: z.string().min(1, { message: "Subject name must be at least 1 character." }),
-  term: z.string().min(1, { message: "Please select a term." }),
+  term: z.string(),
   unitNumber: z.coerce.number().min(1, "Unit number must be at least 1."),
   unitName: z.string().min(1, { message: 'Unit name must be at least 1 character.' }),
   categoryName: z.string().optional(),
@@ -69,9 +69,18 @@ function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, cla
         },
     });
 
-    const subjectNameValue = form.watch('subjectName');
-    
-    const showTamilCategories = subjectNameValue === 'தமிழ்' || subjectNameValue === 'Tamil';
+    const classIdValue = form.watch('classId');
+    const selectedClass = classes?.find(c => c.id === classIdValue);
+    const classNameValue = selectedClass?.name || '';
+    const classNumber = parseInt(classNameValue.match(/\d+/) || ['0'][0]);
+
+    const showTermField = classNumber < 8;
+
+    useEffect(() => {
+        if (!showTermField) {
+            form.setValue('term', 'Full Book');
+        }
+    }, [showTermField, form]);
 
     const onSubmit: SubmitHandler<UnitFormValues> = async (values) => {
         if (!firestore) return;
@@ -122,7 +131,7 @@ function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, cla
             const unitData: Partial<Omit<Unit, 'id'>> = {
                 classId,
                 subjectId,
-                term,
+                term: showTermField ? term : 'Full Book',
                 unitNumber,
                 unitName,
                 categoryId
@@ -198,30 +207,31 @@ function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, cla
                       </FormItem>
                   )}
               />
-
-                <FormField
-                    control={form.control}
-                    name="term"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>{t('Term')}</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                                <FormControl>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder={t('Select a Term')} />
-                                    </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                    <SelectItem value="பருவம் 1">பருவம் 1</SelectItem>
-                                    <SelectItem value="பருவம் 2">பருவம் 2</SelectItem>
-                                    <SelectItem value="பருவம் 3">பருவம் 3</SelectItem>
-                                    <SelectItem value="Full Book">Full Book</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                
+                {showTermField && (
+                    <FormField
+                        control={form.control}
+                        name="term"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>{t('Term')}</FormLabel>
+                                <Select onValueChange={field.onChange} value={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder={t('Select a Term')} />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="பருவம் 1">பருவம் 1</SelectItem>
+                                        <SelectItem value="பருவம் 2">பருவம் 2</SelectItem>
+                                        <SelectItem value="பருவம் 3">பருவம் 3</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                )}
 
                 <FormField
                   control={form.control}
@@ -421,9 +431,18 @@ export default function TopicManagementPage() {
     defaultValues: { classId: '', subjectName: '', term: '', unitNumber: 1, unitName: '', categoryName: '' },
   });
 
-  const subjectNameValue = form.watch('subjectName');
-  
-  const showTamilCategories = subjectNameValue === 'தமிழ்' || subjectNameValue === 'Tamil';
+  const classIdValue = form.watch('classId');
+  const selectedClass = classes?.find(c => c.id === classIdValue);
+  const classNameValue = selectedClass?.name || '';
+  const classNumber = parseInt(classNameValue.match(/\d+/) || ['0'][0]);
+
+  const showTermField = classNumber < 8;
+
+  useEffect(() => {
+    if (!showTermField) {
+        form.setValue('term', 'Full Book');
+    }
+  }, [showTermField, form, classIdValue]);
 
   const resetForm = () => {
     form.reset();
@@ -487,7 +506,7 @@ export default function TopicManagementPage() {
             id: unitDocRef.id,
             classId,
             subjectId,
-            term,
+            term: showTermField ? term : 'Full Book',
             unitNumber,
             unitName,
             categoryId
@@ -578,30 +597,30 @@ export default function TopicManagementPage() {
                   )}
                 />
 
-
-                <FormField
-                  control={form.control}
-                  name="term"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('Term')}</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder={t('Select a Term')} />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="பருவம் 1">பருவம் 1</SelectItem>
-                          <SelectItem value="பருவம் 2">பருவம் 2</SelectItem>
-                          <SelectItem value="பருவம் 3">பருவம் 3</SelectItem>
-                           <SelectItem value="Full Book">Full Book</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {showTermField && (
+                    <FormField
+                    control={form.control}
+                    name="term"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>{t('Term')}</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder={t('Select a Term')} />
+                            </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                            <SelectItem value="பருவம் 1">பருவம் 1</SelectItem>
+                            <SelectItem value="பருவம் 2">பருவம் 2</SelectItem>
+                            <SelectItem value="பருவம் 3">பருவம் 3</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                )}
 
                 <FormField
                   control={form.control}
