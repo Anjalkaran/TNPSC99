@@ -456,7 +456,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
         {isAnswered && currentQuestion.reference && (
           <div className="mt-4 p-4 bg-muted/50 rounded-lg">
             <p className="text-sm font-semibold">குறிப்பு</p>
-            <p className="text-sm text-muted-foreground">{currentQuestion.reference}</p>
+            <a href="#" className="text-sm text-blue-600 hover:underline dark:text-blue-400">{currentQuestion.reference}</a>
           </div>
         )}
         {isAnswered && currentQuestion.explanation && (
