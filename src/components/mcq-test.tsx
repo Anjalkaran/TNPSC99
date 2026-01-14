@@ -456,7 +456,14 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
         {isAnswered && currentQuestion.reference && (
           <div className="mt-4 p-4 bg-muted/50 rounded-lg">
             <p className="text-sm font-semibold">குறிப்பு</p>
-            <a href="#" className="text-sm text-blue-600 hover:underline dark:text-blue-400">{currentQuestion.reference}</a>
+            <a 
+              href={currentQuestion.referenceUrl ? `${currentQuestion.referenceUrl}#page=${currentQuestion.referencePage || 1}` : '#'} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-sm text-blue-600 hover:underline dark:text-blue-400"
+            >
+              {currentQuestion.reference}
+            </a>
           </div>
         )}
         {isAnswered && currentQuestion.explanation && (

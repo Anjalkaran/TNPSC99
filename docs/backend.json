@@ -216,6 +216,15 @@
           "type": "string",
           "description": "A reference or source for the question."
         },
+        "referenceUrl": {
+            "type": "string",
+            "description": "URL to the source document for the reference.",
+            "format": "uri"
+        },
+        "referencePage": {
+            "type": "number",
+            "description": "Page number in the source document."
+        },
         "explanation": {
             "type": "string",
             "description": "An explanation for the correct answer."

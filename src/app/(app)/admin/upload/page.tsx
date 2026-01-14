@@ -69,15 +69,11 @@ const jsonStructureExample = `[
     "text": "Your question text here?",
     "answerOptions": ["Option A", "Option B", "Option C", "Option D"],
     "correctAnswerIndex": 0,
-    "reference": "Source or hint for the question (optional)",
     "unitId": "your-unit-id-here",
-    "explanation": "Detailed explanation for the correct answer (optional)"
-  },
-  {
-    "text": "Another question?",
-    "answerOptions": ["Yes", "No"],
-    "correctAnswerIndex": 1,
-    "unitId": "your-unit-id-here"
+    "explanation": "Detailed explanation for the correct answer (optional)",
+    "reference": "6th std unit 1 page 5 (optional)",
+    "referenceUrl": "https://your-pdf-host.com/book.pdf (optional)",
+    "referencePage": 5 (optional)
   }
 ]`;
 

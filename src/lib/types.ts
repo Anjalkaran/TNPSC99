@@ -11,6 +11,8 @@ export interface Question {
   correctAnswerIndex: number;
   answerOptions: string[];
   reference?: string;
+  referenceUrl?: string;
+  referencePage?: number;
   explanation?: string;
 }
 
