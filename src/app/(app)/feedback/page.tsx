@@ -29,7 +29,6 @@ import { Send } from 'lucide-react';
 
 const feedbackSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
-  email: z.string().email({ message: 'Please enter a valid email address.' }),
   subject: z.string().min(5, { message: 'Subject must be at least 5 characters.' }),
   message: z
     .string()
@@ -49,7 +48,6 @@ export default function FeedbackPage() {
     resolver: zodResolver(feedbackSchema),
     defaultValues: {
       name: user?.displayName || '',
-      email: '',
       subject: '',
       message: '',
     },
@@ -71,8 +69,7 @@ export default function FeedbackPage() {
     });
 
     form.reset();
-     form.setValue('name', user?.displayName || '');
-    form.setValue('email', '');
+    form.setValue('name', user?.displayName || '');
     setIsSubmitting(false);
   };
 
@@ -88,34 +85,19 @@ export default function FeedbackPage() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="grid sm:grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Your Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., John Doe" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Your Email</FormLabel>
-                      <FormControl>
-                        <Input placeholder="you@example.com" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Your Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., John Doe" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="subject"
