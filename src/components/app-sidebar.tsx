@@ -34,6 +34,7 @@ import { Button } from './ui/button';
 import { signOut } from 'firebase/auth';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { useTranslation } from '@/hooks/use-translation';
+import { Logo } from './icons';
 
 
 export function AppSidebar() {
@@ -73,8 +74,7 @@ export function AppSidebar() {
     <>
       <SidebarHeader>
         <Link href="/dashboard" className="flex items-center gap-2">
-            <BookOpenCheck className="h-6 w-6 text-primary" />
-            <span className="font-bold text-lg">{t('app_title')}</span>
+            <Logo className="h-8 w-auto" />
         </Link>
       </SidebarHeader>
 

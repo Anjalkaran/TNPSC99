@@ -24,6 +24,7 @@ import { doc, getFirestore } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
 import { useTranslation } from '@/hooks/use-translation';
 import { LanguageSwitcher } from './language-switcher';
+import { Logo } from './icons';
 
 
 function UserNav() {
@@ -109,8 +110,7 @@ export function SiteHeader() {
     <header className="sticky top-0 z-50 w-full border-b bg-card shadow-sm">
       <div className="container flex h-16 items-center justify-between px-4 md:px-6">
         <Link href="/" className="flex items-center gap-2">
-          <BookOpenCheck className="h-6 w-6 text-primary" />
-          <span className="font-bold text-lg">{t('app_title')}</span>
+          <Logo className="h-8 w-auto" />
         </Link>
         <div className="flex items-center gap-4">
             <LanguageSwitcher />
