@@ -24,7 +24,7 @@ import { doc, getFirestore } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
 import { useTranslation } from '@/hooks/use-translation';
 import { LanguageSwitcher } from './language-switcher';
-import { Logo } from './icons';
+import Image from 'next/image';
 
 
 function UserNav() {
@@ -110,7 +110,7 @@ export function SiteHeader() {
     <header className="sticky top-0 z-50 w-full border-b bg-card shadow-sm">
       <div className="container flex h-16 items-center justify-between px-4 md:px-6">
         <Link href="/" className="flex items-center gap-2">
-          <Logo className="h-8 w-auto" />
+          <Image src="/logo.png" alt="TNPSC99 Logo" width={150} height={40} />
         </Link>
         <div className="flex items-center gap-4">
             <LanguageSwitcher />

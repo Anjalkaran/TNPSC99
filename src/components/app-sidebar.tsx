@@ -34,7 +34,7 @@ import { Button } from './ui/button';
 import { signOut } from 'firebase/auth';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { useTranslation } from '@/hooks/use-translation';
-import { Logo } from './icons';
+import Image from 'next/image';
 
 
 export function AppSidebar() {
@@ -74,7 +74,7 @@ export function AppSidebar() {
     <>
       <SidebarHeader>
         <Link href="/dashboard" className="flex items-center gap-2">
-            <Logo className="h-8 w-auto" />
+            <Image src="/logo.png" alt="TNPSC99 Logo" width={150} height={40} />
         </Link>
       </SidebarHeader>
 

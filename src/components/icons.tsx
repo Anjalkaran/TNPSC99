@@ -60,18 +60,3 @@ export const IconQuestionBank = (props: React.SVGProps<SVGSVGElement>) => (
       <path d="M6 13L2 17" />
     </svg>
   );
-
-export const Logo = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 200 200"
-        {...props}
-    >
-        <rect x="10" y="10" width="180" height="180" rx="20" fill="#f5f5f5" stroke="#1e3a8a" strokeWidth="4"/>
-        <polygon points="100,40 130,80 70,80" fill="#fbbf24"/>
-        <polygon points="100,60 120,100 80,100" fill="#fbbf24"/>
-        <polygon points="100,80 110,120 90,120" fill="#fbbf24"/>
-        <path d="M70 130 L90 150 L130 100" stroke="#22c55e" strokeWidth="8" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-        <text x="50%" y="190" textAnchor="middle" fontFamily="Arial, sans-serif" fontSize="28" fill="#1e3a8a">tnpsc<tspan fill="#ef4444">99</tspan></text>
-    </svg>
-);
