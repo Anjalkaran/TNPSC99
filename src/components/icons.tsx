@@ -62,61 +62,16 @@ export const IconQuestionBank = (props: React.SVGProps<SVGSVGElement>) => (
   );
 
 export const Logo = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg
-    width="152"
-    height="40"
-    viewBox="0 0 152 40"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    {...props}
-  >
-    <g clipPath="url(#clip0_1_2)">
-      <path
-        d="M5.19922 2.80078C3.87353 2.80078 2.79922 3.8751 2.79922 5.20078V34.8008C2.79922 36.1265 3.87353 37.2008 5.19922 37.2008H34.7992C36.1249 37.2008 37.1992 36.1265 37.1992 34.8008V5.20078C37.1992 3.8751 36.1249 2.80078 34.7992 2.80078H5.19922Z"
-        stroke="#007BFF"
-        strokeWidth="2"
-      />
-      <path
-        d="M19.9998 8.40039C21.0362 8.40039 21.8797 9.24392 21.8797 10.2804V15.6804H18.1197V10.2804C18.1197 9.24392 18.9632 8.40039 19.9998 8.40039Z"
-        fill="#FFC107"
-      />
-      <path d="M21.8797 15.6804H18.1197V19.4404H21.8797V15.6804Z" fill="#FFC107" />
-      <path
-        d="M25.6396 19.4404H14.3596L16.2396 23.2004H23.7596L25.6396 19.4404Z"
-        fill="#FFC107"
-      />
-      <path
-        d="M23.7596 23.2004H16.2396L14.3596 26.9604H25.6396L23.7596 23.2004Z"
-        fill="#FFC107"
-      />
-      <path
-        d="M25.6396 26.9604H14.3596L12.4796 30.7204H27.5196L25.6396 26.9604Z"
-        fill="#FFC107"
-      />
-      <path
-        d="M15.2797 19.4404L27.5197 31.6804L29.3997 29.8004L18.1197 18.5204L15.2797 19.4404Z"
-        fill="#28A745"
-      />
-      <path
-        d="M12.4796 22.2804L15.2797 19.4404L18.1197 18.5204L8.71963 27.9204L12.4796 22.2804Z"
-        fill="#28A745"
-      />
-    </g>
-    <text
-      x="48"
-      y="28"
-      fontFamily="Inter, sans-serif"
-      fontSize="24"
-      fontWeight="bold"
-      fill="#007BFF"
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 200 200"
+        {...props}
     >
-      tnpsc
-      <tspan fill="#FFC107">99</tspan>
-    </text>
-    <defs>
-      <clipPath id="clip0_1_2">
-        <rect width="40" height="40" fill="white" />
-      </clipPath>
-    </defs>
-  </svg>
+        <rect x="10" y="10" width="180" height="180" rx="20" fill="#f5f5f5" stroke="#1e3a8a" strokeWidth="4"/>
+        <polygon points="100,40 130,80 70,80" fill="#fbbf24"/>
+        <polygon points="100,60 120,100 80,100" fill="#fbbf24"/>
+        <polygon points="100,80 110,120 90,120" fill="#fbbf24"/>
+        <path d="M70 130 L90 150 L130 100" stroke="#22c55e" strokeWidth="8" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+        <text x="50%" y="190" textAnchor="middle" fontFamily="Arial, sans-serif" fontSize="28" fill="#1e3a8a">tnpsc<tspan fill="#ef4444">99</tspan></text>
+    </svg>
 );
