@@ -74,7 +74,7 @@ export function AppSidebar() {
     <>
       <SidebarHeader>
         <Link href="/dashboard" className="flex items-center gap-2">
-            <Image src="https://firebasestorage.googleapis.com/v0/b/studio-5029416251-928dd.firebasestorage.app/o/tnpsc99.png?alt=media&token=09afe097-dc54-42ba-8b10-1bafc51445fa" alt="TNPSC99 Logo" width={150} height={40} />
+            <Image src="https://firebasestorage.googleapis.com/v0/b/studio-5029416251-928dd.firebasestorage.app/o/tnpsc99.png?alt=media&token=dd481685-ed51-4cef-a57f-54bd3212f4cc" alt="TNPSC99 Logo" width={150} height={40} />
         </Link>
       </SidebarHeader>
 

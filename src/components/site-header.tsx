@@ -110,7 +110,7 @@ export function SiteHeader() {
     <header className="sticky top-0 z-50 w-full border-b bg-card shadow-sm">
       <div className="container flex h-16 items-center justify-between px-4 md:px-6">
         <Link href="/" className="flex items-center gap-2">
-          <Image src="https://firebasestorage.googleapis.com/v0/b/studio-5029416251-928dd.firebasestorage.app/o/tnpsc99.png?alt=media&token=09afe097-dc54-42ba-8b10-1bafc51445fa" alt="TNPSC99 Logo" width={150} height={40} />
+          <Image src="https://firebasestorage.googleapis.com/v0/b/studio-5029416251-928dd.firebasestorage.app/o/tnpsc99.png?alt=media&token=dd481685-ed51-4cef-a57f-54bd3212f4cc" alt="TNPSC99 Logo" width={150} height={40} />
         </Link>
         <div className="flex items-center gap-4">
             <LanguageSwitcher />
