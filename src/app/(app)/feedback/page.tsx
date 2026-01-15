@@ -49,7 +49,7 @@ export default function FeedbackPage() {
     resolver: zodResolver(feedbackSchema),
     defaultValues: {
       name: user?.displayName || '',
-      email: user?.email || '',
+      email: '',
       subject: '',
       message: '',
     },
@@ -72,7 +72,7 @@ export default function FeedbackPage() {
 
     form.reset();
      form.setValue('name', user?.displayName || '');
-    form.setValue('email', user?.email || '');
+    form.setValue('email', '');
     setIsSubmitting(false);
   };
 
