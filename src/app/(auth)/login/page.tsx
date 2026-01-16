@@ -21,10 +21,12 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
-import { useAuth, useUser } from '@/firebase';
+import { useAuth, useUser, errorEmitter, FirestorePermissionError } from '@/firebase';
 import {
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
+  GoogleAuthProvider,
+  signInWithPopup,
 } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -40,6 +42,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
+import type { UserProfile } from '@/lib/types';
 
 const loginSchema = z.object({
   email: z.string().email('தவறான மின்னஞ்சல் முகவரி.'),
@@ -47,6 +51,12 @@ const loginSchema = z.object({
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
+
+const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.85 3.18-1.73 4.1-1.05 1.05-2.86 2.25-5.02 2.25-4.42 0-8.03-3.6-8.03-8.03s3.6-8.03 8.03-8.03c2.5 0 4.12.98 5.02 1.9l2.4-2.4C18.02 2.37 15.48 1 12.48 1 5.88 1 1 5.88 1 12s4.88 11 11.48 11c6.6 0 11.12-4.42 11.12-11.25 0-.75-.07-1.48-.2-2.18h-11z" fill="currentColor"/>
+    </svg>
+  );
 
 export default function LoginPage() {
   const auth = useAuth();
@@ -92,6 +102,52 @@ export default function LoginPage() {
         title: 'மின்னஞ்சல் அனுப்புவதில் பிழை',
         description: 'கடவுச்சொல் மீட்டமைப்பு மின்னஞ்சலை அனுப்புவதில் ஒரு சிக்கல் ஏற்பட்டது. மின்னஞ்சல் சரியானதா என சரிபார்க்கவும்.',
       });
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setIsSubmitting(true);
+    const provider = new GoogleAuthProvider();
+    try {
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        const firestore = getFirestore(auth.app);
+
+        const userDocRef = doc(firestore, 'users', user.uid);
+        const userDocSnap = await getDoc(userDocRef);
+
+        if (!userDocSnap.exists()) {
+            const userProfile: UserProfile = {
+                id: user.uid,
+                username: user.displayName || user.email!,
+                email: user.email!,
+                registrationDate: new Date().toISOString(),
+                isAdmin: user.email === 'nanaa@thervumaiyam.in',
+            };
+
+            setDoc(userDocRef, userProfile).catch((error) => {
+                errorEmitter.emit('permission-error', new FirestorePermissionError({
+                    path: userDocRef.path,
+                    operation: 'create',
+                    requestResourceData: userProfile,
+                }));
+            });
+        }
+
+        toast({
+            title: 'வெற்றிகரமாக உள்நுழைந்துள்ளீர்கள்',
+            description: 'முகப்பு பக்கத்திற்கு திருப்பிவிடப்படுகிறீர்கள்.',
+        });
+        router.push('/');
+    } catch (error: any) {
+        console.error('Google Sign-In error', error);
+        toast({
+            variant: 'destructive',
+            title: 'Google உடன் உள்நுழைவதில் பிழை',
+            description: error.message || 'ஏதோ தவறு நடந்துவிட்டது. மீண்டும் முயற்சிக்கவும்.',
+        });
+    } finally {
+        setIsSubmitting(false);
     }
   };
 
@@ -206,6 +262,20 @@ export default function LoginPage() {
             </Button>
           </form>
         </Form>
+        <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                அல்லது தொடரவும்
+                </span>
+            </div>
+        </div>
+        <Button variant="outline" type="button" onClick={handleGoogleSignIn} disabled={isSubmitting} className="w-full">
+            <GoogleIcon className="mr-2 h-4 w-4" />
+            Google உடன் உள்நுழையவும்
+        </Button>
       </CardContent>
       <CardFooter className="flex justify-center">
         <p className="text-sm text-muted-foreground">
