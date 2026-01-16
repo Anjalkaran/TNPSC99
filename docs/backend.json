@@ -405,6 +405,57 @@
         "testTitle",
         "createdAt"
       ]
+    },
+    "StudyMaterial": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "StudyMaterial",
+      "type": "object",
+      "description": "Represents a study material file (e.g., PDF) uploaded for a specific class and subject.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the StudyMaterial entity."
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the study material."
+        },
+        "description": {
+          "type": "string",
+          "description": "A brief description of the material."
+        },
+        "classId": {
+          "type": "string",
+          "description": "Reference to the Class this material belongs to."
+        },
+        "subjectId": {
+          "type": "string",
+          "description": "Reference to the Subject this material belongs to."
+        },
+        "fileUrl": {
+          "type": "string",
+          "description": "The public URL of the uploaded file in Firebase Storage.",
+          "format": "uri"
+        },
+        "fileName": {
+            "type": "string",
+            "description": "The name of the uploaded file."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp of when the material was uploaded.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "classId",
+        "subjectId",
+        "fileUrl",
+        "fileName",
+        "createdAt"
+      ]
     }
   },
   "auth": {
@@ -579,6 +630,22 @@
             {
               "name": "scoreId",
               "description": "The unique identifier of the score entry."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/studymaterials/{materialId}",
+        "definition": {
+          "entityName": "StudyMaterial",
+          "schema": {
+            "$ref": "#/backend/entities/StudyMaterial"
+          },
+          "description": "Stores uploaded study materials like PDFs. Publicly readable, admin writable.",
+          "params": [
+            {
+              "name": "materialId",
+              "description": "The unique identifier of the study material."
             }
           ]
         }
