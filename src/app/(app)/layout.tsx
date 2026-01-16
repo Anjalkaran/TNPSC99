@@ -29,15 +29,6 @@ export default function AppLayout({
     }
   }, [user, isUserLoading, router, pathname]);
 
-  // The home page is now public and has its own layout.
-  // We only handle authenticated routes here.
-  useEffect(() => {
-    if(!isUserLoading && user && pathname === '/') {
-        router.push('/dashboard');
-    }
-  },[user, isUserLoading, pathname, router])
-
-
   if (isUserLoading || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center">
