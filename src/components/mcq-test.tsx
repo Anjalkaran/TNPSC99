@@ -329,6 +329,13 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
     return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
+  const isGoogleDriveLink = currentQuestion.referenceUrl?.includes('drive.google.com');
+  const referenceHref = currentQuestion.referenceUrl
+    ? isGoogleDriveLink
+      ? currentQuestion.referenceUrl
+      : `${currentQuestion.referenceUrl}#page=${currentQuestion.referencePage || 1}`
+    : '#';
+
   if (isSubmitted) {
     return (
       <Card className="w-full max-w-2xl text-center">
@@ -457,7 +464,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
           <div className="mt-4 p-4 bg-muted/50 rounded-lg">
             <p className="text-sm font-semibold">குறிப்பு</p>
             <a 
-              href={currentQuestion.referenceUrl ? `${currentQuestion.referenceUrl}#page=${currentQuestion.referencePage || 1}` : '#'} 
+              href={referenceHref}
               target="_blank" 
               rel="noopener noreferrer"
               className="text-sm text-blue-600 hover:underline dark:text-blue-400"

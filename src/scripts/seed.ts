@@ -84,7 +84,7 @@ const questions = [
     { id: 'q23', text: 'அணுவின் அடிப்படைத் துகள்கள் யாவை?', subjectId: 'science', classId: '8', answerOptions: ['புரோட்டான், நியூட்ரான், எலக்ட்ரான்', 'போட்டான், குளுவான், கிராவிட்டான்', 'மீசோன், லெப்டான், குவார்க்', 'மேற்கூறிய எதுவும் இல்லை'], correctAnswerIndex: 0 },
     { id: 'q24', text: 'ஐரோப்பாவிலிருந்து இந்தியாவிற்கு கடல் வழியைக் கண்டுபிடித்த முதல் ஐரோப்பியர் யார்?', subjectId: 'social-science', classId: '8', answerOptions: ['கிறிஸ்டோபர் கொலம்பஸ்', 'வாஸ்கோ ட காமா', 'மார்க்கோ போலோ', 'பார்த்தலோமியோ டயஸ்'], correctAnswerIndex: 1 },
     // Class 9
-    { id: 'q25', text: 'யாப்பு இலக்கணத்தில் உள்ள உறுப்புகள் எத்தனை?', subjectId: 'tamil', classId: '9', answerOptions: ['நான்கு', 'ஐந்து', 'ஆறு', 'ஏழு'], correctAnswerIndex: 2 },
+    { id: 'q25', text: 'யாப்பு இலக்கணத்தில் உள்ள உறுப்புகள் எத்தனை?', subjectId: 'tamil', classId: '9', answerOptions: ['நான்கு', 'ஐந்து', 'ஆறு', 'ஏழு'], correctAnswerIndex: 2, reference: '9th Std Tamil Book', referenceUrl: 'https://drive.google.com/file/d/1OuWKjJA3BIQ5BW2dfZUDhr25pVUIIdTl/view' },
     { id: 'q26', text: 'மரபியலின் தந்தை என்று அழைக்கப்படுபவர் யார்?', subjectId: 'science', classId: '9', answerOptions: ['சார்லஸ் டார்வின்', 'கிரிகோர் மெண்டல்', 'ஆல்பர்ட் ஐன்ஸ்டீன்', 'ஐசக் நியூட்டன்'], correctAnswerIndex: 1 },
     { id: 'q27', text: 'பிரெஞ்சுப் புரட்சி எந்த ஆண்டு தொடங்கியது?', subjectId: 'social-science', classId: '9', answerOptions: ['1776', '1789', '1804', '1815'], correctAnswerIndex: 1 },
     // Group IV questions
