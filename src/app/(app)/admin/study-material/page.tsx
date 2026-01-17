@@ -316,11 +316,18 @@ export default function StudyMaterialAdminPage() {
                 <FormField
                   control={form.control}
                   name="file"
-                  render={({ field }) => (
+                  render={({ field: { onChange, onBlur, name, ref } }) => (
                     <FormItem>
                       <FormLabel>{t('file')}</FormLabel>
                       <FormControl>
-                        <Input type="file" accept="application/pdf" {...form.register('file')} />
+                        <Input
+                          type="file"
+                          accept="application/pdf"
+                          ref={ref}
+                          name={name}
+                          onBlur={onBlur}
+                          onChange={(e) => onChange(e.target.files)}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
