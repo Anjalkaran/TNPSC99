@@ -87,24 +87,39 @@ export default function ReferenceMaterialAdminPage() {
         setUploadProgress(null);
       },
       async () => {
-        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-        if (!firestore) return;
-        
-        await addDoc(collection(firestore, 'referencematerials'), {
-          title: data.title,
-          description: data.description ?? '',
-          classId: data.classId,
-          subjectId: data.subjectId,
-          fileUrl: downloadURL,
-          storagePath: storagePath,
-          fileName: file.name,
-          createdAt: serverTimestamp(),
-        });
+        try {
+            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+            if (!firestore) throw new Error("Firestore not initialized");
+            
+            await addDoc(collection(firestore, 'referencematerials'), {
+              title: data.title,
+              description: data.description ?? '',
+              classId: data.classId,
+              subjectId: data.subjectId,
+              fileUrl: downloadURL,
+              storagePath: storagePath,
+              fileName: file.name,
+              createdAt: serverTimestamp(),
+            });
 
-        toast({ title: 'Upload Successful', description: `${file.name} has been uploaded.` });
-        form.reset();
-        setIsSubmitting(false);
-        setUploadProgress(null);
+            toast({ title: 'Upload Successful', description: `${file.name} has been uploaded.` });
+            form.reset();
+        } catch (dbError: any) {
+            console.error("Database write failed:", dbError);
+            toast({ variant: 'destructive', title: 'Database Save Failed', description: 'File uploaded, but failed to save reference to database. ' + dbError.message });
+            
+            // Attempt to delete the orphaned file from storage
+            try {
+                await deleteObject(storageRef);
+            } catch (cleanupError: any) {
+                console.error("Orphaned file cleanup failed:", cleanupError);
+                toast({ variant: 'destructive', title: 'Cleanup Failed', description: 'Could not delete orphaned file from storage. Please do so manually.'});
+            }
+        } finally {
+            // This will run whether the try or catch block executed
+            setIsSubmitting(false);
+            setUploadProgress(null);
+        }
       }
     );
   };
