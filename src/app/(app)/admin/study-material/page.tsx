@@ -1,6 +1,6 @@
 'use client';
 import { useState, useMemo, ChangeEvent } from 'react';
-import { useFirestore, useCollection, useMemoFirebase, useFirebaseApp } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase, useFirebaseApp, useUser } from '@/firebase';
 import {
   collection,
   doc,
@@ -162,6 +162,7 @@ export default function StudyMaterialAdminPage() {
   const { t, language } = useTranslation();
   const firestore = useFirestore();
   const firebaseApp = useFirebaseApp();
+  const { user } = useUser();
   const { toast } = useToast();
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -184,7 +185,16 @@ export default function StudyMaterialAdminPage() {
   });
 
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
-    if (!firestore || !firebaseApp) return;
+    if (!firestore || !firebaseApp || !user) {
+      toast({
+        variant: "destructive",
+        title: "Not authenticated",
+        description: "Please login before uploading files",
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
     setIsSubmitting(true);
     setUploadProgress(0);
 
@@ -353,3 +363,5 @@ export default function StudyMaterialAdminPage() {
     </div>
   );
 }
+
+    
