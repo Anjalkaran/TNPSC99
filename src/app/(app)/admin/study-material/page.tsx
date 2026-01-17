@@ -5,7 +5,6 @@ import {
   collection,
   doc,
   addDoc,
-  serverTimestamp,
   deleteDoc,
   query,
   orderBy,
@@ -85,16 +84,23 @@ function ExistingMaterialsList() {
   }, [materials, classes, subjects]);
 
   const handleDelete = async (material: StudyMaterial) => {
-    if (!firestore || !firebaseApp) return;
+    if (!firestore || !firebaseApp || !material.storagePath) {
+      toast({
+        variant: 'destructive',
+        title: "Error",
+        description: "Cannot delete material without storage path.",
+      });
+      return;
+    }
     const storage = getStorage(firebaseApp);
     const materialDocRef = doc(firestore, 'studymaterials', material.id);
     const fileRef = ref(storage, material.storagePath);
 
     try {
-      // Delete Firestore document
-      await deleteDoc(materialDocRef);
       // Delete file from Storage
       await deleteObject(fileRef);
+      // Delete Firestore document
+      await deleteDoc(materialDocRef);
 
       toast({ title: t('material_deleted') });
     } catch (error: any) {
@@ -162,7 +168,7 @@ export default function StudyMaterialAdminPage() {
   const { t, language } = useTranslation();
   const firestore = useFirestore();
   const firebaseApp = useFirebaseApp();
-  const { user } = useUser();
+  const { user, isUserLoading } = useUser();
   const { toast } = useToast();
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -185,13 +191,20 @@ export default function StudyMaterialAdminPage() {
   });
 
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
-    if (!firestore || !firebaseApp || !user) {
+    if (isUserLoading) {
+      toast({ title: "Please wait", description: "Checking authentication..." });
+      return;
+    }
+    if (!user) {
       toast({
         variant: "destructive",
         title: "Not authenticated",
         description: "Please login before uploading files",
       });
-      setIsSubmitting(false);
+      return;
+    }
+     if (!firestore || !firebaseApp) {
+      toast({ variant: "destructive", title: "Firebase not initialized" });
       return;
     }
 
@@ -329,17 +342,17 @@ export default function StudyMaterialAdminPage() {
                 <FormField
                   control={form.control}
                   name="file"
-                  render={({ field: { onChange, onBlur, name, ref } }) => (
+                  render={({ field: { onChange, ...fieldProps } }) => (
                     <FormItem>
                       <FormLabel>{t('file')}</FormLabel>
                       <FormControl>
                          <Input
                           type="file"
                           accept="application/pdf"
-                          ref={ref}
-                          name={name}
-                          onBlur={onBlur}
-                          onChange={(e) => onChange(e.target.files)}
+                          onChange={(e) => {
+                            onChange(e.target.files)
+                          }}
+                          {...fieldProps}
                         />
                       </FormControl>
                       <FormMessage />
@@ -348,7 +361,7 @@ export default function StudyMaterialAdminPage() {
                 />
 
                 {isSubmitting && <Progress value={uploadProgress} className="w-full" />}
-                <Button type="submit" disabled={isSubmitting} className="w-full">
+                <Button type="submit" disabled={isSubmitting || isUserLoading} className="w-full">
                   <UploadCloud className="mr-2 h-4 w-4" />
                   {isSubmitting ? `${t('uploading')} (${uploadProgress.toFixed(0)}%)` : t('upload')}
                 </Button>
@@ -363,5 +376,3 @@ export default function StudyMaterialAdminPage() {
     </div>
   );
 }
-
-    

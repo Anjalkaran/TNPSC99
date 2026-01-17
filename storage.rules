@@ -2,12 +2,10 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
-    // Rules for study materials
-    // Allow any authenticated user to read (download) files.
-    // Allow any authenticated user to write (upload, update, delete) files.
-    // The UI should restrict uploads to admins.
+    // Grant read access to anyone for study materials.
+    // Grant write access only to authenticated users (admins in the UI).
     match /study-materials/{allPaths=**} {
-      allow read: if request.auth != null;
+      allow read: if true;
       allow write: if request.auth != null;
     }
   }
