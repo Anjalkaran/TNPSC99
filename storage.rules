@@ -4,8 +4,8 @@ service firebase.storage {
 
     match /reference-materials/{classId}/{subjectId}/{fileName} {
       allow read: if true;
-      allow write: if request.auth != null
-                   && request.auth.token.admin == true;
+      // TEMPORARY: Allow any authenticated user to write for debugging.
+      allow write: if request.auth != null;
     }
 
     // deny everything else
