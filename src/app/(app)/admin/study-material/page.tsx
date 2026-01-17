@@ -339,28 +339,17 @@ export default function StudyMaterialAdminPage() {
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="file"
-                  render={({ field: { onChange, value, ...fieldProps } }) => (
-                    <FormItem>
-                      <FormLabel>{t('file')}</FormLabel>
-                      <FormControl>
-                         <Input
-                          type="file"
-                          accept="application/pdf"
-                           ref={fieldProps.ref}
-                           onBlur={fieldProps.onBlur}
-                           name={fieldProps.name}
-                          onChange={(e) => {
-                            onChange(e.target.files)
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <FormItem>
+                  <FormLabel>{t('file')}</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="file"
+                      accept="application/pdf, text/plain"
+                      {...form.register("file")}
+                    />
+                  </FormControl>
+                  {form.formState.errors.file && <p className="text-sm font-medium text-destructive">{form.formState.errors.file.message as string}</p>}
+                </FormItem>
 
                 {isSubmitting && <Progress value={uploadProgress} className="w-full" />}
                 <Button type="submit" disabled={isSubmitting || isUserLoading} className="w-full">
