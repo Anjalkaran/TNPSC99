@@ -61,6 +61,7 @@ export default function ReferenceMaterialAdminPage() {
       toast({ variant: 'destructive', title: 'Not Authenticated', description: 'You must be logged in to upload files.' });
       return;
     }
+    console.log("AUTH USER:", user);
 
     const file = data.file[0];
     if (!file) return;
@@ -77,16 +78,27 @@ export default function ReferenceMaterialAdminPage() {
     uploadTask.on(
       'state_changed',
       (snapshot) => {
+        console.log(
+          "STATE:",
+          snapshot.state,
+          snapshot.bytesTransferred,
+          snapshot.totalBytes
+        );
         const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
         setUploadProgress(progress);
       },
       (error) => {
-        console.error("Upload failed:", error);
-        toast({ variant: 'destructive', title: 'Upload Failed', description: error.message });
+        console.error("🔥 STORAGE ERROR:", error);
+        toast({
+          variant: "destructive",
+          title: "Upload failed",
+          description: error.code,
+        });
         setIsSubmitting(false);
         setUploadProgress(null);
       },
       async () => {
+        console.log("✅ Upload complete");
         try {
             const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
             if (!firestore) throw new Error("Firestore not initialized");

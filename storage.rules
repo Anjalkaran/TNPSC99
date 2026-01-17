@@ -1,10 +1,17 @@
 rules_version = '2';
-
 service firebase.storage {
   match /b/{bucket}/o {
+
     match /reference-materials/{classId}/{subjectId}/{fileName} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if request.auth != null
+                   && exists(/databases/(default)/documents/users/$(request.auth.uid))
+                   && get(/databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+
+    // deny everything else
+    match /{allPaths=**} {
+      allow read, write: if false;
     }
   }
 }
