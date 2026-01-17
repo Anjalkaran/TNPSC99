@@ -24,7 +24,6 @@ import {
   MessageSquare,
   LogOut,
   Bookmark,
-  BookUser
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useAuth, useUser, useDoc, useMemoFirebase, useFirestore } from '@/firebase';
@@ -54,7 +53,6 @@ export function AppSidebar() {
       { href: '/dashboard', label: t('dashboard'), icon: LayoutDashboard },
       { href: '/online-tests', label: t('online_tests'), icon: FilePenLine },
       { href: '/bookmarks', label: 'Bookmarks', icon: Bookmark },
-      { href: '/references', label: t('reference_materials'), icon: BookUser },
       { href: '/ask-your-doubt', label: t('ask_your_doubt'), icon: HelpCircle, adminOnly: true },
       { href: '/profile', label: t('profile'), icon: User },
       { href: '/exam-history', label: t('exam_history'), icon: History },

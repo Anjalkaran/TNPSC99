@@ -1,5 +1,3 @@
 export default function StudyMaterialAdminPage() {
-    return <div></div>;
+    return null;
 }
-
-    

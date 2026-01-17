@@ -111,16 +111,4 @@ export interface Score {
   testTitle: string;
   createdAt: string;
 }
-
-export interface ReferenceMaterial {
-  id: string;
-  title: string;
-  description: string;
-  classId: string;
-  subjectId: string;
-  fileUrl: string;
-  storagePath: string;
-  fileName: string;
-  createdAt: any;
-}
     

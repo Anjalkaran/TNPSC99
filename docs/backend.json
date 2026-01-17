@@ -405,24 +405,6 @@
         "testTitle",
         "createdAt"
       ]
-    },
-    "ReferenceMaterial": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "ReferenceMaterial",
-      "type": "object",
-      "description": "Represents an uploaded reference material PDF.",
-      "properties": {
-        "id": { "type": "string" },
-        "title": { "type": "string" },
-        "description": { "type": "string" },
-        "classId": { "type": "string" },
-        "subjectId": { "type": "string" },
-        "fileUrl": { "type": "string", "format": "uri" },
-        "storagePath": { "type": "string" },
-        "fileName": { "type": "string" },
-        "createdAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["id", "title", "classId", "subjectId", "fileUrl", "storagePath", "fileName", "createdAt"]
     }
   },
   "auth": {
@@ -597,22 +579,6 @@
             {
               "name": "scoreId",
               "description": "The unique identifier of the score entry."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/referencematerials/{materialId}",
-        "definition": {
-          "entityName": "ReferenceMaterial",
-          "schema": {
-            "$ref": "#/backend/entities/ReferenceMaterial"
-          },
-          "description": "Stores uploaded PDF reference materials.",
-          "params": [
-            {
-              "name": "materialId",
-              "description": "The unique identifier of the reference material."
             }
           ]
         }
