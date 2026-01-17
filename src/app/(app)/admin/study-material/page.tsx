@@ -1,6 +1,6 @@
 'use client';
 import { useState, useMemo, ChangeEvent } from 'react';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase, useFirebaseApp } from '@/firebase';
 import {
   collection,
   doc,
@@ -63,6 +63,7 @@ type FormValues = z.infer<typeof studyMaterialSchema>;
 function ExistingMaterialsList() {
   const { t } = useTranslation();
   const firestore = useFirestore();
+  const firebaseApp = useFirebaseApp();
   const { toast } = useToast();
 
   const materialsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'studymaterials') : null, [firestore]);
@@ -84,8 +85,8 @@ function ExistingMaterialsList() {
   }, [materials, classes, subjects]);
 
   const handleDelete = async (material: StudyMaterial) => {
-    if (!firestore) return;
-    const storage = getStorage();
+    if (!firestore || !firebaseApp) return;
+    const storage = getStorage(firebaseApp);
     const materialDocRef = doc(firestore, 'studymaterials', material.id);
     const fileRef = ref(storage, material.fileUrl);
 
@@ -160,6 +161,7 @@ function ExistingMaterialsList() {
 export default function StudyMaterialAdminPage() {
   const { t, language } = useTranslation();
   const firestore = useFirestore();
+  const firebaseApp = useFirebaseApp();
   const { toast } = useToast();
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -182,12 +184,12 @@ export default function StudyMaterialAdminPage() {
   });
 
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
-    if (!firestore) return;
+    if (!firestore || !firebaseApp) return;
     setIsSubmitting(true);
     setUploadProgress(0);
 
     const file = data.file[0] as File;
-    const storage = getStorage();
+    const storage = getStorage(firebaseApp);
     const storagePath = `study-materials/${data.classId}/${data.subjectId}/${Date.now()}_${file.name}`;
     const storageRef = ref(storage, storagePath);
 
@@ -316,14 +318,19 @@ export default function StudyMaterialAdminPage() {
                 <FormField
                   control={form.control}
                   name="file"
-                  render={() => (
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel>{t('file')}</FormLabel>
                       <FormControl>
                         <Input
                           type="file"
                           accept="application/pdf"
-                          {...form.register('file')}
+                          onBlur={field.onBlur}
+                          name={field.name}
+                          onChange={(e) => {
+                            field.onChange(e.target.files);
+                          }}
+                          ref={field.ref}
                         />
                       </FormControl>
                       <FormMessage />
