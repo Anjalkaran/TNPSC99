@@ -19,13 +19,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Trash } from 'lucide-react';
 import type { ReferenceMaterial, Class, Subject } from '@/lib/types';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
+// The file input is no longer part of the Zod schema
 const formSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters.'),
   description: z.string().optional(),
   classId: z.string().min(1, 'Please select a class.'),
   subjectId: z.string().min(1, 'Please select a subject.'),
-  file: z.instanceof(FileList).refine(files => files.length > 0, 'A file is required.'),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -38,13 +40,13 @@ export default function ReferenceMaterialAdminPage() {
 
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+  const [fileToUpload, setFileToUpload] = useState<File | null>(null);
+  const [fileInputKey, setFileInputKey] = useState(Date.now()); // Used to reset the file input
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: { title: '', description: '', classId: '', subjectId: '' },
   });
-  
-  const fileRef = form.register("file");
 
   const classesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'classes') : null, [firestore]);
   const { data: classes, isLoading: classesLoading } = useCollection<Class>(classesCollection);
@@ -56,18 +58,26 @@ export default function ReferenceMaterialAdminPage() {
   const materialsQuery = useMemoFirebase(() => materialsCollection ? query(materialsCollection, orderBy('createdAt', 'desc')) : null, [materialsCollection]);
   const { data: materials, isLoading: materialsLoading } = useCollection<ReferenceMaterial>(materialsQuery);
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setFileToUpload(e.target.files[0]);
+    }
+  };
+
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
     if (!user) {
       toast({ variant: 'destructive', title: 'Not Authenticated', description: 'You must be logged in to upload files.' });
       return;
     }
-    console.log("AUTH USER:", user);
 
-    const file = data.file[0];
-    if (!file) return;
+    if (!fileToUpload) {
+      toast({ variant: 'destructive', title: 'File Required', description: 'Please select a PDF file to upload.' });
+      return;
+    }
 
     setIsSubmitting(true);
     setUploadProgress(0);
+    const file = fileToUpload; // Use the file from the dedicated state
 
     try {
         const storage = getStorage(firebaseApp);
@@ -79,32 +89,27 @@ export default function ReferenceMaterialAdminPage() {
         uploadTask.on(
           'state_changed',
           (snapshot) => {
-            console.log(
-              "STATE:",
-              snapshot.state,
-              snapshot.bytesTransferred,
-              snapshot.totalBytes
-            );
             const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
             setUploadProgress(progress);
           },
           (error) => {
-            console.error("🔥 STORAGE ERROR:", error);
+            // This will catch storage-level errors (like CORS or security rules)
+            console.error("🔥 Firebase Storage Error:", error);
             toast({
               variant: "destructive",
-              title: "Upload failed",
-              description: error.code,
+              title: "Upload Failed",
+              description: `Could not upload file to storage. Reason: ${error.code}`,
             });
             setIsSubmitting(false);
             setUploadProgress(null);
           },
           async () => {
-            console.log("✅ Upload complete");
+            // This runs when the upload to Storage is complete. Now, save to Firestore.
             try {
                 const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
                 if (!firestore) throw new Error("Firestore not initialized");
                 
-                await addDoc(collection(firestore, 'referencematerials'), {
+                const materialDoc: Omit<ReferenceMaterial, 'id' | 'createdAt'> = {
                   title: data.title,
                   description: data.description ?? '',
                   classId: data.classId,
@@ -112,29 +117,39 @@ export default function ReferenceMaterialAdminPage() {
                   fileUrl: downloadURL,
                   storagePath: storagePath,
                   fileName: file.name,
-                  createdAt: serverTimestamp(),
+                };
+                
+                await addDoc(collection(firestore, 'referencematerials'), {
+                    ...materialDoc,
+                    createdAt: serverTimestamp(),
                 });
 
                 toast({ title: 'Upload Successful', description: `${file.name} has been uploaded.` });
                 form.reset();
+                setFileToUpload(null);
+                setFileInputKey(Date.now()); // Reset the file input visually
             } catch (dbError: any) {
                 console.error("Database write failed:", dbError);
                 toast({ variant: 'destructive', title: 'Database Save Failed', description: 'File uploaded, but failed to save reference to database. ' + dbError.message });
                 
+                // Cleanup: Delete the orphaned file from storage
                 try {
                     await deleteObject(storageRef);
+                    toast({ variant: 'default', title: 'Cleanup Successful', description: 'Orphaned file was deleted from storage.'});
                 } catch (cleanupError: any) {
                     console.error("Orphaned file cleanup failed:", cleanupError);
                     toast({ variant: 'destructive', title: 'Cleanup Failed', description: 'Could not delete orphaned file from storage. Please do so manually.'});
                 }
             } finally {
+                // Reset UI state regardless of database outcome
                 setIsSubmitting(false);
                 setUploadProgress(null);
             }
           }
         );
     } catch(e: any) {
-        console.error("CRITICAL UPLOAD ERROR:", e);
+        // This will catch initial errors when calling uploadBytesResumable
+        console.error("Critical Upload Initiation Error:", e);
         toast({
           variant: "destructive",
           title: "Critical Upload Error",
@@ -157,7 +172,15 @@ export default function ReferenceMaterialAdminPage() {
         toast({ title: 'Material Deleted', description: `${material.fileName} has been deleted.` });
     } catch (error: any) {
         console.error("Deletion failed:", error);
-        toast({ variant: 'destructive', title: 'Deletion Failed', description: error.message });
+        
+        // Emit a more specific error for permission issues
+        const permissionError = new FirestorePermissionError({
+            path: `referencematerials/${material.id}`,
+            operation: 'delete',
+        });
+        errorEmitter.emit('permission-error', permissionError);
+
+        toast({ variant: 'destructive', title: 'Deletion Failed', description: "You might not have permission to delete this." });
     }
   }
 
@@ -214,8 +237,15 @@ export default function ReferenceMaterialAdminPage() {
                 </FormItem>
               )} />
               <FormItem>
-                <FormLabel>File</FormLabel>
-                <FormControl><Input type="file" accept=".pdf" {...fileRef} /></FormControl>
+                <FormLabel>File (PDF or Text)</FormLabel>
+                <FormControl>
+                    <Input 
+                        key={fileInputKey} // This key forces re-mount to clear the input
+                        type="file" 
+                        accept=".pdf,.txt" 
+                        onChange={handleFileChange} 
+                    />
+                </FormControl>
                 <FormMessage />
               </FormItem>
 
