@@ -405,62 +405,6 @@
         "testTitle",
         "createdAt"
       ]
-    },
-    "StudyMaterial": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "StudyMaterial",
-      "type": "object",
-      "description": "Represents a study material file (e.g., PDF) uploaded for a specific class and subject.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the StudyMaterial entity."
-        },
-        "title": {
-          "type": "string",
-          "description": "The title of the study material."
-        },
-        "description": {
-          "type": "string",
-          "description": "A brief description of the material."
-        },
-        "classId": {
-          "type": "string",
-          "description": "Reference to the Class this material belongs to."
-        },
-        "subjectId": {
-          "type": "string",
-          "description": "Reference to the Subject this material belongs to."
-        },
-        "fileUrl": {
-          "type": "string",
-          "description": "The public URL of the uploaded file in Firebase Storage.",
-          "format": "uri"
-        },
-        "fileName": {
-          "type": "string",
-          "description": "The name of the uploaded file."
-        },
-        "storagePath": {
-          "type": "string",
-          "description": "The path to the file in Firebase Storage."
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp of when the material was uploaded.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "title",
-        "classId",
-        "subjectId",
-        "fileUrl",
-        "fileName",
-        "storagePath",
-        "createdAt"
-      ]
     }
   },
   "auth": {
@@ -638,24 +582,10 @@
             }
           ]
         }
-      },
-      {
-        "path": "/studymaterials/{materialId}",
-        "definition": {
-          "entityName": "StudyMaterial",
-          "schema": {
-            "$ref": "#/backend/entities/StudyMaterial"
-          },
-          "description": "Stores uploaded study materials like PDFs. Publicly readable, admin writable.",
-          "params": [
-            {
-              "name": "materialId",
-              "description": "The unique identifier of the study material."
-            }
-          ]
-        }
       }
     ],
     "reasoning": "The Firestore structure is designed to support the TNPSC Ace application, focusing on class-wise, subject-wise, and previous year MCQ tests. The design emphasizes authorization independence, clarity, and scalability.  We are using path-based ownership for user data and a membership map approach for collaborative data. The key collections are `users`, `subjects`, `classes`, `questions`, `tests`, `userTestAttempts`, a new `scores` collection for the leaderboard, and a `bookmarkedQuestions` subcollection under each user to store their bookmarks. User-specific data is stored under `/users/{userId}`. The `scores` collection is publicly readable to build the leaderboard, but write access is restricted. This structure allows for efficient score tracking and personalized insights while maintaining a public, competitive element."
   }
 }
+
+    

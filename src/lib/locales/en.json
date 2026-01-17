@@ -2,7 +2,6 @@
     "app_title": "TNPSC Ace",
     "dashboard": "Dashboard",
     "online_tests": "Online Tests",
-    "study_material": "Study Material",
     "ask_your_doubt": "Ask Your Doubt",
     "profile": "Profile",
     "exam_history": "Exam History",
@@ -185,18 +184,7 @@
     "available_tests": "Available Tests for {{category}}",
     "select_a_test_to_start": "Select a test from the list below to begin.",
     "actions": "Actions",
-    "study_material_desc": "Download PDF notes and other resources for your classes and subjects.",
-    "upload_study_material": "Upload Study Material",
-    "upload_study_material_desc": "Upload PDF files for different classes and subjects.",
-    "file": "File",
-    "uploading": "Uploading...",
-    "upload": "Upload",
-    "existing_study_materials": "Existing Study Materials",
-    "no_study_materials": "No study materials have been uploaded yet.",
-    "delete_material_confirm": "This will permanently delete the material '{{title}}' and its file from storage.",
-    "material_deleted": "Study material deleted.",
-    "error_deleting_material": "Error deleting study material.",
-    "upload_success": "File uploaded successfully!",
-    "upload_error": "File upload failed.",
-    "download": "Download"
+    "study_material": "Study Material"
 }
+
+    

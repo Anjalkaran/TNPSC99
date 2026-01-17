@@ -53,7 +53,7 @@ export function AppSidebar() {
       { href: '/dashboard', label: t('dashboard'), icon: LayoutDashboard },
       { href: '/online-tests', label: t('online_tests'), icon: FilePenLine },
       { href: '/bookmarks', label: 'Bookmarks', icon: Bookmark },
-      { href: '/study-material', label: t('study_material'), icon: BookOpen },
+      { href: '/study-material', label: t('study_material'), icon: BookOpen, comingSoon: true },
       { href: '/ask-your-doubt', label: t('ask_your_doubt'), icon: HelpCircle, adminOnly: true },
       { href: '/profile', label: t('profile'), icon: User },
       { href: '/exam-history', label: t('exam_history'), icon: History },
@@ -63,7 +63,10 @@ export function AppSidebar() {
       { href: '/whatsapp-support', label: t('whatsapp_support'), icon: MessageSquare, adminOnly: true },
   ];
 
-  const sidebarLinks = allSidebarLinks.filter(link => !link.adminOnly || userProfile?.isAdmin);
+  const sidebarLinks = allSidebarLinks.filter(link => {
+      if (link.comingSoon) return false;
+      return !link.adminOnly || userProfile?.isAdmin
+  });
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -134,3 +137,5 @@ export function AppSidebar() {
     </>
   );
 }
+
+    

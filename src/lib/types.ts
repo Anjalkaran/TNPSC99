@@ -112,16 +112,4 @@ export interface Score {
   createdAt: string;
 }
 
-export interface StudyMaterial {
-  id: string;
-  title: string;
-  description: string;
-  classId: string;
-  subjectId: string;
-  fileUrl: string;
-  fileName: string;
-  storagePath: string;
-  createdAt: string;
-  className?: string; // for display
-  subjectName?: string; // for display
-}
+    
