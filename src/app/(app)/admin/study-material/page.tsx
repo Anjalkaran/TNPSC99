@@ -55,7 +55,7 @@ const studyMaterialSchema = z.object({
   description: z.string().optional(),
   classId: z.string().min(1, 'Please select a class.'),
   subjectId: z.string().min(1, 'Please select a subject.'),
-  file: z.any().refine((files) => files?.length === 1, 'A file is required.'),
+  file: z.instanceof(FileList).refine((files) => files?.length === 1, 'A file is required.'),
 });
 
 type FormValues = z.infer<typeof studyMaterialSchema>;
@@ -316,17 +316,14 @@ export default function StudyMaterialAdminPage() {
                 <FormField
                   control={form.control}
                   name="file"
-                  render={({ field: { onChange, onBlur, name, ref } }) => (
+                  render={() => (
                     <FormItem>
                       <FormLabel>{t('file')}</FormLabel>
                       <FormControl>
                         <Input
                           type="file"
                           accept="application/pdf"
-                          ref={ref}
-                          name={name}
-                          onBlur={onBlur}
-                          onChange={(e) => onChange(e.target.files)}
+                          {...form.register('file')}
                         />
                       </FormControl>
                       <FormMessage />
