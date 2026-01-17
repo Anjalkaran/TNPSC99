@@ -3,7 +3,7 @@
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { collection, getDocs, query, where } from 'firebase/firestore';
-import type { UserTestAttempt, Test, Subject, Category } from '@/lib/types';
+import type { UserTestAttempt, Test, Subject, Category, Unit, Class } from '@/lib/types';
 import { useMemo, useState, useEffect } from 'react';
 import { useTranslation } from '@/hooks/use-translation';
 import { Progress } from '@/components/ui/progress';
@@ -22,14 +22,31 @@ interface PerformanceMetric {
   averageScore: number;
   proficiency: number;
 }
+interface CategoryPerformanceMetric extends PerformanceMetric {
+  subjectName: string;
+}
+interface UnitPerformanceMetric extends PerformanceMetric {
+  className: string;
+  subjectName: string;
+  term: string;
+  unitNumber: number;
+}
 
-function AiAnalysis({ performanceData }: { performanceData: PerformanceMetric[] }) {
+function AiAnalysis({ 
+  subjectPerformance,
+  categoryPerformance,
+  unitPerformance
+}: { 
+  subjectPerformance: PerformanceMetric[],
+  categoryPerformance: CategoryPerformanceMetric[],
+  unitPerformance: UnitPerformanceMetric[] 
+}) {
     const { t, language } = useTranslation();
     const [analysis, setAnalysis] = useState<PerformanceOutput | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        if(performanceData.length === 0) {
+        if(subjectPerformance.length === 0 && categoryPerformance.length === 0 && unitPerformance.length === 0) {
             setIsLoading(false);
             return;
         }
@@ -38,8 +55,23 @@ function AiAnalysis({ performanceData }: { performanceData: PerformanceMetric[] 
             setIsLoading(true);
             try {
                 const input: PerformanceInput = {
-                    subjects: performanceData.map(p => ({
+                    subjects: subjectPerformance.map(p => ({
                         name: p.name,
+                        proficiency: p.proficiency,
+                        attempts: p.totalAttempts,
+                    })),
+                    categories: categoryPerformance.map(p => ({
+                        name: p.name,
+                        subjectName: p.subjectName,
+                        proficiency: p.proficiency,
+                        attempts: p.totalAttempts,
+                    })),
+                    units: unitPerformance.map(p => ({
+                        name: p.name,
+                        className: p.className,
+                        subjectName: p.subjectName,
+                        term: p.term,
+                        unitNumber: p.unitNumber,
                         proficiency: p.proficiency,
                         attempts: p.totalAttempts,
                     })),
@@ -56,7 +88,7 @@ function AiAnalysis({ performanceData }: { performanceData: PerformanceMetric[] 
         };
 
         runAnalysis();
-    }, [performanceData, language]);
+    }, [subjectPerformance, categoryPerformance, unitPerformance, language]);
     
     if (isLoading) {
         return (
@@ -133,7 +165,8 @@ export default function UserPerformancePage() {
   const userId = userIdParam ? decodeURIComponent(userIdParam) : undefined;
 
   const [subjectPerformance, setSubjectPerformance] = useState<PerformanceMetric[]>([]);
-  const [categoryPerformance, setCategoryPerformance] = useState<PerformanceMetric[]>([]);
+  const [categoryPerformance, setCategoryPerformance] = useState<CategoryPerformanceMetric[]>([]);
+  const [unitPerformance, setUnitPerformance] = useState<UnitPerformanceMetric[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const testAttemptsCollection = useMemoFirebase(() => 
@@ -151,6 +184,7 @@ export default function UserPerformancePage() {
         if (!testAttempts || testAttempts.length === 0) {
             setSubjectPerformance([]);
             setCategoryPerformance([]);
+            setUnitPerformance([]);
             setIsLoading(false);
             return;
         }
@@ -159,6 +193,8 @@ export default function UserPerformancePage() {
         const testsMap = new Map<string, Test>();
         const subjectsMap = new Map<string, Subject>();
         const categoriesMap = new Map<string, Category>();
+        const unitsMap = new Map<string, Unit>();
+        const classesMap = new Map<string, Class>();
         
         // Fetch all tests
         if(testIds.length > 0) {
@@ -177,9 +213,11 @@ export default function UserPerformancePage() {
         
         const subjectIds = new Set<string>();
         const categoryIds = new Set<string>();
+        const unitIds = new Set<string>();
         testsMap.forEach(test => {
             if (test.subjectId) subjectIds.add(test.subjectId);
             if (test.categoryId) categoryIds.add(test.categoryId);
+            if (test.unitId) unitIds.add(test.unitId);
         });
 
         // Fetch all subjects
@@ -195,38 +233,58 @@ export default function UserPerformancePage() {
             const categoriesSnapshot = await getDocs(categoriesQuery);
             categoriesSnapshot.forEach(doc => categoriesMap.set(doc.id, doc.data() as Category));
         }
+
+        // Fetch all units
+        if (unitIds.size > 0) {
+            const unitsQuery = query(collection(firestore, 'units'), where('__name__', 'in', Array.from(unitIds)));
+            const unitsSnapshot = await getDocs(unitsQuery);
+            unitsSnapshot.forEach(doc => unitsMap.set(doc.id, doc.data() as Unit));
+        }
+        
+        const classIds = new Set<string>();
+        unitsMap.forEach(unit => {
+            if (unit.classId) classIds.add(unit.classId);
+        });
+
+        if(classIds.size > 0) {
+            const classesQuery = query(collection(firestore, 'classes'), where('__name__', 'in', Array.from(classIds)));
+            const classesSnapshot = await getDocs(classesQuery);
+            classesSnapshot.forEach(doc => classesMap.set(doc.id, doc.data() as Class));
+        }
        
         const subjectStats: { [key: string]: { totalScore: number, totalAttempts: number, totalQuestions: number } } = {};
         const categoryStats: { [key: string]: { totalScore: number, totalAttempts: number, totalQuestions: number } } = {};
+        const unitStats: { [key: string]: { totalScore: number, totalAttempts: number, totalQuestions: number } } = {};
 
         testAttempts.forEach(attempt => {
             const test = testsMap.get(attempt.testId);
             if (test) {
                 const numQuestions = Array.isArray(attempt.answers) ? attempt.answers.length : 0;
                 
-                // Aggregate by subject
                 if (test.subjectId) {
-                    if (!subjectStats[test.subjectId]) {
-                        subjectStats[test.subjectId] = { totalScore: 0, totalAttempts: 0, totalQuestions: 0 };
-                    }
+                    if (!subjectStats[test.subjectId]) subjectStats[test.subjectId] = { totalScore: 0, totalAttempts: 0, totalQuestions: 0 };
                     subjectStats[test.subjectId].totalScore += attempt.score;
                     subjectStats[test.subjectId].totalAttempts += 1;
                     subjectStats[test.subjectId].totalQuestions += numQuestions;
                 }
                 
-                // Aggregate by category
                 if (test.categoryId) {
-                     if (!categoryStats[test.categoryId]) {
-                        categoryStats[test.categoryId] = { totalScore: 0, totalAttempts: 0, totalQuestions: 0 };
-                    }
+                     if (!categoryStats[test.categoryId]) categoryStats[test.categoryId] = { totalScore: 0, totalAttempts: 0, totalQuestions: 0 };
                     categoryStats[test.categoryId].totalScore += attempt.score;
                     categoryStats[test.categoryId].totalAttempts += 1;
                     categoryStats[test.categoryId].totalQuestions += numQuestions;
                 }
+
+                if (test.unitId) {
+                    if (!unitStats[test.unitId]) unitStats[test.unitId] = { totalScore: 0, totalAttempts: 0, totalQuestions: 0 };
+                   unitStats[test.unitId].totalScore += attempt.score;
+                   unitStats[test.unitId].totalAttempts += 1;
+                   unitStats[test.unitId].totalQuestions += numQuestions;
+              }
             }
         });
         
-        const formatData = (stats: { [key: string]: { totalScore: number, totalAttempts: number, totalQuestions: number } }, map: Map<string, Subject | Category>): PerformanceMetric[] => {
+        const formatSubjectData = (stats: { [key: string]: { totalScore: number, totalAttempts: number, totalQuestions: number } }, map: Map<string, Subject>): PerformanceMetric[] => {
             return Object.entries(stats).map(([id, statData]) => {
                 const item = map.get(id);
                 const proficiency = statData.totalQuestions > 0 ? (statData.totalScore / statData.totalQuestions) * 100 : 0;
@@ -242,8 +300,51 @@ export default function UserPerformancePage() {
             }).sort((a, b) => b.proficiency - a.proficiency);
         };
 
-        setSubjectPerformance(formatData(subjectStats, subjectsMap));
-        setCategoryPerformance(formatData(categoryStats, categoriesMap));
+        const formatCategoryData = (stats: { [key: string]: { totalScore: number, totalAttempts: number, totalQuestions: number } }, catMap: Map<string, Category>, subMap: Map<string, Subject>): CategoryPerformanceMetric[] => {
+             return Object.entries(stats).map(([id, statData]) => {
+                const item = catMap.get(id);
+                const proficiency = statData.totalQuestions > 0 ? (statData.totalScore / statData.totalQuestions) * 100 : 0;
+                const subjectName = item ? (subMap.get(item.subjectId)?.[language === 'ta' && subMap.get(item.subjectId)?.name_ta ? 'name_ta' : 'name'] || item.subjectId) : 'Unknown';
+                return {
+                    id,
+                    name: item ? (language === 'ta' && item.name_ta ? item.name_ta : item.name) : id,
+                    subjectName,
+                    totalAttempts: statData.totalAttempts,
+                    totalScore: statData.totalScore,
+                    totalQuestionsAttempted: statData.totalQuestions,
+                    averageScore: statData.totalAttempts > 0 ? statData.totalScore / statData.totalAttempts : 0,
+                    proficiency,
+                };
+            }).sort((a, b) => b.proficiency - a.proficiency);
+        }
+
+        const formatUnitData = (stats: { [key: string]: { totalScore: number; totalAttempts: number; totalQuestions: number } }, unitMap: Map<string, Unit>, clsMap: Map<string, Class>, subMap: Map<string, Subject>): UnitPerformanceMetric[] => {
+            return Object.entries(stats).map(([id, statData]) => {
+                const unit = unitMap.get(id);
+                const proficiency = statData.totalQuestions > 0 ? (statData.totalScore / statData.totalQuestions) * 100 : 0;
+                
+                const className = unit ? (clsMap.get(unit.classId)?.[language === 'ta' && clsMap.get(unit.classId)?.name_ta ? 'name_ta' : 'name'] || unit.classId) : 'Unknown';
+                const subjectName = unit ? (subMap.get(unit.subjectId)?.[language === 'ta' && subMap.get(unit.subjectId)?.name_ta ? 'name_ta' : 'name'] || unit.subjectId) : 'Unknown';
+
+                return {
+                    id,
+                    name: unit?.unitName || id,
+                    totalAttempts: statData.totalAttempts,
+                    totalScore: statData.totalScore,
+                    totalQuestionsAttempted: statData.totalQuestions,
+                    averageScore: statData.totalAttempts > 0 ? statData.totalScore / statData.totalAttempts : 0,
+                    proficiency,
+                    className: className,
+                    subjectName: subjectName,
+                    term: unit?.term || '',
+                    unitNumber: unit?.unitNumber || 0,
+                };
+            }).sort((a, b) => b.proficiency - a.proficiency);
+        };
+
+        setSubjectPerformance(formatSubjectData(subjectStats, subjectsMap));
+        setCategoryPerformance(formatCategoryData(categoryStats, categoriesMap, subjectsMap));
+        setUnitPerformance(formatUnitData(unitStats, unitsMap, classesMap, subjectsMap));
         setIsLoading(false);
     }
 
@@ -258,7 +359,11 @@ export default function UserPerformancePage() {
 
   return (
     <div className="space-y-8">
-      <AiAnalysis performanceData={subjectPerformance} />
+      <AiAnalysis 
+        subjectPerformance={subjectPerformance}
+        categoryPerformance={categoryPerformance}
+        unitPerformance={unitPerformance}
+      />
       
       <div className="grid md:grid-cols-2 gap-8">
           <Card>
