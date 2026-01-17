@@ -77,84 +77,71 @@ export default function ReferenceMaterialAdminPage() {
 
     setIsSubmitting(true);
     setUploadProgress(0);
-    const file = fileToUpload; // Use the file from the dedicated state
+    const file = fileToUpload;
+    const storage = getStorage(firebaseApp);
+    const storagePath = `reference-materials/${data.classId}/${data.subjectId}/${Date.now()}_${file.name}`;
+    const storageRef = ref(storage, storagePath);
 
     try {
-        const storage = getStorage(firebaseApp);
-        const storagePath = `reference-materials/${data.classId}/${data.subjectId}/${Date.now()}_${file.name}`;
-        const storageRef = ref(storage, storagePath);
-        
         const uploadTask = uploadBytesResumable(storageRef, file, { contentType: file.type });
 
-        uploadTask.on(
-          'state_changed',
-          (snapshot) => {
+        // Listener for progress updates
+        uploadTask.on('state_changed', (snapshot) => {
             const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
             setUploadProgress(progress);
-          },
-          (error) => {
-            // This will catch storage-level errors (like CORS or security rules)
-            console.error("🔥 Firebase Storage Error:", error);
-            toast({
-              variant: "destructive",
-              title: "Upload Failed",
-              description: `Could not upload file to storage. Reason: ${error.code}`,
-            });
-            setIsSubmitting(false);
-            setUploadProgress(null);
-          },
-          async () => {
-            // This runs when the upload to Storage is complete. Now, save to Firestore.
-            try {
-                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                if (!firestore) throw new Error("Firestore not initialized");
-                
-                const materialDoc: Omit<ReferenceMaterial, 'id' | 'createdAt'> = {
-                  title: data.title,
-                  description: data.description ?? '',
-                  classId: data.classId,
-                  subjectId: data.subjectId,
-                  fileUrl: downloadURL,
-                  storagePath: storagePath,
-                  fileName: file.name,
-                };
-                
-                await addDoc(collection(firestore, 'referencematerials'), {
-                    ...materialDoc,
-                    createdAt: serverTimestamp(),
-                });
-
-                toast({ title: 'Upload Successful', description: `${file.name} has been uploaded.` });
-                form.reset();
-                setFileToUpload(null);
-                setFileInputKey(Date.now()); // Reset the file input visually
-            } catch (dbError: any) {
-                console.error("Database write failed:", dbError);
-                toast({ variant: 'destructive', title: 'Database Save Failed', description: 'File uploaded, but failed to save reference to database. ' + dbError.message });
-                
-                // Cleanup: Delete the orphaned file from storage
-                try {
-                    await deleteObject(storageRef);
-                    toast({ variant: 'default', title: 'Cleanup Successful', description: 'Orphaned file was deleted from storage.'});
-                } catch (cleanupError: any) {
-                    console.error("Orphaned file cleanup failed:", cleanupError);
-                    toast({ variant: 'destructive', title: 'Cleanup Failed', description: 'Could not delete orphaned file from storage. Please do so manually.'});
-                }
-            } finally {
-                // Reset UI state regardless of database outcome
-                setIsSubmitting(false);
-                setUploadProgress(null);
-            }
-          }
-        );
-    } catch(e: any) {
-        // This will catch initial errors when calling uploadBytesResumable
-        console.error("Critical Upload Initiation Error:", e);
-        toast({
-          variant: "destructive",
-          title: "Critical Upload Error",
-          description: e.message || "Could not start the upload. Check console for details.",
         });
+
+        // Await the completion of the upload
+        await uploadTask;
+
+        // Upload successful, now get URL and write to Firestore
+        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+        if (!firestore) throw new Error("Firestore not initialized");
+
+        const materialDoc: Omit<ReferenceMaterial, 'id' | 'createdAt'> = {
+            title: data.title,
+            description: data.description ?? '',
+            classId: data.classId,
+            subjectId: data.subjectId,
+            fileUrl: downloadURL,
+            storagePath: storagePath,
+            fileName: file.name,
+        };
+
+        const materialCollectionRef = collection(firestore, 'referencematerials');
+        await addDoc(materialCollectionRef, {
+            ...materialDoc,
+            createdAt: serverTimestamp(),
+        });
+
+        toast({ title: 'Upload Successful', description: `${file.name} has been uploaded.` });
+        form.reset();
+        setFileToUpload(null);
+        setFileInputKey(Date.now());
+
+    } catch (error: any) {
+        console.error("🔥 Upload or Database Error:", error);
+
+        // This single catch block will handle errors from Storage and Firestore
+        // providing a clear message to the user.
+        toast({
+            variant: "destructive",
+            title: "Operation Failed",
+            description: error.message || error.code || "Could not complete the operation. Check console for details.",
+        });
+
+        // If the error occurred after upload but before DB write, we might have an orphaned file.
+        // Let's try to delete it. This might fail if the initial error was a permissions issue, but it's worth trying.
+        try {
+            await getDownloadURL(storageRef); // Check if file exists
+            await deleteObject(storageRef);
+            console.log("Orphaned file deleted from storage.");
+        } catch (cleanupError) {
+            // Ignore cleanup errors as the primary error is more important.
+            console.warn("Could not clean up orphaned file. It may not exist or there's a permissions issue.", cleanupError);
+        }
+
+    } finally {
         setIsSubmitting(false);
         setUploadProgress(null);
     }
