@@ -280,7 +280,7 @@ export default function StudyMaterialAdminPage() {
                     <FormItem>
                       <FormLabel>{t('title')}</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., History Notes Chapter 1" {...field} />
+                        <Input placeholder="e.g., History Notes Chapter 1" {...field} value={field.value ?? ''} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -293,7 +293,7 @@ export default function StudyMaterialAdminPage() {
                     <FormItem>
                       <FormLabel>{t('subject_description')}</FormLabel>
                       <FormControl>
-                        <Textarea placeholder="A brief summary of the PDF content" {...field} />
+                        <Textarea placeholder="A brief summary of the PDF content" {...field} value={field.value ?? ''} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -342,17 +342,19 @@ export default function StudyMaterialAdminPage() {
                 <FormField
                   control={form.control}
                   name="file"
-                  render={({ field: { onChange, ...fieldProps } }) => (
+                  render={({ field: { onChange, value, ...fieldProps } }) => (
                     <FormItem>
                       <FormLabel>{t('file')}</FormLabel>
                       <FormControl>
                          <Input
                           type="file"
                           accept="application/pdf"
+                           ref={fieldProps.ref}
+                           onBlur={fieldProps.onBlur}
+                           name={fieldProps.name}
                           onChange={(e) => {
                             onChange(e.target.files)
                           }}
-                          {...fieldProps}
                         />
                       </FormControl>
                       <FormMessage />
