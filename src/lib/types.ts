@@ -120,6 +120,7 @@ export interface StudyMaterial {
   subjectId: string;
   fileUrl: string;
   fileName: string;
+  storagePath: string;
   createdAt: string;
   className?: string; // for display
   subjectName?: string; // for display

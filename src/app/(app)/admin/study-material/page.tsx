@@ -88,7 +88,7 @@ function ExistingMaterialsList() {
     if (!firestore || !firebaseApp) return;
     const storage = getStorage(firebaseApp);
     const materialDocRef = doc(firestore, 'studymaterials', material.id);
-    const fileRef = ref(storage, material.fileUrl);
+    const fileRef = ref(storage, material.storagePath);
 
     try {
       // Delete Firestore document
@@ -193,7 +193,7 @@ export default function StudyMaterialAdminPage() {
     const storagePath = `study-materials/${data.classId}/${data.subjectId}/${Date.now()}_${file.name}`;
     const storageRef = ref(storage, storagePath);
 
-    const uploadTask = uploadBytesResumable(storageRef, file);
+    const uploadTask = uploadBytesResumable(storageRef, file, { contentType: file.type });
 
     uploadTask.on(
       'state_changed',
@@ -217,6 +217,7 @@ export default function StudyMaterialAdminPage() {
             subjectId: data.subjectId,
             fileUrl: downloadURL,
             fileName: file.name,
+            storagePath: storagePath,
             createdAt: new Date().toISOString(),
           };
 
@@ -318,25 +319,24 @@ export default function StudyMaterialAdminPage() {
                 <FormField
                   control={form.control}
                   name="file"
-                  render={({ field }) => (
+                  render={({ field: { onChange, onBlur, name, ref } }) => (
                     <FormItem>
                       <FormLabel>{t('file')}</FormLabel>
                       <FormControl>
-                        <Input
+                         <Input
                           type="file"
                           accept="application/pdf"
-                          onBlur={field.onBlur}
-                          name={field.name}
-                          onChange={(e) => {
-                            field.onChange(e.target.files);
-                          }}
-                          ref={field.ref}
+                          ref={ref}
+                          name={name}
+                          onBlur={onBlur}
+                          onChange={(e) => onChange(e.target.files)}
                         />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+
                 {isSubmitting && <Progress value={uploadProgress} className="w-full" />}
                 <Button type="submit" disabled={isSubmitting} className="w-full">
                   <UploadCloud className="mr-2 h-4 w-4" />

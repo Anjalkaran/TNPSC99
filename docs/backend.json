@@ -438,8 +438,12 @@
           "format": "uri"
         },
         "fileName": {
-            "type": "string",
-            "description": "The name of the uploaded file."
+          "type": "string",
+          "description": "The name of the uploaded file."
+        },
+        "storagePath": {
+          "type": "string",
+          "description": "The path to the file in Firebase Storage."
         },
         "createdAt": {
           "type": "string",
@@ -454,6 +458,7 @@
         "subjectId",
         "fileUrl",
         "fileName",
+        "storagePath",
         "createdAt"
       ]
     }
