@@ -39,6 +39,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
   const [totalTimeLeft, setTotalTimeLeft] = useState(questions.length * 45);
   const [bookmarks, setBookmarks] = useState<string[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const pdfWindowRef = useRef<Window | null>(null);
 
 
   const { user } = useUser();
@@ -57,6 +58,15 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
     };
     fetchBookmarks();
   }, [user, firestore]);
+
+  // Effect to clean up the opened PDF window when the component unmounts
+  useEffect(() => {
+    return () => {
+        if (pdfWindowRef.current && !pdfWindowRef.current.closed) {
+            pdfWindowRef.current.close();
+        }
+    };
+  }, []);
 
   const toggleBookmark = (questionId: string) => {
     if (!user || !firestore) return;
@@ -219,19 +229,20 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
       return;
     }
     
-    if (totalTimeLeft <= 0) {
-      if(!isSubmitted) handleSubmit();
-      return;
-    }
-
     timerRef.current = setInterval(() => {
-      setTotalTimeLeft(prevTime => prevTime - 1);
+      setTotalTimeLeft(prevTime => Math.max(0, prevTime - 1));
     }, 1000);
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [isSubmitted, totalTimeLeft, handleSubmit]);
+  }, [isSubmitted]);
+
+  useEffect(() => {
+    if (totalTimeLeft === 0 && !isSubmitted) {
+        handleSubmit();
+    }
+  }, [totalTimeLeft, isSubmitted, handleSubmit]);
 
 
   const handleAnswerChange = (value: string) => {
@@ -326,23 +337,33 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
     return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-  const offset = test.referencePageOffset || 0;
-  const pageNumber = (currentQuestion.referencePage || 0) + offset;
-  const finalPageNumber = pageNumber > 0 ? pageNumber : 1;
-
-  const isGoogleDriveLink = currentQuestion.referenceUrl?.includes('drive.google.com');
-  const referenceHref = currentQuestion.referenceUrl
-    ? isGoogleDriveLink
-      ? currentQuestion.referenceUrl
-      : `${currentQuestion.referenceUrl}#page=${finalPageNumber}`
-    : '#';
-  
   const handleReferenceClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
-    if (referenceHref !== '#') {
-      window.open(referenceHref, 'pdf_reference_window');
+    if (!currentQuestion.referenceUrl) return;
+
+    const offset = test.referencePageOffset || 0;
+    const pageNumber = (currentQuestion.referencePage || 0) + offset;
+    const finalPageNumber = pageNumber > 0 ? pageNumber : 1;
+
+    const isGoogleDriveLink = currentQuestion.referenceUrl.includes('drive.google.com');
+    const href = isGoogleDriveLink
+      ? currentQuestion.referenceUrl
+      : `${currentQuestion.referenceUrl}#page=${finalPageNumber}`;
+
+    const windowName = 'pdf_reference_window';
+    const existingWindow = pdfWindowRef.current;
+
+    if (existingWindow && !existingWindow.closed) {
+        if (existingWindow.location.href !== href) {
+            existingWindow.location.href = href;
+        }
+        existingWindow.focus();
+    } else {
+        const newWindow = window.open(href, windowName);
+        pdfWindowRef.current = newWindow;
     }
   };
+
 
   if (isSubmitted) {
     return (
@@ -474,7 +495,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
               <div>
                 <p className="text-sm font-semibold">குறிப்பு</p>
                 <a
-                  href={referenceHref}
+                  href={currentQuestion.referenceUrl || '#'}
                   onClick={handleReferenceClick}
                   className="text-sm text-blue-600 hover:underline dark:text-blue-400 cursor-pointer"
                 >
