@@ -39,22 +39,12 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
   const [totalTimeLeft, setTotalTimeLeft] = useState(questions.length * 45);
   const [bookmarks, setBookmarks] = useState<string[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const pdfWindowRef = useRef<Window | null>(null);
 
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
   
   const decodedTitle = decodeURIComponent(test.title);
-
-  useEffect(() => {
-    return () => {
-      // Close the PDF window when the component unmounts
-      if (pdfWindowRef.current && !pdfWindowRef.current.closed) {
-        pdfWindowRef.current.close();
-      }
-    };
-  }, []);
 
   useEffect(() => {
     if (!user || !firestore) return;
@@ -348,20 +338,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
       : `${currentQuestion.referenceUrl}#page=${finalPageNumber}`;
 
     const windowName = 'pdf_reference_window';
-
-    if (pdfWindowRef.current && !pdfWindowRef.current.closed) {
-      try {
-        pdfWindowRef.current.location.href = href;
-        pdfWindowRef.current.focus();
-      } catch (e) {
-        // Fallback for cross-origin issues
-        pdfWindowRef.current = window.open(href, windowName);
-        pdfWindowRef.current?.focus();
-      }
-    } else {
-      pdfWindowRef.current = window.open(href, windowName);
-      pdfWindowRef.current?.focus();
-    }
+    window.open(href, windowName);
   };
 
 
@@ -490,7 +467,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
           </div>
         </RadioGroup>
         {(isAnswered && (currentQuestion.reference || currentQuestion.explanation)) && (
-          <div className="mt-4 p-4 bg-muted/50 rounded-lg space-y-3">
+          <div className="mt-4 p-4 bg-muted/50 rounded-lg">
             {currentQuestion.reference && (
               <div>
                 <p className="text-sm font-semibold">குறிப்பு</p>
@@ -502,6 +479,9 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
                   {currentQuestion.reference}
                 </a>
               </div>
+            )}
+            {currentQuestion.reference && currentQuestion.explanation && (
+              <div className="my-3 border-t border-border" />
             )}
             {currentQuestion.explanation && (
               <div>
