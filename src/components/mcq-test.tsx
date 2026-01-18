@@ -354,9 +354,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
     const existingWindow = pdfWindowRef.current;
 
     if (existingWindow && !existingWindow.closed) {
-        if (existingWindow.location.href !== href) {
-            existingWindow.location.href = href;
-        }
+        existingWindow.location.href = href;
         existingWindow.focus();
     } else {
         const newWindow = window.open(href, windowName);
