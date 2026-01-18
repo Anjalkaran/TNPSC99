@@ -104,8 +104,6 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
 
 
   useEffect(() => {
-    // When the question index changes, check if an answer already exists for the new question.
-    // If it does, it means the user is reviewing a previously answered question.
     setIsAnswered(answers[currentQuestionIndex] !== undefined);
   }, [currentQuestionIndex, answers]);
   
@@ -116,7 +114,6 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
   }, [decodedTitle]);
 
   const processAndSaveAttempt = useCallback(async (isExiting: boolean) => {
-    // Stop the timer when submission starts
     if (timerRef.current) clearInterval(timerRef.current);
 
     const questionsToScore = isExiting ? questions.slice(0, currentQuestionIndex + 1) : questions;
@@ -137,12 +134,11 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
                 incorrectlyAnsweredQuestionIds.push(q.id);
             }
         } else {
-            // Also count unanswered as incorrect
             incorrectlyAnsweredQuestionIds.push(q.id);
         }
     });
     setScore(calculatedScore);
-    setIsSubmitted(true); // Show results screen
+    setIsSubmitted(true);
 
     if (user && (correctlyAnsweredQuestionIds.length > 0 || incorrectlyAnsweredQuestionIds.length > 0)) {
         try {
@@ -172,7 +168,6 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
                     )
                 });
             
-             // Also add a record to the public 'scores' collection for the leaderboard
             const scoreData: Score = {
               userId: user.uid,
               username: user.displayName || 'Anonymous',
@@ -192,7 +187,6 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
                 })
                 )
             });
-
 
             toast({
             title: "தேர்வு சமர்ப்பிக்கப்பட்டது",
@@ -242,11 +236,11 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
 
 
   const handleAnswerChange = (value: string) => {
-    if (isAnswered) return; // Don't allow changing answer after it's been revealed
+    if (isAnswered) return;
     const newAnswers = [...answers];
     newAnswers[currentQuestionIndex] = parseInt(value, 10);
     setAnswers(newAnswers);
-    setIsAnswered(true); // Mark as answered for immediate feedback, but main timer continues
+    setIsAnswered(true);
   };
   
   const handlePrevious = () => {
@@ -272,15 +266,12 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
     setIsSubmitted(false);
     setScore(0);
     setIsAnswered(false);
-     // Re-shuffle and re-fetch questions by navigating to the same page
     window.location.reload();
   };
 
     const getReturnHref = () => {
         if (test.classId && test.subjectId) {
             if (test.subjectId === 'tamil' && test.categoryId) {
-                // Determine category slug from category ID or name heuristic
-                // This part might need to be more robust depending on your data
                 const categoryName = test.title.includes('இலக்கணம்') ? 'ilakkanam' : 'urai-seyyul';
                 return `/class/${test.classId}/tamil/${categoryName}`;
             }
@@ -341,13 +332,24 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
     const pageNumber = (currentQuestion.referencePage || 0) + offset;
     const finalPageNumber = pageNumber > 0 ? pageNumber : 1;
 
+    // Remove the timestamp hack to avoid reloading
     const isGoogleDriveLink = currentQuestion.referenceUrl.includes('drive.google.com');
     const href = isGoogleDriveLink
       ? currentQuestion.referenceUrl
       : `${currentQuestion.referenceUrl}#page=${finalPageNumber}`;
 
     const windowName = 'pdf_reference_window';
-    window.open(href, windowName);
+    
+    // 1. Get reference to the window (opens it if not open, returns handle if it is)
+    const pdfWindow = window.open(href, windowName);
+
+    // 2. Explicitly force the location update. 
+    // If the URL matches the current URL (even if hash differs), window.open alone sometimes doesn't trigger the jump.
+    // Setting location.href forces the PDF viewer to acknowledge the new hash (page number) without a network reload.
+    if (pdfWindow) {
+        pdfWindow.location.href = href;
+        pdfWindow.focus();
+    }
   };
 
 
