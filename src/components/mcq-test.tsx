@@ -39,6 +39,8 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
   const [totalTimeLeft, setTotalTimeLeft] = useState(questions.length * 45);
   const [bookmarks, setBookmarks] = useState<string[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const pdfWindowRef = useRef<Window | null>(null);
+
 
   const { user } = useUser();
   const firestore = useFirestore();
@@ -56,6 +58,15 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
     };
     fetchBookmarks();
   }, [user, firestore]);
+
+  // Cleanup effect to close the PDF window when the component unmounts
+  useEffect(() => {
+    return () => {
+        if (pdfWindowRef.current && !pdfWindowRef.current.closed) {
+            pdfWindowRef.current.close();
+        }
+    };
+  }, []);
 
 
   const toggleBookmark = (questionId: string) => {
@@ -338,7 +349,12 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
       : `${currentQuestion.referenceUrl}#page=${finalPageNumber}`;
 
     const windowName = 'pdf_reference_window';
-    window.open(href, windowName);
+    
+    // Call window.open and store the reference. The browser handles reusing the tab.
+    pdfWindowRef.current = window.open(href, windowName);
+    if (pdfWindowRef.current) {
+        pdfWindowRef.current.focus();
+    }
   };
 
 
@@ -481,7 +497,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
               </div>
             )}
             {currentQuestion.reference && currentQuestion.explanation && (
-              <div className="my-3 border-t border-border" />
+                <div className="my-3 border-t border-border"></div>
             )}
             {currentQuestion.explanation && (
               <div>
