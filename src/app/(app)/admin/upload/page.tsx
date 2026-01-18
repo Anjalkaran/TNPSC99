@@ -213,26 +213,53 @@ function ExistingUnitsList({ onUnitSelect }: { onUnitSelect: (unit: UnitWithName
 
 
 function ExistingTestsList() {
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
     const firestore = useFirestore();
     const { toast } = useToast();
     const testsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'tests') : null, [firestore]);
     const { data: tests, isLoading } = useCollection<Test>(testsCollection);
 
-    const sortedTests = useMemo(() => {
-        if (!tests) return [];
-        return [...tests].sort((a,b) => {
+    const classesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'classes') : null, [firestore]);
+    const { data: classes } = useCollection<Class>(classesCollection);
+    const subjectsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'subjects') : null, [firestore]);
+    const { data: subjects } = useCollection<Subject>(subjectsCollection);
+
+    const testsWithNames = useMemo(() => {
+        if (!tests || !classes || !subjects) return [];
+        const classMap = new Map(classes.map(c => [c.id, language === 'ta' && c.name_ta ? c.name_ta : c.name]));
+        const subjectMap = new Map(subjects.map(s => [s.id, language === 'ta' && s.name_ta ? s.name_ta : s.name]));
+
+        const mappedTests = tests.map(test => ({
+            ...test,
+            className: test.classId ? classMap.get(test.classId) : '',
+            subjectName: test.subjectId ? subjectMap.get(test.subjectId) : '',
+        }));
+
+        return mappedTests.sort((a, b) => {
+            const classNameA = a.className || '';
+            const classNameB = b.className || '';
+            if (classNameA.localeCompare(classNameB) !== 0) {
+                return classNameA.localeCompare(classNameB);
+            }
+
+            const subjectNameA = a.subjectName || '';
+            const subjectNameB = b.subjectName || '';
+            if (subjectNameA.localeCompare(subjectNameB) !== 0) {
+                return subjectNameA.localeCompare(subjectNameB);
+            }
+            
             const termA = a.term || '';
             const termB = b.term || '';
-            const unitA = a.unitNumber || 0;
-            const unitB = b.unitNumber || 0;
-
             if (termA.localeCompare(termB) !== 0) {
                 return termA.localeCompare(termB);
             }
+            
+            const unitA = a.unitNumber || 0;
+            const unitB = b.unitNumber || 0;
             return unitA - unitB;
         });
-    }, [tests]);
+
+    }, [tests, classes, subjects, language]);
 
     const handleDownload = async (test: Test) => {
         if (!firestore) return;
@@ -310,7 +337,7 @@ function ExistingTestsList() {
                  <CardDescription>{t('View, edit, or delete your existing question banks.')}</CardDescription>
             </CardHeader>
             <CardContent>
-                {sortedTests && sortedTests.length > 0 ? (
+                {testsWithNames && testsWithNames.length > 0 ? (
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -320,9 +347,18 @@ function ExistingTestsList() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                        {sortedTests.map(test => (
+                        {testsWithNames.map(test => (
                             <TableRow key={test.id}>
-                                <TableCell className="font-medium">{test.title}</TableCell>
+                                <TableCell className="font-medium">
+                                    <div>
+                                        <span>{test.className} - {test.subjectName}</span>
+                                        <p className="text-sm text-muted-foreground">
+                                            {test.term && test.term !== 'Full Book' ? `${test.term} - ` : ''}
+                                            {test.unitNumber ? `இயல் ${test.unitNumber}: ` : ''}
+                                            {test.unitName}
+                                        </p>
+                                    </div>
+                                </TableCell>
                                 <TableCell>{test.questionIds.length}</TableCell>
                                 <TableCell className="text-right space-x-1">
                                     <Button variant="outline" size="icon" onClick={() => handleDownload(test)}>

@@ -363,9 +363,11 @@ function ExistingUnitsList() {
                         {unitsWithNames.map(unit => (
                             <li key={unit.id} className="flex justify-between items-center p-3 border rounded-md">
                                 <div>
-                                    <p className="font-semibold text-sm">{unit.className} - {unit.subjectName} - {unit.term}</p>
-                                    <p className="font-bold text-base">{t('Unit')} {unit.unitNumber}: {unit.unitName}</p>
-                                    {unit.categoryName && <p className="text-xs text-muted-foreground">Category: {unit.categoryName}</p>}
+                                    <p className="font-semibold">{unit.className} - {unit.subjectName}</p>
+                                    <p className="text-sm text-muted-foreground">
+                                        {unit.term} &bull; {t('Unit')} {unit.unitNumber}: {unit.unitName}
+                                        {unit.categoryName && ` (${unit.categoryName})`}
+                                    </p>
                                 </div>
                                 <div className="flex gap-2">
                                      <Dialog open={openDialogs[unit.id] || false} onOpenChange={(isOpen) => setDialogState(unit.id, isOpen)}>
