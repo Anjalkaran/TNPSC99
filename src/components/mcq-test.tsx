@@ -39,8 +39,6 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
   const [totalTimeLeft, setTotalTimeLeft] = useState(questions.length * 45);
   const [bookmarks, setBookmarks] = useState<string[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const pdfWindowRef = useRef<Window | null>(null);
-
 
   const { user } = useUser();
   const firestore = useFirestore();
@@ -58,15 +56,6 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
     };
     fetchBookmarks();
   }, [user, firestore]);
-
-  // Cleanup effect to close the PDF window when the component unmounts
-  useEffect(() => {
-    return () => {
-        if (pdfWindowRef.current && !pdfWindowRef.current.closed) {
-            pdfWindowRef.current.close();
-        }
-    };
-  }, []);
 
 
   const toggleBookmark = (questionId: string) => {
@@ -350,11 +339,11 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
 
     const windowName = 'pdf_reference_window';
     
-    // Call window.open and store the reference. The browser handles reusing the tab.
-    pdfWindowRef.current = window.open(href, windowName);
-    if (pdfWindowRef.current) {
-        pdfWindowRef.current.focus();
-    }
+    // This is the most standard, browser-native way to handle this.
+    // It asks the browser to open the URL in a named window.
+    // The browser itself is responsible for reusing the existing window if it's open,
+    // and navigating it to the new URL (including the new page hash).
+    window.open(href, windowName);
   };
 
 
