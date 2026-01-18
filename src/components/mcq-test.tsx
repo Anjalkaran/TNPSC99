@@ -339,6 +339,13 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
       ? currentQuestion.referenceUrl
       : `${currentQuestion.referenceUrl}#page=${finalPageNumber}`
     : '#';
+  
+  const handleReferenceClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    if (referenceHref !== '#') {
+      window.open(referenceHref, 'pdf_reference_window');
+    }
+  };
 
   if (isSubmitted) {
     return (
@@ -471,9 +478,8 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
                 <p className="text-sm font-semibold">குறிப்பு</p>
                 <a
                   href={referenceHref}
-                  target="pdf_reference_window"
-                  rel="noopener noreferrer"
-                  className="text-sm text-blue-600 hover:underline dark:text-blue-400"
+                  onClick={handleReferenceClick}
+                  className="text-sm text-blue-600 hover:underline dark:text-blue-400 cursor-pointer"
                 >
                   {currentQuestion.reference}
                 </a>
