@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import type { Test, UserTestAttempt, Score, Question, BookmarkedQuestion } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -103,14 +103,6 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
   };
 
 
-  const handleNext = () => {
-    if (currentQuestionIndex < questions.length - 1) {
-        setCurrentQuestionIndex(currentQuestionIndex + 1);
-    } else {
-        handleSubmit();
-    }
-  };
-
   useEffect(() => {
     // When the question index changes, check if an answer already exists for the new question.
     // If it does, it means the user is reviewing a previously answered question.
@@ -123,42 +115,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
     }
   }, [decodedTitle]);
 
-  useEffect(() => {
-    if (isSubmitted) {
-      if (timerRef.current) clearInterval(timerRef.current);
-      return;
-    }
-
-    timerRef.current = setInterval(() => {
-      setTotalTimeLeft(prevTime => {
-        if (prevTime <= 1) {
-          if (timerRef.current) clearInterval(timerRef.current);
-          handleSubmit();
-          return 0;
-        }
-        return prevTime - 1;
-      });
-    }, 1000);
-
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [isSubmitted]);
-
-
-  const handleAnswerChange = (value: string) => {
-    if (isAnswered) return; // Don't allow changing answer after it's been revealed
-    const newAnswers = [...answers];
-    newAnswers[currentQuestionIndex] = parseInt(value, 10);
-    setAnswers(newAnswers);
-    setIsAnswered(true); // Mark as answered for immediate feedback, but main timer continues
-  };
-  
-  const handlePrevious = () => {
-    setCurrentQuestionIndex(currentQuestionIndex - 1);
-  };
-
-  const processAndSaveAttempt = async (isExiting: boolean) => {
+  const processAndSaveAttempt = useCallback(async (isExiting: boolean) => {
     // Stop the timer when submission starts
     if (timerRef.current) clearInterval(timerRef.current);
 
@@ -250,16 +207,56 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
             })
         }
     }
-  };
+  }, [answers, currentQuestionIndex, decodedTitle, firestore, questions, test.id, toast, user]);
+
+  const handleSubmit = useCallback(async () => {
+    await processAndSaveAttempt(false);
+  }, [processAndSaveAttempt]);
+
+  useEffect(() => {
+    if (isSubmitted) {
+      if (timerRef.current) clearInterval(timerRef.current);
+      return;
+    }
+    
+    if (totalTimeLeft <= 0) {
+      if(!isSubmitted) handleSubmit();
+      return;
+    }
+
+    timerRef.current = setInterval(() => {
+      setTotalTimeLeft(prevTime => prevTime - 1);
+    }, 1000);
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [isSubmitted, totalTimeLeft, handleSubmit]);
 
 
-  const handleSubmit = async () => {
-    processAndSaveAttempt(false);
+  const handleAnswerChange = (value: string) => {
+    if (isAnswered) return; // Don't allow changing answer after it's been revealed
+    const newAnswers = [...answers];
+    newAnswers[currentQuestionIndex] = parseInt(value, 10);
+    setAnswers(newAnswers);
+    setIsAnswered(true); // Mark as answered for immediate feedback, but main timer continues
+  };
+  
+  const handlePrevious = () => {
+    setCurrentQuestionIndex(currentQuestionIndex - 1);
+  };
+  
+  const handleNext = () => {
+    if (currentQuestionIndex < questions.length - 1) {
+        setCurrentQuestionIndex(currentQuestionIndex + 1);
+    } else {
+        handleSubmit();
+    }
   };
 
-  const handleExit = async () => {
-    processAndSaveAttempt(true);
-  };
+  const handleExit = useCallback(async () => {
+    await processAndSaveAttempt(true);
+  }, [processAndSaveAttempt]);
 
 
   const handleTryAgain = () => {
