@@ -464,23 +464,30 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
             )})}
           </div>
         </RadioGroup>
-        {isAnswered && currentQuestion.reference && (
+        {(isAnswered && (currentQuestion.reference || currentQuestion.explanation)) && (
           <div className="mt-4 p-4 bg-muted/50 rounded-lg">
-            <p className="text-sm font-semibold">குறிப்பு</p>
-            <a 
-              href={referenceHref}
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-sm text-blue-600 hover:underline dark:text-blue-400"
-            >
-              {currentQuestion.reference}
-            </a>
-          </div>
-        )}
-        {isAnswered && currentQuestion.explanation && (
-          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg dark:bg-blue-950 dark:border-blue-800">
-            <p className="text-sm font-semibold text-blue-800 dark:text-blue-300">விளக்கம்</p>
-            <p className="text-sm text-blue-700 dark:text-blue-400">{currentQuestion.explanation}</p>
+            {currentQuestion.reference && (
+              <div>
+                <p className="text-sm font-semibold">குறிப்பு</p>
+                <a
+                  href={referenceHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-blue-600 hover:underline dark:text-blue-400"
+                >
+                  {currentQuestion.reference}
+                </a>
+              </div>
+            )}
+            {currentQuestion.reference && currentQuestion.explanation && (
+                <div className="my-3 border-t border-border"></div>
+            )}
+            {currentQuestion.explanation && (
+              <div>
+                <p className="text-sm font-semibold">விளக்கம்</p>
+                <p className="text-sm text-muted-foreground">{currentQuestion.explanation}</p>
+              </div>
+            )}
           </div>
         )}
       </CardContent>
