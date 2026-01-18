@@ -39,7 +39,6 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
   const [totalTimeLeft, setTotalTimeLeft] = useState(questions.length * 45);
   const [bookmarks, setBookmarks] = useState<string[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const pdfWindowRef = useRef<Window | null>(null);
 
   const { user } = useUser();
   const firestore = useFirestore();
@@ -57,16 +56,6 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
     };
     fetchBookmarks();
   }, [user, firestore]);
-
-  useEffect(() => {
-    // This cleanup function will run when the McqTest component is unmounted.
-    return () => {
-      if (pdfWindowRef.current && !pdfWindowRef.current.closed) {
-        pdfWindowRef.current.close();
-      }
-    };
-  }, []); // The empty dependency array ensures this runs only on mount and unmount.
-
 
   const toggleBookmark = (questionId: string) => {
     if (!user || !firestore) return;
@@ -337,29 +326,24 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
   const handleReferenceClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
     if (!currentQuestion.referenceUrl) return;
-
+  
     const offset = test.referencePageOffset || 0;
     const pageNumber = (currentQuestion.referencePage || 0) + offset;
     const finalPageNumber = pageNumber > 0 ? pageNumber : 1;
-
+  
     // Separate base URL from query string and hash
-    const [path, ...rest] = currentQuestion.referenceUrl.split('?');
-    const queryString = rest.join('?').split('#')[0];
-    
-    const params = new URLSearchParams(queryString);
-    // Add a unique, cache-busting query parameter. This forces the browser
-    // to re-evaluate the URL and notice the change in the page hash.
+    const [path] = currentQuestion.referenceUrl.split('?');
+    const params = new URLSearchParams(currentQuestion.referenceUrl.split('?')[1] || '');
+  
+    // Add a unique, cache-busting query parameter to force navigation
     params.set('_v', Date.now().toString());
-
+  
     const href = `${path}?${params.toString()}#page=${finalPageNumber}`;
     const windowName = 'pdf_reference_window';
-
-    const newWindow = window.open(href, windowName);
-
-    if (newWindow) {
-      pdfWindowRef.current = newWindow;
-      newWindow.focus();
-    }
+  
+    // This will open a new window or reuse an existing one and navigate it.
+    // The unique '_v' param helps ensure the browser doesn't ignore the hash change.
+    window.open(href, windowName)?.focus();
   };
 
 
@@ -488,29 +472,29 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
           </div>
         </RadioGroup>
         {(isAnswered && (currentQuestion.reference || currentQuestion.explanation)) && (
-          <div className="mt-4 p-4 bg-muted/50 rounded-lg">
-            {currentQuestion.reference && (
-              <div>
-                <p className="text-sm font-semibold">குறிப்பு</p>
-                <a
-                  href={currentQuestion.referenceUrl || '#'}
-                  onClick={handleReferenceClick}
-                  className="text-sm text-blue-600 hover:underline dark:text-blue-400 cursor-pointer"
-                >
-                  {currentQuestion.reference}
-                </a>
-              </div>
-            )}
-            {currentQuestion.reference && currentQuestion.explanation && (
-                <div className="my-3 border-t border-border"></div>
-            )}
-            {currentQuestion.explanation && (
-              <div>
-                <p className="text-sm font-semibold">விளக்கம்</p>
-                <p className="text-sm text-muted-foreground">{currentQuestion.explanation}</p>
-              </div>
-            )}
-          </div>
+            <div className="mt-4 p-4 bg-muted/50 rounded-lg">
+                {currentQuestion.reference && (
+                    <div>
+                        <p className="text-sm font-semibold">குறிப்பு</p>
+                        <a
+                        href={currentQuestion.referenceUrl || '#'}
+                        onClick={handleReferenceClick}
+                        className="text-sm text-blue-600 hover:underline dark:text-blue-400 cursor-pointer"
+                        >
+                        {currentQuestion.reference}
+                        </a>
+                    </div>
+                )}
+                {currentQuestion.reference && currentQuestion.explanation && (
+                    <div className="my-3 border-t border-border"></div>
+                )}
+                {currentQuestion.explanation && (
+                    <div>
+                        <p className="text-sm font-semibold">விளக்கம்</p>
+                        <p className="text-sm text-muted-foreground">{currentQuestion.explanation}</p>
+                    </div>
+                )}
+            </div>
         )}
       </CardContent>
       <CardFooter className="flex justify-between">
