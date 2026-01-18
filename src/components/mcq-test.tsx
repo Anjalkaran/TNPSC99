@@ -471,7 +471,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
                 <p className="text-sm font-semibold">குறிப்பு</p>
                 <a
                   href={referenceHref}
-                  target="_blank"
+                  target="pdf_reference_window"
                   rel="noopener noreferrer"
                   className="text-sm text-blue-600 hover:underline dark:text-blue-400"
                 >
