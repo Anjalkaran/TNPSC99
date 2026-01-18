@@ -66,6 +66,7 @@ import { Label } from '@/components/ui/label';
 
 const jsonStructureExample = `[
   {
+    "id": "your-unique-question-id",
     "text": "Your question text here?",
     "answerOptions": ["Option A", "Option B", "Option C", "Option D"],
     "correctAnswerIndex": 0,
@@ -412,15 +413,15 @@ export default function UploadMcqPage() {
 
   const onSubmit: SubmitHandler<UploadFormValues> = async (values) => {
     setIsSubmitting(true);
-    let questions: Omit<Question, 'id' | 'classId' | 'subjectId'>[];
+    let questions: any[];
     try {
       questions = JSON.parse(values.jsonInput);
       if (!Array.isArray(questions) || questions.length === 0) {
         throw new Error('JSON must be a non-empty array of questions.');
       }
        for(const q of questions) {
-        if (!q.text || !q.answerOptions || q.correctAnswerIndex === undefined || !q.unitId) {
-            throw new Error('Each question object must have text, answerOptions, correctAnswerIndex and unitId.');
+        if (!q.id || !q.text || !q.answerOptions || q.correctAnswerIndex === undefined || !q.unitId) {
+            throw new Error('Each question object must have id, text, answerOptions, correctAnswerIndex and unitId.');
         }
       }
     } catch (error: any) {
@@ -499,10 +500,22 @@ export default function UploadMcqPage() {
       const questionsCollectionRef = collection(firestore, 'questions');
       const newQuestionIds: string[] = [];
       questions.forEach(q => {
-          const questionRef = doc(questionsCollectionRef);
-          const questionData: Question = { ...q, id: questionRef.id, classId, subjectId, unitId: q.unitId || unitId, reference: q.reference || '', explanation: q.explanation || '' };
+          const questionRef = doc(questionsCollectionRef, q.id);
+          const questionData: Question = {
+              id: q.id,
+              text: q.text,
+              answerOptions: q.answerOptions,
+              correctAnswerIndex: q.correctAnswerIndex,
+              classId,
+              subjectId,
+              unitId: q.unitId || unitId,
+              explanation: q.explanation || '',
+              reference: q.reference || '',
+              referenceUrl: q.referenceUrl,
+              referencePage: q.referencePage
+          };
           batch.set(questionRef, questionData);
-          newQuestionIds.push(questionRef.id);
+          newQuestionIds.push(q.id);
       });
       await batch.commit();
       
