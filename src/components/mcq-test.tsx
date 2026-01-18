@@ -39,12 +39,22 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
   const [totalTimeLeft, setTotalTimeLeft] = useState(questions.length * 45);
   const [bookmarks, setBookmarks] = useState<string[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const pdfWindowRef = useRef<Window | null>(null);
 
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
   
   const decodedTitle = decodeURIComponent(test.title);
+
+  useEffect(() => {
+    return () => {
+      // Close the PDF window when the component unmounts
+      if (pdfWindowRef.current && !pdfWindowRef.current.closed) {
+        pdfWindowRef.current.close();
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!user || !firestore) return;
@@ -332,23 +342,25 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
     const pageNumber = (currentQuestion.referencePage || 0) + offset;
     const finalPageNumber = pageNumber > 0 ? pageNumber : 1;
 
-    // Remove the timestamp hack to avoid reloading
     const isGoogleDriveLink = currentQuestion.referenceUrl.includes('drive.google.com');
     const href = isGoogleDriveLink
       ? currentQuestion.referenceUrl
       : `${currentQuestion.referenceUrl}#page=${finalPageNumber}`;
 
     const windowName = 'pdf_reference_window';
-    
-    // 1. Get reference to the window (opens it if not open, returns handle if it is)
-    const pdfWindow = window.open(href, windowName);
 
-    // 2. Explicitly force the location update. 
-    // If the URL matches the current URL (even if hash differs), window.open alone sometimes doesn't trigger the jump.
-    // Setting location.href forces the PDF viewer to acknowledge the new hash (page number) without a network reload.
-    if (pdfWindow) {
-        pdfWindow.location.href = href;
-        pdfWindow.focus();
+    if (pdfWindowRef.current && !pdfWindowRef.current.closed) {
+      try {
+        pdfWindowRef.current.location.href = href;
+        pdfWindowRef.current.focus();
+      } catch (e) {
+        // Fallback for cross-origin issues
+        pdfWindowRef.current = window.open(href, windowName);
+        pdfWindowRef.current?.focus();
+      }
+    } else {
+      pdfWindowRef.current = window.open(href, windowName);
+      pdfWindowRef.current?.focus();
     }
   };
 
@@ -478,7 +490,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
           </div>
         </RadioGroup>
         {(isAnswered && (currentQuestion.reference || currentQuestion.explanation)) && (
-          <div className="mt-4 p-4 bg-muted/50 rounded-lg">
+          <div className="mt-4 p-4 bg-muted/50 rounded-lg space-y-3">
             {currentQuestion.reference && (
               <div>
                 <p className="text-sm font-semibold">குறிப்பு</p>
@@ -490,9 +502,6 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
                   {currentQuestion.reference}
                 </a>
               </div>
-            )}
-            {currentQuestion.reference && currentQuestion.explanation && (
-                <div className="my-3 border-t border-border"></div>
             )}
             {currentQuestion.explanation && (
               <div>
