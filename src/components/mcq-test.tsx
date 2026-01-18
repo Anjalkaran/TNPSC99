@@ -39,8 +39,6 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
   const [totalTimeLeft, setTotalTimeLeft] = useState(questions.length * 45);
   const [bookmarks, setBookmarks] = useState<string[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const pdfWindowRef = useRef<Window | null>(null);
-
 
   const { user } = useUser();
   const firestore = useFirestore();
@@ -59,14 +57,6 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
     fetchBookmarks();
   }, [user, firestore]);
 
-  // Effect to clean up the opened PDF window when the component unmounts
-  useEffect(() => {
-    return () => {
-        if (pdfWindowRef.current && !pdfWindowRef.current.closed) {
-            pdfWindowRef.current.close();
-        }
-    };
-  }, []);
 
   const toggleBookmark = (questionId: string) => {
     if (!user || !firestore) return;
@@ -230,7 +220,13 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
     }
     
     timerRef.current = setInterval(() => {
-      setTotalTimeLeft(prevTime => Math.max(0, prevTime - 1));
+      setTotalTimeLeft(prevTime => {
+        if (prevTime <= 1) {
+            clearInterval(timerRef.current!);
+            return 0;
+        }
+        return prevTime - 1;
+      });
     }, 1000);
 
     return () => {
@@ -351,15 +347,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
       : `${currentQuestion.referenceUrl}#page=${finalPageNumber}`;
 
     const windowName = 'pdf_reference_window';
-    const existingWindow = pdfWindowRef.current;
-
-    if (existingWindow && !existingWindow.closed) {
-        existingWindow.location.href = href;
-        existingWindow.focus();
-    } else {
-        const newWindow = window.open(href, windowName);
-        pdfWindowRef.current = newWindow;
-    }
+    window.open(href, windowName);
   };
 
 
