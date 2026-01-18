@@ -575,7 +575,7 @@ export default function UploadMcqPage() {
           const testSnapshot = await getDocs(testQuery);
           if (testSnapshot.empty) {
               const newTestRef = doc(testsCollectionRef);
-              const newTest: Test = {
+              const newTest: any = {
                   id: newTestRef.id,
                   title: testTitle,
                   description: t('test_for_class_subject', {classId: className || classId, subjectId: subjectName}),
@@ -587,8 +587,12 @@ export default function UploadMcqPage() {
                   unitId: unitId,
                   unitNumber: unitNumber,
                   unitName: unitName,
-                  referencePageOffset: referencePageOffset,
               };
+
+              if (referencePageOffset !== undefined) {
+                newTest.referencePageOffset = referencePageOffset;
+              }
+
               transaction.set(newTestRef, newTest);
           } else {
               const testDoc = testSnapshot.docs[0];
