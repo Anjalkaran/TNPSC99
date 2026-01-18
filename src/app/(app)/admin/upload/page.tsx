@@ -87,6 +87,7 @@ const uploadFormSchema = z.object({
   unitNumber: z.coerce.number().min(1, "Unit number must be at least 1."),
   unitName: z.string().min(1, { message: 'Unit name must be at least 1 character.' }),
   categoryName: z.string().optional(),
+  referencePageOffset: z.coerce.number().int().optional(),
   jsonInput: z.string().min(1, { message: 'JSON data is required.' }),
 });
 
@@ -379,7 +380,7 @@ export default function UploadMcqPage() {
   const form = useForm<UploadFormValues>({
     resolver: zodResolver(uploadFormSchema),
     defaultValues: {
-      classId: '', subjectName: '', term: '', unitNumber: 1, unitName: '', categoryName: '', jsonInput: ''
+      classId: '', subjectName: '', term: '', unitNumber: 1, unitName: '', categoryName: '', jsonInput: '', referencePageOffset: undefined,
     },
   });
 
@@ -408,6 +409,7 @@ export default function UploadMcqPage() {
         form.setValue('unitNumber', unit.unitNumber);
         form.setValue('unitName', unit.unitName);
         form.setValue('categoryName', unit.categoryName || '');
+        form.setValue('referencePageOffset', undefined);
     };
 
 
@@ -437,7 +439,7 @@ export default function UploadMcqPage() {
     try {
       if (!firestore) throw new Error('Firestore is not initialized');
 
-      const { classId, subjectName, term, unitNumber, unitName, categoryName } = values;
+      const { classId, subjectName, term, unitNumber, unitName, categoryName, referencePageOffset } = values;
 
       // 1. Find or Create Subject
       let subjectId: string;
@@ -549,6 +551,7 @@ export default function UploadMcqPage() {
                   unitId: unitId,
                   unitNumber: unitNumber,
                   unitName: unitName,
+                  referencePageOffset: referencePageOffset,
               };
               transaction.set(newTestRef, newTest);
           } else {
@@ -558,6 +561,9 @@ export default function UploadMcqPage() {
               const updateData: any = { questionIds: updatedQuestionIds };
               if (categoryId) {
                 updateData.categoryId = categoryId;
+              }
+              if (referencePageOffset !== undefined) {
+                updateData.referencePageOffset = referencePageOffset;
               }
               transaction.update(testDoc.ref, updateData);
           }
@@ -707,6 +713,25 @@ export default function UploadMcqPage() {
                             </FormControl>
                             <FormMessage />
                         </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="referencePageOffset"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>PDF Page Offset</FormLabel>
+                                <FormControl>
+                                    <Input 
+                                        type="number" 
+                                        placeholder="e.g., 14" 
+                                        {...field} 
+                                        onChange={e => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}
+                                        value={field.value ?? ''}
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
                         )}
                     />
                     <FormField

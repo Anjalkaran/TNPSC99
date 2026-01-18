@@ -329,11 +329,15 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
     return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
+  const offset = test.referencePageOffset || 0;
+  const pageNumber = (currentQuestion.referencePage || 0) + offset;
+  const finalPageNumber = pageNumber > 0 ? pageNumber : 1;
+
   const isGoogleDriveLink = currentQuestion.referenceUrl?.includes('drive.google.com');
   const referenceHref = currentQuestion.referenceUrl
     ? isGoogleDriveLink
       ? currentQuestion.referenceUrl
-      : `${currentQuestion.referenceUrl}#page=${currentQuestion.referencePage || 1}`
+      : `${currentQuestion.referenceUrl}#page=${finalPageNumber}`
     : '#';
 
   if (isSubmitted) {

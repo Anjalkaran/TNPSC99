@@ -33,6 +33,7 @@ export interface Test {
   unitNumber?: number;
   unitName?: string;
   isPreviousYearPaper?: boolean;
+  referencePageOffset?: number;
 }
 
 export interface Subject {
