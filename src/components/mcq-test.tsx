@@ -39,6 +39,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
   const [totalTimeLeft, setTotalTimeLeft] = useState(questions.length * 45);
   const [bookmarks, setBookmarks] = useState<string[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const pdfWindowRef = useRef<Window | null>(null);
 
   const { user } = useUser();
   const firestore = useFirestore();
@@ -56,6 +57,15 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
     };
     fetchBookmarks();
   }, [user, firestore]);
+
+  useEffect(() => {
+    // This cleanup function will run when the McqTest component is unmounted.
+    return () => {
+      if (pdfWindowRef.current && !pdfWindowRef.current.closed) {
+        pdfWindowRef.current.close();
+      }
+    };
+  }, []); // The empty dependency array ensures this runs only on mount and unmount.
 
 
   const toggleBookmark = (questionId: string) => {
@@ -332,18 +342,24 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
     const pageNumber = (currentQuestion.referencePage || 0) + offset;
     const finalPageNumber = pageNumber > 0 ? pageNumber : 1;
 
-    const isGoogleDriveLink = currentQuestion.referenceUrl.includes('drive.google.com');
-    const href = isGoogleDriveLink
-      ? currentQuestion.referenceUrl
-      : `${currentQuestion.referenceUrl}#page=${finalPageNumber}`;
-
-    const windowName = 'pdf_reference_window';
+    // Separate base URL from query string and hash
+    const [path, ...rest] = currentQuestion.referenceUrl.split('?');
+    const queryString = rest.join('?').split('#')[0];
     
-    // This is the most standard, browser-native way to handle this.
-    // It asks the browser to open the URL in a named window.
-    // The browser itself is responsible for reusing the existing window if it's open,
-    // and navigating it to the new URL (including the new page hash).
-    window.open(href, windowName);
+    const params = new URLSearchParams(queryString);
+    // Add a unique, cache-busting query parameter. This forces the browser
+    // to re-evaluate the URL and notice the change in the page hash.
+    params.set('_v', Date.now().toString());
+
+    const href = `${path}?${params.toString()}#page=${finalPageNumber}`;
+    const windowName = 'pdf_reference_window';
+
+    const newWindow = window.open(href, windowName);
+
+    if (newWindow) {
+      pdfWindowRef.current = newWindow;
+      newWindow.focus();
+    }
   };
 
 
