@@ -501,7 +501,7 @@ export default function UploadMcqPage() {
       const newQuestionIds: string[] = [];
       questions.forEach(q => {
           const questionRef = doc(questionsCollectionRef, q.id);
-          const questionData: Question = {
+          const questionData: { [key: string]: any } = {
               id: q.id,
               text: q.text,
               answerOptions: q.answerOptions,
@@ -511,9 +511,15 @@ export default function UploadMcqPage() {
               unitId: q.unitId || unitId,
               explanation: q.explanation || '',
               reference: q.reference || '',
-              referenceUrl: q.referenceUrl,
-              referencePage: q.referencePage
           };
+
+          if (q.referenceUrl) {
+            questionData.referenceUrl = q.referenceUrl;
+          }
+          if (q.referencePage !== null && q.referencePage !== undefined) {
+            questionData.referencePage = q.referencePage;
+          }
+
           batch.set(questionRef, questionData);
           newQuestionIds.push(q.id);
       });
