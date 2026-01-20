@@ -122,7 +122,7 @@ export default function LoginPage() {
                 username: user.displayName || user.email!,
                 email: user.email!,
                 registrationDate: new Date().toISOString(),
-                isAdmin: user.email === 'nanaa@thervumaiyam.in',
+                isAdmin: user.email === 'admin@tnpsc99.com',
             };
 
             setDoc(userDocRef, userProfile).catch((error) => {

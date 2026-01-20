@@ -96,7 +96,7 @@ export default function SignupPage() {
                 username: user.displayName || user.email!,
                 email: user.email!,
                 registrationDate: new Date().toISOString(),
-                isAdmin: user.email === 'nanaa@thervumaiyam.in',
+                isAdmin: user.email === 'admin@tnpsc99.com',
             };
 
             setDoc(userDocRef, userProfile).catch((error) => {
@@ -145,7 +145,7 @@ export default function SignupPage() {
         username: values.username,
         email: values.email,
         registrationDate: new Date().toISOString(),
-        isAdmin: values.email === 'nanaa@thervumaiyam.in',
+        isAdmin: values.email === 'admin@tnpsc99.com',
       };
 
       const userDocRef = doc(firestore, 'users', newUser.uid);
