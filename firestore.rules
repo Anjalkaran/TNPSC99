@@ -36,9 +36,13 @@ service cloud.firestore {
     }
 
     function isAdmin() {
+      // Allow if the user has isAdmin flag in their profile OR if they are the designated admin email.
       return request.auth != null &&
-        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+        (
+          (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true)
+          || request.auth.token.email == 'admin@tnpsc99.com'
+        );
     }
 
     match /users/{userId} {
