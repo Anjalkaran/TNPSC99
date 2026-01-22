@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, ArrowRight, CheckCircle2, XCircle, RotateCw, Timer, Info, Bookmark } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, XCircle, RotateCw, Timer, Info, Bookmark, Save } from 'lucide-react';
 import Link from 'next/link';
 import { useFirestore, useUser } from '@/firebase';
 import { addDoc, collection, doc, setDoc, getDocs, query, where, deleteDoc, writeBatch } from 'firebase/firestore';
@@ -28,6 +28,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useRouter } from 'next/navigation';
+import { useTranslation } from '@/hooks/use-translation';
 
 
 export function McqTest({ 
@@ -42,6 +43,7 @@ export function McqTest({
     inProgressAttempt: UserTestAttempt | null 
 }) {
   const router = useRouter();
+  const { t } = useTranslation();
   const questions = test.questions || [];
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(inProgressAttempt?.currentQuestionIndex || 0);
   const [answers, setAnswers] = useState<(number | undefined)[]>(
@@ -189,9 +191,9 @@ export function McqTest({
 
   const handleExit = useCallback(async () => {
     await saveProgress('in-progress');
-    toast({ description: "Progress saved!" });
+    toast({ description: t('progress_saved') });
     router.push(getReturnHref());
-  }, [saveProgress, toast, router, getReturnHref]);
+  }, [saveProgress, toast, router, getReturnHref, t]);
 
   useEffect(() => {
     if (!user || !firestore) return;
@@ -448,18 +450,21 @@ export function McqTest({
                 </div>
                  <AlertDialog>
                     <AlertDialogTrigger asChild>
-                       <Button variant="link" className="text-destructive">வெளியேறு</Button>
+                       <Button variant="outline">
+                           <Save className="mr-2 h-4 w-4" />
+                           {t('save_and_exit')}
+                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                         <AlertDialogHeader>
-                            <AlertDialogTitle>Are you sure you want to exit?</AlertDialogTitle>
+                            <AlertDialogTitle>{t('save_and_exit_confirm_title')}</AlertDialogTitle>
                             <AlertDialogDescription>
-                               Your current progress will be saved automatically, and you can resume the test later.
+                               {t('save_and_exit_confirm_desc')}
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction onClick={handleExit} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Save & Exit</AlertDialogAction>
+                            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleExit}>{t('confirm_and_exit')}</AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>

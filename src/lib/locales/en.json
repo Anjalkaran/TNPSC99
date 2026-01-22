@@ -153,7 +153,7 @@
     "Unit Deleted": "Unit Deleted",
     "The unit has been successfully deleted.": "The unit has been successfully deleted.",
     "Error Deleting Unit": "Error Deleting Unit",
-    "There was a problem deleting the unit.": "There was a problem deleting the unit.",
+    "There was a problem creating the unit.": "There was a problem creating the unit.",
     "This action will permanently delete the unit '{{unitName}}'.": "This action will permanently delete the unit '{{unitName}}'.",
     "Loading units...": "Loading units...",
     "Unit Created!": "Unit Created!",
@@ -183,5 +183,10 @@
     "Update Unit": "Update Unit",
     "available_tests": "Available Tests for {{category}}",
     "select_a_test_to_start": "Select a test from the list below to begin.",
-    "actions": "Actions"
+    "actions": "Actions",
+    "save_and_exit": "Save & Exit",
+    "save_and_exit_confirm_title": "Save and Exit Test?",
+    "save_and_exit_confirm_desc": "Your current progress will be saved, allowing you to resume this test later from where you left off.",
+    "confirm_and_exit": "Confirm & Exit",
+    "progress_saved": "Progress saved!"
 }
