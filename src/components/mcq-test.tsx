@@ -369,7 +369,7 @@ export function McqTest({
     const finalPageNumber = pageNumber > 0 ? pageNumber : 1;
   
     // Add a unique timestamp to ensure the browser navigates to the new URL hash
-    const url = `${currentQuestion.referenceUrl.split('#')[0]}#page=${finalPageNumber}&t=${Date.now()}`;
+    const url = `${currentQuestion.referenceUrl.split('#')[0]}#page=${finalPageNumber}`;
     
     // Add search text for highlighting
     const searchText = encodeURIComponent(currentQuestion.text.split('\n')[0]); // Use first line for search
