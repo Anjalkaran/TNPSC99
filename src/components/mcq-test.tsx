@@ -337,12 +337,14 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
   
     // Add a unique, cache-busting query parameter to force navigation
     params.set('_v', Date.now().toString());
+
+    // Add search text for highlighting
+    const searchText = currentQuestion.text.split('\n')[0]; // Use first line of question as search text
+    params.set('search', searchText);
   
     const href = `${path}?${params.toString()}#page=${finalPageNumber}`;
     const windowName = 'pdf_reference_window';
   
-    // This will open a new window or reuse an existing one and navigate it.
-    // The unique '_v' param helps ensure the browser doesn't ignore the hash change.
     window.open(href, windowName)?.focus();
   };
 
@@ -368,7 +370,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
           <div className="space-y-4 max-h-60 overflow-y-auto p-4 border rounded-md">
             {questions.slice(0, questionsInThisSession).map((q, index) => (
               <div key={q.id} className="text-left p-2 rounded-md bg-muted/50">
-                <p className="font-semibold flex items-center gap-2">
+                <p className="font-semibold flex items-center gap-2 whitespace-pre-line">
                   {answers[index] === q.correctAnswerIndex ? <CheckCircle2 className="text-green-500"/> : <XCircle className="text-red-500"/>}
                   {q.text}
                 </p>
@@ -377,7 +379,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
                  {q.explanation && (
                     <div className="mt-2 text-xs text-muted-foreground pl-8 flex gap-2">
                         <Info className="h-4 w-4 flex-shrink-0" />
-                        <span>{q.explanation}</span>
+                        <span className="whitespace-pre-line">{q.explanation}</span>
                     </div>
                 )}
               </div>
@@ -438,7 +440,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
       </CardHeader>
       <CardContent className="py-6">
         <div className="flex justify-between items-start">
-            <p className="font-semibold text-lg mb-6 flex-1">{currentQuestion.text}</p>
+            <p className="font-semibold text-lg mb-6 flex-1 whitespace-pre-line">{currentQuestion.text}</p>
             <Button variant="ghost" size="icon" onClick={() => toggleBookmark(currentQuestion.id)}>
                 <Bookmark className={cn("h-6 w-6", bookmarks.includes(currentQuestion.id) ? "fill-primary text-primary" : "text-muted-foreground")} />
             </Button>
@@ -491,7 +493,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
                 {currentQuestion.explanation && (
                     <div>
                         <p className="text-sm font-semibold">விளக்கம்</p>
-                        <p className="text-sm text-muted-foreground">{currentQuestion.explanation}</p>
+                        <p className="text-sm text-muted-foreground whitespace-pre-line">{currentQuestion.explanation}</p>
                     </div>
                 )}
             </div>
