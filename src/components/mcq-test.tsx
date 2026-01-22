@@ -27,6 +27,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/hooks/use-translation';
 
@@ -57,6 +63,8 @@ export function McqTest({
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const [attemptId, setAttemptId] = useState<string | null>(inProgressAttempt?.id || null);
   const isSavingRef = useRef(false);
+  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
+  const [pdfModalUrl, setPdfModalUrl] = useState<string | null>(null);
 
   const { user } = useUser();
   const firestore = useFirestore();
@@ -422,129 +430,142 @@ export function McqTest({
   }
 
   return (
-    <Card className="w-full max-w-2xl">
-      <CardHeader>
-        <div className='flex justify-between items-start'>
-            <div>
-                <CardTitle>{decodedTitle}</CardTitle>
-                <div className="flex items-center text-sm text-muted-foreground mt-2 gap-4">
-                    <span>கேள்வி {currentQuestionIndex + 1} / {questions.length}</span>
-                    <Badge variant="outline">
-                        முன்னேற்றம்: {answeredQuestions} / {totalQuestions}
-                    </Badge>
-                </div>
-            </div>
-            <div className="flex items-center gap-4">
-                 <div className={cn("flex items-center gap-2 font-mono text-2xl p-2 rounded-md", totalTimeLeft < 60 ? "text-destructive-foreground bg-destructive" : "bg-muted")}>
-                    <Timer className="h-6 w-6" />
-                    <span>{formatTime(totalTimeLeft)}</span>
-                </div>
-                 <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                       <Button variant="outline">
-                           <Save className="mr-2 h-4 w-4" />
-                           {t('save_and_exit')}
-                       </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>{t('save_and_exit_confirm_title')}</AlertDialogTitle>
-                            <AlertDialogDescription>
-                               {t('save_and_exit_confirm_desc')}
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                            <AlertDialogAction onClick={handleExit}>{t('confirm_and_exit')}</AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
-            </div>
-        </div>
-        <Progress value={progress} className="mt-4" />
-      </CardHeader>
-      <CardContent className="py-6">
-        <div className="flex justify-between items-start">
-            <p className="font-semibold text-lg mb-6 flex-1 whitespace-pre-line">{currentQuestion.text}</p>
-            <Button variant="ghost" size="icon" onClick={() => toggleBookmark(currentQuestion.id)}>
-                <Bookmark className={cn("h-6 w-6", bookmarks.includes(currentQuestion.id) ? "fill-primary text-primary" : "text-muted-foreground")} />
-            </Button>
-        </div>
-        <RadioGroup
-            key={currentQuestionIndex}
-            onValueChange={handleAnswerChange}
-            disabled={isAnswered}
-            value={userAnswer?.toString()}
-        >
-          <div className="space-y-4">
-            {currentQuestion.answerOptions.map((option, index) => {
-              const isCorrect = index === currentQuestion.correctAnswerIndex;
-              const isSelected = index === userAnswer;
-
-              const getOptionClass = () => {
-                if (!isAnswered) return 'border-border has-[:checked]:bg-primary/20 has-[:checked]:border-primary';
-                if (isCorrect) return 'border-green-500 bg-green-100 dark:bg-green-900';
-                if (isSelected && !isCorrect) return 'border-red-500 bg-red-100 dark:bg-red-900';
-                return 'border-border';
-              };
-              
-              return (
-              <Label key={option} className={cn("flex items-center space-x-3 p-4 border rounded-lg transition-colors cursor-pointer", getOptionClass())}>
-                <RadioGroupItem value={index.toString()} id={option} />
-                <span className='whitespace-pre-line'>{option}</span>
-                {isAnswered && isCorrect && <CheckCircle2 className="ml-auto text-green-600"/>}
-                {isAnswered && isSelected && !isCorrect && <XCircle className="ml-auto text-red-600"/>}
-              </Label>
-            )})}
+    <>
+      <Card className="w-full max-w-2xl">
+        <CardHeader>
+          <div className='flex justify-between items-start'>
+              <div>
+                  <CardTitle>{decodedTitle}</CardTitle>
+                  <div className="flex items-center text-sm text-muted-foreground mt-2 gap-4">
+                      <span>கேள்வி {currentQuestionIndex + 1} / {questions.length}</span>
+                      <Badge variant="outline">
+                          முன்னேற்றம்: {answeredQuestions} / {totalQuestions}
+                      </Badge>
+                  </div>
+              </div>
+              <div className="flex items-center gap-4">
+                   <div className={cn("flex items-center gap-2 font-mono text-2xl p-2 rounded-md", totalTimeLeft < 60 ? "text-destructive-foreground bg-destructive" : "bg-muted")}>
+                      <Timer className="h-6 w-6" />
+                      <span>{formatTime(totalTimeLeft)}</span>
+                  </div>
+                   <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                         <Button variant="outline">
+                             <Save className="mr-2 h-4 w-4" />
+                             {t('save_and_exit')}
+                         </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                          <AlertDialogHeader>
+                              <AlertDialogTitle>{t('save_and_exit_confirm_title')}</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                 {t('save_and_exit_confirm_desc')}
+                              </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                              <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                              <AlertDialogAction onClick={handleExit}>{t('confirm_and_exit')}</AlertDialogAction>
+                          </AlertDialogFooter>
+                      </AlertDialogContent>
+                  </AlertDialog>
+              </div>
           </div>
-        </RadioGroup>
-        {(isAnswered && (currentQuestion.reference || currentQuestion.explanation)) && (
-            <div className="mt-4 p-4 bg-muted/50 rounded-lg">
-                {currentQuestion.reference && pdfReferenceUrl && (
-                    <div>
-                        <p className="text-sm font-semibold">குறிப்பு</p>
-                        <a
-                            href={pdfReferenceUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-sm text-blue-600 hover:underline dark:text-blue-400 cursor-pointer text-left"
-                        >
-                            {currentQuestion.reference}
-                        </a>
-                    </div>
-                )}
-                {currentQuestion.reference && currentQuestion.explanation && (
-                    <div className="my-3 border-t border-border"></div>
-                )}
-                {currentQuestion.explanation && (
-                    <div>
-                        <p className="text-sm font-semibold">விளக்கம்</p>
-                        <p className="text-sm text-muted-foreground whitespace-pre-line">{currentQuestion.explanation}</p>
-                    </div>
-                )}
+          <Progress value={progress} className="mt-4" />
+        </CardHeader>
+        <CardContent className="py-6">
+          <div className="flex justify-between items-start">
+              <p className="font-semibold text-lg mb-6 flex-1 whitespace-pre-line">{currentQuestion.text}</p>
+              <Button variant="ghost" size="icon" onClick={() => toggleBookmark(currentQuestion.id)}>
+                  <Bookmark className={cn("h-6 w-6", bookmarks.includes(currentQuestion.id) ? "fill-primary text-primary" : "text-muted-foreground")} />
+              </Button>
+          </div>
+          <RadioGroup
+              key={currentQuestionIndex}
+              onValueChange={handleAnswerChange}
+              disabled={isAnswered}
+              value={userAnswer?.toString()}
+          >
+            <div className="space-y-4">
+              {currentQuestion.answerOptions.map((option, index) => {
+                const isCorrect = index === currentQuestion.correctAnswerIndex;
+                const isSelected = index === userAnswer;
+
+                const getOptionClass = () => {
+                  if (!isAnswered) return 'border-border has-[:checked]:bg-primary/20 has-[:checked]:border-primary';
+                  if (isCorrect) return 'border-green-500 bg-green-100 dark:bg-green-900';
+                  if (isSelected && !isCorrect) return 'border-red-500 bg-red-100 dark:bg-red-900';
+                  return 'border-border';
+                };
+                
+                return (
+                <Label key={option} className={cn("flex items-center space-x-3 p-4 border rounded-lg transition-colors cursor-pointer", getOptionClass())}>
+                  <RadioGroupItem value={index.toString()} id={option} />
+                  <span className='whitespace-pre-line'>{option}</span>
+                  {isAnswered && isCorrect && <CheckCircle2 className="ml-auto text-green-600"/>}
+                  {isAnswered && isSelected && !isCorrect && <XCircle className="ml-auto text-red-600"/>}
+                </Label>
+              )})}
             </div>
-        )}
-      </CardContent>
-      <CardFooter className="flex justify-between">
-        <Button
-          variant="outline"
-          onClick={handlePrevious}
-          disabled={currentQuestionIndex === 0}
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          முந்தைய
-        </Button>
-        {currentQuestionIndex < questions.length - 1 ? (
-          <Button onClick={handleNext} disabled={!isAnswered}>
-            அடுத்தது
-            <ArrowRight className="ml-2 h-4 w-4" />
+          </RadioGroup>
+          {(isAnswered && (currentQuestion.reference || currentQuestion.explanation)) && (
+              <div className="mt-4 p-4 bg-muted/50 rounded-lg">
+                  {currentQuestion.reference && pdfReferenceUrl && (
+                      <div>
+                          <p className="text-sm font-semibold">குறிப்பு</p>
+                          <button
+                            onClick={() => {
+                              setPdfModalUrl(pdfReferenceUrl);
+                              setIsPdfModalOpen(true);
+                            }}
+                            className="text-sm text-blue-600 hover:underline dark:text-blue-400 cursor-pointer text-left"
+                          >
+                            {currentQuestion.reference}
+                          </button>
+                      </div>
+                  )}
+                  {currentQuestion.reference && currentQuestion.explanation && (
+                      <div className="my-3 border-t border-border"></div>
+                  )}
+                  {currentQuestion.explanation && (
+                      <div>
+                          <p className="text-sm font-semibold">விளக்கம்</p>
+                          <p className="text-sm text-muted-foreground whitespace-pre-line">{currentQuestion.explanation}</p>
+                      </div>
+                  )}
+              </div>
+          )}
+        </CardContent>
+        <CardFooter className="flex justify-between">
+          <Button
+            variant="outline"
+            onClick={handlePrevious}
+            disabled={currentQuestionIndex === 0}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            முந்தைய
           </Button>
-        ) : (
-          <Button onClick={handleFinalSubmit} style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }} disabled={!isAnswered}>
-            சமர்ப்பிக்கவும்
-          </Button>
-        )}
-      </CardFooter>
-    </Card>
+          {currentQuestionIndex < questions.length - 1 ? (
+            <Button onClick={handleNext} disabled={!isAnswered}>
+              அடுத்தது
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          ) : (
+            <Button onClick={handleFinalSubmit} style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }} disabled={!isAnswered}>
+              சமர்ப்பிக்கவும்
+            </Button>
+          )}
+        </CardFooter>
+      </Card>
+      <Dialog open={isPdfModalOpen} onOpenChange={setIsPdfModalOpen}>
+        <DialogContent className="max-w-4xl h-[90vh]">
+            <DialogHeader>
+                <DialogTitle>Reference Document</DialogTitle>
+            </DialogHeader>
+            {pdfModalUrl && (
+                <iframe src={pdfModalUrl} className="w-full h-full border-0" title="PDF Reference" />
+            )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
