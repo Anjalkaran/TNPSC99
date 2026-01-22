@@ -271,6 +271,7 @@ export function McqTest({
       setTotalTimeLeft(prevTime => {
         if (prevTime <= 1) {
             clearInterval(timerRef.current!);
+            handleFinalSubmit();
             return 0;
         }
         return prevTime - 1;
@@ -280,13 +281,7 @@ export function McqTest({
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [isSubmitted]);
-
-  useEffect(() => {
-    if (totalTimeLeft === 0 && !isSubmitted) {
-        handleFinalSubmit();
-    }
-  }, [totalTimeLeft, isSubmitted, handleFinalSubmit]);
+  }, [isSubmitted, handleFinalSubmit]);
 
 
   const handleAnswerChange = (value: string) => {
@@ -368,12 +363,10 @@ export function McqTest({
     const pageNumber = (currentQuestion.referencePage || 0) + offset;
     const finalPageNumber = pageNumber > 0 ? pageNumber : 1;
   
-    // Add a unique timestamp to ensure the browser navigates to the new URL hash
-    const url = `${currentQuestion.referenceUrl.split('#')[0]}#page=${finalPageNumber}`;
+    const baseUrl = currentQuestion.referenceUrl.split('#')[0];
+    const searchText = encodeURIComponent(currentQuestion.text.split('\n')[0]);
     
-    // Add search text for highlighting
-    const searchText = encodeURIComponent(currentQuestion.text.split('\n')[0]); // Use first line for search
-    const finalUrl = `${url}&search="${searchText}"`;
+    const finalUrl = `${baseUrl}#page=${finalPageNumber}&search=${searchText}`;
 
     const windowName = 'pdf_reference_window';
     window.open(finalUrl, windowName)?.focus();
@@ -500,7 +493,7 @@ export function McqTest({
               return (
               <Label key={option} className={cn("flex items-center space-x-3 p-4 border rounded-lg transition-colors cursor-pointer", getOptionClass())}>
                 <RadioGroupItem value={index.toString()} id={option} />
-                <span>{option}</span>
+                <span className='whitespace-pre-line'>{option}</span>
                 {isAnswered && isCorrect && <CheckCircle2 className="ml-auto text-green-600"/>}
                 {isAnswered && isSelected && !isCorrect && <XCircle className="ml-auto text-red-600"/>}
               </Label>
