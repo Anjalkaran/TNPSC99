@@ -503,14 +503,14 @@ export function McqTest({
                 {currentQuestion.reference && pdfReferenceUrl && (
                     <div>
                         <p className="text-sm font-semibold">குறிப்பு</p>
-                        &lt;a
+                        <a
                             href={pdfReferenceUrl}
                             target="pdf_reference_window"
                             rel="noopener noreferrer"
                             className="text-sm text-blue-600 hover:underline dark:text-blue-400 cursor-pointer text-left"
                         >
                             {currentQuestion.reference}
-                        &lt;/a>
+                        </a>
                     </div>
                 )}
                 {currentQuestion.reference && currentQuestion.explanation && (
