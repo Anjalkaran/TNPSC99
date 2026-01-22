@@ -216,6 +216,7 @@ function ExistingTestsList() {
     const { t, language } = useTranslation();
     const firestore = useFirestore();
     const { toast } = useToast();
+    const [searchTerm, setSearchTerm] = useState('');
     const testsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'tests') : null, [firestore]);
     const { data: tests, isLoading } = useCollection<Test>(testsCollection);
 
@@ -260,6 +261,27 @@ function ExistingTestsList() {
         });
 
     }, [tests, classes, subjects, language]);
+
+    const filteredTests = useMemo(() => {
+        if (!testsWithNames) return [];
+        if (!searchTerm) return testsWithNames;
+
+        const lowerCaseSearch = searchTerm.toLowerCase();
+
+        return testsWithNames.filter(test => {
+            const className = test.className || '';
+            const subjectName = test.subjectName || '';
+            const term = test.term || '';
+            const unitName = test.unitName || '';
+            const title = test.title || '';
+
+            return className.toLowerCase().includes(lowerCaseSearch) ||
+                   subjectName.toLowerCase().includes(lowerCaseSearch) ||
+                   term.toLowerCase().includes(lowerCaseSearch) ||
+                   unitName.toLowerCase().includes(lowerCaseSearch) ||
+                   title.toLowerCase().includes(lowerCaseSearch);
+        });
+    }, [testsWithNames, searchTerm]);
 
     const handleDownload = async (test: Test) => {
         if (!firestore) return;
@@ -335,9 +357,16 @@ function ExistingTestsList() {
             <CardHeader>
                 <CardTitle>{t('Existing Question Banks')}</CardTitle>
                  <CardDescription>{t('View, edit, or delete your existing question banks.')}</CardDescription>
+                 <div className="pt-2">
+                    <Input
+                        placeholder="Search by class, subject, unit..."
+                        value={searchTerm}
+                        onChange={e => setSearchTerm(e.target.value)}
+                    />
+                </div>
             </CardHeader>
             <CardContent>
-                {testsWithNames && testsWithNames.length > 0 ? (
+                {filteredTests && filteredTests.length > 0 ? (
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -347,7 +376,7 @@ function ExistingTestsList() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                        {testsWithNames.map(test => (
+                        {filteredTests.map(test => (
                             <TableRow key={test.id}>
                                 <TableCell className="font-medium">
                                     <div>
@@ -400,7 +429,9 @@ function ExistingTestsList() {
                         </TableBody>
                     </Table>
                 ) : (
-                    <p className="text-muted-foreground text-center p-8">{t('No question banks created yet.')}</p>
+                    <p className="text-muted-foreground text-center p-8">
+                        {searchTerm ? `No results for "${searchTerm}"` : t('No question banks created yet.')}
+                    </p>
                 )}
             </CardContent>
         </Card>
