@@ -319,19 +319,10 @@ export function McqTest({
     if (!currentQuestion?.referenceUrl) {
       return null;
     }
-    let baseUrl = currentQuestion.referenceUrl.split('#')[0];
+    const baseUrl = currentQuestion.referenceUrl.split('#')[0];
     const pageNum = Number(currentQuestion.referencePage ?? 0);
     const offsetNum = Number(test.referencePageOffset ?? 0);
     const finalPage = pageNum + offsetNum;
-
-    // Append a unique timestamp to force the browser to treat it as a new URL
-    // This helps bypass aggressive caching or faulty extension behavior.
-    const timestamp = `&v=${Date.now()}`;
-    if (baseUrl.includes('?')) {
-        baseUrl += timestamp;
-    } else {
-        baseUrl += `?${timestamp.slice(1)}`;
-    }
 
     if (finalPage > 0) {
       return `${baseUrl}#page=${finalPage}`;
@@ -514,7 +505,7 @@ export function McqTest({
                         <p className="text-sm font-semibold">குறிப்பு</p>
                         <a
                             href={pdfReferenceUrl}
-                            target="pdf_reference_window"
+                            target="_blank"
                             rel="noopener noreferrer"
                             className="text-sm text-blue-600 hover:underline dark:text-blue-400 cursor-pointer text-left"
                         >
