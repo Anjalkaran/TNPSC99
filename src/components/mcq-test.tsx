@@ -331,20 +331,14 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
     const pageNumber = (currentQuestion.referencePage || 0) + offset;
     const finalPageNumber = pageNumber > 0 ? pageNumber : 1;
   
-    // Separate base URL from query string and hash
-    const [path] = currentQuestion.referenceUrl.split('?');
-    const params = new URLSearchParams(currentQuestion.referenceUrl.split('?')[1] || '');
-  
-    // Add a unique, cache-busting query parameter to force navigation
-    params.set('_v', Date.now().toString());
-
-    // Add search text for highlighting
-    const searchText = currentQuestion.text.split('\n')[0]; // Use first line of question as search text
-    params.set('search', searchText);
-  
-    const href = `${path}?${params.toString()}#page=${finalPageNumber}`;
+    // For most PDFs, the #page=[number] hash is the standard way to deep-link.
+    const href = `${currentQuestion.referenceUrl.split('#')[0]}#page=${finalPageNumber}`;
+    
     const windowName = 'pdf_reference_window';
   
+    // This tells the browser to open the URL in a tab with a specific name.
+    // If a tab with this name already exists, it will be reused.
+    // This is the most reliable, standards-compliant method.
     window.open(href, windowName)?.focus();
   };
 
