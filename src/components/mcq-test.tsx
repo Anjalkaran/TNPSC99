@@ -7,9 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, ArrowRight, CheckCircle2, XCircle, RotateCw, LogOut, Timer, Info, Bookmark } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, XCircle, RotateCw, Timer, Info, Bookmark } from 'lucide-react';
 import Link from 'next/link';
-import { useAuth, useFirestore, useUser } from '@/firebase';
+import { useFirestore, useUser } from '@/firebase';
 import { addDoc, collection, doc, setDoc, getDocs, query, where, deleteDoc, writeBatch } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -27,24 +27,171 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { useRouter } from 'next/navigation';
 
 
-export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Test, totalQuestions: number, answeredQuestions: number }) {
+export function McqTest({ 
+    test, 
+    totalQuestions, 
+    answeredQuestions,
+    inProgressAttempt
+}: { 
+    test: Test, 
+    totalQuestions: number, 
+    answeredQuestions: number,
+    inProgressAttempt: UserTestAttempt | null 
+}) {
+  const router = useRouter();
   const questions = test.questions || [];
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [answers, setAnswers] = useState<(number | undefined)[]>(Array(questions.length).fill(undefined));
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(inProgressAttempt?.currentQuestionIndex || 0);
+  const [answers, setAnswers] = useState<(number | undefined)[]>(
+      inProgressAttempt?.answers.map(a => a === -1 ? undefined : a) || Array(questions.length).fill(undefined)
+  );
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [score, setScore] = useState(0);
   const [isAnswered, setIsAnswered] = useState(false);
   const [totalTimeLeft, setTotalTimeLeft] = useState(questions.length * 45);
   const [bookmarks, setBookmarks] = useState<string[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const [attemptId, setAttemptId] = useState<string | null>(inProgressAttempt?.id || null);
+  const isSavingRef = useRef(false);
 
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
   
   const decodedTitle = decodeURIComponent(test.title);
+
+  const getReturnHref = useCallback(() => {
+    if (test.classId && test.subjectId) {
+        if (test.subjectId === 'tamil' && test.categoryId) {
+            const categoryName = test.title.includes('இலக்கணம்') ? 'ilakkanam' : 'urai-seyyul';
+            return `/class/${test.classId}/tamil/${categoryName}`;
+        }
+        return `/class/${test.classId}/subject/${test.subjectId}`;
+    }
+    return '/dashboard';
+  }, [test]);
+
+  const saveProgress = useCallback(async (status: 'in-progress' | 'completed' = 'in-progress') => {
+    if (!user || !firestore || isSavingRef.current) return null;
+    isSavingRef.current = true;
+
+    if (timerRef.current) clearInterval(timerRef.current);
+
+    const sessionQuestionIds = questions.map(q => q.id);
+    let calculatedScore = 0;
+    const correctlyAnsweredQuestionIds: string[] = [];
+    const incorrectlyAnsweredQuestionIds: string[] = [];
+    
+    if (status === 'completed') {
+        questions.forEach((q, index) => {
+            const answerIndex = answers[index];
+            if (answerIndex !== undefined) {
+                if (q.correctAnswerIndex === answerIndex) {
+                    calculatedScore++;
+                    correctlyAnsweredQuestionIds.push(q.id);
+                } else {
+                    incorrectlyAnsweredQuestionIds.push(q.id);
+                }
+            } else {
+                incorrectlyAnsweredQuestionIds.push(q.id);
+            }
+        });
+        setScore(calculatedScore);
+    }
+    
+    const attemptData: Omit<UserTestAttempt, 'id'> = {
+      userId: user.uid,
+      testId: test.id,
+      testTitle: decodedTitle,
+      lastUpdatedDate: new Date().toISOString(),
+      score: status === 'completed' ? calculatedScore : 0,
+      answers: answers.map(a => a ?? -1),
+      sessionQuestionIds,
+      status,
+      currentQuestionIndex,
+      ...(status === 'completed' && { correctlyAnsweredQuestionIds, incorrectlyAnsweredQuestionIds })
+    };
+
+    try {
+      let docRef;
+      if (attemptId) {
+        docRef = doc(firestore, `users/${user.uid}/testAttempts`, attemptId);
+        await setDoc(docRef, attemptData, { merge: true });
+      } else {
+        docRef = doc(collection(firestore, `users/${user.uid}/testAttempts`));
+        await setDoc(docRef, { ...attemptData, id: docRef.id });
+        setAttemptId(docRef.id);
+      }
+
+      if (status === 'completed' && calculatedScore > 0) {
+          const scoreData: Score = {
+            userId: user.uid,
+            username: user.displayName || 'Anonymous',
+            score: calculatedScore,
+            testId: test.id,
+            testTitle: decodedTitle,
+            createdAt: new Date().toISOString(),
+          };
+          const scoresCollectionRef = collection(firestore, `scores`);
+          addDoc(scoresCollectionRef, scoreData).catch(error => {
+              errorEmitter.emit(
+              'permission-error',
+              new FirestorePermissionError({
+                  path: scoresCollectionRef.path,
+                  operation: 'create',
+                  requestResourceData: scoreData,
+              })
+              )
+          });
+      }
+      isSavingRef.current = false;
+      return docRef.id;
+
+    } catch (error) {
+       console.error("Error saving test attempt: ", error);
+        errorEmitter.emit(
+            'permission-error',
+            new FirestorePermissionError({
+                path: `users/${user.uid}/testAttempts/${attemptId || ''}`,
+                operation: 'write',
+                requestResourceData: attemptData,
+            })
+        )
+       isSavingRef.current = false;
+       return null;
+    }
+  }, [user, firestore, questions, answers, test.id, decodedTitle, currentQuestionIndex, attemptId]);
+  
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (!isSubmitted) {
+        saveProgress('in-progress');
+      }
+    };
+    
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [saveProgress, isSubmitted]);
+
+  const handleFinalSubmit = useCallback(async () => {
+    await saveProgress('completed');
+    setIsSubmitted(true);
+    toast({
+        title: "தேர்வு சமர்ப்பிக்கப்பட்டது",
+        description: "உங்கள் மதிப்பெண் சேமிக்கப்பட்டது.",
+    });
+  }, [saveProgress, toast]);
+
+  const handleExit = useCallback(async () => {
+    await saveProgress('in-progress');
+    toast({ description: "Progress saved!" });
+    router.push(getReturnHref());
+  }, [saveProgress, toast, router, getReturnHref]);
 
   useEffect(() => {
     if (!user || !firestore) return;
@@ -112,100 +259,6 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
     }
   }, [decodedTitle]);
 
-  const processAndSaveAttempt = useCallback(async (isExiting: boolean) => {
-    if (timerRef.current) clearInterval(timerRef.current);
-
-    const questionsToScore = isExiting ? questions.slice(0, currentQuestionIndex + 1) : questions;
-    const answersToScore = isExiting ? answers.slice(0, currentQuestionIndex + 1) : answers;
-
-    let calculatedScore = 0;
-    const correctlyAnsweredQuestionIds: string[] = [];
-    const incorrectlyAnsweredQuestionIds: string[] = [];
-    const sessionQuestionIds = questionsToScore.map(q => q.id);
-
-    questionsToScore.forEach((q, index) => {
-        const answerIndex = answersToScore[index];
-        if (answerIndex !== undefined) {
-             if (q.correctAnswerIndex === answerIndex) {
-                calculatedScore++;
-                correctlyAnsweredQuestionIds.push(q.id);
-            } else {
-                incorrectlyAnsweredQuestionIds.push(q.id);
-            }
-        } else {
-            incorrectlyAnsweredQuestionIds.push(q.id);
-        }
-    });
-    setScore(calculatedScore);
-    setIsSubmitted(true);
-
-    if (user && (correctlyAnsweredQuestionIds.length > 0 || incorrectlyAnsweredQuestionIds.length > 0)) {
-        try {
-            const attemptDocRef = doc(collection(firestore, `users/${user.uid}/testAttempts`));
-            const testAttempt: UserTestAttempt = {
-                id: attemptDocRef.id,
-                userId: user.uid,
-                testId: test.id,
-                testTitle: decodedTitle,
-                attemptDate: new Date().toISOString(),
-                score: calculatedScore,
-                answers: answersToScore.map(a => a ?? -1),
-                correctlyAnsweredQuestionIds,
-                incorrectlyAnsweredQuestionIds,
-                sessionQuestionIds,
-            };
-            
-            setDoc(attemptDocRef, testAttempt)
-                .catch(error => {
-                    errorEmitter.emit(
-                    'permission-error',
-                    new FirestorePermissionError({
-                        path: attemptDocRef.path,
-                        operation: 'create',
-                        requestResourceData: testAttempt,
-                    })
-                    )
-                });
-            
-            const scoreData: Score = {
-              userId: user.uid,
-              username: user.displayName || 'Anonymous',
-              score: calculatedScore,
-              testId: test.id,
-              testTitle: decodedTitle,
-              createdAt: new Date().toISOString(),
-            };
-            const scoresCollectionRef = collection(firestore, `scores`);
-            addDoc(scoresCollectionRef, scoreData).catch(error => {
-                errorEmitter.emit(
-                'permission-error',
-                new FirestorePermissionError({
-                    path: scoresCollectionRef.path,
-                    operation: 'create',
-                    requestResourceData: scoreData,
-                })
-                )
-            });
-
-            toast({
-            title: "தேர்வு சமர்ப்பிக்கப்பட்டது",
-            description: "உங்கள் மதிப்பெண் சேமிக்கப்பட்டது.",
-            })
-        } catch (error) {
-            console.error("Error saving test attempt: ", error);
-            toast({
-            variant: "destructive",
-            title: "பிழை",
-            description: "உங்கள் தேர்வு முடிவுகளைச் சேமிப்பதில் பிழை ஏற்பட்டது.",
-            })
-        }
-    }
-  }, [answers, currentQuestionIndex, decodedTitle, firestore, questions, test.id, toast, user]);
-
-  const handleSubmit = useCallback(async () => {
-    await processAndSaveAttempt(false);
-  }, [processAndSaveAttempt]);
-
   useEffect(() => {
     if (isSubmitted) {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -229,9 +282,9 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
 
   useEffect(() => {
     if (totalTimeLeft === 0 && !isSubmitted) {
-        handleSubmit();
+        handleFinalSubmit();
     }
-  }, [totalTimeLeft, isSubmitted, handleSubmit]);
+  }, [totalTimeLeft, isSubmitted, handleFinalSubmit]);
 
 
   const handleAnswerChange = (value: string) => {
@@ -250,37 +303,19 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
     if (currentQuestionIndex < questions.length - 1) {
         setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
-        handleSubmit();
+        handleFinalSubmit();
     }
   };
 
-  const handleExit = useCallback(async () => {
-    await processAndSaveAttempt(true);
-  }, [processAndSaveAttempt]);
-
-
-  const handleTryAgain = () => {
-    setCurrentQuestionIndex(0);
-    setAnswers(Array(questions.length).fill(undefined));
-    setIsSubmitted(false);
-    setScore(0);
-    setIsAnswered(false);
+  const handleTryAgain = useCallback(async () => {
+    if (attemptId && firestore && user) {
+        const attemptRef = doc(firestore, `users/${user.uid}/testAttempts`, attemptId);
+        await deleteDoc(attemptRef).catch(e => console.error("Failed to delete in-progress attempt", e));
+    }
     window.location.reload();
-  };
+  }, [attemptId, firestore, user]);
 
-    const getReturnHref = () => {
-        if (test.classId && test.subjectId) {
-            if (test.subjectId === 'tamil' && test.categoryId) {
-                const categoryName = test.title.includes('இலக்கணம்') ? 'ilakkanam' : 'urai-seyyul';
-                return `/class/${test.classId}/tamil/${categoryName}`;
-            }
-            return `/class/${test.classId}/subject/${test.subjectId}`;
-        }
-        return '/dashboard';
-    };
-
-    const returnHref = getReturnHref();
-
+  const returnHref = getReturnHref();
 
   if (questions.length === 0) {
     return (
@@ -331,15 +366,15 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
     const pageNumber = (currentQuestion.referencePage || 0) + offset;
     const finalPageNumber = pageNumber > 0 ? pageNumber : 1;
   
-    // For most PDFs, the #page=[number] hash is the standard way to deep-link.
-    const href = `${currentQuestion.referenceUrl.split('#')[0]}#page=${finalPageNumber}`;
+    // Add a unique timestamp to ensure the browser navigates to the new URL hash
+    const url = `${currentQuestion.referenceUrl.split('#')[0]}#page=${finalPageNumber}&t=${Date.now()}`;
     
+    // Add search text for highlighting
+    const searchText = encodeURIComponent(currentQuestion.text.split('\n')[0]); // Use first line for search
+    const finalUrl = `${url}&search="${searchText}"`;
+
     const windowName = 'pdf_reference_window';
-  
-    // This tells the browser to open the URL in a tab with a specific name.
-    // If a tab with this name already exists, it will be reused.
-    // This is the most reliable, standards-compliant method.
-    window.open(href, windowName)?.focus();
+    window.open(finalUrl, windowName)?.focus();
   };
 
 
@@ -417,14 +452,14 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                         <AlertDialogHeader>
-                            <AlertDialogTitle>தேர்விலிருந்து வெளியேற விரும்புகிறீர்களா?</AlertDialogTitle>
+                            <AlertDialogTitle>Are you sure you want to exit?</AlertDialogTitle>
                             <AlertDialogDescription>
-                               உங்கள் தற்போதைய முன்னேற்றம் சேமிக்கப்படும், உங்கள் மதிப்பெண் இதுவரை நீங்கள் பதிலளித்த கேள்விகளுக்குக் கணக்கிடப்படும்.
+                               Your current progress will be saved automatically, and you can resume the test later.
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                            <AlertDialogCancel>தொடரவும்</AlertDialogCancel>
-                            <AlertDialogAction onClick={handleExit} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">வெளியேறு</AlertDialogAction>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleExit} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Save & Exit</AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>
@@ -508,7 +543,7 @@ export function McqTest({ test, totalQuestions, answeredQuestions }: { test: Tes
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         ) : (
-          <Button onClick={handleSubmit} style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }} disabled={!isAnswered}>
+          <Button onClick={handleFinalSubmit} style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }} disabled={!isAnswered}>
             சமர்ப்பிக்கவும்
           </Button>
         )}

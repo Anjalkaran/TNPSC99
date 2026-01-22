@@ -2,10 +2,11 @@
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { collection, query, where } from 'firebase/firestore';
+import { collection, query, where, orderBy } from 'firebase/firestore';
 import type { UserTestAttempt } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { format } from 'date-fns';
+import { Badge } from '@/components/ui/badge';
 
 export default function ProfilePage() {
   const { user, isUserLoading } = useUser();
@@ -15,8 +16,13 @@ export default function ProfilePage() {
     user ? collection(firestore, `users/${user.uid}/testAttempts`) : null, 
     [user, firestore]
   );
+  
+  const testAttemptsQuery = useMemoFirebase(() => 
+    testAttemptsCollection ? query(testAttemptsCollection, orderBy('lastUpdatedDate', 'desc')) : null,
+    [testAttemptsCollection]
+  );
 
-  const { data: testAttempts, isLoading: attemptsLoading } = useCollection<UserTestAttempt>(testAttemptsCollection);
+  const { data: testAttempts, isLoading: attemptsLoading } = useCollection<UserTestAttempt>(testAttemptsQuery);
 
   if (isUserLoading || attemptsLoading) {
     return <div className="container mx-auto p-4">Loading...</div>;
@@ -52,6 +58,7 @@ export default function ProfilePage() {
                 <TableRow>
                   <TableHead>தேர்வு</TableHead>
                   <TableHead>தேதி</TableHead>
+                  <TableHead>நிலை</TableHead>
                   <TableHead className="text-right">மதிப்பெண்</TableHead>
                 </TableRow>
               </TableHeader>
@@ -59,8 +66,13 @@ export default function ProfilePage() {
                 {testAttempts.map((attempt) => (
                   <TableRow key={attempt.id}>
                     <TableCell className="font-medium">{attempt.testTitle ?? 'Unknown Test'}</TableCell>
-                    <TableCell>{format(new Date(attempt.attemptDate), 'PPp')}</TableCell>
-                    <TableCell className="text-right">{attempt.score}</TableCell>
+                    <TableCell>{format(new Date(attempt.lastUpdatedDate), 'PPp')}</TableCell>
+                    <TableCell>
+                      <Badge variant={attempt.status === 'completed' ? 'default' : 'secondary'}>
+                        {attempt.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">{attempt.score > 0 ? attempt.score : '-'}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

@@ -6,6 +6,7 @@ import type { UserTestAttempt } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { format } from 'date-fns';
 import { useTranslation } from '@/hooks/use-translation';
+import { Badge } from '@/components/ui/badge';
 
 export default function ExamHistoryPage() {
   const { user, isUserLoading } = useUser();
@@ -18,7 +19,7 @@ export default function ExamHistoryPage() {
   );
   
   const testAttemptsQuery = useMemoFirebase(() => 
-    testAttemptsCollection ? query(testAttemptsCollection, orderBy('attemptDate', 'desc')) : null,
+    testAttemptsCollection ? query(testAttemptsCollection, orderBy('lastUpdatedDate', 'desc')) : null,
     [testAttemptsCollection]
   );
 
@@ -46,6 +47,7 @@ export default function ExamHistoryPage() {
                 <TableRow>
                   <TableHead>தேர்வு</TableHead>
                   <TableHead>தேதி</TableHead>
+                  <TableHead>நிலை</TableHead>
                   <TableHead className="text-right">மதிப்பெண்</TableHead>
                 </TableRow>
               </TableHeader>
@@ -53,8 +55,13 @@ export default function ExamHistoryPage() {
                 {testAttempts.map((attempt) => (
                   <TableRow key={attempt.id}>
                     <TableCell className="font-medium">{attempt.testTitle ?? 'Unknown Test'}</TableCell>
-                    <TableCell>{format(new Date(attempt.attemptDate), 'PPp')}</TableCell>
-                    <TableCell className="text-right">{attempt.score}</TableCell>
+                    <TableCell>{format(new Date(attempt.lastUpdatedDate), 'PPp')}</TableCell>
+                    <TableCell>
+                      <Badge variant={attempt.status === 'completed' ? 'default' : 'secondary'}>
+                        {attempt.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">{attempt.score > 0 ? attempt.score : '-'}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

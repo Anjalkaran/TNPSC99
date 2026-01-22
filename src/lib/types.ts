@@ -87,13 +87,15 @@ export interface UserTestAttempt {
   id:string;
   userId: string;
   testId: string;
-  attemptDate: string;
+  lastUpdatedDate: string;
   score: number;
   answers: number[];
   testTitle?: string;
   correctlyAnsweredQuestionIds?: string[];
   incorrectlyAnsweredQuestionIds?: string[];
   sessionQuestionIds?: string[];
+  status: 'in-progress' | 'completed';
+  currentQuestionIndex: number;
 }
 
 export interface BookmarkedQuestion {
