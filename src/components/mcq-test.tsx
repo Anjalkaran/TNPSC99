@@ -65,17 +65,16 @@ export function McqTest({
   const decodedTitle = decodeURIComponent(test.title);
   const currentQuestion = questions[currentQuestionIndex];
   
-  const referenceUrlWithPage = useMemo(() => {
-    if (!currentQuestion?.referenceUrl) return '#';
-
-    const offset = test.referencePageOffset || 0;
-    const pageNumber = (currentQuestion.referencePage || 0) + offset;
+  let referenceUrlWithPage = '#';
+  if (currentQuestion?.referenceUrl) {
+    const offset = Number(test.referencePageOffset || 0);
+    const pageNumber = Number(currentQuestion.referencePage || 0) + offset;
     const finalPageNumber = pageNumber > 0 ? pageNumber : 1;
 
     const baseUrl = currentQuestion.referenceUrl.split('#')[0];
     
-    return `${baseUrl}#page=${finalPageNumber}`;
-  }, [currentQuestion, test.referencePageOffset]);
+    referenceUrlWithPage = `${baseUrl}#page=${finalPageNumber}`;
+  }
 
 
   const getReturnHref = useCallback(() => {
