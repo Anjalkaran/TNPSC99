@@ -130,5 +130,5 @@ export default function TestPage() {
     return notFound();
   }
 
-  return <McqTest test={test} totalQuestions={totalQuestionsInTopic} answeredQuestions={answeredQuestions} inProgressAttempt={inProgressAttempt} />;
+  return <McqTest test={test} totalQuestions={totalQuestionsInTopic} answeredQuestions={answeredQuestionsCount} inProgressAttempt={inProgressAttempt} />;
 }
