@@ -315,22 +315,21 @@ export function McqTest({
 
   const returnHref = getReturnHref();
   
-  let finalReferenceUrl = '#';
-  if (currentQuestion?.referenceUrl) {
-    const baseUrl = currentQuestion.referenceUrl.split('#')[0];
-    const pageNum = currentQuestion.referencePage ? parseInt(String(currentQuestion.referencePage), 10) : 0;
-    const offsetNum = test.referencePageOffset ? parseInt(String(test.referencePageOffset), 10) : 0;
-
-    if (!isNaN(pageNum) && !isNaN(offsetNum)) {
-        let finalPage = pageNum + offsetNum;
-        if (finalPage < 1) {
-            finalPage = 1;
+  const openPdfReference = () => {
+    if (currentQuestion?.referenceUrl) {
+      const baseUrl = currentQuestion.referenceUrl.split('#')[0];
+      const pageNum = currentQuestion.referencePage ? parseInt(String(currentQuestion.referencePage), 10) : 0;
+      const offsetNum = test.referencePageOffset ? parseInt(String(test.referencePageOffset), 10) : 0;
+      let finalUrl = baseUrl;
+      if (!isNaN(pageNum)) {
+        const finalPage = pageNum + (offsetNum || 0);
+        if (finalPage > 0) {
+          finalUrl = `${baseUrl}#page=${finalPage}`;
         }
-        finalReferenceUrl = `${baseUrl}#page=${finalPage}`;
-    } else {
-        finalReferenceUrl = baseUrl;
+      }
+      window.open(finalUrl, 'pdf_reference_window');
     }
-  }
+  };
 
 
   if (questions.length === 0) {
@@ -505,14 +504,12 @@ export function McqTest({
                 {currentQuestion.reference && (
                     <div>
                         <p className="text-sm font-semibold">குறிப்பு</p>
-                        <a
-                            href={finalReferenceUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-sm text-blue-600 hover:underline dark:text-blue-400 cursor-pointer"
+                        <button
+                            onClick={openPdfReference}
+                            className="text-sm text-blue-600 hover:underline dark:text-blue-400 cursor-pointer text-left"
                         >
                         {currentQuestion.reference}
-                        </a>
+                        </button>
                     </div>
                 )}
                 {currentQuestion.reference && currentQuestion.explanation && (
