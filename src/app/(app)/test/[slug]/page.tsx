@@ -2,9 +2,19 @@
 import { McqTest } from '@/components/mcq-test';
 import { notFound, useParams, useSearchParams } from 'next/navigation';
 import { useUser, useFirestore } from '@/firebase';
-import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc, deleteDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import type { Test, Question, UserTestAttempt } from '@/lib/types';
+import { useTranslation } from '@/hooks/use-translation';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 // Function to shuffle an array
 function shuffleArray<T>(array: T[]): T[] {
@@ -22,11 +32,16 @@ export default function TestPage() {
   const searchParams = useSearchParams();
   const { user } = useUser();
   const firestore = useFirestore();
+  const { t } = useTranslation();
+
   const [test, setTest] = useState<Test | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [totalQuestionsInTopic, setTotalQuestionsInTopic] = useState(0);
   const [answeredQuestionsCount, setAnsweredQuestionsCount] = useState(0);
   const [inProgressAttempt, setInProgressAttempt] = useState<UserTestAttempt | null>(null);
+
+  const [showResumePrompt, setShowResumePrompt] = useState(false);
+  const [resolveResume, setResolveResume] = useState<((choice: 'resume' | 'new') => void) | null>(null);
 
 
   useEffect(() => {
@@ -51,10 +66,25 @@ export default function TestPage() {
       const attemptsRef = collection(firestore, `users/${user.uid}/testAttempts`);
       const inProgressQuery = query(attemptsRef, where('testId', '==', testId), where('status', '==', 'in-progress'));
       const inProgressSnap = await getDocs(inProgressQuery);
+      
       let loadedAttempt: UserTestAttempt | null = null;
+      let userChoice: 'resume' | 'new' = 'new';
+
       if (!inProgressSnap.empty) {
         loadedAttempt = { id: inProgressSnap.docs[0].id, ...inProgressSnap.docs[0].data() } as UserTestAttempt;
-        setInProgressAttempt(loadedAttempt);
+        
+        userChoice = await new Promise((resolve) => {
+            setResolveResume(() => resolve);
+            setShowResumePrompt(true);
+        });
+        
+        setShowResumePrompt(false);
+        setResolveResume(null);
+
+        if (userChoice === 'new' && loadedAttempt) {
+            await deleteDoc(doc(firestore, `users/${user.uid}/testAttempts`, loadedAttempt.id));
+            loadedAttempt = null;
+        }
       }
 
       // Fetch all questions for the test
@@ -77,12 +107,13 @@ export default function TestPage() {
       }
 
       let sessionQuestions: Question[] = [];
-      // If resuming, load questions in the saved order
-      if (loadedAttempt && loadedAttempt.sessionQuestionIds) {
+      
+      if (userChoice === 'resume' && loadedAttempt) {
+          setInProgressAttempt(loadedAttempt);
           const questionMap = new Map(allQuestions.map(q => [q.id, q]));
           sessionQuestions = loadedAttempt.sessionQuestionIds.map(id => questionMap.get(id)).filter(Boolean) as Question[];
       } else {
-        // Fetch user's COMPLETED attempts for this test
+        setInProgressAttempt(null);
         const completedAttemptsQuery = query(attemptsRef, where('testId', '==', testData.id), where('status', '==', 'completed'));
         const completedAttemptsSnapshot = await getDocs(completedAttemptsQuery);
         
@@ -95,10 +126,8 @@ export default function TestPage() {
         });
         setAnsweredQuestionsCount(correctlyAnsweredIds.size);
         
-        // Filter out questions that have been answered correctly
         let filteredQuestions = allQuestions.filter(q => !correctlyAnsweredIds.has(q.id));
 
-        // If all questions have been answered correctly, reset and show all questions again
         if (filteredQuestions.length === 0 && allQuestions.length > 0) {
             filteredQuestions = allQuestions;
         }
@@ -121,11 +150,40 @@ export default function TestPage() {
 
     fetchTest();
   }, [firestore, slug, user, searchParams]);
+  
+  const handleResumeChoice = (choice: 'resume' | 'new') => {
+    if (resolveResume) {
+        resolveResume(choice);
+    }
+  };
+
 
   if (isLoading) {
-    return <div className="flex min-h-screen items-center justify-center">Loading...</div>;
+    return (
+        <>
+            <div className="flex min-h-screen items-center justify-center">Loading...</div>
+            <AlertDialog open={showResumePrompt}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>{t('resume_test_title')}</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {t('resume_test_desc')}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogAction onClick={() => handleResumeChoice('new')} variant="destructive">
+                            {t('start_new_test')}
+                        </AlertDialogAction>
+                        <AlertDialogAction onClick={() => handleResumeChoice('resume')}>
+                            {t('continue_test')}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </>
+    );
   }
-
+  
   if (!test) {
     return notFound();
   }

@@ -188,5 +188,9 @@
     "save_and_exit_confirm_title": "Save and Exit Test?",
     "save_and_exit_confirm_desc": "Your current progress will be saved, allowing you to resume this test later from where you left off.",
     "confirm_and_exit": "Confirm & Exit",
-    "progress_saved": "Progress saved!"
+    "progress_saved": "Progress saved!",
+    "resume_test_title": "Resume Unfinished Test?",
+    "resume_test_desc": "You have an unfinished test session. Would you like to continue where you left off or start a new test? Starting a new test will delete your previous progress.",
+    "start_new_test": "Start New",
+    "continue_test": "Continue Test"
 }
