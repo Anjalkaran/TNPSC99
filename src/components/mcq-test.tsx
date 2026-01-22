@@ -319,10 +319,19 @@ export function McqTest({
     if (!currentQuestion?.referenceUrl) {
       return null;
     }
-    const baseUrl = currentQuestion.referenceUrl.split('#')[0];
-    const pageNum = currentQuestion.referencePage ?? 0;
-    const offsetNum = test.referencePageOffset ?? 0;
+    let baseUrl = currentQuestion.referenceUrl.split('#')[0];
+    const pageNum = Number(currentQuestion.referencePage ?? 0);
+    const offsetNum = Number(test.referencePageOffset ?? 0);
     const finalPage = pageNum + offsetNum;
+
+    // Append a unique timestamp to force the browser to treat it as a new URL
+    // This helps bypass aggressive caching or faulty extension behavior.
+    const timestamp = `&v=${Date.now()}`;
+    if (baseUrl.includes('?')) {
+        baseUrl += timestamp;
+    } else {
+        baseUrl += `?${timestamp.slice(1)}`;
+    }
 
     if (finalPage > 0) {
       return `${baseUrl}#page=${finalPage}`;
