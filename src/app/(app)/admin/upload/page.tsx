@@ -30,7 +30,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import type { Question, Test, QuestionInput, Subject, Class, Unit, Category } from '@/lib/types';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useTranslation } from '@/hooks/use-translation';
 import {
   Select,
