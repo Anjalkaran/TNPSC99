@@ -120,5 +120,17 @@ const performanceAnalysisFlow = ai.defineFlow(
 
 
 export async function analyzePerformance(input: PerformanceInput): Promise<PerformanceOutput> {
+  if (!process.env.GEMINI_API_KEY) {
+    console.warn("GEMINI_API_KEY is not set. Skipping AI performance analysis.");
+    const summary = input.language === 'ta' 
+        ? "AI பகுப்பாய்வு கிடைக்கவில்லை. உங்கள் ஜெமினி API விசையை உள்ளமைக்கவும்." 
+        : "AI analysis is unavailable. Please configure your Gemini API key.";
+    return {
+        strengths: [],
+        weaknesses: [],
+        recommendations: [],
+        overallSummary: summary,
+    };
+  }
   return await performanceAnalysisFlow(input);
 }
