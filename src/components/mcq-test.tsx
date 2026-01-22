@@ -27,12 +27,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/hooks/use-translation';
 
@@ -63,8 +57,6 @@ export function McqTest({
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const [attemptId, setAttemptId] = useState<string | null>(inProgressAttempt?.id || null);
   const isSavingRef = useRef(false);
-  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
-  const [pdfModalUrl, setPdfModalUrl] = useState<string | null>(null);
 
   const { user } = useUser();
   const firestore = useFirestore();
@@ -430,7 +422,6 @@ export function McqTest({
   }
 
   return (
-    <>
       <Card className="w-full max-w-2xl">
         <CardHeader>
           <div className='flex justify-between items-start'>
@@ -512,15 +503,14 @@ export function McqTest({
                   {currentQuestion.reference && pdfReferenceUrl && (
                       <div>
                           <p className="text-sm font-semibold">குறிப்பு</p>
-                          <button
-                            onClick={() => {
-                              setPdfModalUrl(pdfReferenceUrl);
-                              setIsPdfModalOpen(true);
-                            }}
-                            className="text-sm text-blue-600 hover:underline dark:text-blue-400 cursor-pointer text-left"
+                          <a
+                            href={pdfReferenceUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-blue-600 hover:underline dark:text-blue-400"
                           >
                             {currentQuestion.reference}
-                          </button>
+                          </a>
                       </div>
                   )}
                   {currentQuestion.reference && currentQuestion.explanation && (
@@ -556,16 +546,5 @@ export function McqTest({
           )}
         </CardFooter>
       </Card>
-      <Dialog open={isPdfModalOpen} onOpenChange={setIsPdfModalOpen}>
-        <DialogContent className="max-w-4xl h-[90vh]">
-            <DialogHeader>
-                <DialogTitle>Reference Document</DialogTitle>
-            </DialogHeader>
-            {pdfModalUrl && (
-                <iframe src={pdfModalUrl} className="w-full h-full border-0" title="PDF Reference" />
-            )}
-        </DialogContent>
-      </Dialog>
-    </>
   );
 }
