@@ -364,9 +364,8 @@ export function McqTest({
     const finalPageNumber = pageNumber > 0 ? pageNumber : 1;
   
     const baseUrl = currentQuestion.referenceUrl.split('#')[0];
-    const searchText = encodeURIComponent(currentQuestion.text.split('\n')[0]);
     
-    const finalUrl = `${baseUrl}#page=${finalPageNumber}&search=${searchText}`;
+    const finalUrl = `${baseUrl}#page=${finalPageNumber}`;
 
     const windowName = 'pdf_reference_window';
     window.open(finalUrl, windowName)?.focus();
