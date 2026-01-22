@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import type { Test, UserTestAttempt, Score, Question, BookmarkedQuestion } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -63,6 +63,20 @@ export function McqTest({
   const { toast } = useToast();
   
   const decodedTitle = decodeURIComponent(test.title);
+  const currentQuestion = questions[currentQuestionIndex];
+  
+  const referenceUrlWithPage = useMemo(() => {
+    if (!currentQuestion?.referenceUrl) return '#';
+
+    const offset = test.referencePageOffset || 0;
+    const pageNumber = (currentQuestion.referencePage || 0) + offset;
+    const finalPageNumber = pageNumber > 0 ? pageNumber : 1;
+
+    const baseUrl = currentQuestion.referenceUrl.split('#')[0];
+    
+    return `${baseUrl}#page=${finalPageNumber}`;
+  }, [currentQuestion, test.referencePageOffset]);
+
 
   const getReturnHref = useCallback(() => {
     if (test.classId && test.subjectId) {
@@ -343,7 +357,6 @@ export function McqTest({
   }
 
   const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
-  const currentQuestion = questions[currentQuestionIndex];
   const userAnswer = answers[currentQuestionIndex];
   
   const questionsInThisSession = isSubmitted ? answers.filter(a => a !== undefined).length : questions.length;
@@ -354,23 +367,6 @@ export function McqTest({
     const remainingSeconds = seconds % 60;
     return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
-
-  const handleReferenceClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
-    event.preventDefault();
-    if (!currentQuestion.referenceUrl) return;
-  
-    const offset = test.referencePageOffset || 0;
-    const pageNumber = (currentQuestion.referencePage || 0) + offset;
-    const finalPageNumber = pageNumber > 0 ? pageNumber : 1;
-  
-    const baseUrl = currentQuestion.referenceUrl.split('#')[0];
-    
-    const finalUrl = `${baseUrl}#page=${finalPageNumber}`;
-
-    const windowName = 'pdf_reference_window';
-    window.open(finalUrl, windowName)?.focus();
-  };
-
 
   if (isSubmitted) {
     return (
@@ -505,9 +501,10 @@ export function McqTest({
                     <div>
                         <p className="text-sm font-semibold">குறிப்பு</p>
                         <a
-                        href={currentQuestion.referenceUrl || '#'}
-                        onClick={handleReferenceClick}
-                        className="text-sm text-blue-600 hover:underline dark:text-blue-400 cursor-pointer"
+                            href={referenceUrlWithPage}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-blue-600 hover:underline dark:text-blue-400 cursor-pointer"
                         >
                         {currentQuestion.reference}
                         </a>
