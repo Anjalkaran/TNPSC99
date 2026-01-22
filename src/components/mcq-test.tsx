@@ -315,21 +315,20 @@ export function McqTest({
 
   const returnHref = getReturnHref();
   
-  const openPdfReference = () => {
-    if (currentQuestion?.referenceUrl) {
-      const baseUrl = currentQuestion.referenceUrl.split('#')[0];
-      const pageNum = currentQuestion.referencePage ? parseInt(String(currentQuestion.referencePage), 10) : 0;
-      const offsetNum = test.referencePageOffset ? parseInt(String(test.referencePageOffset), 10) : 0;
-      let finalUrl = baseUrl;
-      if (!isNaN(pageNum)) {
-        const finalPage = pageNum + (offsetNum || 0);
-        if (finalPage > 0) {
-          finalUrl = `${baseUrl}#page=${finalPage}`;
-        }
-      }
-      window.open(finalUrl, 'pdf_reference_window');
+  const pdfReferenceUrl = useMemo(() => {
+    if (!currentQuestion?.referenceUrl) {
+      return null;
     }
-  };
+    const baseUrl = currentQuestion.referenceUrl.split('#')[0];
+    const pageNum = currentQuestion.referencePage ?? 0;
+    const offsetNum = test.referencePageOffset ?? 0;
+    const finalPage = pageNum + offsetNum;
+
+    if (finalPage > 0) {
+      return `${baseUrl}#page=${finalPage}`;
+    }
+    return baseUrl;
+  }, [currentQuestion, test.referencePageOffset]);
 
 
   if (questions.length === 0) {
@@ -501,15 +500,17 @@ export function McqTest({
         </RadioGroup>
         {(isAnswered && (currentQuestion.reference || currentQuestion.explanation)) && (
             <div className="mt-4 p-4 bg-muted/50 rounded-lg">
-                {currentQuestion.reference && (
+                {currentQuestion.reference && pdfReferenceUrl && (
                     <div>
                         <p className="text-sm font-semibold">குறிப்பு</p>
-                        <button
-                            onClick={openPdfReference}
+                        &lt;a
+                            href={pdfReferenceUrl}
+                            target="pdf_reference_window"
+                            rel="noopener noreferrer"
                             className="text-sm text-blue-600 hover:underline dark:text-blue-400 cursor-pointer text-left"
                         >
-                        {currentQuestion.reference}
-                        </button>
+                            {currentQuestion.reference}
+                        &lt;/a>
                     </div>
                 )}
                 {currentQuestion.reference && currentQuestion.explanation && (
