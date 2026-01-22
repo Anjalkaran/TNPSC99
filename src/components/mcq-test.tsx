@@ -65,18 +65,6 @@ export function McqTest({
   const decodedTitle = decodeURIComponent(test.title);
   const currentQuestion = questions[currentQuestionIndex];
   
-  let referenceUrlWithPage = '#';
-  if (currentQuestion?.referenceUrl) {
-    const offset = Number(test.referencePageOffset || 0);
-    const pageNumber = Number(currentQuestion.referencePage || 0) + offset;
-    const finalPageNumber = pageNumber > 0 ? pageNumber : 1;
-
-    const baseUrl = currentQuestion.referenceUrl.split('#')[0];
-    
-    referenceUrlWithPage = `${baseUrl}#page=${finalPageNumber}`;
-  }
-
-
   const getReturnHref = useCallback(() => {
     if (test.classId && test.subjectId) {
         if (test.subjectId === 'tamil' && test.categoryId) {
@@ -326,6 +314,24 @@ export function McqTest({
   }, [attemptId, firestore, user]);
 
   const returnHref = getReturnHref();
+  
+  let finalReferenceUrl = '#';
+  if (currentQuestion?.referenceUrl) {
+    const baseUrl = currentQuestion.referenceUrl.split('#')[0];
+    const pageNum = currentQuestion.referencePage ? parseInt(String(currentQuestion.referencePage), 10) : 0;
+    const offsetNum = test.referencePageOffset ? parseInt(String(test.referencePageOffset), 10) : 0;
+
+    if (!isNaN(pageNum) && !isNaN(offsetNum)) {
+        let finalPage = pageNum + offsetNum;
+        if (finalPage < 1) {
+            finalPage = 1;
+        }
+        finalReferenceUrl = `${baseUrl}#page=${finalPage}`;
+    } else {
+        finalReferenceUrl = baseUrl;
+    }
+  }
+
 
   if (questions.length === 0) {
     return (
@@ -500,7 +506,7 @@ export function McqTest({
                     <div>
                         <p className="text-sm font-semibold">குறிப்பு</p>
                         <a
-                            href={referenceUrlWithPage}
+                            href={finalReferenceUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-sm text-blue-600 hover:underline dark:text-blue-400 cursor-pointer"
