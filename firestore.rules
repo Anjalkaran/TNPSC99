@@ -1,117 +1,173 @@
 /**
- * Core Philosophy: This ruleset enforces a strict security model based on user ownership and content segregation.
- * User-specific data (profiles, test scores) is private and can only be accessed by the owner. Shared application
- * content (tests, questions) is publicly readable by any authenticated user but is not writable from the client,
- * ensuring content integrity. This model protects user privacy while allowing access to common app resources.
+ * This ruleset enforces a security model for the TNPSC Ace application with a
+ * clear separation between public and private data.
  *
- * Data Structure: The data is organized into two main areas:
- * 1. /users/{userId}/... : A user-centric tree containing private user profiles and their personal test scores.
- *    Access is strictly controlled by matching the authenticated user's ID with the {userId} in the path.
- * 2. /tests/{testId}/... : A top-level collection for all test and question content. This data is considered
- *    publicly readable to all authenticated users of the application.
+ * Core Philosophy:
+ * The ruleset implements a hybrid security model. User-specific data, such as
+ * user profiles and test scores, is strictly private and accessible only by the
+ * owning user. General application content, like tests and questions, is
+ * publicly readable by any user to facilitate browsing and participation. All
+ * write operations are strictly controlled.
+ *
+ * Data Structure:
+ * - /users/{userId}: Private user profiles, owned by the user.
+ * - /tests/{testId}: Publicly readable test metadata.
+ * - /tests/{testId}/questions/{questionId}: Publicly readable questions for each test.
+ * - /user_test_scores/{userTestScoreId}: Private user scores. This is a
+ *   top-level collection to allow for flexible queries, secured by a `userId`
+ *   field within each document.
  *
  * Key Security Decisions:
- * - User Privacy: Listing the top-level /users collection is explicitly forbidden to prevent enumeration of all users.
- * - Content Integrity: The /tests and /tests/{testId}/questions collections are read-only for clients. This is a critical
- *   security measure because the data entities lack an "ownerId" field, making it impossible to safely grant
- *   write permissions. All test content must be managed via a trusted server environment using the Admin SDK.
- * - Path-Based Security: Rules heavily leverage the document path (e.g., /users/{userId}) for authorization decisions,
- *   which is highly performant and avoids costly `get()` calls to other documents.
- * - Relational Integrity: On creation, documents inside a user's private tree (like a test score) must include a
- *   `userId` field that matches the {userId} from the path, ensuring a permanent and correct ownership link.
+ * - User Data Isolation: A user can only access their own document within the
+ *   `/users` collection. Listing users is disabled.
+ * - Public Read-Only Content: The `/tests` and `/tests/{...}/questions`
+ *   collections are world-readable to allow users to browse available tests.
+ *   Writes to these collections are currently disabled pending the implementation
+ *   of an admin role system.
+ * - Private User Scores: User scores are stored in a top-level collection but
+ *   are secured using a `userId` field on each document. This allows a user to
+ *   create and read their own scores, but not scores belonging to others.
+ * - No Global Listing of Scores: Listing all documents in the `/user_test_scores`
+ *   collection is explicitly forbidden to prevent leaking all user scores.
+ *   Clients must query for scores based on the current user's ID.
  *
- * Denormalization for Authorization: The chosen data structure is inherently performant. By placing a user's private
- * data (like test_scores) in a subcollection under their own user document, we use Firestore's pathing system as a
- * form of denormalization. The `userId` is "denormalized" into the path, making ownership checks instantaneous without
- * needing to read any other documents.
+ * Denormalization for Authorization:
+ * The `/user_test_scores` documents contain a denormalized `userId` field. This
+ * is critical for security, as it allows the rules to authorize access without
+ * needing to perform costly and slow `get()` calls to other documents.
  *
- * Structural Segregation: The ruleset leverages strong structural segregation. Private, user-owned data
- * (/users/{userId}/test_scores) is stored in a completely separate collection tree from the public, read-only
- * content (/tests). This separation simplifies rules and makes it impossible for security logic to accidentally
- * leak private data in public queries.
+ * Structural Segregation:
+ * Private user data (`/users`, `/user_test_scores`) and public content (`/tests`)
+ * are stored in separate top-level collections. This is a secure and performant
+ * pattern that simplifies rules and prevents accidental data leakage, especially
+ * during list operations.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions for reusable logic
+    //----------------------------------------------------------------//
+    // Helper Functions
+    //----------------------------------------------------------------//
+
+    /**
+     * Checks if a user is authenticated.
+     */
     function isSignedIn() {
       return request.auth != null;
     }
+
+    /**
+     * Checks if the currently authenticated user's UID matches the provided userId.
+     * This is the primary function for establishing document ownership.
+     */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
     /**
-     * @description Manages user profile documents. A user can create their own profile,
-     *              and can only read or update their own data. Listing all users is denied.
+     * Verifies ownership for an existing document. Used for safe updates and deletes.
+     * Ensures the operation targets a document that actually exists.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
+    }
+    
+    /**
+     * On create, validates that the incoming document's userId field matches
+     * the authenticated user. This establishes the ownership link.
+     */
+    function isCreatingOwnScore() {
+        return isSignedIn() && request.resource.data.userId == request.auth.uid;
+    }
+    
+    /**
+     * On update, ensures the ownership link (userId field) cannot be changed.
+     */
+    function isUserIdImmutable() {
+        return request.resource.data.userId == resource.data.userId;
+    }
+    
+    /**
+     * On create, validates that the document's ID matches the user's UID.
+     * This enforces consistency between the path and the data.
+     */
+    function isConsistentUserIdOnCreate(userId) {
+        return request.resource.data.id == userId;
+    }
+
+    /**
+     * On update, ensures the document's ID is immutable.
+     */
+    function isDocumentIdImmutable() {
+        return request.resource.data.id == resource.data.id;
+    }
+    
+
+    //----------------------------------------------------------------//
+    // Collection Rules
+    //----------------------------------------------------------------//
+
+    /**
+     * @description Manages user profile documents.
      * @path /users/{userId}
-     * @allow (create) An authenticated user creates their own profile document, ensuring the
-     *          document's 'id' field matches their auth UID.
-     * @allow (get, update) An authenticated user reads or modifies their own profile.
-     * @deny (list) A user attempts to query the entire /users collection.
-     * @deny (get) A user attempts to read another user's profile document.
-     * @principle Restricts access to a user's own data tree and validates relational integrity on creation.
+     * @allow A logged-in user (UID 'user123') can read or write their own document at `/users/user123`.
+     * @deny A logged-in user (UID 'user123') cannot read or write another user's document at `/users/user456`.
+     * @principle Restricts access to a user's own data tree.
      */
     match /users/{userId} {
       allow get: if isOwner(userId);
       allow list: if false;
-      allow create: if isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isOwner(userId) && resource != null;
-      allow delete: if false;
+      allow create: if isOwner(userId) && isConsistentUserIdOnCreate(userId);
+      allow update: if isOwner(userId) && isDocumentIdImmutable();
+      allow delete: if isOwner(userId);
     }
 
     /**
-     * @description Provides read-only access to test metadata for all authenticated users.
-     *              Client-side writes are disabled to protect content integrity.
+     * @description Stores test metadata, which is public to all users.
      * @path /tests/{testId}
-     * @allow (get, list) Any signed-in user can read the list of tests or get a specific test.
-     * @deny (create, update, delete) Any user attempts to modify, create, or delete a test.
-     *       This content must be managed through a trusted admin environment.
-     * @principle Provides public read access for signed-in users while prohibiting client-side modifications.
+     * @allow Any user (authenticated or not) can read the list of tests or a specific test document.
+     * @deny Any user attempting to create, update, or delete a test.
+     * @principle Manages public, read-only content. Writes are disabled pending an admin implementation.
      */
     match /tests/{testId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow get: if true;
+      allow list: if true;
+      // CRITICAL: Cannot implement admin-only writes because no admin role or ownership field is defined in the 'Test' entity.
+      allow create: if false; // TODO: Implement admin role validation for creating tests.
+      allow update: if false; // TODO: Implement admin role or ownership validation for updating tests.
+      allow delete: if false; // TODO: Implement admin role or ownership validation for deleting tests.
+
+      /**
+       * @description Stores questions for a specific test. Publicly readable.
+       * @path /tests/{testId}/questions/{questionId}
+       * @allow Any user (authenticated or not) can read questions for any test.
+       * @deny Any user attempting to create, update, or delete a question.
+       * @principle Manages public, read-only content. Writes are disabled pending an admin implementation.
+       */
+      match /questions/{questionId} {
+        allow get: if true;
+        allow list: if true;
+        // CRITICAL: Cannot implement admin-only writes because no admin role or ownership field is defined in the 'Question' entity.
+        allow create: if false; // TODO: Add admin/owner validation. Should also validate path integrity: isConsistentTestIdOnCreate(testId).
+        allow update: if false; // TODO: Add admin/owner validation. Should also validate immutability: isTestIdImmutable().
+        allow delete: if false; // TODO: Add admin/owner validation.
+      }
     }
 
     /**
-     * @description Provides read-only access to the questions within a specific test.
-     *              Client-side writes are disabled.
-     * @path /tests/{testId}/questions/{questionId}
-     * @allow (get, list) Any signed-in user can read the questions for any test.
-     * @deny (create, update, delete) Any user attempts to modify, create, or delete a question.
-     *       This content must be managed through a trusted admin environment.
-     * @principle Provides public read access for signed-in users while prohibiting client-side modifications.
+     * @description Stores scores for tests taken by users.
+     * @path /user_test_scores/{userTestScoreId}
+     * @allow A logged-in user ('user123') can (create) their own score document, setting `userId` to 'user123'.
+     * @deny A logged-in user ('user123') cannot (get) a score document where the `userId` field is 'user456'.
+     * @principle Enforces document ownership for all operations based on a 'userId' field inside the document. Disallows listing to prevent data leakage.
      */
-    match /tests/{testId}/questions/{questionId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
-    }
-
-    /**
-     * @description Manages a user's private test scores. Users have full control over their
-     *              own scores but cannot see or interact with anyone else's.
-     * @path /users/{userId}/test_scores/{testScoreId}
-     * @allow (create) A user creates a new test score document for themselves, ensuring the
-     *          embedded 'userId' field correctly links back to them.
-     * @allow (get, list, update, delete) A user reads, lists, updates, or deletes their own scores.
-     * @deny (get) A user attempts to read a score belonging to another user.
-     * @deny (create) A user attempts to write a score record to another user's subcollection.
-     * @principle Enforces strict document ownership within a user's private data tree.
-     */
-    match /users/{userId}/test_scores/{testScoreId} {
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.userId == userId;
-      allow update: if isOwner(userId) && resource != null && request.resource.data.userId == resource.data.userId;
-      allow delete: if isOwner(userId) && resource != null;
+    match /user_test_scores/{userTestScoreId} {
+      allow get: if isSignedIn() && isOwner(resource.data.userId);
+      allow list: if false; // CRITICAL: Never allow listing a collection of private, user-specific data.
+      allow create: if isCreatingOwnScore();
+      allow update: if isExistingOwner(resource.data.userId) && isUserIdImmutable();
+      allow delete: if isExistingOwner(resource.data.userId);
     }
   }
 }

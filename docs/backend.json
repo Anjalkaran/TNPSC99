@@ -8,103 +8,108 @@
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the user.",
-          "format": "uuid"
-        },
-        "username": {
-          "type": "string",
-          "description": "The username of the user."
+          "description": "Unique identifier for the user."
         },
         "email": {
           "type": "string",
-          "description": "The email address of the user.",
+          "description": "User's email address.",
           "format": "email"
         },
-        "registrationDate": {
+        "name": {
           "type": "string",
-          "description": "The date and time the user registered.",
-          "format": "date-time"
+          "description": "User's full name."
         }
       },
       "required": [
         "id",
-        "username",
         "email",
-        "registrationDate"
+        "name"
       ]
     },
     "Test": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Test",
       "type": "object",
-      "description": "Represents a test (either class-wise, subject-wise, or previous year paper).",
+      "description": "Represents a single test (either class-wise, subject-wise or previous year paper).",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the test.",
-          "format": "uuid"
+          "description": "Unique identifier for the test."
         },
         "testType": {
           "type": "string",
-          "description": "The type of test (e.g., 'class-wise', 'subject-wise', 'previous-year')."
+          "description": "Type of test (e.g., 'class-wise', 'subject-wise', 'previous-year')."
         },
         "name": {
           "type": "string",
-          "description": "The name or title of the test."
+          "description": "Name or title of the test."
         },
-        "description": {
+        "classLevel": {
           "type": "string",
-          "description": "A description of what the test covers."
+          "description": "The class level this test is for (e.g. '6th', '7th', etc.). Applicable for class-wise tests."
+        },
+        "subject": {
+          "type": "string",
+          "description": "The subject this test is for (e.g. 'Math', 'Science', etc.). Applicable for subject-wise tests."
+        },
+        "year": {
+          "type": "number",
+          "description": "The year of the question paper, if applicable (for previous year papers)."
         }
       },
       "required": [
         "id",
         "testType",
-        "name",
-        "description"
+        "name"
       ]
     },
     "Question": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Question",
       "type": "object",
-      "description": "Represents a question in a test.",
+      "description": "Represents a single question in a test.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the question.",
-          "format": "uuid"
+          "description": "Unique identifier for the question."
         },
         "testId": {
           "type": "string",
           "description": "Reference to Test. (Relationship: Test 1:N Question)"
         },
-        "questionText": {
+        "text": {
           "type": "string",
           "description": "The text of the question."
         },
-        "correctAnswer": {
-          "type": "string",
-          "description": "The correct answer to the question."
+        "options": {
+          "type": "array",
+          "description": "Array of possible answer options for the question.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "correctAnswerIndex": {
+          "type": "number",
+          "description": "The index of the correct answer in the options array."
         }
       },
       "required": [
         "id",
         "testId",
-        "questionText",
-        "correctAnswer"
+        "text",
+        "options",
+        "correctAnswerIndex"
       ]
     },
     "UserTestScore": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "UserTestScore",
       "type": "object",
-      "description": "Represents a user's score on a particular test.",
+      "description": "Represents a user's score on a specific test.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the user test score record.",
-          "format": "uuid"
+          "description": "Unique identifier for the user test score record."
         },
         "userId": {
           "type": "string",
@@ -118,9 +123,9 @@
           "type": "number",
           "description": "The user's score on the test."
         },
-        "completionDate": {
+        "dateTaken": {
           "type": "string",
-          "description": "The date and time the user completed the test.",
+          "description": "The date and time the test was taken.",
           "format": "date-time"
         }
       },
@@ -129,14 +134,14 @@
         "userId",
         "testId",
         "score",
-        "completionDate"
+        "dateTaken"
       ]
     }
   },
   "auth": {
     "providers": [
       "password",
-      "google.com"
+      "anonymous"
     ]
   },
   "firestore": {
@@ -148,11 +153,11 @@
           "schema": {
             "$ref": "#/backend/entities/User"
           },
-          "description": "Stores user data. Path-based ownership enforced via the {userId} parameter.",
+          "description": "Stores user profiles. Access is restricted to the user themselves.",
           "params": [
             {
               "name": "userId",
-              "description": "The unique identifier for the user."
+              "description": "The unique identifier of the user."
             }
           ]
         }
@@ -164,11 +169,11 @@
           "schema": {
             "$ref": "#/backend/entities/Test"
           },
-          "description": "Stores test data. All tests within this collection share the same security requirements.",
+          "description": "Stores test metadata. Publicly accessible for listing, but creation/modification may be restricted to admins (roles not defined in the entities, assuming external management).",
           "params": [
             {
               "name": "testId",
-              "description": "The unique identifier for the test."
+              "description": "The unique identifier of the test."
             }
           ]
         }
@@ -180,40 +185,36 @@
           "schema": {
             "$ref": "#/backend/entities/Question"
           },
-          "description": "Stores questions associated with a specific test.",
+          "description": "Stores questions for a specific test.  Read access is public, but creation/modification may be restricted to admins.",
           "params": [
             {
               "name": "testId",
-              "description": "The unique identifier for the test."
+              "description": "The unique identifier of the test."
             },
             {
               "name": "questionId",
-              "description": "The unique identifier for the question."
+              "description": "The unique identifier of the question."
             }
           ]
         }
       },
       {
-        "path": "/users/{userId}/test_scores/{testScoreId}",
+        "path": "/user_test_scores/{userTestScoreId}",
         "definition": {
           "entityName": "UserTestScore",
           "schema": {
             "$ref": "#/backend/entities/UserTestScore"
           },
-          "description": "Stores user test scores. Path-based ownership is enforced via the {userId} parameter.",
+          "description": "Stores user scores for tests. Includes denormalized 'userId' and 'testId' for authorization independence.  Read access is restricted to the user who took the test (based on userId).",
           "params": [
             {
-              "name": "userId",
-              "description": "The unique identifier for the user."
-            },
-            {
-              "name": "testScoreId",
-              "description": "The unique identifier for the user test score record."
+              "name": "userTestScoreId",
+              "description": "The unique identifier of the user test score record."
             }
           ]
         }
       }
     ],
-    "reasoning": "The Firestore data structure is designed to support the TNPSC Ace application, focusing on test-taking and score-tracking features. It prioritizes authorization independence by avoiding hierarchical `get()` calls in security rules. The structure enables secure `list` operations and maintains data integrity for ownership and timestamps.\n\n*   **Users:** User data is stored in a dedicated `/users/{userId}` collection, providing a clear path-based ownership model. This simplifies security rules related to user data access.\n*   **Tests:** Test data is stored in a top-level `/tests/{testId}` collection. This segregation allows for simpler security rules, assuming all tests have the same access control requirements.  If different types of tests (e.g., public vs. private) have different access control requirements, further structural segregation would be necessary.\n*   **Questions:** Questions related to a test are stored in the `/tests/{testId}/questions/{questionId}` subcollection.  Denormalization is not needed here, assuming security rules only need to check the existence of the parent `testId`.\n*   **UserTestScores:** User test scores are stored in the `/users/{userId}/test_scores/{testScoreId}` subcollection, maintaining a clear ownership link between users and their scores. This is a standard path-based ownership pattern, simplifying security rules.\n\nThis structure ensures authorization independence because access to `questions` depends on the `testId`, not the parent `test` document's content. Likewise, access to `test_scores` depends on the `userId` not the parent `user` document's content. No `get()` calls are required in the security rules.\n\nThe structure supports secure `list` operations due to the segregation of data into collections with homogeneous security postures. Each collection can have its own security rules tailored to its specific access control requirements."
+    "reasoning": "The Firestore structure is designed to securely manage users, tests, questions, and user scores for the TNPSC Ace application. It prioritizes authorization independence and clear security rules.  User data is stored under `/users/{userId}` for private access. Tests are stored in a flat `/tests` collection to enable listing all tests without complex queries. Questions for each test are nested under `/tests/{testId}/questions/{questionId}` to ensure efficient retrieval of questions for a specific test. User test scores are stored under `/user_test_scores/{userTestScoreId}` and include denormalized `userId` and `testId` for efficient score retrieval and filtering.  This design avoids complex `get()` calls in security rules, facilitating atomic operations. Segregation ensures that different data types (users, tests, questions, scores) with varying access needs are stored in separate collections, simplifying security rules and ensuring that rules are not used as filters.  The structure enables secure list operations (QAPs) by storing Tests in a flat collection (no need for filtering based on user roles) and by using path-based ownership for User data."
   }
 }
