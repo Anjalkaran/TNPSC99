@@ -190,14 +190,21 @@ export default function TamilCategoryTestsPage() {
   const sortedTests = useMemo(() => {
     if (!tests) return [];
     return [...tests].sort((a,b) => {
-        const termA = a.term || '';
-        const termB = b.term || '';
+        const getTermNumber = (termStr?: string) => {
+            if (!termStr) return 99;
+            const match = termStr.match(/\d+/);
+            return match ? parseInt(match[0], 10) : 99;
+        };
+        
+        const termNumA = getTermNumber(a.term);
+        const termNumB = getTermNumber(b.term);
+
+        if (termNumA !== termNumB) {
+            return termNumA - termNumB;
+        }
+        
         const unitA = a.unitNumber || 0;
         const unitB = b.unitNumber || 0;
-
-        if (termA.localeCompare(termB) !== 0) {
-            return termA.localeCompare(termB);
-        }
         return unitA - unitB;
     });
   }, [tests]);

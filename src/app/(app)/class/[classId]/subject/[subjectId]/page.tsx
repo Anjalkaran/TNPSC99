@@ -226,7 +226,24 @@ export default function SubjectTestsPage() {
 
   if (selectedCategoryId) {
       const categoryName = selectedCategoryId === 'uncategorized' ? 'Uncategorized Tests' : categoryMap.get(selectedCategoryId) || 'Category';
-      const testsForCategory = (testsByCategory[selectedCategoryId] || []).sort((a,b) => (a.unitNumber || 0) - (b.unitNumber || 0));
+      const testsForCategory = (testsByCategory[selectedCategoryId] || []).sort((a,b) => {
+        const getTermNumber = (termStr?: string) => {
+            if (!termStr) return 99;
+            const match = termStr.match(/\d+/);
+            return match ? parseInt(match[0], 10) : 99;
+        };
+        
+        const termNumA = getTermNumber(a.term);
+        const termNumB = getTermNumber(b.term);
+
+        if (termNumA !== termNumB) {
+            return termNumA - termNumB;
+        }
+
+        const unitA = a.unitNumber || 0;
+        const unitB = b.unitNumber || 0;
+        return unitA - unitB;
+      });
       
       return (
         <div className="container mx-auto px-4 py-8 md:py-12">
