@@ -1,162 +1,96 @@
-/**
- * Core Philosophy: This ruleset enforces a hybrid security model. User-specific
- * data (profiles and scores) is strictly private and accessible only by the
- * owning user. All application content, such as tests, questions, and subjects,
- * is considered public-readable for any authenticated user but is not writable
- * by them, assuming this content is managed by an administrator or backend service.
- *
- * Data Structure: User data is nested hierarchically under /users/{userId} to
- * enforce ownership through path-based security. All other academic content
- * resides in separate top-level collections for clear, segregated access control.
- *
- * Key Security Decisions:
- * - User Privacy: A user can only access their own profile and scores.
- * - No User Listing: The top-level /users collection cannot be listed to
- *   prevent enumeration of all application users.
- * - Read-Only Content: All academic content (tests, questions, subjects) is
- *   read-only for end-users. This provides a secure default, preventing
- *   unauthorized modification of shared app data. Writes must be performed by
- *   a trusted server environment with admin privileges.
- * - Authentication Required: No data is readable by unauthenticated users.
- *
- * Denormalization for Authorization: The rules mandate that any document
- * created within a user's private data tree (e.g., a score in
- * /users/{userId}/scores) must contain a denormalized 'userId' field that
- * matches the {userId} from the path. This creates a permanent, verifiable
- * link to the owner, simplifying security rules and preventing data from
- * being misplaced or mis-owned.
- */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions for reusable logic
+    // Helper functions
     function isSignedIn() {
       return request.auth != null;
     }
 
-    /**
-     * Checks if the currently authenticated user's UID matches the given userId.
-     * This is the primary function for enforcing document ownership.
-     */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
-
-    /**
-     * Checks for ownership on an existing document. Used for update and delete
-     * operations to prevent acting on non-existent data.
-     */
-    function isExistingOwner(userId) {
-      return isOwner(userId) && resource != null;
-    }
     
-    /**
-     * @description Rules for a user's profile document.
-     * @path /users/{userId}
-     * @allow (create) An authenticated user creating their OWN user document: request.auth.uid == userId.
-     * @allow (get) An authenticated user reading their OWN user document.
-     * @deny (list) Any user attempting to list all user documents.
-     * @deny (create) A user trying to create a profile for another user: request.auth.uid != userId.
-     * @principle Restricts access to a user's own data tree and allows self-creation of a user profile.
-     */
-    match /users/{userId} {
-      allow get: if isOwner(userId);
-      allow list: if false;
-      allow create: if isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
-      allow delete: if isExistingOwner(userId);
+    function isAdmin() {
+      // Check for the existence of the user document and the isAdmin flag
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
 
-      /**
-       * @description Rules for a user's score documents, nested under their profile.
-       * @path /users/{userId}/scores/{scoreId}
-       * @allow (create) A user creating a score document for themselves.
-       * @allow (get, list) A user reading their own scores.
-       * @deny (get, list, create) A user trying to access scores belonging to another user.
-       * @principle Enforces strict document ownership within a user's private subcollection.
-       */
+    // User Profile Rules
+    match /users/{userId} {
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin(); // Only admins can list all users
+      allow create: if isOwner(userId); // A user can create their own profile
+      allow update: if isOwner(userId); // A user can update their own profile
+      allow delete: if isOwner(userId) || isAdmin(); // A user can delete their own profile, or an admin can
+
+      // Subcollections for a user
       match /scores/{scoreId} {
-        allow get: if isOwner(userId);
-        allow list: if isOwner(userId);
-        allow create: if isOwner(userId) && request.resource.data.userId == userId;
-        allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
-        allow delete: if isExistingOwner(userId);
+        allow read, write: if isOwner(userId);
+      }
+
+      match /testAttempts/{attemptId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      match /bookmarkedQuestions/{bookmarkId} {
+        allow read, write: if isOwner(userId);
       }
     }
     
-    /**
-     * @description Read-only access for class test data.
-     * @path /classTests/{classTestId}
-     * @allow (get, list) Any authenticated user can read class test data.
-     * @deny (create, update, delete) All write operations are denied for end-users.
-     * @principle Secures shared application content by making it read-only for clients.
-     */
-    match /classTests/{classTestId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+    // App Content collections (read-only for users, writable for admins)
+    match /classes/{classId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
     }
-
-    /**
-     * @description Read-only access for subject test data.
-     * @path /subjectTests/{subjectTestId}
-     * @allow (get, list) Any authenticated user can read subject test data.
-     * @deny (create, update, delete) All write operations are denied for end-users.
-     * @principle Secures shared application content by making it read-only for clients.
-     */
-    match /subjectTests/{subjectTestId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
-    }
-
-    /**
-     * @description Read-only access for previous year question papers.
-     * @path /previousYearPapers/{previousYearPaperId}
-     * @allow (get, list) Any authenticated user can read previous year papers.
-     * @deny (create, update, delete) All write operations are denied for end-users.
-     * @principle Secures shared application content by making it read-only for clients.
-     */
-    match /previousYearPapers/{previousYearPaperId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
-    }
-
-    /**
-     * @description Read-only access for individual questions.
-     * @path /questions/{questionId}
-     * @allow (get, list) Any authenticated user can read question data.
-     * @deny (create, update, delete) All write operations are denied for end-users.
-     * @principle Secures shared application content by making it read-only for clients.
-     */
-    match /questions/{questionId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
-    }
-
-    /**
-     * @description Read-only access for subject information.
-     * @path /subjects/{subjectId}
-     * @allow (get, list) Any authenticated user can read subject data.
-     * @deny (create, update, delete) All write operations are denied for end-users.
-     * @principle Secures shared application content by making it read-only for clients.
-     */
+    
     match /subjects/{subjectId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+    
+    match /categories/{categoryId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    match /units/{unitId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    match /questions/{questionId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    match /tests/{testId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // Public scores for leaderboard
+    match /scores/{scoreId} {
+        allow read: if isSignedIn();
+        allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+        allow update, delete: if false; // Scores shouldn't be updated or deleted by clients
+    }
+    
+    // Legacy collections, keep as read-only for signed-in users
+    match /classTests/{classTestId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
+    match /subjectTests/{subjectTestId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
+    match /previousYearPapers/{previousYearPaperId} {
+      allow read: if isSignedIn();
+      allow write: if false;
     }
   }
 }
