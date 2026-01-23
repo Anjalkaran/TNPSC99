@@ -40,12 +40,6 @@ export default function DashboardPage() {
       icon: <Library className="h-8 w-8 text-primary" />,
     },
     {
-      title: t('subject_wise_tests'),
-      description: t('subject_wise_tests_desc'),
-      href: '/subject-wise',
-      icon: <BookCopy className="h-8 w-8 text-primary" />,
-    },
-    {
       title: t('previous_year_papers'),
       description: t('previous_year_papers_desc'),
       href: '/previous-year',
@@ -64,7 +58,7 @@ export default function DashboardPage() {
         </p>
       </section>
 
-      <section className="grid md:grid-cols-3 gap-8">
+      <section className="grid md:grid-cols-2 gap-8">
         {categories.map((category) => (
           <Card
             key={category.title}
