@@ -141,6 +141,7 @@
   "auth": {
     "providers": [
       "password",
+      "google.com",
       "anonymous"
     ]
   },
