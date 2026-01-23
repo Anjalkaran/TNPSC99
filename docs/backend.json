@@ -4,20 +4,21 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "User",
       "type": "object",
-      "description": "Represents a user of the TNPSC Ace application.",
+      "description": "Represents a user of the TNPSC Ace app.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the user."
+          "description": "Unique identifier for the user.",
+          "format": "uuid"
         },
         "email": {
           "type": "string",
-          "description": "User's email address.",
+          "description": "Email address of the user.",
           "format": "email"
         },
         "name": {
           "type": "string",
-          "description": "User's full name."
+          "description": "Full name of the user."
         }
       },
       "required": [
@@ -26,56 +27,104 @@
         "name"
       ]
     },
-    "Test": {
+    "ClassTest": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Test",
+      "title": "ClassTest",
       "type": "object",
-      "description": "Represents a single test (either class-wise, subject-wise or previous year paper).",
+      "description": "Represents a class-wise MCQ test.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the test."
+          "description": "Unique identifier for the class test."
         },
-        "testType": {
+        "className": {
           "type": "string",
-          "description": "Type of test (e.g., 'class-wise', 'subject-wise', 'previous-year')."
+          "description": "The class name for the test (e.g., '6th', '7th')."
         },
-        "name": {
+        "subjectId": {
           "type": "string",
-          "description": "Name or title of the test."
+          "description": "Reference to Subject. (Relationship: Subject 1:N ClassTest)"
         },
-        "classLevel": {
-          "type": "string",
-          "description": "The class level this test is for (e.g. '6th', '7th', etc.). Applicable for class-wise tests."
-        },
-        "subject": {
-          "type": "string",
-          "description": "The subject this test is for (e.g. 'Math', 'Science', etc.). Applicable for subject-wise tests."
-        },
-        "year": {
-          "type": "number",
-          "description": "The year of the question paper, if applicable (for previous year papers)."
+        "questionIds": {
+          "type": "array",
+          "description": "References to Questions. (Relationship: Question N:N ClassTest)",
+          "items": {
+            "type": "string"
+          }
         }
       },
       "required": [
         "id",
-        "testType",
-        "name"
+        "className",
+        "subjectId",
+        "questionIds"
+      ]
+    },
+    "SubjectTest": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "SubjectTest",
+      "type": "object",
+      "description": "Represents a subject-wise MCQ test.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the subject test."
+        },
+        "subjectName": {
+          "type": "string",
+          "description": "Name of the subject for the test."
+        },
+        "questionIds": {
+          "type": "array",
+          "description": "References to Questions. (Relationship: Question N:N SubjectTest)",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "subjectName",
+        "questionIds"
+      ]
+    },
+    "PreviousYearPaper": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "PreviousYearPaper",
+      "type": "object",
+      "description": "Represents a previous year question paper.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the previous year paper."
+        },
+        "year": {
+          "type": "number",
+          "description": "The year of the question paper."
+        },
+        "questionIds": {
+          "type": "array",
+          "description": "References to Questions. (Relationship: Question N:N PreviousYearPaper)",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "year",
+        "questionIds"
       ]
     },
     "Question": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Question",
       "type": "object",
-      "description": "Represents a single question in a test.",
+      "description": "Represents a multiple-choice question.",
       "properties": {
         "id": {
           "type": "string",
           "description": "Unique identifier for the question."
-        },
-        "testId": {
-          "type": "string",
-          "description": "Reference to Test. (Relationship: Test 1:N Question)"
         },
         "text": {
           "type": "string",
@@ -83,7 +132,7 @@
         },
         "options": {
           "type": "array",
-          "description": "Array of possible answer options for the question.",
+          "description": "Array of possible answer options.",
           "items": {
             "type": "string"
           }
@@ -95,29 +144,32 @@
       },
       "required": [
         "id",
-        "testId",
         "text",
         "options",
         "correctAnswerIndex"
       ]
     },
-    "UserTestScore": {
+    "Score": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "UserTestScore",
+      "title": "Score",
       "type": "object",
-      "description": "Represents a user's score on a specific test.",
+      "description": "Represents a user's score on a test.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the user test score record."
+          "description": "Unique identifier for the score record."
         },
         "userId": {
           "type": "string",
-          "description": "Reference to User. (Relationship: User 1:N UserTestScore)"
+          "description": "Reference to User. (Relationship: User 1:N Score)"
         },
         "testId": {
           "type": "string",
-          "description": "Reference to Test. (Relationship: Test 1:N UserTestScore)"
+          "description": "Reference to ClassTest, SubjectTest, or PreviousYearPaper. (Relationship: Test 1:N Score)"
+        },
+        "testType": {
+          "type": "string",
+          "description": "Type of the test (e.g., 'class', 'subject', 'previousYear')."
         },
         "score": {
           "type": "number",
@@ -125,7 +177,7 @@
         },
         "dateTaken": {
           "type": "string",
-          "description": "The date and time the test was taken.",
+          "description": "The date and time when the test was taken.",
           "format": "date-time"
         }
       },
@@ -133,15 +185,35 @@
         "id",
         "userId",
         "testId",
+        "testType",
         "score",
         "dateTaken"
+      ]
+    },
+    "Subject": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Subject",
+      "type": "object",
+      "description": "Represents an academic subject.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the subject."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the subject."
+        }
+      },
+      "required": [
+        "id",
+        "name"
       ]
     }
   },
   "auth": {
     "providers": [
       "password",
-      "google.com",
       "anonymous"
     ]
   },
@@ -154,7 +226,7 @@
           "schema": {
             "$ref": "#/backend/entities/User"
           },
-          "description": "Stores user profiles. Access is restricted to the user themselves.",
+          "description": "Stores user profiles.  Path-based ownership ensures users can only access their own profile data.",
           "params": [
             {
               "name": "userId",
@@ -164,34 +236,62 @@
         }
       },
       {
-        "path": "/tests/{testId}",
+        "path": "/classTests/{classTestId}",
         "definition": {
-          "entityName": "Test",
+          "entityName": "ClassTest",
           "schema": {
-            "$ref": "#/backend/entities/Test"
+            "$ref": "#/backend/entities/ClassTest"
           },
-          "description": "Stores test metadata. Publicly accessible for listing, but creation/modification may be restricted to admins (roles not defined in the entities, assuming external management).",
+          "description": "Stores class-wise test definitions.",
           "params": [
             {
-              "name": "testId",
-              "description": "The unique identifier of the test."
+              "name": "classTestId",
+              "description": "The unique identifier of the class test."
             }
           ]
         }
       },
       {
-        "path": "/tests/{testId}/questions/{questionId}",
+        "path": "/subjectTests/{subjectTestId}",
+        "definition": {
+          "entityName": "SubjectTest",
+          "schema": {
+            "$ref": "#/backend/entities/SubjectTest"
+          },
+          "description": "Stores subject-wise test definitions.",
+          "params": [
+            {
+              "name": "subjectTestId",
+              "description": "The unique identifier of the subject test."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/previousYearPapers/{previousYearPaperId}",
+        "definition": {
+          "entityName": "PreviousYearPaper",
+          "schema": {
+            "$ref": "#/backend/entities/PreviousYearPaper"
+          },
+          "description": "Stores previous year question paper definitions.",
+          "params": [
+            {
+              "name": "previousYearPaperId",
+              "description": "The unique identifier of the previous year paper."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/questions/{questionId}",
         "definition": {
           "entityName": "Question",
           "schema": {
             "$ref": "#/backend/entities/Question"
           },
-          "description": "Stores questions for a specific test.  Read access is public, but creation/modification may be restricted to admins.",
+          "description": "Stores individual question data.",
           "params": [
-            {
-              "name": "testId",
-              "description": "The unique identifier of the test."
-            },
             {
               "name": "questionId",
               "description": "The unique identifier of the question."
@@ -200,22 +300,42 @@
         }
       },
       {
-        "path": "/user_test_scores/{userTestScoreId}",
+        "path": "/users/{userId}/scores/{scoreId}",
         "definition": {
-          "entityName": "UserTestScore",
+          "entityName": "Score",
           "schema": {
-            "$ref": "#/backend/entities/UserTestScore"
+            "$ref": "#/backend/entities/Score"
           },
-          "description": "Stores user scores for tests. Includes denormalized 'userId' and 'testId' for authorization independence.  Read access is restricted to the user who took the test (based on userId).",
+          "description": "Stores user scores for different tests. Path-based ownership: Users can only access their own scores. Enables QAPs for score listing.",
           "params": [
             {
-              "name": "userTestScoreId",
-              "description": "The unique identifier of the user test score record."
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "scoreId",
+              "description": "The unique identifier of the score record."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/subjects/{subjectId}",
+        "definition": {
+          "entityName": "Subject",
+          "schema": {
+            "$ref": "#/backend/entities/Subject"
+          },
+          "description": "Stores subject information.",
+          "params": [
+            {
+              "name": "subjectId",
+              "description": "The unique identifier of the subject."
             }
           ]
         }
       }
     ],
-    "reasoning": "The Firestore structure is designed to securely manage users, tests, questions, and user scores for the TNPSC Ace application. It prioritizes authorization independence and clear security rules.  User data is stored under `/users/{userId}` for private access. Tests are stored in a flat `/tests` collection to enable listing all tests without complex queries. Questions for each test are nested under `/tests/{testId}/questions/{questionId}` to ensure efficient retrieval of questions for a specific test. User test scores are stored under `/user_test_scores/{userTestScoreId}` and include denormalized `userId` and `testId` for efficient score retrieval and filtering.  This design avoids complex `get()` calls in security rules, facilitating atomic operations. Segregation ensures that different data types (users, tests, questions, scores) with varying access needs are stored in separate collections, simplifying security rules and ensuring that rules are not used as filters.  The structure enables secure list operations (QAPs) by storing Tests in a flat collection (no need for filtering based on user roles) and by using path-based ownership for User data."
+    "reasoning": "The Firestore data structure is designed to support the TNPSC Ace app's requirements for class-wise, subject-wise, and previous year question paper MCQ tests, along with score tracking. It prioritizes authorization independence through denormalization where necessary and ensures structural segregation for simplified security rules.\n\n*   **Users:** User data is stored in a dedicated `users` collection, enabling easy management of user profiles.\n*   **Subjects:** Subject data is stored in a dedicated `subjects` collection.\n*   **Class Tests, Subject Tests, and Previous Year Papers:** These are stored in separate collections (`classTests`, `subjectTests`, `previousYearPapers`) to maintain structural segregation. This simplifies security rules as each collection has a distinct security posture. Each test document contains references to questions.\n*   **Scores:** User scores are stored in the `users/{userId}/scores/{scoreId}` subcollection. This structure enforces ownership and allows easy retrieval of a user's scores. It automatically filters list operations to only the user's own scores (QAPs).\n\n**Authorization Independence and QAPs:**\n\n*   Authorization Independence is achieved through path-based ownership for user scores. A user can only access their own scores because the scores are stored under their respective user ID (`/users/{userId}/scores/{scoreId}`).\n*   QAPs are supported by using structural segregation. List operations on `/classTests`, `/subjectTests`, and `/previousYearPapers` are secure because the rules can be written to allow only authenticated users to view the tests (or, if desired, to make them publicly readable). The scores subcollection automatically filters list operations to the current user because of the path-based ownership.\n"
   }
 }
