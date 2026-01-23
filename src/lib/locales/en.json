@@ -200,5 +200,7 @@
     "select_questions": "Select Questions",
     "questions_count": "{{count}} Questions",
     "all_questions": "All ({{count}})",
-    "start_test": "Start Test"
+    "start_test": "Start Test",
+    "back_to_subjects": "Back to Subjects",
+    "back_to_categories": "Back to Categories"
 }

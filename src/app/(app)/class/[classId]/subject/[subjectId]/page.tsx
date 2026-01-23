@@ -251,7 +251,7 @@ export default function SubjectTestsPage() {
                 <Button asChild variant="ghost" className="mb-4">
                     <Link href={`/class/${classId}/subject/${subjectId}`}>
                         <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to Categories
+                        {t('back_to_categories')}
                     </Link>
                 </Button>
                 <h1 className="text-3xl md:text-4xl font-bold">{className} - {subjectName}</h1>
@@ -290,6 +290,12 @@ export default function SubjectTestsPage() {
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
       <div className="mb-8">
+        <Button asChild variant="ghost" className="mb-4">
+            <Link href={`/class/${classId}`}>
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                {t('back_to_subjects')}
+            </Link>
+        </Button>
         <h1 className="text-3xl md:text-4xl font-bold">{className} - {subjectName}</h1>
         <p className="text-muted-foreground mt-2">Select a category to view tests.</p>
       </div>

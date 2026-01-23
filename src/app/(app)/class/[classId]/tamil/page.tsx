@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, BookText } from "lucide-react";
+import { ArrowRight, ArrowLeft } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useTranslation } from "@/hooks/use-translation";
 
@@ -28,9 +28,17 @@ export default function TamilCategoryPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
-      <div className="mb-8 text-center">
-        <h1 className="text-3xl md:text-4xl font-bold">தமிழ் தேர்வு வகைகள்</h1>
-        <p className="text-muted-foreground mt-2">நீங்கள் பயிற்சி செய்ய விரும்பும் வகையைத் தேர்ந்தெடுக்கவும்.</p>
+      <div className="mb-8">
+        <Button asChild variant="ghost" className="mb-4">
+            <Link href={`/class/${classId}`}>
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                {t('back_to_subjects')}
+            </Link>
+        </Button>
+        <div className="text-center">
+            <h1 className="text-3xl md:text-4xl font-bold">தமிழ் தேர்வு வகைகள்</h1>
+            <p className="text-muted-foreground mt-2">நீங்கள் பயிற்சி செய்ய விரும்பும் வகையைத் தேர்ந்தெடுக்கவும்.</p>
+        </div>
       </div>
       
       <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
