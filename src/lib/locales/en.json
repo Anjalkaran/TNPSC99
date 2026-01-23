@@ -202,5 +202,6 @@
     "all_questions": "All ({{count}})",
     "start_test": "Start Test",
     "back_to_subjects": "Back to Subjects",
-    "back_to_categories": "Back to Categories"
+    "back_to_categories": "Back to Categories",
+    "back_to_classes": "Back to Classes"
 }

@@ -7,7 +7,7 @@ import type { Test, Subject, Class } from '@/lib/types';
 import { useParams } from 'next/navigation';
 import { useMemo, useState, useEffect } from 'react';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
-import { ArrowRight, BookText } from 'lucide-react';
+import { ArrowLeft, ArrowRight, BookText } from 'lucide-react';
 import { useTranslation } from '@/hooks/use-translation';
 
 export default function ClassSubjectsPage() {
@@ -71,6 +71,12 @@ export default function ClassSubjectsPage() {
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
       <div className="mb-8">
+        <Button asChild variant="ghost" className="mb-4">
+            <Link href="/class-wise">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                {t('back_to_classes')}
+            </Link>
+        </Button>
         <h1 className="text-3xl md:text-4xl font-bold">{pageTitle}</h1>
         <p className="text-muted-foreground mt-2">{pageDescription}</p>
       </div>

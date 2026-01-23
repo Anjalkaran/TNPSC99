@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
 import { collection, query, where, getDoc, doc, getDocs } from "firebase/firestore";
 import type { Test, Subject, Class, UserTestAttempt, Category } from "@/lib/types";
@@ -236,6 +236,12 @@ export default function TamilCategoryTestsPage() {
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
       <div className="mb-8">
+        <Button asChild variant="ghost" className="mb-4">
+            <Link href={`/class/${classId}/tamil`}>
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                {t('back_to_categories')}
+            </Link>
+        </Button>
         <h1 className="text-3xl md:text-4xl font-bold">{pageTitle}</h1>
       </div>
       

@@ -202,5 +202,6 @@
     "all_questions": "அனைத்தும் ({{count}})",
     "start_test": "தேர்வைத் தொடங்கு",
     "back_to_subjects": "பாடங்களுக்குத் திரும்பு",
-    "back_to_categories": "வகைகளுக்குத் திரும்பு"
+    "back_to_categories": "வகைகளுக்குத் திரும்பு",
+    "back_to_classes": "வகுப்புகளுக்குத் திரும்பு"
 }
