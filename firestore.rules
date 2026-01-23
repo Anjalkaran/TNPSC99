@@ -1,128 +1,117 @@
 /**
- * @file Firestore Security Rules for TNPSC Ace Application
- * @description This ruleset enforces a user-ownership model for user profiles, test attempts, and bookmarks,
- *              while allowing public read access to subjects, classes, questions, and tests.
- *              Admin users have write access to core content collections.
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model for private data while allowing
+ * public read access for shared content. The primary goal is to ensure that users
+ * can only access and manage their own information, such as their profile and test
+ * attempts.
  *
  * Data Structure:
- * - /users/{userId}: Stores user profiles, accessible only by the user themselves. Admins can read any profile.
- * - /subjects/{subjectId}: Stores subject information, publicly readable. Writable by admins.
- * - /classes/{classId}: Stores class information, publicly readable. Writable by admins.
- * - /categories/{categoryId}: Stores category information, publicly readable. Writable by admins.
- * - /units/{unitId}: Stores unit information, publicly readable. Writable by admins.
- * - /questions/{questionId}: Stores question data, publicly readable. Writable by admins.
- * - /tests/{testId}: Stores test data, publicly readable. Writable by admins.
- * - /users/{userId}/testAttempts/{testAttemptId}: Stores user's test attempts, accessible by the user and admins.
- * - /users/{userId}/bookmarkedQuestions/{bookmarkId}: Stores user's bookmarks, accessible only by the owner.
- * - /scores/{scoreId}: Publicly readable leaderboard scores. Writable only by the user who owns the score.
+ * The data is organized into two main branches:
+ * 1. A top-level /users/{userId} collection where each user's private data, like
+ *    their profile and 'userTestAttempts' subcollection, is stored. Access is
+ *    scoped to the authenticated user matching the {userId}.
+ * 2. A top-level /tests collection containing publicly readable test and question
+ *    data. This allows any client to browse available tests.
  *
  * Key Security Decisions:
- * - Users can only read and write their own profiles, test attempts, and bookmarks.
- * - Admins can read all user data and write to content collections.
- * - Subjects, classes, questions, and tests are publicly readable.
- * - Leaderboard scores are public, but can only be created by the user associated with the score.
- * - No user listing is allowed for non-admins.
+ * - User Privacy: Listing users from the top-level /users collection is explicitly
+ *   disallowed to protect user privacy.
+ * - Public Content: The /tests collection and its subcollections are publicly
+ *   readable by anyone, including unauthenticated users, to allow for easy
+ *   browsing of test content.
+ * - Write Protection: All write operations on the public /tests collection are
+ *   currently disabled. To enable content creation, an ownership field (e.g.,
+ *   'creatorId') must be added to the Test entity schema to identify the author.
+ * - Path-based Security: Rules rely on the document path (/users/{userId}/...) to
+ *   determine ownership, which is fast, secure, and avoids costly 'get' calls.
+ *
+ * Denormalization for Authorization:
+ * The structure is already well-optimized. User-specific data like 'userTestAttempts'
+ * is nested under the user's path, making ownership checks simple. We enforce
+ * that documents created within these user-specific paths contain a corresponding
+ * 'userId' field to maintain relational integrity directly within the data.
+ *
+ * Structural Segregation:
+ * The design effectively separates private user data (/users) from public content
+ * (/tests) using different top-level collections. This is a secure and performant
+ * pattern that simplifies rules for list operations.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Helper functions for common authorization logic.
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Checks if the currently authenticated user is the owner of the resource.
     function isOwner(userId) {
-      return request.auth != null && request.auth.uid == userId;
+      return isSignedIn() && request.auth.uid == userId;
     }
 
-    function isExistingOwner(userId) {
-      return isOwner(userId) && resource != null;
-    }
-
-    function isAdmin() {
-      // Allow if the user has isAdmin flag in their profile OR if they are the designated admin email.
-      return request.auth != null &&
-        (
-          (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true)
-          || request.auth.token.email == 'admin@tnpsc99.com'
-        );
-    }
-
+    /**
+     * @description Users can create, read, update, and delete their own profile document. Listing all users is forbidden.
+     * @path /users/{userId}
+     * @allow (get) A signed-in user with auth.uid 'user123' can get their own document at /users/user123.
+     * @deny (list) No user can list the documents in the /users collection.
+     * @deny (update) A user with auth.uid 'user123' cannot update another user's document at /users/user456.
+     * @principle Restricts access to a user's own data tree and enforces relational integrity.
+     */
     match /users/{userId} {
-      // Users can read their own profile, admins can read any profile
-      allow get: if isOwner(userId) || isAdmin();
-      allow list: if isAdmin(); // Only admins can list users
-
-      // Users can create their own profile
+      allow get: if isOwner(userId);
+      allow list: if false;
       allow create: if isOwner(userId) && request.resource.data.id == userId;
-      // Users can update their own profile, ensuring they don't grant themselves admin rights
-      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id && (!('isAdmin' in request.resource.data) || request.resource.data.isAdmin == resource.data.isAdmin);
-      
-      // Admins can delete user profiles, users can delete their own
-      allow delete: if isAdmin() || isExistingOwner(userId);
+      allow update: if isOwner(userId) && resource != null && request.resource.data.id == resource.data.id;
+      allow delete: if isOwner(userId) && resource != null;
 
-      match /testAttempts/{testAttemptId} {
-        // Owner or admin can get a specific test attempt
-        allow get, list: if isOwner(userId) || isAdmin();
-        
-        // Owner can create their own test attempt
+      /**
+       * @description A user can manage their own history of test attempts.
+       * @path /users/{userId}/userTestAttempts/{userTestAttemptId}
+       * @allow (create) A user with auth.uid 'user123' can create a new attempt at /users/user123/userTestAttempts/attempt_abc.
+       * @allow (list) A user with auth.uid 'user123' can list all their attempts under /users/user123/userTestAttempts.
+       * @deny (get) A user with auth.uid 'user123' cannot get an attempt from /users/user456/userTestAttempts/attempt_xyz.
+       * @principle Enforces document ownership for all operations within a user-specific subcollection.
+       */
+      match /userTestAttempts/{userTestAttemptId} {
+        allow get: if isOwner(userId);
+        allow list: if isOwner(userId);
         allow create: if isOwner(userId) && request.resource.data.userId == userId;
-        // Owner can update their own test attempt
-        allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
-        // Owner can delete their own test attempt
-        allow delete: if isExistingOwner(userId);
-      }
-      
-      match /bookmarkedQuestions/{bookmarkId} {
-        // Owner can read their own bookmarks
-        allow get, list: if isOwner(userId);
-        // Owner can create and delete bookmarks that belong to them
-        allow create: if isOwner(userId) && request.resource.data.userId == userId;
-        allow delete: if isOwner(userId);
-        // Bookmarks are not updatable
-        allow update: if false;
+        allow update: if isOwner(userId) && resource != null && request.resource.data.userId == resource.data.userId;
+        allow delete: if isOwner(userId) && resource != null;
       }
     }
-    
-    match /scores/{scoreId} {
-      // Leaderboard is public
-      allow get, list: if true;
-      // Users can only create their own scores
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      // Scores cannot be updated or deleted by clients
-      allow update, delete: if false;
-    }
 
-    match /subjects/{subjectId} {
-      allow get, list: if true;
-      allow create, update, delete: if isAdmin();
-    }
-
-    match /classes/{classId} {
-      allow get, list: if true;
-      allow create, update, delete: if isAdmin();
-    }
-    
-    match /categories/{categoryId} {
-      allow get, list: if true;
-      allow create, update, delete: if isAdmin();
-    }
-    
-    match /units/{unitId} {
-      allow get, list: if true;
-      allow create, update, delete: if isAdmin();
-    }
-
-    match /questions/{questionId} {
-      allow get, list: if true;
-      allow create, update, delete: if isAdmin();
-    }
-
+    /**
+     * @description Test definitions are public and can be read by any user, including unauthenticated ones. Writes are disabled.
+     * @path /tests/{testId}
+     * @allow (get) Any user (signed-in or anonymous) can fetch a test document.
+     * @allow (list) Any user can query the /tests collection to see all available tests.
+     * @deny (create) No user can create a new test document.
+     * @principle Provides public read access for shared content while securing it against unauthorized modification.
+     */
     match /tests/{testId} {
-      allow get, list: if true;
-      allow create, update, delete: if isAdmin();
-    }
+      allow get: if true;
+      allow list: if true;
+      // CRITICAL: Cannot implement owner-only writes. The 'Test' entity is missing an 'ownerId' or 'authorId' field.
+      allow create: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow update: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow delete: if false; // TODO: Add owner validation once the schema is updated with an ownership field.
 
-    // Default deny all other paths
-    match /{document=**} {
-      allow read, write: if false;
+      /**
+       * @description Questions for a test are public to read, inheriting access from the parent test. Writes are disabled.
+       * @path /tests/{testId}/questions/{questionId}
+       * @allow (list) Any user can list the questions for a given test.
+       * @deny (create) No user can create a new question.
+       * @principle Ensures that access to subcollection data mirrors the parent document's security posture.
+       */
+      match /questions/{questionId} {
+        allow get: if true;
+        allow list: if true;
+        allow create: if false;
+        allow update: if false;
+        allow delete: if false;
+      }
     }
   }
 }
