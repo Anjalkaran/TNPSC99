@@ -39,6 +39,18 @@ export default function DashboardPage() {
       href: '/class-wise',
       icon: <Library className="h-8 w-8 text-primary" />,
     },
+    {
+      title: t('group_2_tests'),
+      description: t('group_2_tests_desc'),
+      href: '/exam-wise/group-2',
+      icon: <BookCopy className="h-8 w-8 text-primary" />,
+    },
+    {
+      title: t('group_4_tests'),
+      description: t('group_4_tests_desc'),
+      href: '/exam-wise/group-4',
+      icon: <Archive className="h-8 w-8 text-primary" />,
+    },
   ];
 
   return (
@@ -52,7 +64,7 @@ export default function DashboardPage() {
         </p>
       </section>
 
-      <section className="grid md:grid-cols-1 gap-8 max-w-lg mx-auto">
+      <section className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
         {categories.map((category) => (
           <Card
             key={category.title}
