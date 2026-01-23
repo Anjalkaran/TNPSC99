@@ -11,134 +11,116 @@
           "description": "Unique identifier for the user.",
           "format": "uuid"
         },
+        "username": {
+          "type": "string",
+          "description": "The username of the user."
+        },
         "email": {
           "type": "string",
-          "description": "Email address of the user.",
+          "description": "The email address of the user.",
           "format": "email"
         },
-        "name": {
+        "registrationDate": {
           "type": "string",
-          "description": "Full name of the user."
+          "description": "The date and time the user registered.",
+          "format": "date-time"
         }
       },
       "required": [
         "id",
+        "username",
         "email",
-        "name"
+        "registrationDate"
       ]
     },
     "Test": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Test",
       "type": "object",
-      "description": "Represents a test (MCQ) available in the application.",
+      "description": "Represents a test (either class-wise, subject-wise, or previous year paper).",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the test."
+          "description": "Unique identifier for the test.",
+          "format": "uuid"
         },
         "testType": {
           "type": "string",
-          "description": "Type of test (Class-wise, Subject-wise, Previous Year).",
-          "format": "enum",
-          "items": {
-            "type": "string"
-          }
+          "description": "The type of test (e.g., 'class-wise', 'subject-wise', 'previous-year')."
         },
         "name": {
           "type": "string",
-          "description": "Name or title of the test."
+          "description": "The name or title of the test."
         },
         "description": {
           "type": "string",
-          "description": "A brief description of the test."
+          "description": "A description of what the test covers."
         }
       },
       "required": [
         "id",
         "testType",
-        "name"
+        "name",
+        "description"
       ]
     },
     "Question": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Question",
       "type": "object",
-      "description": "Represents a single question in a test.",
+      "description": "Represents a question in a test.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the question."
+          "description": "Unique identifier for the question.",
+          "format": "uuid"
         },
         "testId": {
           "type": "string",
           "description": "Reference to Test. (Relationship: Test 1:N Question)"
         },
-        "text": {
+        "questionText": {
           "type": "string",
           "description": "The text of the question."
         },
         "correctAnswer": {
           "type": "string",
-          "description": "The correct answer of the question.  Value can be 'A', 'B', 'C', or 'D'."
-        },
-        "optionA": {
-          "type": "string",
-          "description": "Option A for the question"
-        },
-        "optionB": {
-          "type": "string",
-          "description": "Option B for the question"
-        },
-        "optionC": {
-          "type": "string",
-          "description": "Option C for the question"
-        },
-        "optionD": {
-          "type": "string",
-          "description": "Option D for the question"
+          "description": "The correct answer to the question."
         }
       },
       "required": [
         "id",
         "testId",
-        "text",
-        "correctAnswer",
-        "optionA",
-        "optionB",
-        "optionC",
-        "optionD"
+        "questionText",
+        "correctAnswer"
       ]
     },
-    "UserTestAttempt": {
+    "UserTestScore": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "UserTestAttempt",
+      "title": "UserTestScore",
       "type": "object",
-      "description": "Represents a user's attempt at a specific test.",
+      "description": "Represents a user's score on a particular test.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the user test attempt."
+          "description": "Unique identifier for the user test score record.",
+          "format": "uuid"
         },
         "userId": {
           "type": "string",
-          "description": "Reference to User. (Relationship: User 1:N UserTestAttempt)"
+          "description": "Reference to User. (Relationship: User 1:N UserTestScore)"
         },
         "testId": {
           "type": "string",
-          "description": "Reference to Test. (Relationship: Test 1:N UserTestAttempt)"
+          "description": "Reference to Test. (Relationship: Test 1:N UserTestScore)"
         },
         "score": {
           "type": "number",
           "description": "The user's score on the test."
         },
-        "completionTime": {
-          "type": "number",
-          "description": "Time taken in seconds to complete the test"
-        },
-        "attemptedOn": {
+        "completionDate": {
           "type": "string",
-          "description": "Timestamp indicating when the test was attempted.",
+          "description": "The date and time the user completed the test.",
           "format": "date-time"
         }
       },
@@ -147,15 +129,14 @@
         "userId",
         "testId",
         "score",
-        "attemptedOn"
+        "completionDate"
       ]
     }
   },
   "auth": {
     "providers": [
       "password",
-      "anonymous",
-      "google.com"
+      "anonymous"
     ]
   },
   "firestore": {
@@ -167,11 +148,11 @@
           "schema": {
             "$ref": "#/backend/entities/User"
           },
-          "description": "Stores user profiles.  Access is restricted to the user themselves.",
+          "description": "Stores user data. Path-based ownership enforced via the {userId} parameter.",
           "params": [
             {
               "name": "userId",
-              "description": "The unique identifier of the user."
+              "description": "The unique identifier for the user."
             }
           ]
         }
@@ -183,11 +164,11 @@
           "schema": {
             "$ref": "#/backend/entities/Test"
           },
-          "description": "Stores the tests (MCQs) available in the application.",
+          "description": "Stores test data. All tests within this collection share the same security requirements.",
           "params": [
             {
               "name": "testId",
-              "description": "The unique identifier of the test."
+              "description": "The unique identifier for the test."
             }
           ]
         }
@@ -199,40 +180,40 @@
           "schema": {
             "$ref": "#/backend/entities/Question"
           },
-          "description": "Stores questions related to a test. Securing access to a test ensures access to its questions.",
+          "description": "Stores questions associated with a specific test.",
           "params": [
             {
               "name": "testId",
-              "description": "The unique identifier of the test."
+              "description": "The unique identifier for the test."
             },
             {
               "name": "questionId",
-              "description": "The unique identifier of the question."
+              "description": "The unique identifier for the question."
             }
           ]
         }
       },
       {
-        "path": "/users/{userId}/userTestAttempts/{userTestAttemptId}",
+        "path": "/users/{userId}/test_scores/{testScoreId}",
         "definition": {
-          "entityName": "UserTestAttempt",
+          "entityName": "UserTestScore",
           "schema": {
-            "$ref": "#/backend/entities/UserTestAttempt"
+            "$ref": "#/backend/entities/UserTestScore"
           },
-          "description": "Stores the user's attempts at specific tests. Enables secure `list` operations restricted to a specific user.",
+          "description": "Stores user test scores. Path-based ownership is enforced via the {userId} parameter.",
           "params": [
             {
               "name": "userId",
-              "description": "The unique identifier of the user."
+              "description": "The unique identifier for the user."
             },
             {
-              "name": "userTestAttemptId",
-              "description": "The unique identifier of the user test attempt."
+              "name": "testScoreId",
+              "description": "The unique identifier for the user test score record."
             }
           ]
         }
       }
     ],
-    "reasoning": "The Firestore data structure is designed to support the TNPSC Ace application, focusing on secure access and efficient querying. It leverages path-based ownership for user-specific data and segregates data types into distinct collections for simplified security rules. Authorization independence is achieved by using simple path based rules. The structure is optimized to support the application's core features like class-wise, subject-wise, and previous year question paper tests, along with score tracking.\n\n**Authorization Independence and QAPs:**\n\n*   **Users Collection:** Stores user profiles. Access is restricted to the user themselves.\n*   **Tests Collection:** Stores the tests (MCQs) available in the application. This collection can be queried to list all available tests.\n*   **Users/{userId}/userTestAttempts Collection:**  Enables secure `list` operations restricted to a specific user. This enables secure retrieval of user scores and test history.\n\nThis design has been updated to include Google as an authentication provider to resolve the 'auth/operation-not-allowed' error. This allows users to sign in with their Google accounts, which is a common and expected feature. The reasoning remains otherwise unchanged."
+    "reasoning": "The Firestore data structure is designed to support the TNPSC Ace application, focusing on test-taking and score-tracking features. It prioritizes authorization independence by avoiding hierarchical `get()` calls in security rules. The structure enables secure `list` operations and maintains data integrity for ownership and timestamps.\n\n*   **Users:** User data is stored in a dedicated `/users/{userId}` collection, providing a clear path-based ownership model. This simplifies security rules related to user data access.\n*   **Tests:** Test data is stored in a top-level `/tests/{testId}` collection. This segregation allows for simpler security rules, assuming all tests have the same access control requirements.  If different types of tests (e.g., public vs. private) have different access control requirements, further structural segregation would be necessary.\n*   **Questions:** Questions related to a test are stored in the `/tests/{testId}/questions/{questionId}` subcollection.  Denormalization is not needed here, assuming security rules only need to check the existence of the parent `testId`.\n*   **UserTestScores:** User test scores are stored in the `/users/{userId}/test_scores/{testScoreId}` subcollection, maintaining a clear ownership link between users and their scores. This is a standard path-based ownership pattern, simplifying security rules.\n\nThis structure ensures authorization independence because access to `questions` depends on the `testId`, not the parent `test` document's content. Likewise, access to `test_scores` depends on the `userId` not the parent `user` document's content. No `get()` calls are required in the security rules.\n\nThe structure supports secure `list` operations due to the segregation of data into collections with homogeneous security postures. Each collection can have its own security rules tailored to its specific access control requirements."
   }
 }
