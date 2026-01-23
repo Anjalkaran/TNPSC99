@@ -1,9 +1,9 @@
 'use client';
-import { notFound, useParams } from 'next/navigation';
+import { notFound, useParams, useSearchParams } from 'next/navigation';
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ArrowLeft } from "lucide-react";
 import { useCollection, useFirestore, useMemoFirebase, useDoc, useUser } from "@/firebase";
 import { collection, query, where, doc, getDocs, getDoc } from "firebase/firestore";
 import type { Test, Subject, UserTestAttempt, Unit, Class, Category } from "@/lib/types";
@@ -17,12 +17,6 @@ import {
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from "@/hooks/use-translation";
 import { Badge } from '@/components/ui/badge';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 
@@ -109,6 +103,7 @@ function TestProgressBadge({ testId }: { testId: string }) {
 
 export default function SubjectTestsPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const firestore = useFirestore();
   const { t, language } = useTranslation();
 
@@ -123,6 +118,8 @@ export default function SubjectTestsPage() {
     const subjectIdParam = Array.isArray(params.subjectId) ? params.subjectId[0] : params.subjectId;
     return subjectIdParam ? decodeURIComponent(subjectIdParam) : '';
   }, [params.subjectId]);
+
+  const selectedCategoryId = searchParams.get('category');
 
 
   const testsCollection = useMemoFirebase(() => collection(firestore, 'tests'), [firestore]);
@@ -150,22 +147,6 @@ export default function SubjectTestsPage() {
       if (!categories) return new Map<string, string>();
       return new Map(categories.map(cat => [cat.id, language === 'ta' && cat.name_ta ? cat.name_ta : cat.name]));
   }, [categories, language]);
-
-  const sortTests = (tests: Test[]) => {
-    return tests.sort((a, b) => {
-        const termA = a.term || '';
-        const termB = b.term || '';
-        const unitA = a.unitNumber || 0;
-        const unitB = b.unitNumber || 0;
-
-        // Primary sort by term
-        if (termA.localeCompare(termB) !== 0) {
-            return termA.localeCompare(termB);
-        }
-        // Secondary sort by unit number
-        return unitA - unitB;
-    });
-  };
   
   const testsByCategory = useMemo(() => {
     if (!subjectTests) return {};
@@ -181,11 +162,6 @@ export default function SubjectTestsPage() {
 
   }, [subjectTests]);
 
-  // Sort tests within each category
-  Object.keys(testsByCategory).forEach(categoryId => {
-      testsByCategory[categoryId] = sortTests(testsByCategory[categoryId]);
-  });
-  
   const sortedCategoryIds = useMemo(() => Object.keys(testsByCategory).sort((a, b) => {
     if (a === 'uncategorized') return 1;
     if (b === 'uncategorized') return -1;
@@ -231,7 +207,7 @@ export default function SubjectTestsPage() {
     let title = test.title;
     if (test.unitNumber && test.unitName) {
       title = `இயல் ${test.unitNumber}: ${test.unitName}`;
-      if (test.term) {
+      if (test.term && test.term !== 'Full Book') {
         title = `${test.term} - ${title}`;
       }
     }
@@ -295,57 +271,90 @@ export default function SubjectTestsPage() {
     );
   }
 
+  if (selectedCategoryId) {
+      const categoryName = selectedCategoryId === 'uncategorized' ? 'Uncategorized Tests' : categoryMap.get(selectedCategoryId) || 'Category';
+      const testsForCategory = (testsByCategory[selectedCategoryId] || []).sort((a,b) => (a.unitNumber || 0) - (b.unitNumber || 0));
+      
+      return (
+        <div className="container mx-auto px-4 py-8 md:py-12">
+            <div className="mb-8">
+                <Button asChild variant="ghost" className="mb-4">
+                    <Link href={`/class/${classId}/subject/${subjectId}`}>
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Back to Categories
+                    </Link>
+                </Button>
+                <h1 className="text-3xl md:text-4xl font-bold">{className} - {subjectName}</h1>
+            </div>
+            
+            <Card>
+                <CardHeader>
+                    <CardTitle>{t('available_tests', { category: categoryName })}</CardTitle>
+                    <CardDescription>{t('select_a_test_to_start')}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead className="w-[50%]">Test Title</TableHead>
+                                <TableHead className="w-[15%]">Questions</TableHead>
+                                <TableHead className="text-right w-[35%]">Action</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {testsForCategory.map((test) => (
+                                <TableRow key={test.id}>
+                                    <TableCell className="font-medium">{getShortTestTitle(test)}</TableCell>
+                                    <TableCell>
+                                    <div className="flex items-center gap-2">
+                                        <span>{test.questionIds.length}</span>
+                                        <TestProgressBadge testId={test.id} />
+                                    </div>
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                    <TestStartControl test={test} />
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+        </div>
+      )
+  }
+
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
       <div className="mb-8">
         <h1 className="text-3xl md:text-4xl font-bold">{className} - {subjectName}</h1>
+        <p className="text-muted-foreground mt-2">Select a category to view tests.</p>
       </div>
       
-      {subjectTests && subjectTests.length > 0 ? (
-         <Card>
-            <CardHeader>
-                <CardTitle>{t('available_tests', { category: subjectName })}</CardTitle>
-                <CardDescription>{t('select_a_test_to_start')}</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <Accordion type="multiple" defaultValue={sortedCategoryIds} className="w-full">
-                 {sortedCategoryIds.map(categoryId => (
-                     <AccordionItem value={categoryId} key={categoryId}>
-                        <AccordionTrigger className="text-lg font-semibold">
-                            {categoryId === 'uncategorized' ? 'Tests' : categoryMap.get(categoryId) || 'Category'}
-                        </AccordionTrigger>
-                        <AccordionContent>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead className="w-[50%]">Test Title</TableHead>
-                                        <TableHead className="w-[15%]">Questions</TableHead>
-                                        <TableHead className="text-right w-[35%]">Action</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {testsByCategory[categoryId].map((test) => (
-                                        <TableRow key={test.id}>
-                                            <TableCell className="font-medium">{getShortTestTitle(test)}</TableCell>
-                                            <TableCell>
-                                            <div className="flex items-center gap-2">
-                                                <span>{test.questionIds.length}</span>
-                                                <TestProgressBadge testId={test.id} />
-                                            </div>
-                                            </TableCell>
-                                            <TableCell className="text-right">
-                                            <TestStartControl test={test} />
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </AccordionContent>
-                     </AccordionItem>
-                 ))}
-                </Accordion>
-            </CardContent>
-         </Card>
+      {sortedCategoryIds.length > 0 && subjectTests && subjectTests.length > 0 ? (
+         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {sortedCategoryIds.map(catId => {
+                const categoryName = catId === 'uncategorized' ? 'Uncategorized' : categoryMap.get(catId) || 'Category';
+                const testCount = testsByCategory[catId]?.length || 0;
+                if (testCount === 0) return null;
+                
+                return (
+                    <Card key={catId} className="flex flex-col">
+                        <CardHeader>
+                            <CardTitle>{categoryName}</CardTitle>
+                            <CardDescription>{testCount} {testCount > 1 ? 'tests' : 'test'} available</CardDescription>
+                        </CardHeader>
+                        <CardFooter className="mt-auto">
+                            <Button asChild className="w-full" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
+                                <Link href={`/class/${classId}/subject/${subjectId}?category=${catId}`}>
+                                    View Tests <ArrowRight className="ml-2 h-4 w-4" />
+                                </Link>
+                            </Button>
+                        </CardFooter>
+                    </Card>
+                )
+            })}
+         </div>
       ) : (
          <div className="text-center py-16">
           <p className="text-muted-foreground">No tests are available for this subject yet.</p>
