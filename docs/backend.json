@@ -154,7 +154,8 @@
   "auth": {
     "providers": [
       "password",
-      "anonymous"
+      "anonymous",
+      "google.com"
     ]
   },
   "firestore": {
@@ -232,6 +233,6 @@
         }
       }
     ],
-    "reasoning": "The Firestore data structure is designed to support the TNPSC Ace application, focusing on secure access and efficient querying. It leverages path-based ownership for user-specific data and segregates data types into distinct collections for simplified security rules. Authorization independence is achieved by using simple path based rules. The structure is optimized to support the application's core features like class-wise, subject-wise, and previous year question paper tests, along with score tracking.\n\n**Authorization Independence and QAPs:**\n\n*   **Users Collection:** Stores user profiles. Access is restricted to the user themselves.\n*   **Tests Collection:** Stores the tests (MCQs) available in the application. This collection can be queried to list all available tests.\n*   **Users/{userId}/userTestAttempts Collection:**  Enables secure `list` operations restricted to a specific user. This enables secure retrieval of user scores and test history.\n\nThis design ensures authorization independence by avoiding the need for `get()` calls in security rules. The segregation of data into dedicated collections (tests and user test attempts) enables efficient and secure listing operations, fulfilling the QAPs (Rules are not Filters) requirement. Path-based ownership (`/users/{userId}/userTestAttempts`) simplifies security rules for user-specific data."
+    "reasoning": "The Firestore data structure is designed to support the TNPSC Ace application, focusing on secure access and efficient querying. It leverages path-based ownership for user-specific data and segregates data types into distinct collections for simplified security rules. Authorization independence is achieved by using simple path based rules. The structure is optimized to support the application's core features like class-wise, subject-wise, and previous year question paper tests, along with score tracking.\n\n**Authorization Independence and QAPs:**\n\n*   **Users Collection:** Stores user profiles. Access is restricted to the user themselves.\n*   **Tests Collection:** Stores the tests (MCQs) available in the application. This collection can be queried to list all available tests.\n*   **Users/{userId}/userTestAttempts Collection:**  Enables secure `list` operations restricted to a specific user. This enables secure retrieval of user scores and test history.\n\nThis design has been updated to include Google as an authentication provider to resolve the 'auth/operation-not-allowed' error. This allows users to sign in with their Google accounts, which is a common and expected feature. The reasoning remains otherwise unchanged."
   }
 }
