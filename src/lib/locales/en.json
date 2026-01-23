@@ -110,7 +110,6 @@
     "Select a subject...": "Select a subject...",
     "Existing Question Banks": "Existing Question Banks",
     "View, edit, or delete your existing question banks.": "View, edit, or delete your existing question banks.",
-    "questions": "questions",
     "View": "View",
     "This will permanently delete the test, but not the questions themselves.": "This will permanently delete the test, but not the questions themselves.",
     "No question banks created yet.": "No question banks created yet.",
@@ -196,5 +195,10 @@
     "resume_test_title": "Resume Unfinished Test?",
     "resume_test_desc": "You have an unfinished test session. Would you like to continue where you left off or start a new test? Starting a new test will delete your previous progress.",
     "start_new_test": "Start New",
-    "continue_test": "Continue Test"
+    "continue_test": "Continue Test",
+    "questions": "Questions",
+    "select_questions": "Select Questions",
+    "questions_count": "{{count}} Questions",
+    "all_questions": "All ({{count}})",
+    "start_test": "Start Test"
 }

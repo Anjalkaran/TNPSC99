@@ -17,7 +17,6 @@ import {
 } from '@/components/ui/select';
 import { useTranslation } from "@/hooks/use-translation";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 
 function TestStartControl({ test }: { test: Test }) {
@@ -30,16 +29,16 @@ function TestStartControl({ test }: { test: Test }) {
     <div className="flex flex-col sm:flex-row gap-2 w-full justify-end">
       <Select onValueChange={setLimit} value={limit}>
         <SelectTrigger className="w-full sm:w-[180px]">
-          <SelectValue placeholder="Select Questions" />
+          <SelectValue placeholder={t('select_questions')} />
         </SelectTrigger>
         <SelectContent>
-          {options.map(opt => <SelectItem key={opt} value={String(opt)}>{opt} Questions</SelectItem>)}
-          <SelectItem value={String(questionCount)}>All ({questionCount})</SelectItem>
+          {options.map(opt => <SelectItem key={opt} value={String(opt)}>{t('questions_count', { count: opt })}</SelectItem>)}
+          <SelectItem value={String(questionCount)}>{t('all_questions', { count: questionCount })}</SelectItem>
         </SelectContent>
       </Select>
       <Button asChild className="w-full sm:w-auto" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
         <Link href={`/test/${test.id}${limit ? `?limit=${limit}` : ''}`}>
-          Start Test <ArrowRight className="ml-2 h-4 w-4" />
+          {t('start_test')} <ArrowRight className="ml-2 h-4 w-4" />
         </Link>
       </Button>
     </div>
@@ -240,31 +239,24 @@ export default function TamilCategoryTestsPage() {
                 <CardDescription>{t('select_a_test_to_start')}</CardDescription>
             </CardHeader>
             <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="w-[50%]">Test Title</TableHead>
-                            <TableHead className="w-[15%]">Questions</TableHead>
-                            <TableHead className="text-right w-[35%]">Action</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {sortedTests.map((test) => (
-                            <TableRow key={test.id}>
-                                <TableCell className="font-medium">{getShortTestTitle(test)}</TableCell>
-                                <TableCell>
-                                <div className="flex items-center gap-2">
-                                    <span>{test.questionIds.length}</span>
-                                    <TestProgressBadge testId={test.id} />
+                <div className="space-y-4">
+                    {sortedTests.map((test) => (
+                        <Card key={test.id}>
+                            <CardContent className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <div className="flex-grow">
+                                    <p className="font-medium">{getShortTestTitle(test)}</p>
+                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                        <span>{test.questionIds.length} {t('questions')}</span>
+                                        <TestProgressBadge testId={test.id} />
+                                    </div>
                                 </div>
-                                </TableCell>
-                                <TableCell className="text-right">
-                                <TestStartControl test={test} />
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                                <div className="w-full md:w-auto shrink-0 md:min-w-[300px]">
+                                    <TestStartControl test={test} />
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
             </CardContent>
         </Card>
       ) : (

@@ -17,7 +17,6 @@ import {
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from "@/hooks/use-translation";
 import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 
 function TestStartControl({ test }: { test: Test }) {
@@ -30,16 +29,16 @@ function TestStartControl({ test }: { test: Test }) {
     <div className="flex flex-col sm:flex-row gap-2 w-full justify-end">
       <Select onValueChange={setLimit} value={limit}>
         <SelectTrigger className="w-full sm:w-[180px]">
-          <SelectValue placeholder="Select Questions" />
+          <SelectValue placeholder={t('select_questions')} />
         </SelectTrigger>
         <SelectContent>
-          {options.map(opt => <SelectItem key={opt} value={String(opt)}>{opt} Questions</SelectItem>)}
-          <SelectItem value={String(questionCount)}>All ({questionCount})</SelectItem>
+          {options.map(opt => <SelectItem key={opt} value={String(opt)}>{t('questions_count', { count: opt })}</SelectItem>)}
+          <SelectItem value={String(questionCount)}>{t('all_questions', { count: questionCount })}</SelectItem>
         </SelectContent>
       </Select>
       <Button asChild className="w-full sm:w-auto" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
         <Link href={`/test/${test.id}${limit ? `?limit=${limit}` : ''}`}>
-          Start Test <ArrowRight className="ml-2 h-4 w-4" />
+          {t('start_test')} <ArrowRight className="ml-2 h-4 w-4" />
         </Link>
       </Button>
     </div>
@@ -216,52 +215,6 @@ export default function SubjectTestsPage() {
   
   const isLoading = testsLoading || categoriesLoading;
 
-  if (subjectId === 'tamil') {
-    const tamilCategories = [
-      {
-        id: "ilakkanam",
-        name: "இலக்கணம்",
-        slug: "ilakkanam",
-        description: "தமிழ் இலக்கண விதிகளின் அடிப்படையில் கேள்விகள்.",
-      },
-      {
-        id: "urai",
-        name: "உரைநடை & செய்யுள்",
-        slug: "urai-seyyul",
-        description: "உரைநடை மற்றும் செய்யுள் பகுதியிலிருந்து வரும் கேள்விகள்.",
-      },
-    ];
-
-    return (
-      <div className="container mx-auto px-4 py-8 md:py-12">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl md:text-4xl font-bold">{className} - {subjectName}</h1>
-          <p className="text-muted-foreground mt-2">நீங்கள் பயிற்சி செய்ய விரும்பும் வகையைத் தேர்ந்தெடுக்கவும்.</p>
-        </div>
-        
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          {tamilCategories.map((category) => (
-            <Card key={category.id} className="flex flex-col overflow-hidden hover:shadow-xl transition-shadow duration-300">
-              <CardHeader>
-                <CardTitle className="text-2xl">{category.name}</CardTitle>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                  <p className="text-muted-foreground">{category.description}</p>
-              </CardContent>
-              <CardFooter>
-                <Button asChild className="w-full mt-4" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
-                  <Link href={`/class/${classId}/tamil/${category.slug}`}>
-                    {t('view_tests')} <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
   if (isLoading) {
     return (
         <div className="container mx-auto px-4 py-8 md:py-12">
@@ -293,31 +246,24 @@ export default function SubjectTestsPage() {
                     <CardDescription>{t('select_a_test_to_start')}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead className="w-[50%]">Test Title</TableHead>
-                                <TableHead className="w-[15%]">Questions</TableHead>
-                                <TableHead className="text-right w-[35%]">Action</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {testsForCategory.map((test) => (
-                                <TableRow key={test.id}>
-                                    <TableCell className="font-medium">{getShortTestTitle(test)}</TableCell>
-                                    <TableCell>
-                                    <div className="flex items-center gap-2">
-                                        <span>{test.questionIds.length}</span>
-                                        <TestProgressBadge testId={test.id} />
+                    <div className="space-y-4">
+                        {testsForCategory.map((test) => (
+                            <Card key={test.id}>
+                                <CardContent className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                    <div className="flex-grow">
+                                        <p className="font-medium">{getShortTestTitle(test)}</p>
+                                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                            <span>{test.questionIds.length} {t('questions')}</span>
+                                            <TestProgressBadge testId={test.id} />
+                                        </div>
                                     </div>
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                    <TestStartControl test={test} />
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                                    <div className="w-full md:w-auto shrink-0 md:min-w-[300px]">
+                                        <TestStartControl test={test} />
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
                 </CardContent>
             </Card>
         </div>
