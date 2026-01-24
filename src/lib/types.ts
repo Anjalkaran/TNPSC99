@@ -65,8 +65,8 @@ export interface Unit {
   subjectId: string;
   categoryId?: string;
   term: string;
-  unitNumber: number;
-  unitName: string;
+  unitNumber?: number;
+  unitName?: string;
   className?: string; // For display purposes
   subjectName?: string; // For display purposes
   categoryName?: string; // For display purposes

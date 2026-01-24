@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useState, useEffect, useMemo } from 'react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { addDoc, collection, doc, setDoc, deleteDoc, updateDoc, getDocs, query, where, writeBatch } from 'firebase/firestore';
+import { addDoc, collection, doc, setDoc, deleteDoc, updateDoc, getDocs, query, where, writeBatch, deleteField } from 'firebase/firestore';
 import type { Subject, Class, Unit, Category } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,15 +37,37 @@ import {
   DialogFooter,
   DialogClose,
 } from '@/components/ui/dialog';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 
 
 const unitFormSchema = z.object({
   classId: z.string().min(1, { message: "Please select a class." }),
   subjectName: z.string().min(1, { message: "Subject name must be at least 1 character." }),
-  term: z.string(),
-  unitNumber: z.coerce.number().min(1, "Unit number must be at least 1."),
-  unitName: z.string().min(1, { message: 'Unit name must be at least 1 character.' }),
+  term: z.string().min(1, { message: "Please select a term." }),
+  addUnitForFullBook: z.enum(['yes', 'no']).optional(),
+  unitNumber: z.coerce.number().optional(),
+  unitName: z.string().optional(),
   categoryName: z.string().optional(),
+}).superRefine((data, ctx) => {
+    const needsUnit = data.term !== 'Full Book' || (data.term === 'Full Book' && data.addUnitForFullBook === 'yes');
+
+    if (needsUnit && data.term) {
+        if (data.unitNumber === undefined || data.unitNumber < 1) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                path: ['unitNumber'],
+                message: "Unit number must be at least 1.",
+            });
+        }
+        if (!data.unitName || data.unitName.trim().length < 1) {
+             ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                path: ['unitName'],
+                message: 'Unit name must be at least 1 character.',
+            });
+        }
+    }
 });
 
 
@@ -63,9 +85,10 @@ function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, cla
             classId: unit.classId,
             subjectName: unit.subjectName || '',
             term: unit.term,
-            unitNumber: unit.unitNumber,
-            unitName: unit.unitName,
+            unitNumber: unit.unitNumber || undefined,
+            unitName: unit.unitName || '',
             categoryName: unit.categoryName || '',
+            addUnitForFullBook: unit.term === 'Full Book' && unit.unitNumber ? 'yes' : (unit.term === 'Full Book' ? 'no' : undefined)
         },
     });
 
@@ -82,14 +105,32 @@ function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, cla
         }
     }, [showTermField, form]);
 
+    const termValue = form.watch('term');
+    const addUnitForFullBookValue = form.watch('addUnitForFullBook');
+    
+    const showFullBookUnitQuestion = termValue === 'Full Book';
+    const showUnitFields = termValue !== 'Full Book' || (termValue === 'Full Book' && addUnitForFullBookValue === 'yes');
+
+    useEffect(() => {
+        if (termValue !== 'Full Book') {
+            form.setValue('addUnitForFullBook', undefined);
+        }
+    }, [termValue, form]);
+
+    useEffect(() => {
+        if (!showUnitFields) {
+            form.setValue('unitNumber', undefined);
+            form.setValue('unitName', '');
+        }
+    }, [showUnitFields, form]);
+
     const onSubmit: SubmitHandler<UnitFormValues> = async (values) => {
         if (!firestore) return;
         setIsSubmitting(true);
 
         try {
-            const { classId, subjectName, term, unitNumber, unitName, categoryName } = values;
+            const { classId, subjectName, term, unitNumber, unitName, categoryName, addUnitForFullBook } = values;
             
-            // 1. Find or create Subject
             const subjectsRef = collection(firestore, 'subjects');
             const subjectQuery = query(subjectsRef, where('name', '==', subjectName));
             const subjectSnapshot = await getDocs(subjectQuery);
@@ -104,7 +145,6 @@ function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, cla
                 subjectId = subjectSnapshot.docs[0].id;
             }
 
-            // 2. Find or create Category if a name is provided
             let categoryId: string | undefined = undefined;
             if (categoryName && subjectId) {
                 const categoriesRef = collection(firestore, 'categories');
@@ -126,22 +166,27 @@ function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, cla
             }
 
 
-            // 3. Update Unit
             const unitDocRef = doc(firestore, 'units', unit.id);
-            const unitData: Partial<Omit<Unit, 'id'>> = {
+            const unitData: { [key: string]: any } = {
                 classId,
                 subjectId,
                 term: showTermField ? term : 'Full Book',
-                unitNumber,
-                unitName,
-                categoryId
+                categoryId,
             };
+
+            if (term === 'Full Book' && addUnitForFullBook === 'no') {
+                unitData.unitNumber = deleteField();
+                unitData.unitName = deleteField();
+            } else {
+                unitData.unitNumber = unitNumber;
+                unitData.unitName = unitName;
+            }
 
             await updateDoc(unitDocRef, unitData);
 
             toast({
                 title: t('Unit Updated!'),
-                description: t('The unit "{{unitName}}" has been successfully updated.', { unitName: unit.unitName }),
+                description: t('The unit "{{unitName}}" has been successfully updated.', { unitName: values.unitName || unit.unitName || '' }),
             });
             onFinished();
         } catch (error) {
@@ -208,7 +253,7 @@ function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, cla
                   )}
               />
                 
-                {showTermField && (
+                {(showTermField || termValue === 'Full Book') && (
                     <FormField
                         control={form.control}
                         name="term"
@@ -233,43 +278,76 @@ function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, cla
                         )}
                     />
                 )}
+                
+                {showFullBookUnitQuestion && (
+                    <FormField
+                        control={form.control}
+                        name="addUnitForFullBook"
+                        render={({ field }) => (
+                            <FormItem className="space-y-3">
+                                <FormLabel>Add unit for full book?</FormLabel>
+                                <FormControl>
+                                    <RadioGroup
+                                        onValueChange={field.onChange}
+                                        value={field.value}
+                                        className="flex gap-4"
+                                    >
+                                        <FormItem className="flex items-center space-x-2 space-y-0">
+                                            <FormControl><RadioGroupItem value="yes" /></FormControl>
+                                            <FormLabel className="font-normal">Yes</FormLabel>
+                                        </FormItem>
+                                        <FormItem className="flex items-center space-x-2 space-y-0">
+                                            <FormControl><RadioGroupItem value="no" /></FormControl>
+                                            <FormLabel className="font-normal">No</FormLabel>
+                                        </FormItem>
+                                    </RadioGroup>
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                )}
 
-                <FormField
-                  control={form.control}
-                  name="unitNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('Unit')}</FormLabel>
-                        <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
-                            <FormControl>
-                                <SelectTrigger>
-                                <SelectValue placeholder="Select a unit" />
-                                </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                                {Array.from({ length: 9 }, (_, i) => i + 1).map(num => (
-                                    <SelectItem key={num} value={String(num)}>இயல் {num}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {showUnitFields && (
+                    <>
+                        <FormField
+                            control={form.control}
+                            name="unitNumber"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>{t('Unit')}</FormLabel>
+                                    <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
+                                        <FormControl>
+                                            <SelectTrigger>
+                                            <SelectValue placeholder="Select a unit" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {Array.from({ length: 9 }, (_, i) => i + 1).map(num => (
+                                                <SelectItem key={num} value={String(num)}>இயல் {num}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                        />
 
-                <FormField
-                    control={form.control}
-                    name="unitName"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>{t('Unit Name')}</FormLabel>
-                            <FormControl>
-                                <Input placeholder={t('Name of the unit')} {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                        <FormField
+                            control={form.control}
+                            name="unitName"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>{t('Unit Name')}</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder={t('Name of the unit')} {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </>
+                )}
                  <DialogFooter>
                     <DialogClose asChild>
                         <Button type="button" variant="secondary">{t('cancel')}</Button>
@@ -366,7 +444,8 @@ function ExistingUnitsList() {
                                 <div>
                                     <p className="font-semibold">{unit.className} - {unit.subjectName}</p>
                                     <p className="text-sm text-muted-foreground">
-                                        {unit.term} &bull; {t('Unit')} {unit.unitNumber}: {unit.unitName}
+                                        {unit.term}
+                                        {unit.unitNumber && unit.unitName && ` • ${t('Unit')} ${unit.unitNumber}: ${unit.unitName}`}
                                         {unit.categoryName && ` (${unit.categoryName})`}
                                     </p>
                                 </div>
@@ -399,7 +478,7 @@ function ExistingUnitsList() {
                                             <AlertDialogHeader>
                                                 <AlertDialogTitle>{t('confirm_deletion_title')}</AlertDialogTitle>
                                                 <AlertDialogDescription>
-                                                    {t('This action will permanently delete the unit \'{{unitName}}\'.', { unitName: unit.unitName })}
+                                                    {t('This action will permanently delete the unit \'{{unitName}}\'.', { unitName: unit.unitName || unit.id })}
                                                 </AlertDialogDescription>
                                             </AlertDialogHeader>
                                             <AlertDialogFooter>
@@ -431,7 +510,7 @@ export default function TopicManagementPage() {
 
   const form = useForm<UnitFormValues>({
     resolver: zodResolver(unitFormSchema),
-    defaultValues: { classId: '', subjectName: '', term: '', unitNumber: 1, unitName: '', categoryName: '' },
+    defaultValues: { classId: '', subjectName: '', term: '', unitNumber: undefined, unitName: '', categoryName: '', addUnitForFullBook: 'yes' },
   });
 
   const classIdValue = form.watch('classId');
@@ -440,6 +519,26 @@ export default function TopicManagementPage() {
   const classNumber = parseInt(classNameValue.match(/\d+/) || ['0'][0]);
 
   const showTermField = classNumber < 8;
+
+  const termValue = form.watch('term');
+  const addUnitForFullBookValue = form.watch('addUnitForFullBook');
+  
+  const showFullBookUnitQuestion = termValue === 'Full Book';
+  const showUnitFields = termValue !== 'Full Book' || (termValue === 'Full Book' && addUnitForFullBookValue === 'yes');
+  
+  useEffect(() => {
+    if (termValue !== 'Full Book') {
+        form.setValue('addUnitForFullBook', undefined);
+    }
+  }, [termValue, form]);
+
+  useEffect(() => {
+    if (!showUnitFields) {
+        form.setValue('unitNumber', undefined);
+        form.setValue('unitName', '');
+    }
+  }, [showUnitFields, form]);
+
 
   useEffect(() => {
     if (!showTermField) {
@@ -458,7 +557,6 @@ export default function TopicManagementPage() {
     try {
         const { classId, subjectName, term, unitNumber, unitName, categoryName } = values;
         
-        // 1. Find or Create Subject
         const subjectsRef = collection(firestore, 'subjects');
         const subjectQuery = query(subjectsRef, where('name', '==', subjectName));
         const subjectSnapshot = await getDocs(subjectQuery);
@@ -481,7 +579,6 @@ export default function TopicManagementPage() {
             subjectId = subjectSnapshot.docs[0].id;
         }
 
-        // 2. Find or create Category if a name is provided
         let categoryId: string | undefined = undefined;
         if (categoryName && subjectId) {
             const categoriesRef = collection(firestore, 'categories');
@@ -502,7 +599,6 @@ export default function TopicManagementPage() {
             }
         }
         
-        // 3. Create Unit
         const unitDocRef = doc(collection(firestore, 'units'));
         
         const unitData: Unit = {
@@ -519,7 +615,7 @@ export default function TopicManagementPage() {
 
         toast({
             title: t('Unit Created!'),
-            description: t('The unit "{{unitName}}" has been successfully created.', { unitName: values.unitName }),
+            description: t('The unit "{{unitName}}" has been successfully created.', { unitName: values.unitName || '' }),
         });
         resetForm();
 
@@ -600,7 +696,7 @@ export default function TopicManagementPage() {
                   )}
                 />
 
-                {showTermField && (
+                {(showTermField || termValue === 'Full Book') && (
                     <FormField
                     control={form.control}
                     name="term"
@@ -626,42 +722,77 @@ export default function TopicManagementPage() {
                     />
                 )}
 
-                <FormField
-                  control={form.control}
-                  name="unitNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('Unit')}</FormLabel>
-                        <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value.toString()}>
-                            <FormControl>
-                                <SelectTrigger>
-                                <SelectValue placeholder="Select a unit" />
-                                </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                                {Array.from({ length: 9 }, (_, i) => i + 1).map(num => (
-                                    <SelectItem key={num} value={String(num)}>இயல் {num}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {showFullBookUnitQuestion && (
+                    <FormField
+                        control={form.control}
+                        name="addUnitForFullBook"
+                        render={({ field }) => (
+                            <FormItem className="space-y-3">
+                                <FormLabel>Add unit for full book?</FormLabel>
+                                <FormControl>
+                                    <RadioGroup
+                                        onValueChange={field.onChange}
+                                        value={field.value}
+                                        className="flex gap-4"
+                                    >
+                                        <FormItem className="flex items-center space-x-2 space-y-0">
+                                            <FormControl><RadioGroupItem value="yes" /></FormControl>
+                                            <FormLabel className="font-normal">Yes</FormLabel>
+                                        </FormItem>
+                                        <FormItem className="flex items-center space-x-2 space-y-0">
+                                            <FormControl><RadioGroupItem value="no" /></FormControl>
+                                            <FormLabel className="font-normal">No</FormLabel>
+                                        </FormItem>
+                                    </RadioGroup>
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                )}
 
-                <FormField
-                  control={form.control}
-                  name="unitName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('Unit Name')}</FormLabel>
-                      <FormControl>
-                        <Input placeholder={t('Name of the unit')} {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+
+                {showUnitFields && (
+                <>
+                    <FormField
+                    control={form.control}
+                    name="unitNumber"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>{t('Unit')}</FormLabel>
+                            <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
+                                <FormControl>
+                                    <SelectTrigger>
+                                    <SelectValue placeholder="Select a unit" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {Array.from({ length: 9 }, (_, i) => i + 1).map(num => (
+                                        <SelectItem key={num} value={String(num)}>இயல் {num}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+
+                    <FormField
+                    control={form.control}
+                    name="unitName"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>{t('Unit Name')}</FormLabel>
+                        <FormControl>
+                            <Input placeholder={t('Name of the unit')} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                </>
+                )}
+
 
                 <Button type="submit" disabled={isSubmitting} className="w-full">
                     {isSubmitting ? t('Adding Unit...') : t('Add Unit')}
