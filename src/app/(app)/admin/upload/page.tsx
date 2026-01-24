@@ -244,16 +244,20 @@ function ExistingTestsList() {
     const { data: classes } = useCollection<Class>(classesCollection);
     const subjectsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'subjects') : null, [firestore]);
     const { data: subjects } = useCollection<Subject>(subjectsCollection);
+    const categoriesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'categories') : null, [firestore]);
+    const { data: categories } = useCollection<Category>(categoriesCollection);
 
     const testsWithNames = useMemo(() => {
-        if (!tests || !classes || !subjects) return [];
+        if (!tests || !classes || !subjects || !categories) return [];
         const classMap = new Map(classes.map(c => [c.id, language === 'ta' && c.name_ta ? c.name_ta : c.name]));
         const subjectMap = new Map(subjects.map(s => [s.id, language === 'ta' && s.name_ta ? s.name_ta : s.name]));
+        const categoryMap = new Map(categories.map(cat => [cat.id, language === 'ta' && cat.name_ta ? cat.name_ta : cat.name]));
 
         const mappedTests = tests.map(test => ({
             ...test,
             className: test.classId ? classMap.get(test.classId) : '',
             subjectName: test.subjectId ? subjectMap.get(test.subjectId) : '',
+            categoryName: test.categoryId ? categoryMap.get(test.categoryId) : undefined,
         }));
 
         return mappedTests.sort((a, b) => {
@@ -280,7 +284,7 @@ function ExistingTestsList() {
             return unitA - unitB;
         });
 
-    }, [tests, classes, subjects, language]);
+    }, [tests, classes, subjects, categories, language]);
 
     const filteredTests = useMemo(() => {
         if (!testsWithNames) return [];
@@ -294,12 +298,14 @@ function ExistingTestsList() {
             const term = test.term || '';
             const unitName = test.unitName || '';
             const title = test.title || '';
+            const categoryName = test.categoryName || '';
 
             return className.toLowerCase().includes(lowerCaseSearch) ||
                    subjectName.toLowerCase().includes(lowerCaseSearch) ||
                    term.toLowerCase().includes(lowerCaseSearch) ||
                    unitName.toLowerCase().includes(lowerCaseSearch) ||
-                   title.toLowerCase().includes(lowerCaseSearch);
+                   title.toLowerCase().includes(lowerCaseSearch) ||
+                   categoryName.toLowerCase().includes(lowerCaseSearch);
         });
     }, [testsWithNames, searchTerm]);
 
@@ -404,7 +410,7 @@ function ExistingTestsList() {
                                         <p className="text-sm text-muted-foreground">
                                             {test.term && test.term !== 'Full Book' ? `${test.term} - ` : ''}
                                             {test.unitNumber ? `இயல் ${test.unitNumber}: ` : ''}
-                                            {test.unitName}
+                                            {test.unitName || test.categoryName}
                                         </p>
                                     </div>
                                 </TableCell>
