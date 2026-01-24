@@ -313,7 +313,7 @@ function ExistingTestsList() {
         if (!firestore) return;
         
         try {
-            const fetchedQuestions: Omit<Question, 'id' | 'classId' | 'subjectId'>[] = [];
+            const fetchedQuestions: Omit<Question, 'classId' | 'subjectId'>[] = [];
             if (test.questionIds && test.questionIds.length > 0) {
               const questionIdsChunks = [];
               for (let i = 0; i < test.questionIds.length; i += 30) {
@@ -324,7 +324,7 @@ function ExistingTestsList() {
                  const questionsQuery = query(collection(firestore, 'questions'), where('__name__', 'in', chunk));
                  const questionsSnap = await getDocs(questionsQuery);
                  questionsSnap.forEach(docSnap => {
-                    const { id, classId, subjectId, ...questionData } = docSnap.data() as Question;
+                    const { classId, subjectId, ...questionData } = docSnap.data() as Question;
                     fetchedQuestions.push(questionData);
                  });
               }
