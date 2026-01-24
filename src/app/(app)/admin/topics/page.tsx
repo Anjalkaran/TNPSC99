@@ -225,6 +225,7 @@ function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, cla
                                         <SelectItem value="பருவம் 1">பருவம் 1</SelectItem>
                                         <SelectItem value="பருவம் 2">பருவம் 2</SelectItem>
                                         <SelectItem value="பருவம் 3">பருவம் 3</SelectItem>
+                                        <SelectItem value="Full Book">Full Book</SelectItem>
                                     </SelectContent>
                                 </Select>
                                 <FormMessage />
@@ -616,6 +617,7 @@ export default function TopicManagementPage() {
                             <SelectItem value="பருவம் 1">பருவம் 1</SelectItem>
                             <SelectItem value="பருவம் 2">பருவம் 2</SelectItem>
                             <SelectItem value="பருவம் 3">பருவம் 3</SelectItem>
+                            <SelectItem value="Full Book">Full Book</SelectItem>
                             </SelectContent>
                         </Select>
                         <FormMessage />
