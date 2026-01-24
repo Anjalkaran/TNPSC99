@@ -61,6 +61,7 @@ import { Edit, Trash, View, Download } from 'lucide-react';
 import Link from 'next/link';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 
 const jsonStructureExample = `[
@@ -83,11 +84,31 @@ const uploadFormSchema = z.object({
   classId: z.string().min(1, { message: "Please select a class." }),
   subjectName: z.string().min(1, { message: "Subject name must be at least 1 character." }),
   term: z.string().min(1, { message: "Please select a term." }),
-  unitNumber: z.coerce.number().min(1, "Unit number must be at least 1."),
-  unitName: z.string().min(1, { message: 'Unit name must be at least 1 character.' }),
+  addUnitForFullBook: z.enum(['yes', 'no']).optional(),
+  unitNumber: z.coerce.number().optional(),
+  unitName: z.string().optional(),
   categoryName: z.string().optional(),
   referencePageOffset: z.coerce.number().int().optional(),
   jsonInput: z.string().min(1, { message: 'JSON data is required.' }),
+}).superRefine((data, ctx) => {
+    const needsUnit = data.term !== 'Full Book' || (data.term === 'Full Book' && data.addUnitForFullBook === 'yes');
+
+    if (needsUnit) {
+        if (data.unitNumber === undefined || data.unitNumber < 1) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                path: ['unitNumber'],
+                message: "Unit number must be at least 1.",
+            });
+        }
+        if (!data.unitName || data.unitName.trim().length < 1) {
+             ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                path: ['unitName'],
+                message: 'Unit name must be at least 1 character.',
+            });
+        }
+    }
 });
 
 type UploadFormValues = z.infer<typeof uploadFormSchema>;
@@ -446,7 +467,7 @@ export default function UploadMcqPage() {
   const form = useForm<UploadFormValues>({
     resolver: zodResolver(uploadFormSchema),
     defaultValues: {
-      classId: '', subjectName: '', term: '', unitNumber: 1, unitName: '', categoryName: '', jsonInput: '', referencePageOffset: undefined,
+      classId: '', subjectName: '', term: '', unitNumber: undefined, unitName: '', categoryName: '', jsonInput: '', referencePageOffset: undefined, addUnitForFullBook: 'yes'
     },
   });
 
@@ -455,6 +476,26 @@ export default function UploadMcqPage() {
   
   const subjectNameValue = form.watch('subjectName');
   const showTamilCategories = subjectNameValue === 'தமிழ்' || subjectNameValue === 'Tamil';
+  
+  const termValue = form.watch('term');
+  const addUnitForFullBookValue = form.watch('addUnitForFullBook');
+  
+  const showFullBookUnitQuestion = termValue === 'Full Book';
+  const showUnitFields = termValue !== 'Full Book' || (termValue === 'Full Book' && addUnitForFullBookValue === 'yes');
+  
+  useEffect(() => {
+    if (termValue !== 'Full Book') {
+        form.setValue('addUnitForFullBook', undefined);
+    }
+  }, [termValue, form]);
+
+  useEffect(() => {
+    if (!showUnitFields) {
+        form.setValue('unitNumber', undefined);
+        form.setValue('unitName', '');
+    }
+  }, [showUnitFields, form]);
+
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -505,7 +546,8 @@ export default function UploadMcqPage() {
     try {
       if (!firestore) throw new Error('Firestore is not initialized');
 
-      const { classId, subjectName, term, unitNumber, unitName, categoryName, referencePageOffset } = values;
+      const { classId, subjectName, term, unitNumber, unitName, categoryName, referencePageOffset, addUnitForFullBook } = values;
+      const shouldAddUnitDetails = term !== 'Full Book' || (term === 'Full Book' && addUnitForFullBook === 'yes');
 
       // 1. Find or Create Subject
       let subjectId: string;
@@ -541,23 +583,36 @@ export default function UploadMcqPage() {
 
       // 3. Find or Create Unit
       let unitId: string;
-      const unitQuery = query(collection(firestore, 'units'), 
+      const unitsCollectionRef = collection(firestore, 'units');
+      
+      const unitQueryConstraints = [
         where('classId', '==', classId),
         where('subjectId', '==', subjectId),
         where('term', '==', term),
-        where('unitNumber', '==', unitNumber),
-        where('unitName', '==', unitName)
-      );
-      const unitSnapshot = await getDocs(unitQuery);
+      ];
 
-      if (unitSnapshot.empty) {
+      if (shouldAddUnitDetails) {
+        unitQueryConstraints.push(where('unitNumber', '==', unitNumber));
+        unitQueryConstraints.push(where('unitName', '==', unitName));
+      }
+      
+      const unitQuery = query(unitsCollectionRef, ...unitQueryConstraints);
+      const unitSnapshot = await getDocs(unitQuery);
+      let unitDoc = unitSnapshot.docs.find(doc => shouldAddUnitDetails ? true : !doc.data().unitNumber);
+
+
+      if (!unitDoc) {
           const newUnitRef = doc(collection(firestore, 'units'));
-          const unitData: Unit = { id: newUnitRef.id, classId, subjectId, term, unitNumber, unitName, categoryId };
+          const unitData: Partial<Unit> = { id: newUnitRef.id, classId, subjectId, term, categoryId };
+          if(shouldAddUnitDetails) {
+              unitData.unitNumber = unitNumber;
+              unitData.unitName = unitName;
+          }
           await setDoc(newUnitRef, unitData);
           unitId = newUnitRef.id;
       } else {
-          unitId = unitSnapshot.docs[0].id;
-          if (categoryId) {
+          unitId = unitDoc.id;
+          if (categoryId && unitDoc.data().categoryId !== categoryId) {
              await updateDoc(doc(firestore, 'units', unitId), { categoryId });
           }
       }
@@ -597,7 +652,9 @@ export default function UploadMcqPage() {
       const testsCollectionRef = collection(firestore, 'tests');
       const selectedClass = classes?.find(c => c.id === classId);
       const className = language === 'ta' && selectedClass?.name_ta ? selectedClass.name_ta : selectedClass?.name;
-      const testTitle = `${className || 'Class'} - ${subjectName} - ${term} - இயல் ${unitNumber} - ${unitName}`;
+      const testTitle = shouldAddUnitDetails 
+        ? `${className || 'Class'} - ${subjectName} - ${term} - இயல் ${unitNumber} - ${unitName}`
+        : `${className || 'Class'} - ${subjectName} - ${term}`;
       
       const testQuery = query(testsCollectionRef, where('title', '==', testTitle));
       
@@ -605,7 +662,7 @@ export default function UploadMcqPage() {
           const testSnapshot = await getDocs(testQuery);
           if (testSnapshot.empty) {
               const newTestRef = doc(testsCollectionRef);
-              const newTest: any = {
+              const newTest: Partial<Test> = {
                   id: newTestRef.id,
                   title: testTitle,
                   description: t('test_for_class_subject', {classId: className || classId, subjectId: subjectName}),
@@ -615,10 +672,11 @@ export default function UploadMcqPage() {
                   categoryId: categoryId,
                   term: term,
                   unitId: unitId,
-                  unitNumber: unitNumber,
-                  unitName: unitName,
               };
-
+              if (shouldAddUnitDetails) {
+                newTest.unitNumber = unitNumber;
+                newTest.unitName = unitName;
+              }
               if (referencePageOffset !== undefined) {
                 newTest.referencePageOffset = referencePageOffset;
               }
@@ -750,41 +808,76 @@ export default function UploadMcqPage() {
                         </FormItem>
                         )}
                     />
-                    <FormField
-                        control={form.control}
-                        name="unitNumber"
-                        render={({ field }) => (
+
+                    {showFullBookUnitQuestion && (
+                      <FormField
+                          control={form.control}
+                          name="addUnitForFullBook"
+                          render={({ field }) => (
+                              <FormItem className="space-y-3">
+                                  <FormLabel>Add unit for full book?</FormLabel>
+                                  <FormControl>
+                                      <RadioGroup
+                                          onValueChange={field.onChange}
+                                          value={field.value}
+                                          className="flex gap-4"
+                                      >
+                                          <FormItem className="flex items-center space-x-2 space-y-0">
+                                              <FormControl><RadioGroupItem value="yes" /></FormControl>
+                                              <FormLabel className="font-normal">Yes</FormLabel>
+                                          </FormItem>
+                                          <FormItem className="flex items-center space-x-2 space-y-0">
+                                              <FormControl><RadioGroupItem value="no" /></FormControl>
+                                              <FormLabel className="font-normal">No</FormLabel>
+                                          </FormItem>
+                                      </RadioGroup>
+                                  </FormControl>
+                                  <FormMessage />
+                              </FormItem>
+                          )}
+                      />
+                    )}
+
+                    {showUnitFields && (
+                      <>
+                        <FormField
+                            control={form.control}
+                            name="unitNumber"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>{t('Unit')}</FormLabel>
+                                    <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select a unit" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {Array.from({ length: 9 }, (_, i) => i + 1).map(num => (
+                                                <SelectItem key={num} value={String(num)}>இயல் {num}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="unitName"
+                            render={({ field }) => (
                             <FormItem>
-                                <FormLabel>{t('Unit')}</FormLabel>
-                                <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value.toString()}>
-                                    <FormControl>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select a unit" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        {Array.from({ length: 9 }, (_, i) => i + 1).map(num => (
-                                            <SelectItem key={num} value={String(num)}>இயல் {num}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                <FormLabel>{t('Unit Name')}</FormLabel>
+                                <FormControl>
+                                <Input placeholder={t('Name of the unit')} {...field} />
+                                </FormControl>
                                 <FormMessage />
                             </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="unitName"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>{t('Unit Name')}</FormLabel>
-                            <FormControl>
-                            <Input placeholder={t('Name of the unit')} {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
+                            )}
+                        />
+                      </>
+                    )}
+
                     <FormField
                         control={form.control}
                         name="referencePageOffset"
