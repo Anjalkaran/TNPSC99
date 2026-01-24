@@ -41,32 +41,32 @@ service cloud.firestore {
     
     // App Content collections (read-only for users, writable for admins)
     match /classes/{classId} {
-      allow read: if isSignedIn();
+      allow get, list: if isSignedIn();
       allow write: if isAdmin();
     }
     
     match /subjects/{subjectId} {
-      allow read: if isSignedIn();
+      allow get, list: if isSignedIn();
       allow write: if isAdmin();
     }
     
     match /categories/{categoryId} {
-      allow read: if isSignedIn();
+      allow get, list: if isSignedIn();
       allow write: if isAdmin();
     }
 
     match /units/{unitId} {
-      allow read: if isSignedIn();
+      allow get, list: if isSignedIn();
       allow write: if isAdmin();
     }
 
     match /questions/{questionId} {
-      allow read: if isSignedIn();
+      allow get, list: if isSignedIn();
       allow write: if isAdmin();
     }
 
     match /tests/{testId} {
-      allow read: if isSignedIn();
+      allow get, list: if isSignedIn();
       allow write: if isAdmin();
     }
 
