@@ -171,15 +171,22 @@ function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, cla
                 classId,
                 subjectId,
                 term: showTermField ? term : 'Full Book',
-                categoryId,
             };
-
-            if (term === 'Full Book' && addUnitForFullBook === 'no') {
-                unitData.unitNumber = deleteField();
-                unitData.unitName = deleteField();
+            
+            if (categoryId) {
+                unitData.categoryId = categoryId;
             } else {
+                unitData.categoryId = deleteField();
+            }
+
+            const shouldAddUnitDetails = term !== 'Full Book' || (term === 'Full Book' && addUnitForFullBook === 'yes');
+
+            if (shouldAddUnitDetails) {
                 unitData.unitNumber = unitNumber;
                 unitData.unitName = unitName;
+            } else {
+                unitData.unitNumber = deleteField();
+                unitData.unitName = deleteField();
             }
 
             await updateDoc(unitDocRef, unitData);
@@ -555,7 +562,7 @@ export default function TopicManagementPage() {
     setIsSubmitting(true);
     
     try {
-        const { classId, subjectName, term, unitNumber, unitName, categoryName } = values;
+        const { classId, subjectName, term, unitNumber, unitName, categoryName, addUnitForFullBook } = values;
         
         const subjectsRef = collection(firestore, 'subjects');
         const subjectQuery = query(subjectsRef, where('name', '==', subjectName));
@@ -601,15 +608,22 @@ export default function TopicManagementPage() {
         
         const unitDocRef = doc(collection(firestore, 'units'));
         
-        const unitData: Unit = {
+        const unitData: Partial<Unit> = {
             id: unitDocRef.id,
             classId,
             subjectId,
             term: showTermField ? term : 'Full Book',
-            unitNumber,
-            unitName,
-            categoryId
         };
+
+        if (categoryId) {
+            unitData.categoryId = categoryId;
+        }
+
+        const shouldAddUnitDetails = term !== 'Full Book' || (term === 'Full Book' && addUnitForFullBook === 'yes');
+        if (shouldAddUnitDetails) {
+            unitData.unitNumber = unitNumber;
+            unitData.unitName = unitName;
+        }
         
         await setDoc(unitDocRef, unitData);
 
