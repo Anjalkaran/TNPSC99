@@ -62,6 +62,7 @@ import Link from 'next/link';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 
 const jsonStructureExample = `[
@@ -133,12 +134,13 @@ function ExistingUnitsList({ onUnitSelect }: { onUnitSelect: (unit: UnitWithName
     const categoriesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'categories') : null, [firestore]);
     const { data: categories } = useCollection<Category>(categoriesCollection);
 
-    const unitsWithNames = useMemo(() => {
-        if (!units || !classes || !subjects || !categories) return [];
+    const groupedUnits = useMemo(() => {
+        if (!units || !classes || !subjects || !categories) return {};
+
         const classMap = new Map(classes.map(c => [c.id, language === 'ta' && c.name_ta ? c.name_ta : c.name]));
         const subjectMap = new Map(subjects.map(s => [s.id, language === 'ta' && s.name_ta ? s.name_ta : s.name]));
         const categoryMap = new Map(categories.map(cat => [cat.id, language === 'ta' && cat.name_ta ? cat.name_ta : cat.name]));
-        
+
         const mappedUnits = units.map(unit => ({
             ...unit,
             className: classMap.get(unit.classId) || unit.classId,
@@ -146,17 +148,40 @@ function ExistingUnitsList({ onUnitSelect }: { onUnitSelect: (unit: UnitWithName
             categoryName: unit.categoryId ? categoryMap.get(unit.categoryId) : undefined,
         }));
         
-        return mappedUnits.sort((a, b) => {
-            const termA = a.term || '';
-            const termB = b.term || '';
-            const unitA = a.unitNumber || 0;
-            const unitB = b.unitNumber || 0;
-
-            if (termA.localeCompare(termB) !== 0) {
-                return termA.localeCompare(termB);
+        const groupedByClass = mappedUnits.reduce((acc, unit) => {
+            const key = unit.className;
+            if (!acc[key]) {
+                acc[key] = [];
             }
-            return unitA - unitB;
-        });
+            acc[key].push(unit);
+            return acc;
+        }, {} as Record<string, UnitWithNames[]>);
+
+        const getNumber = (name: string) => {
+            const match = name.match(/\d+/);
+            return match ? parseInt(match[0], 10) : Infinity;
+        };
+
+        const sortedClassNames = Object.keys(groupedByClass).sort((a, b) => getNumber(a) - getNumber(b));
+
+        const finalGrouped: Record<string, UnitWithNames[]> = {};
+
+        for (const className of sortedClassNames) {
+            finalGrouped[className] = groupedByClass[className].sort((a, b) => {
+                if ((a.subjectName || '').localeCompare(b.subjectName || '') !== 0) {
+                    return (a.subjectName || '').localeCompare(b.subjectName || '');
+                }
+                if ((a.term || '').localeCompare(b.term || '') !== 0) {
+                    return (a.term || '').localeCompare(b.term || '');
+                }
+                 if ((a.unitNumber || 0) - (b.unitNumber || 0) !== 0) {
+                   return (a.unitNumber || 0) - (b.unitNumber || 0);
+                 }
+                return (a.categoryName || '').localeCompare(b.categoryName || '');
+            });
+        }
+        
+        return finalGrouped;
 
     }, [units, classes, subjects, categories, language]);
 
@@ -189,40 +214,53 @@ function ExistingUnitsList({ onUnitSelect }: { onUnitSelect: (unit: UnitWithName
                  <CardDescription>{t('Click a unit to populate the form below.')}</CardDescription>
             </CardHeader>
             <CardContent>
-                {unitsWithNames && unitsWithNames.length > 0 ? (
-                     <ul className="space-y-2 max-h-96 overflow-y-auto">
-                        {unitsWithNames.map(unit => (
-                            <li key={unit.id} className="flex justify-between items-center p-3 border rounded-md">
-                                <button type="button" className="text-left flex-grow" onClick={() => onUnitSelect(unit)}>
-                                    <p className="font-semibold text-sm">{unit.className} - {unit.subjectName} - {unit.term}</p>
-                                    <p className="font-bold text-base">{t('Unit')} {unit.unitNumber}: {unit.unitName}</p>
-                                    {unit.categoryName && <p className="text-xs text-muted-foreground">Category: {unit.categoryName}</p>}
-                                </button>
-                                <div className="flex gap-2">
-                                    <AlertDialog>
-                                        <AlertDialogTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-                                                <Trash className="h-4 w-4" />
-                                                <span className="sr-only">{t('delete')}</span>
-                                            </Button>
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent>
-                                            <AlertDialogHeader>
-                                                <AlertDialogTitle>{t('confirm_deletion_title')}</AlertDialogTitle>
-                                                <AlertDialogDescription>
-                                                    {t('This action will permanently delete the unit \'{{unitName}}\'.', { unitName: unit.unitName })}
-                                                </AlertDialogDescription>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                                <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                                                <AlertDialogAction onClick={() => handleDelete(unit.id)}>{t('delete')}</AlertDialogAction>
-                                            </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                    </AlertDialog>
-                                </div>
-                            </li>
+                {Object.keys(groupedUnits).length > 0 ? (
+                    <Accordion type="multiple" className="w-full max-h-96 overflow-y-auto">
+                        {Object.entries(groupedUnits).map(([className, classUnits]) => (
+                             <AccordionItem value={className} key={className}>
+                                <AccordionTrigger className="text-lg font-semibold">{className}</AccordionTrigger>
+                                <AccordionContent>
+                                    <ul className="space-y-2 pt-2">
+                                        {classUnits.map(unit => (
+                                            <li key={unit.id} className="flex justify-between items-center p-3 border rounded-md">
+                                                <button type="button" className="text-left flex-grow" onClick={() => onUnitSelect(unit)}>
+                                                    <p className="font-semibold text-sm">{unit.subjectName} - {unit.term}</p>
+                                                    { (unit.unitNumber && unit.unitName) ? 
+                                                        <p className="font-bold text-base">{t('Unit')} {unit.unitNumber}: {unit.unitName}</p>
+                                                        :
+                                                        <p className="font-bold text-base">{unit.categoryName || 'Full Book'}</p>
+                                                    }
+                                                    { unit.unitNumber && unit.unitName && unit.categoryName && <p className="text-xs text-muted-foreground">Category: {unit.categoryName}</p>}
+                                                </button>
+                                                <div className="flex gap-2">
+                                                    <AlertDialog>
+                                                        <AlertDialogTrigger asChild>
+                                                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                                                <Trash className="h-4 w-4" />
+                                                                <span className="sr-only">{t('delete')}</span>
+                                                            </Button>
+                                                        </AlertDialogTrigger>
+                                                        <AlertDialogContent>
+                                                            <AlertDialogHeader>
+                                                                <AlertDialogTitle>{t('confirm_deletion_title')}</AlertDialogTitle>
+                                                                <AlertDialogDescription>
+                                                                    {t('This action will permanently delete the unit \'{{unitName}}\'.', { unitName: unit.unitName || unit.id })}
+                                                                </AlertDialogDescription>
+                                                            </AlertDialogHeader>
+                                                            <AlertDialogFooter>
+                                                                <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                                                                <AlertDialogAction onClick={() => handleDelete(unit.id)}>{t('delete')}</AlertDialogAction>
+                                                            </AlertDialogFooter>
+                                                        </AlertDialogContent>
+                                                    </AlertDialog>
+                                                </div>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </AccordionContent>
+                             </AccordionItem>
                         ))}
-                    </ul>
+                    </Accordion>
                 ) : (
                     <p className="text-muted-foreground">{t('No units found.')}</p>
                 )}
@@ -313,7 +351,7 @@ function ExistingTestsList() {
         if (!firestore) return;
         
         try {
-            const fetchedQuestions: Omit<Question, 'classId' | 'subjectId'>[] = [];
+            const fetchedQuestions: Question[] = [];
             if (test.questionIds && test.questionIds.length > 0) {
               const questionIdsChunks = [];
               for (let i = 0; i < test.questionIds.length; i += 30) {
@@ -325,7 +363,7 @@ function ExistingTestsList() {
                  const questionsSnap = await getDocs(questionsQuery);
                  questionsSnap.forEach(docSnap => {
                     const { classId, subjectId, ...questionData } = docSnap.data() as Question;
-                    fetchedQuestions.push(questionData);
+                    fetchedQuestions.push({ id: docSnap.id, ...questionData } as Question);
                  });
               }
             }
