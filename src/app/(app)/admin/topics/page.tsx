@@ -39,6 +39,7 @@ import {
 } from '@/components/ui/dialog';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 
 const unitFormSchema = z.object({
@@ -469,66 +470,68 @@ function ExistingUnitsList() {
             </CardHeader>
             <CardContent>
                 {Object.keys(groupedUnits).length > 0 ? (
-                    <div className="space-y-4">
+                    <Accordion type="multiple" className="w-full">
                         {Object.entries(groupedUnits).map(([className, classUnits]) => (
-                            <div key={className}>
-                                <h3 className="text-lg font-semibold mb-2 border-b pb-1">{className}</h3>
-                                <ul className="space-y-2">
-                                    {classUnits.map(unit => (
-                                        <li key={unit.id} className="flex justify-between items-center p-3 border rounded-md">
-                                            <div>
-                                                <p className="font-semibold">{unit.subjectName}</p>
-                                                <p className="text-sm text-muted-foreground">
-                                                    {unit.term}
-                                                    {unit.unitNumber && unit.unitName && ` • ${t('Unit')} ${unit.unitNumber}: ${unit.unitName}`}
-                                                    {unit.categoryName && ` (${unit.categoryName})`}
-                                                </p>
-                                            </div>
-                                            <div className="flex gap-2">
-                                                <Dialog open={openDialogs[unit.id] || false} onOpenChange={(isOpen) => setDialogState(unit.id, isOpen)}>
-                                                    <DialogTrigger asChild>
-                                                        <Button variant="ghost" size="icon">
-                                                            <Edit className="h-4 w-4" />
-                                                            <span className="sr-only">{t('edit')}</span>
-                                                        </Button>
-                                                    </DialogTrigger>
-                                                    <DialogContent>
-                                                        <DialogHeader>
-                                                            <DialogTitle>{t('Edit Unit')}</DialogTitle>
-                                                            <DialogDescription>
-                                                                {t("Make changes to the unit details below.")}
-                                                            </DialogDescription>
-                                                        </DialogHeader>
-                                                        <EditUnitForm unit={unit} classes={classes} subjects={subjects} onFinished={() => setDialogState(unit.id, false)} />
-                                                    </DialogContent>
-                                                </Dialog>
-                                                <AlertDialog>
-                                                    <AlertDialogTrigger asChild>
-                                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-                                                            <Trash className="h-4 w-4" />
-                                                            <span className="sr-only">{t('delete')}</span>
-                                                        </Button>
-                                                    </AlertDialogTrigger>
-                                                    <AlertDialogContent>
-                                                        <AlertDialogHeader>
-                                                            <AlertDialogTitle>{t('confirm_deletion_title')}</AlertDialogTitle>
-                                                            <AlertDialogDescription>
-                                                                {t('This action will permanently delete the unit \'{{unitName}}\'.', { unitName: unit.unitName || unit.id })}
-                                                            </AlertDialogDescription>
-                                                        </AlertDialogHeader>
-                                                        <AlertDialogFooter>
-                                                            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                                                            <AlertDialogAction onClick={() => handleDelete(unit.id)}>{t('delete')}</AlertDialogAction>
-                                                        </AlertDialogFooter>
-                                                    </AlertDialogContent>
-                                                </AlertDialog>
-                                            </div>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
+                            <AccordionItem value={className} key={className}>
+                                <AccordionTrigger className="text-lg font-semibold">{className}</AccordionTrigger>
+                                <AccordionContent>
+                                    <ul className="space-y-2 pt-2">
+                                        {classUnits.map(unit => (
+                                            <li key={unit.id} className="flex justify-between items-center p-3 border rounded-md">
+                                                <div>
+                                                    <p className="font-semibold">{unit.subjectName}</p>
+                                                    <p className="text-sm text-muted-foreground">
+                                                        {unit.term}
+                                                        {unit.unitNumber && unit.unitName && ` • ${t('Unit')} ${unit.unitNumber}: ${unit.unitName}`}
+                                                        {unit.categoryName && ` (${unit.categoryName})`}
+                                                    </p>
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <Dialog open={openDialogs[unit.id] || false} onOpenChange={(isOpen) => setDialogState(unit.id, isOpen)}>
+                                                        <DialogTrigger asChild>
+                                                            <Button variant="ghost" size="icon">
+                                                                <Edit className="h-4 w-4" />
+                                                                <span className="sr-only">{t('edit')}</span>
+                                                            </Button>
+                                                        </DialogTrigger>
+                                                        <DialogContent>
+                                                            <DialogHeader>
+                                                                <DialogTitle>{t('Edit Unit')}</DialogTitle>
+                                                                <DialogDescription>
+                                                                    {t("Make changes to the unit details below.")}
+                                                                </DialogDescription>
+                                                            </DialogHeader>
+                                                            <EditUnitForm unit={unit} classes={classes} subjects={subjects} onFinished={() => setDialogState(unit.id, false)} />
+                                                        </DialogContent>
+                                                    </Dialog>
+                                                    <AlertDialog>
+                                                        <AlertDialogTrigger asChild>
+                                                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                                                <Trash className="h-4 w-4" />
+                                                                <span className="sr-only">{t('delete')}</span>
+                                                            </Button>
+                                                        </AlertDialogTrigger>
+                                                        <AlertDialogContent>
+                                                            <AlertDialogHeader>
+                                                                <AlertDialogTitle>{t('confirm_deletion_title')}</AlertDialogTitle>
+                                                                <AlertDialogDescription>
+                                                                    {t('This action will permanently delete the unit \'{{unitName}}\'.', { unitName: unit.unitName || unit.id })}
+                                                                </AlertDialogDescription>
+                                                            </AlertDialogHeader>
+                                                            <AlertDialogFooter>
+                                                                <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                                                                <AlertDialogAction onClick={() => handleDelete(unit.id)}>{t('delete')}</AlertDialogAction>
+                                                            </AlertDialogFooter>
+                                                        </AlertDialogContent>
+                                                    </AlertDialog>
+                                                </div>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </AccordionContent>
+                            </AccordionItem>
                         ))}
-                    </div>
+                    </Accordion>
                 ) : (
                     <p className="text-muted-foreground">{t('No units found.')}</p>
                 )}
