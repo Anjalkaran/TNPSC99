@@ -1,8 +1,8 @@
 'use client';
 import Link from "next/link";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, BookText } from "lucide-react";
+import { ArrowRight, BookCopy, Archive } from "lucide-react";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, query } from "firebase/firestore";
 import type { Class } from "@/lib/types";
@@ -13,7 +13,6 @@ export default function ClassWiseTestsPage() {
   const firestore = useFirestore();
   const { language } = useTranslation();
   const classesCollection = useMemoFirebase(() => collection(firestore, 'classes'), [firestore]);
-  // Remove the orderBy from the query, as we will sort on the client
   const classesQuery = useMemoFirebase(() => classesCollection && query(classesCollection), [classesCollection]);
 
   const { data: classes, isLoading } = useCollection<Class>(classesQuery);
@@ -21,21 +20,18 @@ export default function ClassWiseTestsPage() {
   const sortedClasses = useMemo(() => {
     if (!classes) return [];
     
-    // Custom sort function to handle class names like "Class VI", "10ஆம் வகுப்பு"
     const sorted = [...classes].sort((a, b) => {
-        // Function to extract number from name or id
         const getNumber = (cls: Class) => {
             const nameToUse = language === 'ta' && cls.name_ta ? cls.name_ta : cls.name;
             const match = nameToUse.match(/\d+/);
             if (match) {
                 return parseInt(match[0], 10);
             }
-            // Fallback to ID if no number in name
             const idMatch = cls.id.match(/\d+/);
             if (idMatch) {
                 return parseInt(idMatch[0], 10);
             }
-            return Infinity; // Push items without numbers to the end
+            return Infinity; 
         };
 
         const numA = getNumber(a);
@@ -44,7 +40,6 @@ export default function ClassWiseTestsPage() {
         return numA - numB;
     });
 
-    // Filter out duplicates after sorting to be safe
     const seen = new Set();
     return sorted.filter(cls => {
       if (!cls.id) return false;
@@ -56,36 +51,66 @@ export default function ClassWiseTestsPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
-      <div className="mb-8">
+      <div className="mb-8 text-center">
         <h1 className="text-3xl md:text-4xl font-bold">வகுப்பு வாரியான தேர்வுகள்</h1>
         <p className="text-muted-foreground mt-2">கல்வி வகுப்பு தரங்களின்படி ஒழுங்கமைக்கப்பட்ட தேர்வுகள்.</p>
       </div>
-      
-      {isLoading && <p>Loading classes...</p>}
 
-      {!isLoading && sortedClasses && sortedClasses.length > 0 ? (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {sortedClasses.map((cls) => (
-            <Card key={cls.id} className="flex flex-col overflow-hidden hover:shadow-xl transition-shadow duration-300">
-              <CardHeader className="flex-row items-center gap-4">
-                <BookText className="w-8 h-8 text-primary" />
-                <CardTitle className="text-xl">{cls.name_ta || cls.name}</CardTitle>
-              </CardHeader>
-              <CardContent className="flex-grow flex flex-col justify-end">
-                <Button asChild className="w-full mt-4" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
-                  <Link href={`/class/${cls.id}`}>
-                    பாடங்களைக் காண்க <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        !isLoading && <div className="text-center py-16">
-          <p className="text-muted-foreground">தற்போது வகுப்புகள் எதுவும் இல்லை.</p>
-        </div>
-      )}
+      <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+        {/* Samacheer Kalvi Books Card */}
+        <Card className="flex flex-col">
+            <CardHeader className="flex-row items-center gap-4">
+                <BookCopy className="h-8 w-8 text-primary" />
+                <div>
+                    <CardTitle>Samacheer Kalvi Books</CardTitle>
+                    <CardDescription>Tests based on the current Samacheer Kalvi curriculum.</CardDescription>
+                </div>
+            </CardHeader>
+            <CardContent className="flex-grow">
+                 {isLoading ? (
+                    <div className="flex items-center justify-center h-full">
+                        <p>Loading classes...</p>
+                    </div>
+                ) : sortedClasses && sortedClasses.length > 0 ? (
+                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                    {sortedClasses.map((cls) => (
+                        <Card key={cls.id} className="hover:shadow-md transition-shadow">
+                            <CardContent className="p-4 flex flex-col items-center text-center justify-center">
+                                <h3 className="font-semibold text-lg mb-3">{cls.name_ta || cls.name}</h3>
+                                <Button asChild size="sm" className="w-full" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
+                                <Link href={`/class/${cls.id}`}>
+                                    பாடங்களைக் காண்க <ArrowRight className="ml-2 h-4 w-4" />
+                                </Link>
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    ))}
+                    </div>
+                ) : (
+                    <div className="flex items-center justify-center h-full">
+                        <p className="text-muted-foreground">தற்போது வகுப்புகள் எதுவும் இல்லை.</p>
+                    </div>
+                )}
+            </CardContent>
+        </Card>
+
+        {/* Old Books Card */}
+        <Card className="flex flex-col">
+            <CardHeader className="flex-row items-center gap-4">
+                <Archive className="h-8 w-8 text-primary" />
+                <div>
+                    <CardTitle>Old Books</CardTitle>
+                    <CardDescription>Practice tests from older syllabus books.</CardDescription>
+                </div>
+            </CardHeader>
+            <CardContent className="flex-grow flex flex-col items-center justify-center text-muted-foreground">
+                <div className="text-center">
+                    <p className="text-lg font-semibold">விரைவில் வருகிறது</p>
+                    <p>பழைய புத்தகங்களில் இருந்து தேர்வுகள் இங்கு சேர்க்கப்படும்.</p>
+                </div>
+            </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
