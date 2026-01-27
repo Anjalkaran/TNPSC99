@@ -46,6 +46,7 @@ const classes = [
     { id: '8', name: 'Class VIII', name_ta: '8ஆம் வகுப்பு', description: '8th Standard' },
     { id: '9', name: 'Class IX', name_ta: '9ஆம் வகுப்பு', description: '9th Standard' },
     { id: '10', name: 'Class X', name_ta: '10ஆம் வகுப்பு', description: '10th Standard' },
+    { id: '11', name: 'Class XI', name_ta: '11ஆம் வகுப்பு', description: '11th Standard' },
     { id: '12', name: 'Class XII', name_ta: '12ஆம் வகுப்பு', description: '12th Standard' },
 ];
 
