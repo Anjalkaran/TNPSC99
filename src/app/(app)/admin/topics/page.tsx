@@ -80,6 +80,23 @@ function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, cla
     const { toast } = useToast();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    const sortedClasses = useMemo(() => {
+        if (!classes) return [];
+        const getNumber = (cls: Class) => {
+            const nameToUse = language === 'ta' && cls.name_ta ? cls.name_ta : cls.name;
+            const match = nameToUse.match(/\d+/);
+            if (match) {
+                return parseInt(match[0], 10);
+            }
+            const idMatch = cls.id.match(/\d+/);
+            if (idMatch) {
+                return parseInt(idMatch[0], 10);
+            }
+            return Infinity;
+        };
+        return [...classes].sort((a, b) => getNumber(a) - getNumber(b));
+    }, [classes, language]);
+
     const form = useForm<UnitFormValues>({
         resolver: zodResolver(unitFormSchema),
         defaultValues: {
@@ -225,7 +242,7 @@ function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, cla
                                     </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                    {classes?.map(c => <SelectItem key={c.id} value={c.id}>{language === 'ta' && c.name_ta ? c.name_ta : c.name}</SelectItem>)}
+                                    {sortedClasses?.map(c => <SelectItem key={c.id} value={c.id}>{language === 'ta' && c.name_ta ? c.name_ta : c.name}</SelectItem>)}
                                 </SelectContent>
                             </Select>
                             <FormMessage />
@@ -549,6 +566,23 @@ export default function TopicManagementPage() {
   const classesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'classes') : null, [firestore]);
   const { data: classes, isLoading: classesLoading } = useCollection<Class>(classesCollection);
 
+  const sortedClasses = useMemo(() => {
+    if (!classes) return [];
+    const getNumber = (cls: Class) => {
+        const nameToUse = language === 'ta' && cls.name_ta ? cls.name_ta : cls.name;
+        const match = nameToUse.match(/\d+/);
+        if (match) {
+            return parseInt(match[0], 10);
+        }
+        const idMatch = cls.id.match(/\d+/);
+        if (idMatch) {
+            return parseInt(idMatch[0], 10);
+        }
+        return Infinity;
+    };
+    return [...classes].sort((a, b) => getNumber(a) - getNumber(b));
+  }, [classes, language]);
+
   const form = useForm<UnitFormValues>({
     resolver: zodResolver(unitFormSchema),
     defaultValues: { classId: '', subjectName: '', term: '', unitNumber: undefined, unitName: '', categoryName: '', addUnitForFullBook: 'yes' },
@@ -708,7 +742,7 @@ export default function TopicManagementPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {classes?.map(c => <SelectItem key={c.id} value={c.id}>{language === 'ta' && c.name_ta ? c.name_ta : c.name}</SelectItem>)}
+                          {sortedClasses?.map(c => <SelectItem key={c.id} value={c.id}>{language === 'ta' && c.name_ta ? c.name_ta : c.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
                       <FormMessage />
