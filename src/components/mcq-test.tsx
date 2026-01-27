@@ -535,12 +535,12 @@ export function McqTest({
             முந்தைய
           </Button>
           {currentQuestionIndex < questions.length - 1 ? (
-            <Button onClick={handleNext} disabled={!isAnswered}>
+            <Button onClick={handleNext}>
               அடுத்தது
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           ) : (
-            <Button onClick={handleFinalSubmit} style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }} disabled={!isAnswered}>
+            <Button onClick={handleFinalSubmit} style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
               சமர்ப்பிக்கவும்
             </Button>
           )}
