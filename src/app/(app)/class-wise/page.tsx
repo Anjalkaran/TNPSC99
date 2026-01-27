@@ -17,25 +17,20 @@ export default function ClassWiseTestsPage() {
 
       <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
         {/* Samacheer Kalvi Books Card */}
-        <Card className="flex flex-col overflow-hidden hover:shadow-xl transition-shadow duration-300">
-            <CardHeader className="flex-row items-center gap-4">
-                <BookCopy className="h-8 w-8 text-primary" />
-                <div>
-                    <CardTitle>Samacheer Kalvi Books</CardTitle>
-                    <CardDescription>Tests based on the current Samacheer Kalvi curriculum.</CardDescription>
-                </div>
-            </CardHeader>
-            <CardContent className="flex-grow">
-                 <p className="text-muted-foreground">Click below to browse tests for each class from 6th to 12th standard.</p>
-            </CardContent>
-            <CardFooter>
-                 <Button asChild className="w-full mt-4" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
-                    <Link href="/online-tests">
-                        {t('view_tests')} <ArrowRight className="ml-2 h-4 w-4" />
-                    </Link>
-                </Button>
-            </CardFooter>
-        </Card>
+        <Link href="/online-tests" className="block hover:no-underline">
+          <Card className="flex flex-col overflow-hidden hover:shadow-xl transition-shadow duration-300 h-full">
+              <CardHeader className="flex-row items-center gap-4">
+                  <BookCopy className="h-8 w-8 text-primary" />
+                  <div>
+                      <CardTitle>Samacheer Kalvi Books</CardTitle>
+                      <CardDescription>Tests based on the current Samacheer Kalvi curriculum.</CardDescription>
+                  </div>
+              </CardHeader>
+              <CardContent className="flex-grow">
+                   <p className="text-muted-foreground">Click to browse tests for each class from 6th to 12th standard.</p>
+              </CardContent>
+          </Card>
+        </Link>
 
         {/* Old Books Card */}
         <Card className="flex flex-col">
