@@ -1,53 +1,12 @@
 'use client';
 import Link from "next/link";
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, BookCopy, Archive } from "lucide-react";
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection, query } from "firebase/firestore";
-import type { Class } from "@/lib/types";
-import { useMemo } from "react";
 import { useTranslation } from "@/hooks/use-translation";
 
 export default function ClassWiseTestsPage() {
-  const firestore = useFirestore();
-  const { language } = useTranslation();
-  const classesCollection = useMemoFirebase(() => collection(firestore, 'classes'), [firestore]);
-  const classesQuery = useMemoFirebase(() => classesCollection && query(classesCollection), [classesCollection]);
-
-  const { data: classes, isLoading } = useCollection<Class>(classesQuery);
-
-  const sortedClasses = useMemo(() => {
-    if (!classes) return [];
-    
-    const sorted = [...classes].sort((a, b) => {
-        const getNumber = (cls: Class) => {
-            const nameToUse = language === 'ta' && cls.name_ta ? cls.name_ta : cls.name;
-            const match = nameToUse.match(/\d+/);
-            if (match) {
-                return parseInt(match[0], 10);
-            }
-            const idMatch = cls.id.match(/\d+/);
-            if (idMatch) {
-                return parseInt(idMatch[0], 10);
-            }
-            return Infinity; 
-        };
-
-        const numA = getNumber(a);
-        const numB = getNumber(b);
-
-        return numA - numB;
-    });
-
-    const seen = new Set();
-    return sorted.filter(cls => {
-      if (!cls.id) return false;
-      const duplicate = seen.has(cls.id);
-      seen.add(cls.id);
-      return !duplicate;
-    });
-  }, [classes, language]);
+  const { t } = useTranslation();
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
@@ -56,9 +15,9 @@ export default function ClassWiseTestsPage() {
         <p className="text-muted-foreground mt-2">கல்வி வகுப்பு தரங்களின்படி ஒழுங்கமைக்கப்பட்ட தேர்வுகள்.</p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+      <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
         {/* Samacheer Kalvi Books Card */}
-        <Card className="flex flex-col">
+        <Card className="flex flex-col overflow-hidden hover:shadow-xl transition-shadow duration-300">
             <CardHeader className="flex-row items-center gap-4">
                 <BookCopy className="h-8 w-8 text-primary" />
                 <div>
@@ -67,31 +26,15 @@ export default function ClassWiseTestsPage() {
                 </div>
             </CardHeader>
             <CardContent className="flex-grow">
-                 {isLoading ? (
-                    <div className="flex items-center justify-center h-full">
-                        <p>Loading classes...</p>
-                    </div>
-                ) : sortedClasses && sortedClasses.length > 0 ? (
-                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                    {sortedClasses.map((cls) => (
-                        <Card key={cls.id} className="hover:shadow-md transition-shadow">
-                            <CardContent className="p-4 flex flex-col items-center text-center justify-center">
-                                <h3 className="font-semibold text-lg mb-3">{cls.name_ta || cls.name}</h3>
-                                <Button asChild size="sm" className="w-full" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
-                                <Link href={`/class/${cls.id}`}>
-                                    பாடங்களைக் காண்க <ArrowRight className="ml-2 h-4 w-4" />
-                                </Link>
-                                </Button>
-                            </CardContent>
-                        </Card>
-                    ))}
-                    </div>
-                ) : (
-                    <div className="flex items-center justify-center h-full">
-                        <p className="text-muted-foreground">தற்போது வகுப்புகள் எதுவும் இல்லை.</p>
-                    </div>
-                )}
+                 <p className="text-muted-foreground">Click below to browse tests for each class from 6th to 12th standard.</p>
             </CardContent>
+            <CardFooter>
+                 <Button asChild className="w-full mt-4" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
+                    <Link href="/online-tests">
+                        {t('view_tests')} <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
+                </Button>
+            </CardFooter>
         </Card>
 
         {/* Old Books Card */}
