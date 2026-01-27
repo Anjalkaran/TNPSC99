@@ -18,7 +18,7 @@ export default function ClassWiseTestsPage() {
       <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
         {/* Samacheer Kalvi Books Card */}
         <Link href="/online-tests" className="block hover:no-underline">
-          <Card className="flex flex-col overflow-hidden hover:shadow-xl transition-all duration-300 h-full hover:bg-accent/10">
+          <Card className="flex flex-col overflow-hidden hover:shadow-xl hover:shadow-accent/20 transition-all duration-300 h-full">
               <CardHeader className="flex-row items-center gap-4">
                   <BookCopy className="h-8 w-8 text-primary" />
                   <div>
