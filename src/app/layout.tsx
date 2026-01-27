@@ -1,3 +1,4 @@
+
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
@@ -8,7 +9,7 @@ import { LanguageProvider } from '@/hooks/use-translation';
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
-  title: 'TNPSC Ace',
+  title: 'tnpsc99.com',
   description: 'Your partner for TNPSC exam preparation. Practice with class-wise, subject-wise, and previous year MCQs.',
   icons: {
     icon: 'https://firebasestorage.googleapis.com/v0/b/studio-5029416251-928dd.firebasestorage.app/o/Logo%20icon%20featuring%20.png?alt=media&token=7579a4b6-596d-44aa-80f9-10aad1d78f98',
