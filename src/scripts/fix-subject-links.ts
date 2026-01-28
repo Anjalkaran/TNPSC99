@@ -18,46 +18,39 @@ async function fixSubjectLinks() {
   
   try {
     const batch = writeBatch(firestore);
-    let updatedCount = 0;
+    let totalStagedUpdates = 0;
 
     console.log(`Searching for documents with incorrect subjectId '${oldSubjectId}'...`);
 
-    // Asynchronously process all collections
-    const promises = collectionsToUpdate.map(async (collectionName) => {
+    for (const collectionName of collectionsToUpdate) {
+      console.log(`- - - Processing collection: '${collectionName}' - - -`);
       const collectionRef = collection(firestore, collectionName);
-      
-      // Fetch all documents and filter client-side to be safe
       const snapshot = await getDocs(collectionRef);
       let foundInCollection = 0;
       
       snapshot.forEach((doc) => {
         const data = doc.data() as DocumentData;
         if (data.subjectId === oldSubjectId) {
-          console.log(`  - Staging update for doc: ${collectionName}/${doc.id}`);
           batch.update(doc.ref, { subjectId: newSubjectId });
-          updatedCount++;
           foundInCollection++;
         }
       });
       
       if (foundInCollection > 0) {
-          console.log(`Found ${foundInCollection} documents to update in '${collectionName}'.`);
+        console.log(`Found and staged ${foundInCollection} documents for update in '${collectionName}'.`);
+        totalStagedUpdates += foundInCollection;
       } else {
-          console.log(`No documents with subjectId '${oldSubjectId}' found in '${collectionName}'.`);
+        console.log(`No documents with subjectId '${oldSubjectId}' found in '${collectionName}'.`);
       }
-    });
-
-    // Wait for all scans to complete
-    await Promise.all(promises);
+    }
     
     console.log(`- - - - - - - - - - - - - - - - -`);
-    console.log(`Scan complete. A total of ${updatedCount} documents are staged for update.`);
+    console.log(`Scan complete. A total of ${totalStagedUpdates} documents are staged for update.`);
 
-    if (updatedCount > 0) {
+    if (totalStagedUpdates > 0) {
       console.log('Attempting to commit all changes to the database...');
-      // Commit all staged writes at once
       await batch.commit();
-      console.log(`SUCCESS! Successfully migrated ${updatedCount} documents from subjectId '${oldSubjectId}' to '${newSubjectId}'.`);
+      console.log(`SUCCESS! Successfully migrated ${totalStagedUpdates} documents from subjectId '${oldSubjectId}' to '${newSubjectId}'.`);
       console.log('Your data has been fixed!');
     } else {
       console.log('No documents found to migrate. Your database seems to be up to date.');
