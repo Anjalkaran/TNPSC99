@@ -6,14 +6,14 @@ import { collection, getDocs, writeBatch, DocumentData } from 'firebase/firestor
 /**
  * This script corrects orphaned subject links in the database.
  * It finds documents that point to an incorrect subject ID ('தமழ') and updates them
- * to point to the correct one ('tamil').
+ * to point to the correct one ('தமிழ்').
  */
 async function fixSubjectLinks() {
   console.log('Starting subject link migration...');
   const { firestore } = initializeFirebase();
   
   const oldSubjectId = 'தமழ';
-  const newSubjectId = 'tamil';
+  const newSubjectId = 'தமிழ்';
   const collectionsToUpdate = ['tests', 'questions', 'units', 'categories'];
   
   try {
