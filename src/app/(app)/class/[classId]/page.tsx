@@ -6,7 +6,7 @@ import { useFirestore } from '@/firebase';
 import type { Test, Subject, Class } from '@/lib/types';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useMemo, useState, useEffect } from 'react';
-import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc, QueryConstraint } from 'firebase/firestore';
 import { ArrowLeft, ArrowRight, BookText } from 'lucide-react';
 import { useTranslation } from '@/hooks/use-translation';
 
@@ -16,7 +16,7 @@ export default function ClassSubjectsPage() {
   const firestore = useFirestore();
   const { t, language } = useTranslation();
   
-  const bookType = searchParams.get('bookType') || 'samacheer';
+  const bookType = searchParams.get('bookType');
 
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -43,7 +43,12 @@ export default function ClassSubjectsPage() {
         }
 
         const testsRef = collection(firestore, 'tests');
-        const testsQuery = query(testsRef, where('classId', '==', classId), where('bookType', '==', bookType));
+        const queryConstraints: QueryConstraint[] = [where('classId', '==', classId)];
+        if (bookType) {
+            queryConstraints.push(where('bookType', '==', bookType));
+        }
+
+        const testsQuery = query(testsRef, ...queryConstraints);
         const testSnapshots = await getDocs(testsQuery);
         const testsForClass = testSnapshots.docs.map(d => d.data() as Test);
         
@@ -55,10 +60,15 @@ export default function ClassSubjectsPage() {
                 const subjectsSnapshot = await getDocs(subjectsQuery);
                 const subjectsData = subjectsSnapshot.docs.map(d => ({id: d.id, ...d.data() } as Subject));
                 setSubjects(subjectsData);
+            } else {
+                setSubjects([]);
             }
+        } else {
+            setSubjects([]);
         }
       } catch (error) {
         console.error("Error fetching class/subject data:", error);
+        setSubjects([]);
       } finally {
         setIsLoading(false);
       }
@@ -89,7 +99,7 @@ export default function ClassSubjectsPage() {
       ) : subjects.length > 0 ? (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {subjects.map(subject => {
-            const href = `/class/${classId}/subject/${subject.id}?bookType=${bookType}`;
+            const href = `/class/${classId}/subject/${subject.id}${bookType ? `?bookType=${bookType}`: ''}`;
             return (
               <Card key={subject.id} className="flex flex-col overflow-hidden hover:shadow-xl transition-shadow duration-300">
                 <CardHeader className="flex-row items-center gap-4">
