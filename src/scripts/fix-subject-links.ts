@@ -1,7 +1,7 @@
 'use server';
 
 import { initializeFirebase } from '@/firebase';
-import { collection, getDocs, writeBatch, DocumentData } from 'firebase/firestore';
+import { collection, getDocs, writeBatch, query, where } from 'firebase/firestore';
 
 /**
  * This script corrects orphaned subject links in the database.
@@ -15,45 +15,39 @@ async function fixSubjectLinks() {
   const oldSubjectId = 'தமழ';
   const newSubjectId = 'தமிழ்';
   const collectionsToUpdate = ['tests', 'questions', 'units', 'categories'];
-  
+  let totalUpdated = 0;
+
   try {
-    const batch = writeBatch(firestore);
-    let totalStagedUpdates = 0;
-
-    console.log(`Searching for documents with incorrect subjectId '${oldSubjectId}'...`);
-
     for (const collectionName of collectionsToUpdate) {
       console.log(`- - - Processing collection: '${collectionName}' - - -`);
       const collectionRef = collection(firestore, collectionName);
-      const snapshot = await getDocs(collectionRef);
-      let foundInCollection = 0;
+      const q = query(collectionRef, where('subjectId', '==', oldSubjectId));
       
+      const snapshot = await getDocs(q);
+      const batch = writeBatch(firestore);
+      let countInCollection = 0;
+
       snapshot.forEach((doc) => {
-        const data = doc.data() as DocumentData;
-        if (data.subjectId === oldSubjectId) {
-          batch.update(doc.ref, { subjectId: newSubjectId });
-          foundInCollection++;
-        }
+        batch.update(doc.ref, { subjectId: newSubjectId });
+        countInCollection++;
       });
       
-      if (foundInCollection > 0) {
-        console.log(`Found and staged ${foundInCollection} documents for update in '${collectionName}'.`);
-        totalStagedUpdates += foundInCollection;
+      if (countInCollection > 0) {
+        console.log(`Found and staged ${countInCollection} documents for update in '${collectionName}'.`);
+        await batch.commit();
+        console.log(`Successfully committed changes for '${collectionName}'.`);
+        totalUpdated += countInCollection;
       } else {
         console.log(`No documents with subjectId '${oldSubjectId}' found in '${collectionName}'.`);
       }
     }
     
     console.log(`- - - - - - - - - - - - - - - - -`);
-    console.log(`Scan complete. A total of ${totalStagedUpdates} documents are staged for update.`);
-
-    if (totalStagedUpdates > 0) {
-      console.log('Attempting to commit all changes to the database...');
-      await batch.commit();
-      console.log(`SUCCESS! Successfully migrated ${totalStagedUpdates} documents from subjectId '${oldSubjectId}' to '${newSubjectId}'.`);
-      console.log('Your data has been fixed!');
+    if (totalUpdated > 0) {
+        console.log(`SUCCESS! A total of ${totalUpdated} documents have been migrated from subjectId '${oldSubjectId}' to '${newSubjectId}'.`);
+        console.log('Your data has been fixed!');
     } else {
-      console.log('No documents found to migrate. Your database seems to be up to date.');
+        console.log('Scan complete. No documents found to migrate. Your database seems to be up to date.');
     }
   } catch (error) {
     console.error('Error during subject link migration:', error);
