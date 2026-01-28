@@ -50,24 +50,21 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
     
+    // Temporarily open rules for data migration script
     match /categories/{categoryId} {
-      allow get, list: if isSignedIn();
-      allow write: if isAdmin();
+      allow read, write: if true;
     }
 
     match /units/{unitId} {
-      allow get, list: if isSignedIn();
-      allow write: if isAdmin();
+      allow read, write: if true;
     }
 
     match /questions/{questionId} {
-      allow get, list: if isSignedIn();
-      allow write: if isAdmin();
+      allow read, write: if true;
     }
 
     match /tests/{testId} {
-      allow get, list: if isSignedIn();
-      allow write: if isAdmin();
+      allow read, write: if true;
     }
 
     // Public scores for leaderboard
