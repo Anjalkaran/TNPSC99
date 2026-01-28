@@ -382,30 +382,40 @@ function ExistingTestsList() {
         });
     }, [testsWithNames, searchTerm]);
 
-    const groupedAndFilteredTests = useMemo(() => {
-        if (!filteredTests) return {};
+    const groupedByBookType = useMemo(() => {
+        if (!filteredTests) return { samacheer: {}, old: {} };
+
         const grouped = filteredTests.reduce((acc, test) => {
-            const key = test.className || 'Unclassified';
-            if (!acc[key]) {
-                acc[key] = [];
+            const bookTypeKey: 'samacheer' | 'old' = test.bookType === 'old' ? 'old' : 'samacheer';
+            const classKey = test.className || 'Unclassified';
+            
+            if (!acc[bookTypeKey][classKey]) {
+                acc[bookTypeKey][classKey] = [];
             }
-            acc[key].push(test);
+            acc[bookTypeKey][classKey].push(test);
             return acc;
-        }, {} as Record<string, typeof filteredTests>);
-    
+        }, { samacheer: {} as Record<string, (Test & {className: string, subjectName: string, categoryName: string | undefined})[]>, old: {} as Record<string, (Test & {className: string, subjectName: string, categoryName: string | undefined})[]> });
+
         const getNumber = (name: string) => {
             const match = name.match(/\d+/);
             return match ? parseInt(match[0], 10) : Infinity;
         };
-    
-        const sortedClassNames = Object.keys(grouped).sort((a, b) => getNumber(a) - getNumber(b));
-    
-        const finalGrouped: Record<string, typeof filteredTests> = {};
-        for (const className of sortedClassNames) {
-            finalGrouped[className] = grouped[className];
-        }
-        return finalGrouped;
+
+        const sortClasses = (classGroup: Record<string, Test[]>) => {
+            const sortedClassNames = Object.keys(classGroup).sort((a, b) => getNumber(a) - getNumber(b));
+            const sortedGroup: Record<string, Test[]> = {};
+            for (const className of sortedClassNames) {
+                sortedGroup[className] = classGroup[className];
+            }
+            return sortedGroup;
+        };
+
+        return {
+            samacheer: sortClasses(grouped.samacheer),
+            old: sortClasses(grouped.old),
+        };
     }, [filteredTests]);
+
 
     const handleDownload = async (test: Test) => {
         if (!firestore) return;
@@ -476,6 +486,79 @@ function ExistingTestsList() {
 
     if (isLoading) return <p>{t('Loading tests...')}...</p>
     
+    const renderAccordion = (testsByClass: Record<string, any[]>, bookType: string) => (
+        <Accordion type="multiple" className="w-full">
+            {Object.entries(testsByClass).map(([className, testsInClass]) => (
+                <AccordionItem value={`${bookType}-${className}`} key={`${bookType}-${className}`}>
+                    <AccordionTrigger className="text-lg font-semibold">{className}</AccordionTrigger>
+                    <AccordionContent>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Test Title</TableHead>
+                                    <TableHead>No. of Questions</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                            {testsInClass.map(test => (
+                                <TableRow key={test.id}>
+                                    <TableCell className="font-medium">
+                                        <div>
+                                            <span>{test.subjectName}</span>
+                                            <p className="text-sm text-muted-foreground">
+                                                {test.term && test.term !== 'Full Book' ? `${test.term} - ` : ''}
+                                                {test.unitNumber ? `இயல் ${test.unitNumber}: ` : ''}
+                                                {test.unitName || test.categoryName}
+                                            </p>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>{test.questionIds.length}</TableCell>
+                                    <TableCell className="text-right space-x-1">
+                                        <Button variant="outline" size="icon" onClick={() => handleDownload(test)}>
+                                            <Download className="h-4 w-4" />
+                                            <span className="sr-only">Download</span>
+                                        </Button>
+                                         <Button asChild variant="outline" size="icon">
+                                            <Link href={`/admin/upload/${encodeURIComponent(test.id)}/view`}>
+                                                <View className="h-4 w-4" />
+                                            </Link>
+                                        </Button>
+                                        <Button asChild variant="outline" size="icon">
+                                            <Link href={`/admin/upload/${encodeURIComponent(test.id)}/edit`}>
+                                                <Edit className="h-4 w-4" />
+                                            </Link>
+                                        </Button>
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button variant="destructive" size="icon">
+                                                    <Trash className="h-4 w-4" />
+                                                </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>{t('confirm_deletion_title')}</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        {t('This will permanently delete the test, but not the questions themselves.')}
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={() => handleDelete(test.id)}>{t('delete')}</AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                            </TableBody>
+                        </Table>
+                    </AccordionContent>
+                </AccordionItem>
+            ))}
+        </Accordion>
+    );
+
     return (
         <Card>
             <CardHeader>
@@ -490,81 +573,29 @@ function ExistingTestsList() {
                 </div>
             </CardHeader>
             <CardContent>
-                {Object.keys(groupedAndFilteredTests).length > 0 ? (
-                    <Accordion type="multiple" className="w-full">
-                        {Object.entries(groupedAndFilteredTests).map(([className, testsInClass]) => (
-                            <AccordionItem value={className} key={className}>
-                                <AccordionTrigger className="text-lg font-semibold">{className}</AccordionTrigger>
-                                <AccordionContent>
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead>Test Title</TableHead>
-                                                <TableHead>No. of Questions</TableHead>
-                                                <TableHead className="text-right">Actions</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                        {testsInClass.map(test => (
-                                            <TableRow key={test.id}>
-                                                <TableCell className="font-medium">
-                                                    <div>
-                                                        <span>{test.subjectName}</span>
-                                                        <p className="text-sm text-muted-foreground">
-                                                            {test.term && test.term !== 'Full Book' ? `${test.term} - ` : ''}
-                                                            {test.unitNumber ? `இயல் ${test.unitNumber}: ` : ''}
-                                                            {test.unitName || test.categoryName}
-                                                        </p>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell>{test.questionIds.length}</TableCell>
-                                                <TableCell className="text-right space-x-1">
-                                                    <Button variant="outline" size="icon" onClick={() => handleDownload(test)}>
-                                                        <Download className="h-4 w-4" />
-                                                        <span className="sr-only">Download</span>
-                                                    </Button>
-                                                     <Button asChild variant="outline" size="icon">
-                                                        <Link href={`/admin/upload/${encodeURIComponent(test.id)}/view`}>
-                                                            <View className="h-4 w-4" />
-                                                        </Link>
-                                                    </Button>
-                                                    <Button asChild variant="outline" size="icon">
-                                                        <Link href={`/admin/upload/${encodeURIComponent(test.id)}/edit`}>
-                                                            <Edit className="h-4 w-4" />
-                                                        </Link>
-                                                    </Button>
-                                                    <AlertDialog>
-                                                        <AlertDialogTrigger asChild>
-                                                            <Button variant="destructive" size="icon">
-                                                                <Trash className="h-4 w-4" />
-                                                            </Button>
-                                                        </AlertDialogTrigger>
-                                                        <AlertDialogContent>
-                                                            <AlertDialogHeader>
-                                                                <AlertDialogTitle>{t('confirm_deletion_title')}</AlertDialogTitle>
-                                                                <AlertDialogDescription>
-                                                                    {t('This will permanently delete the test, but not the questions themselves.')}
-                                                                </AlertDialogDescription>
-                                                            </AlertDialogHeader>
-                                                            <AlertDialogFooter>
-                                                                <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                                                                <AlertDialogAction onClick={() => handleDelete(test.id)}>{t('delete')}</AlertDialogAction>
-                                                            </AlertDialogFooter>
-                                                        </AlertDialogContent>
-                                                    </AlertDialog>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                        </TableBody>
-                                    </Table>
-                                </AccordionContent>
-                            </AccordionItem>
-                        ))}
-                    </Accordion>
-                ) : (
+                {(!filteredTests || filteredTests.length === 0) ? (
                     <p className="text-muted-foreground text-center p-8">
                         {searchTerm ? `No results for "${searchTerm}"` : t('No question banks created yet.')}
                     </p>
+                ) : (
+                    <Tabs defaultValue="samacheer" className="w-full">
+                        <TabsList className="grid w-full grid-cols-2">
+                            <TabsTrigger value="samacheer">Samacheer Kalvi</TabsTrigger>
+                            <TabsTrigger value="old">Old Books</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="samacheer">
+                             {groupedByBookType.samacheer && Object.keys(groupedByBookType.samacheer).length > 0 ?
+                                renderAccordion(groupedByBookType.samacheer, 'samacheer')
+                                : <p className="text-center text-muted-foreground pt-4">{t('No question banks for Samacheer Kalvi.')}</p>
+                            }
+                        </TabsContent>
+                        <TabsContent value="old">
+                             {groupedByBookType.old && Object.keys(groupedByBookType.old).length > 0 ?
+                                renderAccordion(groupedByBookType.old, 'old')
+                                : <p className="text-center text-muted-foreground pt-4">{t('No question banks for Old Books.')}</p>
+                            }
+                        </TabsContent>
+                    </Tabs>
                 )}
             </CardContent>
         </Card>
