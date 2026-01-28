@@ -49,11 +49,15 @@ async function fixSubjectLinks() {
 
     // Wait for all scans to complete
     await Promise.all(promises);
+    
+    console.log(`- - - - - - - - - - - - - - - - -`);
+    console.log(`Scan complete. A total of ${updatedCount} documents are staged for update.`);
 
     if (updatedCount > 0) {
+      console.log('Attempting to commit all changes to the database...');
       // Commit all staged writes at once
       await batch.commit();
-      console.log(`Successfully migrated ${updatedCount} documents from subjectId '${oldSubjectId}' to '${newSubjectId}'.`);
+      console.log(`SUCCESS! Successfully migrated ${updatedCount} documents from subjectId '${oldSubjectId}' to '${newSubjectId}'.`);
       console.log('Your data has been fixed!');
     } else {
       console.log('No documents found to migrate. Your database seems to be up to date.');
