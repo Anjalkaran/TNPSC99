@@ -203,5 +203,7 @@
     "start_test": "தேர்வைத் தொடங்கு",
     "back_to_subjects": "பாடங்களுக்குத் திரும்பு",
     "back_to_categories": "வகைகளுக்குத் திரும்பு",
-    "back_to_classes": "வகுப்புகளுக்குத் திரும்பு"
+    "back_to_classes": "வகுப்புகளுக்குத் திரும்பு",
+    "No units found for Samacheer Kalvi.": "சமச்சீர் கல்விக்கு அலகுகள் எதுவும் இல்லை.",
+    "No units found for Old Books.": "பழைய புத்தகங்களுக்கு அலகுகள் எதுவும் இல்லை."
 }
