@@ -1,7 +1,7 @@
 'use server';
 
 import { initializeFirebase } from '@/firebase';
-import { collection, getDocs, query, where, writeBatch } from 'firebase/firestore';
+import { collection, getDocs, writeBatch, DocumentData } from 'firebase/firestore';
 
 /**
  * This script corrects orphaned subject links in the database.
@@ -12,13 +12,8 @@ async function fixSubjectLinks() {
   console.log('Starting subject link migration...');
   const { firestore } = initializeFirebase();
   
-  // This is the incorrect subject ID that was likely created by mistake.
   const oldSubjectId = 'தமழ';
-  
-  // This is the correct ID for the "Tamil" subject as defined in the seed script.
-  const newSubjectId = 'tamil'; 
-  
-  // These are the collections where a `subjectId` field might exist.
+  const newSubjectId = 'tamil';
   const collectionsToUpdate = ['tests', 'questions', 'units', 'categories'];
   
   try {
@@ -30,23 +25,29 @@ async function fixSubjectLinks() {
     // Asynchronously process all collections
     const promises = collectionsToUpdate.map(async (collectionName) => {
       const collectionRef = collection(firestore, collectionName);
-      const q = query(collectionRef, where('subjectId', '==', oldSubjectId));
       
-      const snapshot = await getDocs(q);
+      // Fetch all documents and filter client-side to be safe
+      const snapshot = await getDocs(collectionRef);
+      let foundInCollection = 0;
       
-      if (!snapshot.empty) {
-        console.log(`Found ${snapshot.size} documents to update in '${collectionName}'.`);
-        snapshot.forEach((doc) => {
+      snapshot.forEach((doc) => {
+        const data = doc.data() as DocumentData;
+        if (data.subjectId === oldSubjectId) {
           console.log(`  - Staging update for doc: ${collectionName}/${doc.id}`);
           batch.update(doc.ref, { subjectId: newSubjectId });
           updatedCount++;
-        });
+          foundInCollection++;
+        }
+      });
+      
+      if (foundInCollection > 0) {
+          console.log(`Found ${foundInCollection} documents to update in '${collectionName}'.`);
       } else {
-        console.log(`No documents with subjectId '${oldSubjectId}' found in '${collectionName}'.`);
+          console.log(`No documents with subjectId '${oldSubjectId}' found in '${collectionName}'.`);
       }
     });
 
-    // Wait for all queries to complete
+    // Wait for all scans to complete
     await Promise.all(promises);
 
     if (updatedCount > 0) {
