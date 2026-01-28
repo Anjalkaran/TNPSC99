@@ -8,10 +8,14 @@ import { collection, query } from "firebase/firestore";
 import type { Class } from "@/lib/types";
 import { useMemo } from 'react';
 import { useTranslation } from '@/hooks/use-translation';
+import { useSearchParams } from "next/navigation";
 
 export default function OnlineTestsPage() {
   const firestore = useFirestore();
   const { language } = useTranslation();
+  const searchParams = useSearchParams();
+  const bookType = searchParams.get('bookType') || 'samacheer';
+
   const classesCollection = useMemoFirebase(() => collection(firestore, 'classes'), [firestore]);
   const classesQuery = useMemoFirebase(() => classesCollection && query(classesCollection), [classesCollection]);
 
@@ -63,12 +67,12 @@ export default function OnlineTestsPage() {
           {sortedClasses.map((cls) => (
             <Card key={cls.id} className="flex flex-col overflow-hidden hover:shadow-xl transition-shadow duration-300">
               <CardHeader className="flex-row items-center gap-4">
-                <BookText className="w-8 h-8 text-primary" />
+                <BookText className="w-8 w-8 text-primary" />
                 <CardTitle className="text-xl">{cls.name_ta || cls.name}</CardTitle>
               </CardHeader>
               <CardContent className="flex-grow flex flex-col justify-end">
                 <Button asChild className="w-full mt-4" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
-                  <Link href={`/class/${cls.id}`}>
+                  <Link href={`/class/${cls.id}?bookType=${bookType}`}>
                     பாடங்களைக் காண்க <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>

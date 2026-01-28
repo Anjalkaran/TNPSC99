@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useFirestore } from '@/firebase';
 import type { Test, Subject, Class } from '@/lib/types';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { useMemo, useState, useEffect } from 'react';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { ArrowLeft, ArrowRight, BookText } from 'lucide-react';
@@ -12,8 +12,11 @@ import { useTranslation } from '@/hooks/use-translation';
 
 export default function ClassSubjectsPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const firestore = useFirestore();
   const { t, language } = useTranslation();
+  
+  const bookType = searchParams.get('bookType') || 'samacheer';
 
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -40,7 +43,7 @@ export default function ClassSubjectsPage() {
         }
 
         const testsRef = collection(firestore, 'tests');
-        const testsQuery = query(testsRef, where('classId', '==', classId));
+        const testsQuery = query(testsRef, where('classId', '==', classId), where('bookType', '==', bookType));
         const testSnapshots = await getDocs(testsQuery);
         const testsForClass = testSnapshots.docs.map(d => d.data() as Test);
         
@@ -62,7 +65,7 @@ export default function ClassSubjectsPage() {
     };
 
     fetchClassAndSubjects();
-  }, [firestore, classId, language]);
+  }, [firestore, classId, language, bookType]);
   
 
   const pageTitle = isLoading ? "Loading..." : t('subjects_for_class', { className });
@@ -86,7 +89,7 @@ export default function ClassSubjectsPage() {
       ) : subjects.length > 0 ? (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {subjects.map(subject => {
-            const href = `/class/${classId}/subject/${subject.id}`;
+            const href = `/class/${classId}/subject/${subject.id}?bookType=${bookType}`;
             return (
               <Card key={subject.id} className="flex flex-col overflow-hidden hover:shadow-xl transition-shadow duration-300">
                 <CardHeader className="flex-row items-center gap-4">

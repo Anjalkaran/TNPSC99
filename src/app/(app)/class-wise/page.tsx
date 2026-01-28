@@ -33,21 +33,20 @@ export default function ClassWiseTestsPage() {
         </Link>
 
         {/* Old Books Card */}
-        <Card className="flex flex-col">
-            <CardHeader className="flex-row items-center gap-4">
-                <Archive className="h-8 w-8 text-primary" />
-                <div>
-                    <CardTitle>Old Books</CardTitle>
-                    <CardDescription>Practice tests from older syllabus books.</CardDescription>
-                </div>
-            </CardHeader>
-            <CardContent className="flex-grow flex flex-col items-center justify-center text-muted-foreground">
-                <div className="text-center">
-                    <p className="text-lg font-semibold">விரைவில் வருகிறது</p>
-                    <p>பழைய புத்தகங்களில் இருந்து தேர்வுகள் இங்கு சேர்க்கப்படும்.</p>
-                </div>
-            </CardContent>
-        </Card>
+        <Link href="/online-tests?bookType=old" className="block hover:no-underline">
+            <Card className="flex flex-col overflow-hidden hover:shadow-xl hover:shadow-accent/20 transition-all duration-300 h-full">
+                <CardHeader className="flex-row items-center gap-4">
+                    <Archive className="h-8 w-8 text-primary" />
+                    <div>
+                        <CardTitle>Old Books</CardTitle>
+                        <CardDescription>Practice tests from older syllabus books.</CardDescription>
+                    </div>
+                </CardHeader>
+                <CardContent className="flex-grow">
+                    <p className="text-muted-foreground">Click to browse tests for each class from the old syllabus.</p>
+                </CardContent>
+            </Card>
+        </Link>
       </div>
     </div>
   );

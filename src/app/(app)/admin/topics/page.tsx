@@ -40,9 +40,11 @@ import {
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Badge } from '@/components/ui/badge';
 
 
 const unitFormSchema = z.object({
+  bookType: z.enum(['samacheer', 'old'], { required_error: "Please select a book type." }),
   classId: z.string().min(1, { message: "Please select a class." }),
   subjectName: z.string().min(1, { message: "Subject name must be at least 1 character." }),
   term: z.string().min(1, { message: "Please select a term." }),
@@ -100,6 +102,7 @@ function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, cla
     const form = useForm<UnitFormValues>({
         resolver: zodResolver(unitFormSchema),
         defaultValues: {
+            bookType: unit.bookType || 'samacheer',
             classId: unit.classId,
             subjectName: unit.subjectName || '',
             term: unit.term,
@@ -147,7 +150,7 @@ function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, cla
         setIsSubmitting(true);
 
         try {
-            const { classId, subjectName, term, unitNumber, unitName, categoryName, addUnitForFullBook } = values;
+            const { bookType, classId, subjectName, term, unitNumber, unitName, categoryName, addUnitForFullBook } = values;
             
             const subjectsRef = collection(firestore, 'subjects');
             const subjectQuery = query(subjectsRef, where('name', '==', subjectName));
@@ -189,6 +192,7 @@ function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, cla
                 classId,
                 subjectId,
                 term: showTermField ? term : 'Full Book',
+                bookType,
             };
             
             if (categoryId) {
@@ -229,6 +233,32 @@ function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, cla
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="bookType"
+                  render={({ field }) => (
+                      <FormItem className="space-y-3">
+                          <FormLabel>Book Type</FormLabel>
+                          <FormControl>
+                              <RadioGroup
+                                  onValueChange={field.onChange}
+                                  value={field.value}
+                                  className="flex gap-4"
+                              >
+                                  <FormItem className="flex items-center space-x-2 space-y-0">
+                                      <FormControl><RadioGroupItem value="samacheer" /></FormControl>
+                                      <FormLabel className="font-normal">Samacheer Kalvi</FormLabel>
+                                  </FormItem>
+                                  <FormItem className="flex items-center space-x-2 space-y-0">
+                                      <FormControl><RadioGroupItem value="old" /></FormControl>
+                                      <FormLabel className="font-normal">Old Book</FormLabel>
+                                  </FormItem>
+                              </RadioGroup>
+                          </FormControl>
+                          <FormMessage />
+                      </FormItem>
+                  )}
+                />
                 <FormField
                     control={form.control}
                     name="classId"
@@ -497,7 +527,11 @@ function ExistingUnitsList() {
                                             <li key={unit.id} className="flex justify-between items-center p-3 border rounded-md">
                                                 <div>
                                                     <p className="font-semibold">{unit.subjectName}</p>
-                                                    <p className="text-sm text-muted-foreground">
+                                                    <p className="text-sm text-muted-foreground flex items-center gap-2">
+                                                        <Badge variant={unit.bookType === 'old' ? 'secondary' : 'outline'}>
+                                                            {unit.bookType === 'old' ? 'Old Book' : 'Samacheer'}
+                                                        </Badge>
+                                                        <span>•</span>
                                                         {unit.term}
                                                         {unit.unitNumber && unit.unitName && ` • ${t('Unit')} ${unit.unitNumber}: ${unit.unitName}`}
                                                         {unit.categoryName && ` (${unit.categoryName})`}
@@ -585,7 +619,7 @@ export default function TopicManagementPage() {
 
   const form = useForm<UnitFormValues>({
     resolver: zodResolver(unitFormSchema),
-    defaultValues: { classId: '', subjectName: '', term: '', unitNumber: undefined, unitName: '', categoryName: '', addUnitForFullBook: 'yes' },
+    defaultValues: { bookType: 'samacheer', classId: '', subjectName: '', term: '', unitNumber: undefined, unitName: '', categoryName: '', addUnitForFullBook: 'yes' },
   });
 
   const classIdValue = form.watch('classId');
@@ -630,7 +664,7 @@ export default function TopicManagementPage() {
     setIsSubmitting(true);
     
     try {
-        const { classId, subjectName, term, unitNumber, unitName, categoryName, addUnitForFullBook } = values;
+        const { bookType, classId, subjectName, term, unitNumber, unitName, categoryName, addUnitForFullBook } = values;
         
         const subjectsRef = collection(firestore, 'subjects');
         const subjectQuery = query(subjectsRef, where('name', '==', subjectName));
@@ -681,6 +715,7 @@ export default function TopicManagementPage() {
             classId,
             subjectId,
             term: showTermField ? term : 'Full Book',
+            bookType,
         };
 
         if (categoryId) {
@@ -729,6 +764,32 @@ export default function TopicManagementPage() {
           <CardContent>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="bookType"
+                  render={({ field }) => (
+                      <FormItem className="space-y-3">
+                          <FormLabel>Book Type</FormLabel>
+                          <FormControl>
+                              <RadioGroup
+                                  onValueChange={field.onChange}
+                                  value={field.value}
+                                  className="flex gap-4"
+                              >
+                                  <FormItem className="flex items-center space-x-2 space-y-0">
+                                      <FormControl><RadioGroupItem value="samacheer" /></FormControl>
+                                      <FormLabel className="font-normal">Samacheer Kalvi</FormLabel>
+                                  </FormItem>
+                                  <FormItem className="flex items-center space-x-2 space-y-0">
+                                      <FormControl><RadioGroupItem value="old" /></FormControl>
+                                      <FormLabel className="font-normal">Old Book</FormLabel>
+                                  </FormItem>
+                              </RadioGroup>
+                          </FormControl>
+                          <FormMessage />
+                      </FormItem>
+                  )}
+                />
                 <FormField
                   control={form.control}
                   name="classId"

@@ -119,6 +119,7 @@ export default function SubjectTestsPage() {
   }, [params.subjectId]);
 
   const selectedCategoryId = searchParams.get('category');
+  const bookType = searchParams.get('bookType') || 'samacheer';
 
 
   const testsCollection = useMemoFirebase(() => collection(firestore, 'tests'), [firestore]);
@@ -129,8 +130,9 @@ export default function SubjectTestsPage() {
       testsCollection, 
       where('classId', '==', classId),
       where('subjectId', '==', subjectId),
+      where('bookType', '==', bookType)
     );
-  }, [testsCollection, classId, subjectId]);
+  }, [testsCollection, classId, subjectId, bookType]);
   
   const categoriesCollection = useMemoFirebase(() => collection(firestore, 'categories'), [firestore]);
   const subjectCategoriesQuery = useMemoFirebase(() => {
@@ -249,7 +251,7 @@ export default function SubjectTestsPage() {
         <div className="container mx-auto px-4 py-8 md:py-12">
             <div className="mb-8">
                 <Button asChild variant="ghost" className="mb-4">
-                    <Link href={`/class/${classId}/subject/${subjectId}`}>
+                    <Link href={`/class/${classId}/subject/${subjectId}?bookType=${bookType}`}>
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         {t('back_to_categories')}
                     </Link>
@@ -291,7 +293,7 @@ export default function SubjectTestsPage() {
     <div className="container mx-auto px-4 py-8 md:py-12">
       <div className="mb-8">
         <Button asChild variant="ghost" className="mb-4">
-            <Link href={`/class/${classId}`}>
+            <Link href={`/class/${classId}?bookType=${bookType}`}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 {t('back_to_subjects')}
             </Link>
@@ -315,7 +317,7 @@ export default function SubjectTestsPage() {
                         </CardHeader>
                         <CardFooter className="mt-auto">
                             <Button asChild className="w-full" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
-                                <Link href={`/class/${classId}/subject/${subjectId}?category=${catId}`}>
+                                <Link href={`/class/${classId}/subject/${subjectId}?category=${catId}&bookType=${bookType}`}>
                                     View Tests <ArrowRight className="ml-2 h-4 w-4" />
                                 </Link>
                             </Button>

@@ -13,6 +13,7 @@ import {
   getDocs,
   setDoc,
   updateDoc,
+  deleteField,
 } from 'firebase/firestore';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -82,6 +83,7 @@ const jsonStructureExample = `[
 
 
 const uploadFormSchema = z.object({
+  bookType: z.enum(['samacheer', 'old'], { required_error: "Please select a book type." }),
   classId: z.string().min(1, { message: "Please select a class." }),
   subjectName: z.string().min(1, { message: "Subject name must be at least 1 character." }),
   term: z.string().min(1, { message: "Please select a term." }),
@@ -545,6 +547,7 @@ export default function UploadMcqPage() {
   const form = useForm<UploadFormValues>({
     resolver: zodResolver(uploadFormSchema),
     defaultValues: {
+      bookType: 'samacheer',
       classId: '', subjectName: '', term: '', unitNumber: undefined, unitName: '', categoryName: '', jsonInput: '', referencePageOffset: undefined, addUnitForFullBook: 'yes'
     },
   });
@@ -605,6 +608,7 @@ export default function UploadMcqPage() {
   };
 
     const handleUnitSelect = (unit: UnitWithNames) => {
+        form.setValue('bookType', unit.bookType || 'samacheer');
         form.setValue('classId', unit.classId);
         form.setValue('subjectName', unit.subjectName || unit.subjectId);
         form.setValue('term', unit.term);
@@ -641,7 +645,7 @@ export default function UploadMcqPage() {
     try {
       if (!firestore) throw new Error('Firestore is not initialized');
 
-      const { classId, subjectName, term, unitNumber, unitName, categoryName, referencePageOffset, addUnitForFullBook } = values;
+      const { bookType, classId, subjectName, term, unitNumber, unitName, categoryName, referencePageOffset, addUnitForFullBook } = values;
       const shouldAddUnitDetails = term !== 'Full Book' || (term === 'Full Book' && addUnitForFullBook === 'yes');
 
       // 1. Find or Create Subject
@@ -684,6 +688,7 @@ export default function UploadMcqPage() {
         where('classId', '==', classId),
         where('subjectId', '==', subjectId),
         where('term', '==', term),
+        where('bookType', '==', bookType)
       ];
 
       if (shouldAddUnitDetails) {
@@ -698,7 +703,7 @@ export default function UploadMcqPage() {
 
       if (!unitDoc) {
           const newUnitRef = doc(collection(firestore, 'units'));
-          const unitData: Partial<Unit> = { id: newUnitRef.id, classId, subjectId, term, categoryId };
+          const unitData: Partial<Unit> = { id: newUnitRef.id, classId, subjectId, term, categoryId, bookType };
           if(shouldAddUnitDetails) {
               unitData.unitNumber = unitNumber;
               unitData.unitName = unitName;
@@ -707,8 +712,17 @@ export default function UploadMcqPage() {
           unitId = newUnitRef.id;
       } else {
           unitId = unitDoc.id;
+          const updatePayload: { [key: string]: any } = {};
           if (categoryId && unitDoc.data().categoryId !== categoryId) {
-             await updateDoc(doc(firestore, 'units', unitId), { categoryId });
+              updatePayload.categoryId = categoryId;
+          } else if (!categoryId && unitDoc.data().categoryId) {
+              updatePayload.categoryId = deleteField();
+          }
+          if (bookType && unitDoc.data().bookType !== bookType) {
+              updatePayload.bookType = bookType;
+          }
+          if (Object.keys(updatePayload).length > 0) {
+              await updateDoc(doc(firestore, 'units', unitId), updatePayload);
           }
       }
 
@@ -756,7 +770,7 @@ export default function UploadMcqPage() {
         testTitle += ` - ${categoryName}`;
       }
       
-      const testQuery = query(testsCollectionRef, where('title', '==', testTitle));
+      const testQuery = query(testsCollectionRef, where('title', '==', testTitle), where('bookType', '==', bookType));
       
       await runTransaction(firestore, async (transaction) => {
           const testSnapshot = await getDocs(testQuery);
@@ -772,6 +786,7 @@ export default function UploadMcqPage() {
                   categoryId: categoryId,
                   term: term,
                   unitId: unitId,
+                  bookType: bookType,
               };
               if (shouldAddUnitDetails) {
                 newTest.unitNumber = unitNumber;
@@ -786,7 +801,7 @@ export default function UploadMcqPage() {
               const testDoc = testSnapshot.docs[0];
               const existingQuestionIds = testDoc.data().questionIds || [];
               const updatedQuestionIds = [...new Set([...existingQuestionIds, ...newQuestionIds])];
-              const updateData: any = { questionIds: updatedQuestionIds };
+              const updateData: any = { questionIds: updatedQuestionIds, bookType: bookType };
               if (categoryId) {
                 updateData.categoryId = categoryId;
               }
@@ -843,6 +858,32 @@ export default function UploadMcqPage() {
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <div className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="bookType"
+                      render={({ field }) => (
+                          <FormItem className="space-y-3">
+                              <FormLabel>Book Type</FormLabel>
+                              <FormControl>
+                                  <RadioGroup
+                                      onValueChange={field.onChange}
+                                      value={field.value}
+                                      className="flex gap-4"
+                                  >
+                                      <FormItem className="flex items-center space-x-2 space-y-0">
+                                          <FormControl><RadioGroupItem value="samacheer" /></FormControl>
+                                          <FormLabel className="font-normal">Samacheer Kalvi</FormLabel>
+                                      </FormItem>
+                                      <FormItem className="flex items-center space-x-2 space-y-0">
+                                          <FormControl><RadioGroupItem value="old" /></FormControl>
+                                          <FormLabel className="font-normal">Old Book</FormLabel>
+                                      </FormItem>
+                                  </RadioGroup>
+                              </FormControl>
+                              <FormMessage />
+                          </FormItem>
+                      )}
+                    />
                     <FormField
                         control={form.control}
                         name="classId"

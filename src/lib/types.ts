@@ -34,6 +34,7 @@ export interface Test {
   unitName?: string;
   isPreviousYearPaper?: boolean;
   referencePageOffset?: number;
+  bookType?: 'samacheer' | 'old';
 }
 
 export interface Subject {
@@ -70,6 +71,7 @@ export interface Unit {
   className?: string; // For display purposes
   subjectName?: string; // For display purposes
   categoryName?: string; // For display purposes
+  bookType?: 'samacheer' | 'old';
 }
 
 
