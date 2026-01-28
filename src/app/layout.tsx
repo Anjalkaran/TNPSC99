@@ -15,6 +15,8 @@ export const metadata: Metadata = {
   description: 'Your partner for TNPSC exam preparation. Practice with class-wise, subject-wise, and previous year MCQs.',
   icons: {
     icon: faviconUrl,
+    shortcut: faviconUrl,
+    apple: faviconUrl,
   },
 };
 
@@ -28,6 +30,7 @@ export default function RootLayout({
       <head>
         {/* Manually adding the link as a fallback for stubborn browser caches */}
         <link rel="icon" href={faviconUrl} sizes="any" />
+        <link rel="apple-touch-icon" href={faviconUrl} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet" />
