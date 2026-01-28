@@ -10,7 +10,8 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "seed": "tsx src/scripts/seed.ts",
-    "migrate:questions": "tsx src/scripts/migrate-questions.ts"
+    "migrate:questions": "tsx src/scripts/migrate-questions.ts",
+    "fix:subjects": "tsx src/scripts/fix-subject-links.ts"
   },
   "dependencies": {
     "@genkit-ai/google-genai": "^1.20.0",
