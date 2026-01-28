@@ -527,7 +527,7 @@ function ExistingUnitsList() {
                                             <li key={unit.id} className="flex justify-between items-center p-3 border rounded-md">
                                                 <div>
                                                     <p className="font-semibold">{unit.subjectName}</p>
-                                                    <p className="text-sm text-muted-foreground flex items-center gap-2">
+                                                    <div className="text-sm text-muted-foreground flex items-center gap-2">
                                                         <Badge variant={unit.bookType === 'old' ? 'secondary' : 'outline'}>
                                                             {unit.bookType === 'old' ? 'Old Book' : 'Samacheer'}
                                                         </Badge>
@@ -535,7 +535,7 @@ function ExistingUnitsList() {
                                                         {unit.term}
                                                         {unit.unitNumber && unit.unitName && ` • ${t('Unit')} ${unit.unitNumber}: ${unit.unitName}`}
                                                         {unit.categoryName && ` (${unit.categoryName})`}
-                                                    </p>
+                                                    </div>
                                                 </div>
                                                 <div className="flex gap-2">
                                                     <Dialog open={openDialogs[unit.id] || false} onOpenChange={(isOpen) => setDialogState(unit.id, isOpen)}>
