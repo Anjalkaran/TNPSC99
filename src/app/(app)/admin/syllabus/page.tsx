@@ -405,12 +405,16 @@ export default function SyllabusUploadPage() {
 
   return (
     <div className="container mx-auto p-4 sm:p-6 md:p-8 space-y-8">
+        <div className="mb-8">
+            <h1 className="text-3xl font-bold">Syllabus Question Banks</h1>
+            <p className="text-muted-foreground">Create and manage tests based on the official TNPSC exam syllabus for different groups.</p>
+        </div>
        <div className="grid md:grid-cols-2 gap-8">
         <Card>
             <CardHeader>
-            <CardTitle>Upload Syllabus MCQs</CardTitle>
+            <CardTitle>Upload Question Bank</CardTitle>
             <CardDescription>
-                Bulk add new questions for a specific exam group syllabus.
+                Bulk add new questions for a specific syllabus topic.
             </CardDescription>
             </CardHeader>
             <CardContent>
@@ -509,6 +513,21 @@ export default function SyllabusUploadPage() {
 
         <div className="space-y-8">
             <ExistingSyllabusTestsList />
+            <Card>
+                <CardHeader>
+                    <CardTitle>How to Upload</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2 text-sm text-muted-foreground">
+                    <p>This page allows you to create question banks based on syllabus topics. The structure is created automatically as you upload questions.</p>
+                    <ol className="list-decimal list-inside space-y-1 pt-2">
+                        <li>Select the <strong>Exam Group</strong> (e.g., 'Group I').</li>
+                        <li>Enter the name of the <strong>Syllabus Subject</strong> (e.g., 'General Science').</li>
+                        <li>Enter the name of the specific <strong>Syllabus Topic</strong> (e.g., 'Nature of Universe').</li>
+                        <li>Provide the question data in the required JSON format.</li>
+                    </ol>
+                    <p className="pt-2">The system will then create a test for that topic. If a test for that exact Group/Subject/Topic path already exists, new questions will be added to it.</p>
+                </CardContent>
+            </Card>
             <Card>
                 <CardHeader>
                     <CardTitle>{t('expected_json_structure')}</CardTitle>
