@@ -7,7 +7,7 @@ import type { Test, Question } from '@/lib/types';
 import { useTranslation } from '@/hooks/use-translation';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Trash } from 'lucide-react';
+import { Trash, Edit } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
@@ -22,6 +22,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
+import Link from 'next/link';
 
 
 export default function EditTestPage() {
@@ -172,7 +173,12 @@ export default function EditTestPage() {
                         <TableRow key={q.id}>
                             <TableCell className="max-w-prose">{q.text}</TableCell>
                             <TableCell>{q.unitId}</TableCell>
-                            <TableCell className="text-right">
+                            <TableCell className="text-right space-x-1">
+                                <Button asChild variant="outline" size="icon">
+                                  <Link href={`/admin/questions/${q.id}/edit`}>
+                                    <Edit className="h-4 w-4" />
+                                  </Link>
+                                </Button>
                                <AlertDialog>
                                     <AlertDialogTrigger asChild>
                                         <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
