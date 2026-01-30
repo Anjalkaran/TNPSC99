@@ -119,4 +119,15 @@ export interface Score {
   testTitle: string;
   createdAt: string;
 }
+
+export interface QuestionComment {
+    id: string;
+    questionId: string;
+    questionText: string;
+    userId: string;
+    username: string;
+    comment: string;
+    createdAt: string;
+    status: 'open' | 'resolved';
+}
     

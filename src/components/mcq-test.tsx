@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, ArrowRight, CheckCircle2, XCircle, RotateCw, Timer, Info, Bookmark, Save } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, XCircle, RotateCw, Timer, Info, Bookmark, Save, MessageSquareQuote } from 'lucide-react';
 import Link from 'next/link';
 import { useFirestore, useUser } from '@/firebase';
 import { addDoc, collection, doc, setDoc, getDocs, query, where, deleteDoc, writeBatch } from 'firebase/firestore';
@@ -29,6 +29,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/hooks/use-translation';
+import { CommentDialog } from './comment-dialog';
 
 
 export function McqTest({ 
@@ -58,12 +59,20 @@ export function McqTest({
   const [attemptId, setAttemptId] = useState<string | null>(inProgressAttempt?.id || null);
   const isSavingRef = useRef(false);
 
+  const [isCommentDialogOpen, setIsCommentDialogOpen] = useState(false);
+  const [commentQuestion, setCommentQuestion] = useState<Question | null>(null);
+
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
   
   const decodedTitle = decodeURIComponent(test.title);
   const currentQuestion = questions[currentQuestionIndex];
+
+  const handleOpenCommentDialog = (question: Question) => {
+    setCommentQuestion(question);
+    setIsCommentDialogOpen(true);
+  };
   
   const getReturnHref = useCallback(() => {
     if (test.classId && test.subjectId) {
@@ -422,6 +431,7 @@ export function McqTest({
   }
 
   return (
+    <>
       <Card className="w-full max-w-2xl">
         <CardHeader>
           <div className='flex justify-between items-start'>
@@ -466,9 +476,14 @@ export function McqTest({
         <CardContent className="py-6">
           <div className="flex justify-between items-start">
               <p className="font-semibold text-lg mb-6 flex-1 whitespace-pre-line">{currentQuestion.text}</p>
-              <Button variant="ghost" size="icon" onClick={() => toggleBookmark(currentQuestion.id)}>
-                  <Bookmark className={cn("h-6 w-6", bookmarks.includes(currentQuestion.id) ? "fill-primary text-primary" : "text-muted-foreground")} />
-              </Button>
+              <div className="flex items-center">
+                <Button variant="ghost" size="icon" onClick={() => toggleBookmark(currentQuestion.id)}>
+                    <Bookmark className={cn("h-6 w-6", bookmarks.includes(currentQuestion.id) ? "fill-primary text-primary" : "text-muted-foreground")} />
+                </Button>
+                <Button variant="ghost" size="icon" onClick={() => handleOpenCommentDialog(currentQuestion)}>
+                    <MessageSquareQuote className="h-5 w-5 text-muted-foreground" />
+                </Button>
+              </div>
           </div>
           <RadioGroup
               key={currentQuestionIndex}
@@ -546,5 +561,11 @@ export function McqTest({
           )}
         </CardFooter>
       </Card>
+      <CommentDialog
+        isOpen={isCommentDialogOpen}
+        onOpenChange={setIsCommentDialogOpen}
+        question={commentQuestion}
+      />
+    </>
   );
 }

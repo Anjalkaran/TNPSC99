@@ -209,6 +209,54 @@
         "id",
         "name"
       ]
+    },
+    "QuestionComment": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "QuestionComment",
+      "type": "object",
+      "description": "Represents a user's comment or feedback on a specific question.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the comment."
+        },
+        "questionId": {
+          "type": "string",
+          "description": "Reference to the Question."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User who made the comment."
+        },
+        "username": {
+          "type": "string",
+          "description": "Username of the user who made the comment."
+        },
+        "comment": {
+          "type": "string",
+          "description": "The content of the comment."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "The date and time the comment was made.",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of the comment (e.g., open, resolved).",
+          "enum": [
+            "open",
+            "resolved"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "questionId",
+        "userId",
+        "comment",
+        "createdAt"
+      ]
     }
   },
   "auth": {
@@ -331,6 +379,22 @@
             {
               "name": "subjectId",
               "description": "The unique identifier of the subject."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/questionComments/{commentId}",
+        "definition": {
+          "entityName": "QuestionComment",
+          "schema": {
+            "$ref": "#/backend/entities/QuestionComment"
+          },
+          "description": "Stores user comments on questions. Writable by users, readable only by admins.",
+          "params": [
+            {
+              "name": "commentId",
+              "description": "The unique identifier of the comment."
             }
           ]
         }
