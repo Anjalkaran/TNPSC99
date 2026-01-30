@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter, notFound } from 'next/navigation';
+import { useRouter, notFound, useParams } from 'next/navigation';
 import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useForm, useFieldArray } from 'react-hook-form';
@@ -29,8 +29,9 @@ const questionEditSchema = z.object({
 
 type QuestionEditFormValues = z.infer<typeof questionEditSchema>;
 
-export default function EditQuestionPage({ params }: { params: { questionId: string } }) {
-  const { questionId } = params;
+export default function EditQuestionPage() {
+  const params = useParams();
+  const questionId = params.questionId as string;
   const router = useRouter();
   const firestore = useFirestore();
   const { toast } = useToast();
