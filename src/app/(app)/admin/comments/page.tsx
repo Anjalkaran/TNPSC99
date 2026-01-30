@@ -7,8 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Check } from 'lucide-react';
+import { Check, Edit } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import Link from 'next/link';
 
 
 export default function AdminCommentsPage() {
@@ -60,10 +61,18 @@ export default function AdminCommentsPage() {
                                     <p className="text-sm text-muted-foreground">From: {comment.username}</p>
                                     <p className="text-sm text-muted-foreground">Date: {comment.createdAt ? format(new Date(comment.createdAt), 'PPp') : 'N/A'}</p>
                                 </div>
-                                <Button size="sm" onClick={() => handleResolve(comment.id)}>
-                                    <Check className="mr-2 h-4 w-4" />
-                                    Mark as Resolved
-                                </Button>
+                                <div className="flex items-center gap-2">
+                                  <Button asChild variant="outline" size="sm">
+                                      <Link href={`/admin/questions/${comment.questionId}/edit`}>
+                                          <Edit className="mr-2 h-4 w-4" />
+                                          Edit Question
+                                      </Link>
+                                  </Button>
+                                  <Button size="sm" onClick={() => handleResolve(comment.id)}>
+                                      <Check className="mr-2 h-4 w-4" />
+                                      Mark as Resolved
+                                  </Button>
+                                </div>
                             </div>
                             <p className="font-semibold mt-2 bg-muted p-2 rounded-md">Question: "{comment.questionText}"</p>
                             <p className="mt-2 whitespace-pre-wrap">{comment.comment}</p>
