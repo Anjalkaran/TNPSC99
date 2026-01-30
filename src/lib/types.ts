@@ -5,9 +5,9 @@ import { DocumentData, DocumentReference } from 'firebase/firestore';
 export interface Question {
   id: string;
   text: string;
-  subjectId: string;
-  classId: string;
-  unitId: string;
+  subjectId?: string;
+  classId?: string;
+  unitId?: string;
   correctAnswerIndex: number;
   answerOptions: string[];
   reference?: string;
@@ -35,6 +35,9 @@ export interface Test {
   isPreviousYearPaper?: boolean;
   referencePageOffset?: number;
   bookType?: 'samacheer' | 'old';
+  examGroup?: 'Group I' | 'Group II' | 'Group IV';
+  syllabusSubject?: string;
+  syllabusTopic?: string;
 }
 
 export interface Subject {

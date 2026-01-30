@@ -12,6 +12,7 @@ export default function AdminPage() {
         { href: '/admin/users', label: t('user_management'), icon: <Shield /> },
         { href: '/admin/topics', label: t('topic_management'), icon: <IconTopicManagement />},
         { href: '/admin/upload', label: t('mcq_bank'), icon: <IconMcqBank /> },
+        { href: '/admin/syllabus', label: 'Syllabus Upload', icon: <BookOpen /> },
         { href: '#', label: t('question_bank'), icon: <IconQuestionBank />, comingSoon: true },
         { href: '#', label: t('live_test'), icon: <Trophy />, comingSoon: true },
         { href: '#', label: t('analytics'), icon: <BarChart />, comingSoon: true },
