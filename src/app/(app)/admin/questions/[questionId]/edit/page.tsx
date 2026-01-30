@@ -41,6 +41,14 @@ export default function EditQuestionPage() {
 
   const form = useForm<QuestionEditFormValues>({
     resolver: zodResolver(questionEditSchema),
+    // Initialize with default values to make inputs controlled from the start.
+    defaultValues: {
+      text: '',
+      answerOptions: [],
+      correctAnswerIndex: 0,
+      explanation: '',
+      reference: '',
+    },
   });
 
   const { fields, append, remove } = useFieldArray({
