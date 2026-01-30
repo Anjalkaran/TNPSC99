@@ -2,7 +2,7 @@
 import { notFound, useParams } from 'next/navigation';
 import { useFirestore, useMemoFirebase, useCollection } from '@/firebase';
 import { collection, query, where, getDocs, doc, getDoc, writeBatch } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import type { Test, Question } from '@/lib/types';
 import { useTranslation } from '@/hooks/use-translation';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -21,6 +21,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { Input } from '@/components/ui/input';
 
 
 export default function EditTestPage() {
@@ -33,6 +34,7 @@ export default function EditTestPage() {
   const [testRef, setTestRef] = useState<any>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
 
 
   useEffect(() => {
@@ -91,6 +93,14 @@ export default function EditTestPage() {
     fetchTestAndQuestions();
   }, [testId, toast, firestore]);
 
+  const filteredQuestions = useMemo(() => {
+    if (!questions) return [];
+    if (!searchTerm) return questions;
+    return questions.filter(q =>
+      q.text.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [questions, searchTerm]);
+
   const handleRemoveQuestion = async (questionId: string) => {
       if(!test || !testRef || !firestore) return;
 
@@ -141,7 +151,14 @@ export default function EditTestPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {questions.length > 0 ? (
+          <div className="mb-4">
+            <Input
+              placeholder="Search questions by text..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+            />
+          </div>
+          {filteredQuestions.length > 0 ? (
             <Table>
                 <TableHeader>
                     <TableRow>
@@ -151,7 +168,7 @@ export default function EditTestPage() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {questions.map(q => (
+                    {filteredQuestions.map(q => (
                         <TableRow key={q.id}>
                             <TableCell className="max-w-prose">{q.text}</TableCell>
                             <TableCell>{q.unitId}</TableCell>
@@ -181,7 +198,9 @@ export default function EditTestPage() {
                 </TableBody>
             </Table>
           ) : (
-            <p className="text-muted-foreground">{t('This test has no questions yet.')}</p>
+            <p className="text-center p-4 text-muted-foreground">
+              {searchTerm ? 'No questions found matching your search.' : t('This test has no questions yet.')}
+            </p>
           )}
         </CardContent>
       </Card>
