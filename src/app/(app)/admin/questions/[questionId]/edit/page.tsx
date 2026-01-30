@@ -93,7 +93,20 @@ export default function EditQuestionPage() {
   }
 
   if (!question) {
-    return notFound();
+    return (
+        <div className="container mx-auto p-8">
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-destructive">Question Not Found</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p>The question with ID <code className="bg-muted p-1 rounded-sm">{questionId}</code> could not be found.</p>
+                    <p className="text-muted-foreground mt-2">It may have been deleted or the link might be incorrect.</p>
+                    <Button onClick={() => router.back()} className="mt-4">Go Back</Button>
+                </CardContent>
+            </Card>
+        </div>
+    );
   }
 
   return (
