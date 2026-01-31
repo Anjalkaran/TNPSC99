@@ -35,7 +35,7 @@ import { signOut } from 'firebase/auth';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { useTranslation } from '@/hooks/use-translation';
 import Image from 'next/image';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 
 export function AppSidebar() {
@@ -45,10 +45,15 @@ export function AppSidebar() {
   const firestore = useFirestore();
   const { t } = useTranslation();
   const { setOpenMobile } = useSidebar();
+  const isMounted = useRef(false);
 
-  // Close the mobile sidebar whenever the path changes
+  // Close the mobile sidebar whenever the path changes, but not on initial mount.
   useEffect(() => {
-    setOpenMobile(false);
+    if (isMounted.current) {
+      setOpenMobile(false);
+    } else {
+      isMounted.current = true;
+    }
   }, [pathname, setOpenMobile]);
 
   const userProfileRef = useMemoFirebase(
