@@ -145,6 +145,8 @@ export function McqTest({
             testId: test.id,
             testTitle: decodedTitle,
             createdAt: new Date().toISOString(),
+            classId: test.classId,
+            subjectId: test.subjectId,
           };
           const scoresCollectionRef = collection(firestore, `scores`);
           addDoc(scoresCollectionRef, scoreData).catch(error => {
@@ -174,7 +176,7 @@ export function McqTest({
        isSavingRef.current = false;
        return null;
     }
-  }, [user, firestore, questions, answers, test.id, decodedTitle, currentQuestionIndex, attemptId]);
+  }, [user, firestore, questions, answers, test, decodedTitle, currentQuestionIndex, attemptId]);
   
   useEffect(() => {
     const handleBeforeUnload = () => {

@@ -1,8 +1,8 @@
 'use client';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection } from 'firebase/firestore';
+import { collection, query, where, orderBy, limit } from 'firebase/firestore';
 import { useMemo, useState } from 'react';
-import type { Score, Test, Class, Subject } from '@/lib/types';
+import type { Score, Class, Subject } from '@/lib/types';
 import {
   Card,
   CardContent,
@@ -24,12 +24,6 @@ import { useTranslation } from '@/hooks/use-translation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-interface LeaderboardEntry {
-  userId: string;
-  username: string;
-  totalScore: number;
-}
-
 export default function LeaderboardPage() {
   const firestore = useFirestore();
   const { t } = useTranslation();
@@ -38,21 +32,27 @@ export default function LeaderboardPage() {
   const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
   const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
 
-  // Fetch all necessary data
-  const scoresCollection = useMemoFirebase(() => firestore ? collection(firestore, 'scores') : null, [firestore]);
-  const testsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'tests') : null, [firestore]);
   const classesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'classes') : null, [firestore]);
   const subjectsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'subjects') : null, [firestore]);
   
-  const { data: scores, isLoading: scoresLoading } = useCollection<Score>(scoresCollection);
-  const { data: tests, isLoading: testsLoading } = useCollection<Test>(testsCollection);
   const { data: classes, isLoading: classesLoading } = useCollection<Class>(classesCollection);
   const { data: subjects, isLoading: subjectsLoading } = useCollection<Subject>(subjectsCollection);
 
-  const testsMap = useMemo(() => {
-    if (!tests) return new Map();
-    return new Map(tests.map(test => [test.id, test]));
-  }, [tests]);
+  const scoresQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+
+    const constraints = [orderBy('score', 'desc'), limit(100)];
+    
+    if (filterType === 'class' && selectedClassId) {
+        constraints.unshift(where('classId', '==', selectedClassId));
+    } else if (filterType === 'subject' && selectedSubjectId) {
+        constraints.unshift(where('subjectId', '==', selectedSubjectId));
+    }
+    
+    return query(collection(firestore, 'scores'), ...queryConstraints);
+  }, [firestore, filterType, selectedClassId, selectedSubjectId]);
+
+  const { data: leaderboardData, isLoading: scoresLoading } = useCollection<Score>(scoresQuery);
 
   const uniqueClasses = useMemo(() => {
     if (!classes) return [];
@@ -74,47 +74,7 @@ export default function LeaderboardPage() {
     });
   }, [subjects]);
 
-
-  const leaderboardData = useMemo(() => {
-    if (!scores) {
-      return [];
-    }
-
-    let filteredScores = scores;
-
-    if (filterType === 'class' && selectedClassId) {
-        filteredScores = scores.filter(score => {
-            const test = testsMap.get(score.testId);
-            return test && test.classId === selectedClassId;
-        });
-    } else if (filterType === 'subject' && selectedSubjectId) {
-        filteredScores = scores.filter(score => {
-            const test = testsMap.get(score.testId);
-            return test && test.subjectId === selectedSubjectId;
-        });
-    }
-
-    const userScores = new Map<string, LeaderboardEntry>();
-
-    filteredScores.forEach((score) => {
-      const existingEntry = userScores.get(score.userId);
-      if (existingEntry) {
-        existingEntry.totalScore += score.score;
-      } else {
-        userScores.set(score.userId, {
-          userId: score.userId,
-          username: score.username,
-          totalScore: score.score,
-        });
-      }
-    });
-
-    return Array.from(userScores.values()).sort(
-      (a, b) => b.totalScore - a.totalScore
-    );
-  }, [scores, filterType, selectedClassId, selectedSubjectId, testsMap]);
-
-  const isLoading = scoresLoading || testsLoading || classesLoading || subjectsLoading;
+  const isLoading = scoresLoading || classesLoading || subjectsLoading;
   
   const handleTabChange = (value: string) => {
     setFilterType(value as 'overall' | 'class' | 'subject');
@@ -180,18 +140,18 @@ export default function LeaderboardPage() {
         <CardContent>
           {isLoading ? (
             <p>{t('loading_users')}...</p>
-          ) : leaderboardData.length > 0 ? (
+          ) : leaderboardData && leaderboardData.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[80px]">தரம்</TableHead>
-                  <TableHead>பயனர்</TableHead>
-                  <TableHead className="text-right">மொத்த மதிப்பெண்கள்</TableHead>
+                  <TableHead>பயனர் / தேர்வு</TableHead>
+                  <TableHead className="text-right">மதிப்பெண்</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {leaderboardData.map((user, index) => (
-                  <TableRow key={user.userId}>
+                {leaderboardData.map((score, index) => (
+                  <TableRow key={score.id}>
                     <TableCell className="font-bold text-lg">
                       {index + 1}
                     </TableCell>
@@ -199,14 +159,17 @@ export default function LeaderboardPage() {
                       <div className="flex items-center gap-4">
                         <Avatar>
                           <AvatarFallback>
-                            {user.username.charAt(0).toUpperCase()}
+                            {score.username.charAt(0).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
-                        <span className="font-medium">{user.username}</span>
+                        <div>
+                          <span className="font-medium">{score.username}</span>
+                          <p className="text-sm text-muted-foreground">{score.testTitle}</p>
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell className="text-right font-semibold">
-                      {user.totalScore}
+                      {score.score}
                     </TableCell>
                   </TableRow>
                 ))}

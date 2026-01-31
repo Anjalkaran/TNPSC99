@@ -118,6 +118,8 @@ export interface Score {
   testId: string;
   testTitle: string;
   createdAt: string;
+  classId?: string;
+  subjectId?: string;
 }
 
 export interface QuestionComment {
