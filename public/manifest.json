@@ -1,0 +1,16 @@
+{
+  "name": "TNPSC Ace",
+  "short_name": "TNPSC Ace",
+  "description": "Your partner for TNPSC exam preparation.",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#27ae60",
+  "background_color": "#ffffff"
+}

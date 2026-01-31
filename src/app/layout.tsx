@@ -11,10 +11,9 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'tnpsc99.com',
   description: 'Your partner for TNPSC exam preparation.',
+  manifest: '/manifest.json',
   icons: {
     icon: '/favicon.ico',
-    shortcut: '/favicon.ico',
-    apple: '/favicon.ico',
   },
 };
 
