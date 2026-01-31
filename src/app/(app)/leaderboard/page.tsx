@@ -49,7 +49,7 @@ export default function LeaderboardPage() {
         constraints.unshift(where('subjectId', '==', selectedSubjectId));
     }
     
-    return query(collection(firestore, 'scores'), ...queryConstraints);
+    return query(collection(firestore, 'scores'), ...constraints);
   }, [firestore, filterType, selectedClassId, selectedSubjectId]);
 
   const { data: leaderboardData, isLoading: scoresLoading } = useCollection<Score>(scoresQuery);
