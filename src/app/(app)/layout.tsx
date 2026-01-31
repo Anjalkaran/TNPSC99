@@ -39,14 +39,18 @@ export default function AppLayout({
 
   const getPageTitle = () => {
     // These paths have dynamic titles set by their respective page components.
-    // Return a generic or empty title to avoid showing garbled URL slugs.
     if (pathname.startsWith('/test/') || pathname.startsWith('/class/')) {
         return t('online_tests'); 
     }
+
+    if (pathname === '/bookmarks') {
+      return 'Bookmarks';
+    }
     
     // For other static pages, derive the title from the path.
-    const segment = pathname.split('/').pop()?.replace('-', ' ') || 'dashboard';
-    // Use translation key that matches the segment
+    const segment = pathname.split('/').pop()?.replace(/-/g, '_') || 'dashboard';
+    
+    // The translation hook will return the key if not found, which is acceptable here.
     return t(segment as any);
   }
 
