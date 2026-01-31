@@ -9,6 +9,7 @@ import {
   SidebarHeader,
   SidebarFooter,
   SidebarGroup,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import {
   LayoutDashboard,
@@ -34,6 +35,7 @@ import { signOut } from 'firebase/auth';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { useTranslation } from '@/hooks/use-translation';
 import Image from 'next/image';
+import { useEffect } from 'react';
 
 
 export function AppSidebar() {
@@ -42,6 +44,12 @@ export function AppSidebar() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
   const { t } = useTranslation();
+  const { setOpenMobile } = useSidebar();
+
+  // Close the mobile sidebar whenever the path changes
+  useEffect(() => {
+    setOpenMobile(false);
+  }, [pathname, setOpenMobile]);
 
   const userProfileRef = useMemoFirebase(
     () => (user && firestore ? doc(firestore, 'users', user.uid) : null),
