@@ -119,7 +119,7 @@ function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, cla
     const classNameValue = selectedClass?.name || '';
     const classNumber = parseInt(classNameValue.match(/\d+/) || ['0'][0]);
 
-    const showTermField = classNumber < 8;
+    const showTermField = true;
 
     useEffect(() => {
         if (!showTermField) {
@@ -656,7 +656,7 @@ export default function TopicManagementPage() {
   const classNameValue = selectedClass?.name || '';
   const classNumber = parseInt(classNameValue.match(/\d+/) || ['0'][0]);
 
-  const showTermField = classNumber < 8;
+  const showTermField = true;
 
   const termValue = form.watch('term');
   const addUnitForFullBookValue = form.watch('addUnitForFullBook');
