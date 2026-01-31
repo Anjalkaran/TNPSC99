@@ -50,12 +50,15 @@ const PerformanceOutputSchema = z.object({
 });
 export type PerformanceOutput = z.infer<typeof PerformanceOutputSchema>;
 
-const analysisPrompt = ai.definePrompt(
-  {
-    name: 'performanceAnalysisPrompt',
-    input: { schema: PerformanceInputSchema },
-    output: { schema: PerformanceOutputSchema },
-    prompt: `
+let performanceAnalysisFlow: ((input: PerformanceInput) => Promise<PerformanceOutput>) | undefined;
+
+if (process.env.GEMINI_API_KEY) {
+  const analysisPrompt = ai.definePrompt(
+    {
+      name: 'performanceAnalysisPrompt',
+      input: { schema: PerformanceInputSchema },
+      output: { schema: PerformanceOutputSchema },
+      prompt: `
       You are a helpful and encouraging academic advisor for a user preparing for the TNPSC exams.
       Your task is to analyze the user's performance based on their test scores and provide a structured analysis with specific, actionable advice.
 
@@ -97,30 +100,31 @@ const analysisPrompt = ai.definePrompt(
       3.  **recommendations**: Generate 3-4 concise, actionable pieces of advice for improvement based on the weaknesses. For each weakness, create a specific recommendation. For example, if a user is weak in the unit "Age of Empires" for "Class 6 History", a recommendation could be "Your proficiency in 'Age of Empires' is low. Review the material in the 'Class 6 History' book for that unit.".
       4.  **overallSummary**: Write a single, encouraging sentence that summarizes their current situation. Example: "You have a good grasp of some subjects, and with targeted practice on your weaker areas, you can see significant improvement."
     `,
-  }
-);
-
-
-const performanceAnalysisFlow = ai.defineFlow(
-  {
-    name: 'performanceAnalysisFlow',
-    inputSchema: PerformanceInputSchema,
-    outputSchema: PerformanceOutputSchema,
-  },
-  async (input) => {
-    const { output } = await analysisPrompt(input);
-    if (!output) {
-      throw new Error("No output from LLM");
     }
-    
-    // The output is now structured, so no need for marked
-    return output;
-  }
-);
+  );
+
+
+  performanceAnalysisFlow = ai.defineFlow(
+    {
+      name: 'performanceAnalysisFlow',
+      inputSchema: PerformanceInputSchema,
+      outputSchema: PerformanceOutputSchema,
+    },
+    async (input) => {
+      const { output } = await analysisPrompt(input);
+      if (!output) {
+        throw new Error("No output from LLM");
+      }
+      
+      // The output is now structured, so no need for marked
+      return output;
+    }
+  );
+}
 
 
 export async function analyzePerformance(input: PerformanceInput): Promise<PerformanceOutput> {
-  if (!process.env.GEMINI_API_KEY) {
+  if (!performanceAnalysisFlow) {
     console.warn("GEMINI_API_KEY is not set. Skipping AI performance analysis.");
     const summary = input.language === 'ta' 
         ? "AI பகுப்பாய்வு கிடைக்கவில்லை. உங்கள் ஜெமினி API விசையை உள்ளமைக்கவும்." 
