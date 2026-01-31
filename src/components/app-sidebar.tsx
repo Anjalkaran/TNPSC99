@@ -45,15 +45,14 @@ export function AppSidebar() {
   const firestore = useFirestore();
   const { t } = useTranslation();
   const { setOpenMobile } = useSidebar();
-  const isMounted = useRef(false);
+  const isInitialRender = useRef(true);
 
-  // Close the mobile sidebar whenever the path changes, but not on initial mount.
   useEffect(() => {
-    if (isMounted.current) {
-      setOpenMobile(false);
-    } else {
-      isMounted.current = true;
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
     }
+    setOpenMobile(false);
   }, [pathname, setOpenMobile]);
 
   const userProfileRef = useMemoFirebase(
