@@ -23,7 +23,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="ta" suppressHydrationWarning>
       <body className={inter.className}>
         <LanguageProvider>
           <FirebaseClientProvider>
