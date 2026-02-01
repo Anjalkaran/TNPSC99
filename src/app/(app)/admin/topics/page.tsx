@@ -379,7 +379,7 @@ function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, cla
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            {Array.from({ length: 9 }, (_, i) => i + 1).map(num => (
+                                            {Array.from({ length: 10 }, (_, i) => i + 1).map(num => (
                                                 <SelectItem key={num} value={String(num)}>இயல் {num}</SelectItem>
                                             ))}
                                         </SelectContent>
@@ -939,7 +939,7 @@ export default function TopicManagementPage() {
                                     </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                    {Array.from({ length: 9 }, (_, i) => i + 1).map(num => (
+                                    {Array.from({ length: 10 }, (_, i) => i + 1).map(num => (
                                         <SelectItem key={num} value={String(num)}>இயல் {num}</SelectItem>
                                     ))}
                                 </SelectContent>
@@ -981,3 +981,5 @@ export default function TopicManagementPage() {
     </div>
   );
 }
+
+    
