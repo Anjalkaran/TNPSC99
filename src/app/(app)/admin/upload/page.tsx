@@ -50,12 +50,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Trash } from 'lucide-react';
+import { Edit, Trash, View, Download } from 'lucide-react';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import Link from 'next/link';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 
 const jsonStructureExample = `[
@@ -289,6 +291,212 @@ function ExistingUnitsList({ onUnitSelect }: { onUnitSelect: (unit: UnitWithName
                     </Tabs>
                 ) : (
                     <p className="text-muted-foreground">{t('No units found.')}</p>
+                )}
+            </CardContent>
+        </Card>
+    );
+}
+
+function ExistingMcqBanksList() {
+    const { t, language } = useTranslation();
+    const firestore = useFirestore();
+    const { toast } = useToast();
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const testsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'tests'), where('classId', '!=', null)) : null, [firestore]);
+    const { data: allTests, isLoading } = useCollection<Test>(testsQuery);
+    
+    const tests = useMemo(() => allTests?.filter(test => !test.examGroup), [allTests]);
+
+    const classesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'classes') : null, [firestore]);
+    const { data: classes } = useCollection<Class>(classesCollection);
+
+    const filteredTests = useMemo(() => {
+        if (!tests) return [];
+        if (!searchTerm) return tests;
+
+        const lowerCaseSearch = searchTerm.toLowerCase();
+
+        return tests.filter(test => {
+            return (test.title.toLowerCase().includes(lowerCaseSearch));
+        });
+    }, [tests, searchTerm]);
+
+    const groupedByClass = useMemo(() => {
+        if (!filteredTests || !classes) return {};
+        
+        const classMap = new Map(classes.map(c => [c.id, language === 'ta' && c.name_ta ? c.name_ta : c.name]));
+
+        return filteredTests.reduce((acc, test) => {
+            if (!test.classId) return acc;
+            const groupKey = classMap.get(test.classId) || test.classId;
+            if (!acc[groupKey]) {
+                acc[groupKey] = [];
+            }
+            acc[groupKey].push(test);
+            return acc;
+        }, {} as Record<string, Test[]>);
+
+    }, [filteredTests, classes, language]);
+
+    const sortedClasses = useMemo(() => {
+        const getNumber = (name: string) => {
+            const match = name.match(/\d+/);
+            return match ? parseInt(match[0], 10) : Infinity;
+        };
+        return Object.keys(groupedByClass).sort((a, b) => getNumber(a) - getNumber(b));
+    }, [groupedByClass]);
+
+
+    const handleDownload = async (test: Test) => {
+        if (!firestore) return;
+        
+        try {
+            const fetchedQuestions = [];
+            if (test.questionIds && test.questionIds.length > 0) {
+              const questionIdsChunks = [];
+              for (let i = 0; i < test.questionIds.length; i += 30) {
+                questionIdsChunks.push(test.questionIds.slice(i, i + 30));
+              }
+
+              for (const chunk of questionIdsChunks) {
+                 const questionsQuery = query(collection(firestore, 'questions'), where('__name__', 'in', chunk));
+                 const questionsSnap = await getDocs(questionsQuery);
+                 questionsSnap.forEach(docSnap => {
+                    const { classId, subjectId, ...questionData } = docSnap.data() as any;
+                    fetchedQuestions.push({ id: docSnap.id, ...questionData });
+                 });
+              }
+            }
+
+            const jsonString = JSON.stringify(fetchedQuestions, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${test.title}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            toast({
+                title: "Download Started",
+                description: `Downloading ${test.title} questions.`,
+            });
+
+        } catch (error) {
+            console.error("Error downloading test data:", error);
+            toast({
+                variant: 'destructive',
+                title: "Download Failed",
+                description: "There was a problem downloading the question bank.",
+            });
+        }
+    };
+
+
+    const handleDelete = async (testId: string) => {
+        if (!firestore) return;
+        const testDocRef = doc(firestore, 'tests', testId);
+        try {
+            await deleteDoc(testDocRef);
+            toast({
+                title: t('Test Deleted'),
+                description: t('The test has been successfully deleted.'),
+            });
+        } catch (error) {
+            console.error("Error deleting test: ", error);
+            toast({
+                variant: 'destructive',
+                title: t('Error Deleting Test'),
+                description: t('There was a problem deleting the test.'),
+            });
+        }
+    };
+
+    if (isLoading) return <p>{t('Loading tests...')}...</p>
+    
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Existing Class-wise Banks</CardTitle>
+                 <CardDescription>View, edit, or delete your existing class-wise question banks.</CardDescription>
+                 <div className="pt-2">
+                    <Input
+                        placeholder="Search by title..."
+                        value={searchTerm}
+                        onChange={e => setSearchTerm(e.target.value)}
+                    />
+                </div>
+            </CardHeader>
+            <CardContent>
+                {(!filteredTests || filteredTests.length === 0) ? (
+                    <p className="text-muted-foreground text-center p-8">
+                         {searchTerm ? `No results for "${searchTerm}"` : "No class-wise question banks created yet."}
+                    </p>
+                ) : (
+                    <Accordion type="multiple" className="w-full">
+                        {sortedClasses.map((className) => (
+                            <AccordionItem value={className} key={className}>
+                                <AccordionTrigger className="text-lg font-semibold">{className}</AccordionTrigger>
+                                <AccordionContent>
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Test Title</TableHead>
+                                                <TableHead>No. of Questions</TableHead>
+                                                <TableHead className="text-right">Actions</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                        {groupedByClass[className].map(test => (
+                                            <TableRow key={test.id}>
+                                                <TableCell className="font-medium">{test.title}</TableCell>
+                                                <TableCell>{test.questionIds.length}</TableCell>
+                                                <TableCell className="text-right space-x-1">
+                                                     <Button variant="outline" size="icon" onClick={() => handleDownload(test)}>
+                                                        <Download className="h-4 w-4" />
+                                                        <span className="sr-only">Download</span>
+                                                    </Button>
+                                                     <Button asChild variant="outline" size="icon">
+                                                        <Link href={`/admin/upload/${encodeURIComponent(test.id)}/view`}>
+                                                            <View className="h-4 w-4" />
+                                                        </Link>
+                                                    </Button>
+                                                    <Button asChild variant="outline" size="icon">
+                                                        <Link href={`/admin/upload/${encodeURIComponent(test.id)}/edit`}>
+                                                            <Edit className="h-4 w-4" />
+                                                        </Link>
+                                                    </Button>
+                                                    <AlertDialog>
+                                                        <AlertDialogTrigger asChild>
+                                                            <Button variant="destructive" size="icon">
+                                                                <Trash className="h-4 w-4" />
+                                                            </Button>
+                                                        </AlertDialogTrigger>
+                                                        <AlertDialogContent>
+                                                            <AlertDialogHeader>
+                                                                <AlertDialogTitle>{t('confirm_deletion_title')}</AlertDialogTitle>
+                                                                <AlertDialogDescription>
+                                                                    {t('This will permanently delete the test, but not the questions themselves.')}
+                                                                </AlertDialogDescription>
+                                                            </AlertDialogHeader>
+                                                            <AlertDialogFooter>
+                                                                <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                                                                <AlertDialogAction onClick={() => handleDelete(test.id)}>{t('delete')}</AlertDialogAction>
+                                                            </AlertDialogFooter>
+                                                        </AlertDialogContent>
+                                                    </AlertDialog>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                        </TableBody>
+                                    </Table>
+                                </AccordionContent>
+                            </AccordionItem>
+                        ))}
+                    </Accordion>
                 )}
             </CardContent>
         </Card>
@@ -588,253 +796,266 @@ export default function UploadMcqPage() {
 
   return (
     <div className="container mx-auto p-4 sm:p-6 md:p-8 space-y-8">
-       <div className="grid md:grid-cols-2 gap-8">
-        <div className="space-y-8">
-            <ExistingUnitsList onUnitSelect={handleUnitSelect} />
-
-            <Card>
-                <CardHeader>
-                    <CardTitle>{t('expected_json_structure')}</CardTitle>
-                </CardHeader>
-                <CardContent className="p-4 bg-muted rounded-md">
-                    <pre className="text-xs font-mono overflow-auto max-h-80">
-                        <code>{jsonStructureExample}</code>
-                    </pre>
-                </CardContent>
-            </Card>
+        <div className="mb-8">
+            <h1 className="text-3xl font-bold">MCQ Bank</h1>
+            <p className="text-muted-foreground">Create and manage class-wise tests by uploading questions for specific units.</p>
         </div>
-        
-        <Card>
-            <CardHeader>
-            <CardTitle>{t('upload_class_wise_mcqs')}</CardTitle>
-            <CardDescription>
-                {t('upload_class_wise_mcqs_desc')}
-            </CardDescription>
-            </CardHeader>
-            <CardContent>
-            <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <div className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="bookType"
-                      render={({ field }) => (
-                          <FormItem className="space-y-3">
-                              <FormLabel>Book Type</FormLabel>
-                              <FormControl>
-                                  <RadioGroup
-                                      onValueChange={field.onChange}
-                                      value={field.value}
-                                      className="flex gap-4"
-                                  >
-                                      <FormItem className="flex items-center space-x-2 space-y-0">
-                                          <FormControl><RadioGroupItem value="samacheer" /></FormControl>
-                                          <FormLabel className="font-normal">Samacheer Kalvi</FormLabel>
-                                      </FormItem>
-                                      <FormItem className="flex items-center space-x-2 space-y-0">
-                                          <FormControl><RadioGroupItem value="old" /></FormControl>
-                                          <FormLabel className="font-normal">Old Book</FormLabel>
-                                      </FormItem>
-                                  </RadioGroup>
-                              </FormControl>
-                              <FormMessage />
-                          </FormItem>
-                      )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="classId"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>{t('class_name')}</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value} disabled={classesLoading}>
-                            <FormControl>
-                                <SelectTrigger>
-                                <SelectValue placeholder={t('select_a_class')} />
-                                </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                                {sortedClasses?.map(c => <SelectItem key={c.id} value={c.id}>{language === 'ta' && c.name_ta ? c.name_ta : c.name}</SelectItem>)}
-                            </SelectContent>
-                            </Select>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="subjectName"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>{t('subject_name')}</FormLabel>
-                            <FormControl>
-                            <Input placeholder={t('subject_name_placeholder')} {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-                    
-                    <FormItem>
-                        <FormLabel>Category Name</FormLabel>
-                        <FormControl>
-                            <Input placeholder="e.g., இலக்கணம்" {...form.control.register('categoryName')} />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-
-                    <FormField
-                        control={form.control}
-                        name="term"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>{t('Term')}</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                                <SelectTrigger>
-                                <SelectValue placeholder={t('Select a Term')} />
-                                </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                                <SelectItem value="பருவம் 1">பருவம் 1</SelectItem>
-                                <SelectItem value="பருவம் 2">பருவம் 2</SelectItem>
-                                <SelectItem value="பருவம் 3">பருவம் 3</SelectItem>
-                                <SelectItem value="Full Book">Full Book</SelectItem>
-                            </SelectContent>
-                            </Select>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-
-                    {showFullBookUnitQuestion && (
-                      <FormField
-                          control={form.control}
-                          name="addUnitForFullBook"
-                          render={({ field }) => (
-                              <FormItem className="space-y-3">
-                                  <FormLabel>Add unit for full book?</FormLabel>
-                                  <FormControl>
-                                      <RadioGroup
-                                          onValueChange={field.onChange}
-                                          value={field.value}
-                                          className="flex gap-4"
-                                      >
-                                          <FormItem className="flex items-center space-x-2 space-y-0">
-                                              <FormControl><RadioGroupItem value="yes" /></FormControl>
-                                              <FormLabel className="font-normal">Yes</FormLabel>
-                                          </FormItem>
-                                          <FormItem className="flex items-center space-x-2 space-y-0">
-                                              <FormControl><RadioGroupItem value="no" /></FormControl>
-                                              <FormLabel className="font-normal">No</FormLabel>
-                                          </FormItem>
-                                      </RadioGroup>
-                                  </FormControl>
-                                  <FormMessage />
-                              </FormItem>
-                          )}
-                      />
-                    )}
-
-                    {showUnitFields && (
-                      <>
-                        <FormField
-                            control={form.control}
-                            name="unitNumber"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>{t('Unit')}</FormLabel>
-                                    <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
+        <Tabs defaultValue="upload" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="upload">Upload MCQs</TabsTrigger>
+                <TabsTrigger value="existing">Existing Banks</TabsTrigger>
+            </TabsList>
+            <TabsContent value="upload" className="mt-6">
+                <div className="grid md:grid-cols-2 gap-8">
+                    <div className="space-y-8">
+                        <ExistingUnitsList onUnitSelect={handleUnitSelect} />
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>{t('expected_json_structure')}</CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-4 bg-muted rounded-md">
+                                <pre className="text-xs font-mono overflow-auto max-h-80">
+                                    <code>{jsonStructureExample}</code>
+                                </pre>
+                            </CardContent>
+                        </Card>
+                    </div>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>{t('upload_class_wise_mcqs')}</CardTitle>
+                            <CardDescription>
+                                {t('upload_class_wise_mcqs_desc')}
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                        <Form {...form}>
+                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                            <div className="space-y-4">
+                                <FormField
+                                control={form.control}
+                                name="bookType"
+                                render={({ field }) => (
+                                    <FormItem className="space-y-3">
+                                        <FormLabel>Book Type</FormLabel>
+                                        <FormControl>
+                                            <RadioGroup
+                                                onValueChange={field.onChange}
+                                                value={field.value}
+                                                className="flex gap-4"
+                                            >
+                                                <FormItem className="flex items-center space-x-2 space-y-0">
+                                                    <FormControl><RadioGroupItem value="samacheer" /></FormControl>
+                                                    <FormLabel className="font-normal">Samacheer Kalvi</FormLabel>
+                                                </FormItem>
+                                                <FormItem className="flex items-center space-x-2 space-y-0">
+                                                    <FormControl><RadioGroupItem value="old" /></FormControl>
+                                                    <FormLabel className="font-normal">Old Book</FormLabel>
+                                                </FormItem>
+                                            </RadioGroup>
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="classId"
+                                    render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>{t('class_name')}</FormLabel>
+                                        <Select onValueChange={field.onChange} value={field.value} disabled={classesLoading}>
                                         <FormControl>
                                             <SelectTrigger>
-                                                <SelectValue placeholder="Select a unit" />
+                                            <SelectValue placeholder={t('select_a_class')} />
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            {Array.from({ length: 10 }, (_, i) => i + 1).map(num => (
-                                                <SelectItem key={num} value={String(num)}>இயல் {num}</SelectItem>
-                                            ))}
+                                            {sortedClasses?.map(c => <SelectItem key={c.id} value={c.id}>{language === 'ta' && c.name_ta ? c.name_ta : c.name}</SelectItem>)}
                                         </SelectContent>
-                                    </Select>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="subjectName"
+                                    render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>{t('subject_name')}</FormLabel>
+                                        <FormControl>
+                                        <Input placeholder={t('subject_name_placeholder')} {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                    )}
+                                />
+                                
+                                <FormItem>
+                                    <FormLabel>Category Name</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="e.g., இலக்கணம்" {...form.control.register('categoryName')} />
+                                    </FormControl>
                                     <FormMessage />
                                 </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={form.control}
-                            name="unitName"
-                            render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>{t('Unit Name')}</FormLabel>
-                                <FormControl>
-                                <Input placeholder={t('Name of the unit')} {...field} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                            )}
-                        />
-                      </>
-                    )}
 
-                    <FormField
-                        control={form.control}
-                        name="referencePageOffset"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>PDF Page Offset</FormLabel>
-                                <FormControl>
-                                    <Input 
-                                        type="number" 
-                                        placeholder="e.g., 14" 
-                                        {...field} 
-                                        onChange={e => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}
-                                        value={field.value ?? ''}
+                                <FormField
+                                    control={form.control}
+                                    name="term"
+                                    render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>{t('Term')}</FormLabel>
+                                        <Select onValueChange={field.onChange} value={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger>
+                                            <SelectValue placeholder={t('Select a Term')} />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="பருவம் 1">பருவம் 1</SelectItem>
+                                            <SelectItem value="பருவம் 2">பருவம் 2</SelectItem>
+                                            <SelectItem value="பருவம் 3">பருவம் 3</SelectItem>
+                                            <SelectItem value="Full Book">Full Book</SelectItem>
+                                        </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                    )}
+                                />
+
+                                {showFullBookUnitQuestion && (
+                                <FormField
+                                    control={form.control}
+                                    name="addUnitForFullBook"
+                                    render={({ field }) => (
+                                        <FormItem className="space-y-3">
+                                            <FormLabel>Add unit for full book?</FormLabel>
+                                            <FormControl>
+                                                <RadioGroup
+                                                    onValueChange={field.onChange}
+                                                    value={field.value}
+                                                    className="flex gap-4"
+                                                >
+                                                    <FormItem className="flex items-center space-x-2 space-y-0">
+                                                        <FormControl><RadioGroupItem value="yes" /></FormControl>
+                                                        <FormLabel className="font-normal">Yes</FormLabel>
+                                                    </FormItem>
+                                                    <FormItem className="flex items-center space-x-2 space-y-0">
+                                                        <FormControl><RadioGroupItem value="no" /></FormControl>
+                                                        <FormLabel className="font-normal">No</FormLabel>
+                                                    </FormItem>
+                                                </RadioGroup>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                )}
+
+                                {showUnitFields && (
+                                <>
+                                    <FormField
+                                        control={form.control}
+                                        name="unitNumber"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>{t('Unit')}</FormLabel>
+                                                <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
+                                                    <FormControl>
+                                                        <SelectTrigger>
+                                                            <SelectValue placeholder="Select a unit" />
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent>
+                                                        {Array.from({ length: 10 }, (_, i) => i + 1).map(num => (
+                                                            <SelectItem key={num} value={String(num)}>இயல் {num}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
                                     />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="jsonInput"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel htmlFor="json-input">{t('json_data')}</FormLabel>
-                            <FormControl>
-                            <Textarea
-                                id="json-input"
-                                placeholder={t('json_data_placeholder')}
-                                className="h-48 font-mono text-sm"
-                                {...field}
-                            />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="unitName"
+                                        render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>{t('Unit Name')}</FormLabel>
+                                            <FormControl>
+                                            <Input placeholder={t('Name of the unit')} {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                        )}
+                                    />
+                                </>
+                                )}
 
-                    <div className="space-y-2">
-                        <Label htmlFor="json-file">{t('or_upload_file')}</Label>
-                        <Input
-                        id="json-file"
-                        type="file"
-                        accept=".json"
-                        onChange={handleFileChange}
-                        />
-                    </div>
-                    
-                    <div>
-                        <Button type="submit" disabled={isSubmitting}>
-                        {isSubmitting ? t('submitting') : t('submit_questions')}
-                        </Button>
-                    </div>
+                                <FormField
+                                    control={form.control}
+                                    name="referencePageOffset"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>PDF Page Offset</FormLabel>
+                                            <FormControl>
+                                                <Input 
+                                                    type="number" 
+                                                    placeholder="e.g., 14" 
+                                                    {...field} 
+                                                    onChange={e => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}
+                                                    value={field.value ?? ''}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="jsonInput"
+                                    render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel htmlFor="json-input">{t('json_data')}</FormLabel>
+                                        <FormControl>
+                                        <Textarea
+                                            id="json-input"
+                                            placeholder={t('json_data_placeholder')}
+                                            className="h-48 font-mono text-sm"
+                                            {...field}
+                                        />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                    )}
+                                />
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="json-file">{t('or_upload_file')}</Label>
+                                    <Input
+                                    id="json-file"
+                                    type="file"
+                                    accept=".json"
+                                    onChange={handleFileChange}
+                                    />
+                                </div>
+                                
+                                <div>
+                                    <Button type="submit" disabled={isSubmitting}>
+                                    {isSubmitting ? t('submitting') : t('submit_questions')}
+                                    </Button>
+                                </div>
+                            </div>
+                            </form>
+                        </Form>
+                        </CardContent>
+                    </Card>
                 </div>
-                </form>
-            </Form>
-            </CardContent>
-        </Card>
-      </div>
+            </TabsContent>
+            <TabsContent value="existing">
+                <ExistingMcqBanksList />
+            </TabsContent>
+        </Tabs>
     </div>
   );
 }
