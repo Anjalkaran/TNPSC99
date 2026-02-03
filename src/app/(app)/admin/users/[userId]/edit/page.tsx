@@ -87,7 +87,10 @@ export default function EditUserPage() {
     }
   };
 
-  if (isUserLoading) {
+  // Wait until the userId is available from params AND the data is loading.
+  const pageIsLoading = isUserLoading || !userId;
+
+  if (pageIsLoading) {
     return (
         <div className="container mx-auto p-8 space-y-4">
             <Skeleton className="h-8 w-1/4" />
@@ -98,6 +101,7 @@ export default function EditUserPage() {
     );
   }
 
+  // Only call notFound if loading is finished AND there is no user.
   if (!user) {
     return notFound();
   }
