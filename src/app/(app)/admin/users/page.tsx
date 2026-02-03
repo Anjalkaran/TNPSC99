@@ -5,7 +5,7 @@ import type { UserProfile } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useTranslation } from '@/hooks/use-translation';
-import { History, BarChart2, Trash, UserPlus } from 'lucide-react';
+import { History, BarChart2, Trash, UserPlus, Edit } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
@@ -259,6 +259,16 @@ export default function UserManagementPage() {
                                         <TableCell className="text-right">
                                             <TooltipProvider>
                                                 <div className="flex justify-end items-center gap-2">
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Button asChild variant="ghost" size="icon">
+                                                                <Link href={`/admin/users/${encodeURIComponent(user.id)}/edit`}>
+                                                                    <Edit className="h-4 w-4" />
+                                                                </Link>
+                                                            </Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent><p>Edit User</p></TooltipContent>
+                                                    </Tooltip>
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
                                                             <Button asChild variant="ghost" size="icon">

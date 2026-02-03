@@ -23,7 +23,7 @@ service cloud.firestore {
       allow get: if isOwner(userId) || isAdmin();
       allow list: if isAdmin(); // Only admins can list all users
       allow create: if isOwner(userId); // A user can create their own profile
-      allow update: if isOwner(userId); // A user can update their own profile
+      allow update: if isOwner(userId) || isAdmin(); // A user or an admin can update a profile
       allow delete: if isOwner(userId) || isAdmin(); // A user can delete their own profile, or an admin can
 
       // Subcollections for a user
