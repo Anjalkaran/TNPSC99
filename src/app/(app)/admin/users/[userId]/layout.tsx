@@ -20,6 +20,16 @@ export default function UserAdminLayout({
   const firestore = useFirestore();
   const params = useParams();
   const pathname = usePathname();
+
+  // Wait until params are available on the client
+  if (!params || !params.userId) {
+    return (
+        <div className="container mx-auto p-4 sm:p-6 md:p-8 space-y-4">
+            <Skeleton className="h-10 w-1/2" />
+            <Skeleton className="h-6 w-3/4" />
+        </div>
+    );
+  }
   
   const userIdParam = Array.isArray(params.userId) ? params.userId[0] : params.userId;
   const userId = userIdParam ? decodeURIComponent(userIdParam) : undefined;
