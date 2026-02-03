@@ -27,7 +27,8 @@ type UserEditFormValues = z.infer<typeof userEditSchema>;
 
 export default function EditUserPage() {
   const params = useParams();
-  const userId = params.userId as string;
+  const userIdParam = Array.isArray(params.userId) ? params.userId[0] : params.userId;
+  const userId = userIdParam ? decodeURIComponent(userIdParam) : '';
   const router = useRouter();
   const firestore = useFirestore();
   const { toast } = useToast();
