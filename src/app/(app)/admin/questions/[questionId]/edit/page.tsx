@@ -21,7 +21,7 @@ import { useEffect } from 'react';
 
 const questionEditSchema = z.object({
   text: z.string().min(1, 'Question text is required.'),
-  answerOptions: z.array(z.string().min(1, 'Option text cannot be empty.')).min(2, 'Must have at least two options.'),
+  answerOptions: z.array(z.object({ text: z.string().min(1, 'Option text cannot be empty.') })).min(2, 'Must have at least two options.'),
   correctAnswerIndex: z.coerce.number().min(0, 'Please select a correct answer.'),
   explanation: z.string().optional(),
   reference: z.string().optional(),
@@ -41,7 +41,6 @@ export default function EditQuestionPage() {
 
   const form = useForm<QuestionEditFormValues>({
     resolver: zodResolver(questionEditSchema),
-    // Initialize with default values to make inputs controlled from the start.
     defaultValues: {
       text: '',
       answerOptions: [],
@@ -60,7 +59,7 @@ export default function EditQuestionPage() {
     if (question) {
       form.reset({
         text: question.text,
-        answerOptions: question.answerOptions,
+        answerOptions: question.answerOptions.map(opt => ({ text: opt })),
         correctAnswerIndex: question.correctAnswerIndex,
         explanation: question.explanation || '',
         reference: question.reference || '',
@@ -72,8 +71,13 @@ export default function EditQuestionPage() {
   const onSubmit = async (values: QuestionEditFormValues) => {
     if (!questionRef) return;
     
+    const valuesToSubmit = {
+        ...values,
+        answerOptions: values.answerOptions.map(opt => opt.text),
+    };
+
     try {
-      await updateDoc(questionRef, values);
+      await updateDoc(questionRef, valuesToSubmit);
       toast({
         title: 'Question Updated',
         description: 'The question has been successfully updated.',
@@ -89,7 +93,9 @@ export default function EditQuestionPage() {
     }
   };
 
-  if (isQuestionLoading) {
+  const pageIsLoading = isQuestionLoading || !questionId;
+
+  if (pageIsLoading) {
     return (
         <div className="container mx-auto p-8 space-y-4">
             <Skeleton className="h-8 w-1/4" />
@@ -156,7 +162,7 @@ export default function EditQuestionPage() {
                         <Label htmlFor={`correct-option-${index}`} className="sr-only">Set as correct answer</Label>
                         <FormField
                             control={form.control}
-                            name={`answerOptions.${index}`}
+                            name={`answerOptions.${index}.text`}
                             render={({ field }) => (
                             <Input {...field} />
                             )}
@@ -168,7 +174,7 @@ export default function EditQuestionPage() {
                     ))}
                     </div>
                 </RadioGroup>
-                <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => append('')}>
+                <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => append({ text: '' })}>
                     Add Option
                 </Button>
               </FormItem>
