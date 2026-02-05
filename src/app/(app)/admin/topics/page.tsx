@@ -216,16 +216,16 @@ function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, cla
             await updateDoc(unitDocRef, unitData);
 
             toast({
-                title: t('Unit Updated!'),
-                description: t('The unit "{{unitName}}" has been successfully updated.', { unitName: values.unitName || unit.unitName || '' }),
+                title: t('unit_updated_title'),
+                description: t('unit_updated_desc', { unitName: values.unitName || unit.unitName || '' }),
             });
             onFinished();
         } catch (error) {
             console.error('Error updating unit:', error);
             toast({
                 variant: 'destructive',
-                title: t('Error Updating Unit'),
-                description: (error as Error).message || t('There was a problem updating the unit.'),
+                title: t('error_updating_unit_title'),
+                description: (error as Error).message || t('error_updating_unit_desc'),
             });
         } finally {
             setIsSubmitting(false);
@@ -503,15 +503,15 @@ function ExistingUnitsList() {
         try {
             await deleteDoc(unitDocRef);
             toast({
-                title: t('Unit Deleted'),
-                description: t('The unit has been successfully deleted.'),
+                title: t('unit_deleted_title'),
+                description: t('unit_deleted_desc'),
             });
         } catch (error) {
             console.error("Error deleting unit: ", error);
             toast({
                 variant: 'destructive',
-                title: t('Error Deleting Unit'),
-                description: t('There was a problem deleting the unit.'),
+                title: t('error_deleting_unit_title'),
+                description: t('error_deleting_unit_desc'),
             });
         }
     };
@@ -656,7 +656,7 @@ export default function TopicManagementPage() {
   const selectedClass = classes?.find(c => c.id === classIdValue);
   const classNameValue = selectedClass?.name || '';
   const classNumberMatch = classNameValue.match(/\d+/);
-  const classNumber = parseInt(classNumberMatch ? classNumberMatch[0] : '0', 10);
+  const classNumber = classNumberMatch ? parseInt(classNumberMatch[0], 10) : 0;
 
   const showTermField = true;
 
@@ -712,8 +712,8 @@ export default function TopicManagementPage() {
             await setDoc(newSubjectRef, newSubject);
             subjectId = newSubjectRef.id;
             toast({
-                title: t('Subject Created'),
-                description: `New subject '${subjectName}' was created.`,
+                title: t('subject_created_success_title'),
+                description: t('subject_created_desc', {subjectName}),
             });
         } else {
             subjectId = subjectSnapshot.docs[0].id;
@@ -762,8 +762,8 @@ export default function TopicManagementPage() {
         await setDoc(unitDocRef, unitData);
 
         toast({
-            title: t('Unit Created!'),
-            description: t('The unit "{{unitName}}" has been successfully created.', { unitName: values.unitName || '' }),
+            title: t('unit_created_title'),
+            description: t('unit_created_desc', { unitName: values.unitName || '' }),
         });
         resetForm();
 
@@ -771,8 +771,8 @@ export default function TopicManagementPage() {
       console.error('Error creating unit:', error);
       toast({
         variant: 'destructive',
-        title: t('Error Creating Unit'),
-        description: (error as Error).message || t('There was a problem creating the unit.'),
+        title: t('error_creating_unit_title'),
+        description: (error as Error).message || t('error_creating_unit_desc'),
       });
     } finally {
       setIsSubmitting(false);
