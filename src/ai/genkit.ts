@@ -1,10 +1,9 @@
 'use server';
 import {genkit} from 'genkit';
-import {type Plugin} from '@genkit-ai/core';
 import {googleAI} from '@genkit-ai/google-genai';
 
 const config: {
-  plugins: Plugin[];
+  plugins: any[];
   model?: string;
 } = {
   plugins: [],
