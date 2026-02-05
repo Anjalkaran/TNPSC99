@@ -1,5 +1,4 @@
-import { nextHandler } from '@genkit-ai/next';
-import { ai } from '@/ai/genkit';
+import { nextJsHandler } from '@genkit-ai/next';
 import '@/ai/flows/performance-analysis-flow';
 
-export const POST = nextHandler(ai);
+export const POST = nextJsHandler();

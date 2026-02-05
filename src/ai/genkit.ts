@@ -1,5 +1,5 @@
-import {genkit} from 'genkit';
-import {type Plugin} from 'genkit/plugin';
+'use server';
+import {genkit, type Plugin} from 'genkit';
 import {googleAI} from '@genkit-ai/google-genai';
 
 const config: {
