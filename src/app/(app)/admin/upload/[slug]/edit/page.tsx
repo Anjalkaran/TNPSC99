@@ -148,7 +148,7 @@ export default function EditTestPage() {
         <CardHeader>
           <CardTitle>{t('Edit Question Bank')}: {test.title}</CardTitle>
           <CardDescription>
-            {t('Manage the questions within this test. You can remove questions from this test bank.')}
+            {t('manage_test_questions_desc')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -163,9 +163,9 @@ export default function EditTestPage() {
             <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead>{t('Question Text')}</TableHead>
-                        <TableHead>{t('Unit ID')}</TableHead>
-                        <TableHead className="text-right">{t('Actions')}</TableHead>
+                        <TableHead>{t('question_text')}</TableHead>
+                        <TableHead>{t('unit_id')}</TableHead>
+                        <TableHead className="text-right">{t('actions')}</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -187,14 +187,14 @@ export default function EditTestPage() {
                                     </AlertDialogTrigger>
                                     <AlertDialogContent>
                                         <AlertDialogHeader>
-                                            <AlertDialogTitle>{t('confirm_deletion_title')}</AlertDialogTitle>
+                                            <AlertDialogTitle>{t('confirm_remove_title')}</AlertDialogTitle>
                                             <AlertDialogDescription>
-                                                {t('This action will remove the question from the test, but not delete it permanently.')}
+                                                {t('remove_question_from_test_desc')}
                                             </AlertDialogDescription>
                                         </AlertDialogHeader>
                                         <AlertDialogFooter>
                                             <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                                            <AlertDialogAction onClick={() => handleRemoveQuestion(q.id)}>{t('Remove')}</AlertDialogAction>
+                                            <AlertDialogAction onClick={() => handleRemoveQuestion(q.id)}>{t('remove')}</AlertDialogAction>
                                         </AlertDialogFooter>
                                     </AlertDialogContent>
                                 </AlertDialog>
@@ -205,7 +205,7 @@ export default function EditTestPage() {
             </Table>
           ) : (
             <p className="text-center p-4 text-muted-foreground">
-              {searchTerm ? 'No questions found matching your search.' : t('This test has no questions yet.')}
+              {searchTerm ? 'No questions found matching your search.' : t('test_has_no_questions')}
             </p>
           )}
         </CardContent>
