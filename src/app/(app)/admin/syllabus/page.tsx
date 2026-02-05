@@ -26,7 +26,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import type { Test } from '@/lib/types';
+import type { Test, Question } from '@/lib/types';
 import { useTranslation } from '@/hooks/use-translation';
 import {
   Select,
@@ -125,7 +125,7 @@ function ExistingSyllabusTestsList() {
         if (!firestore) return;
         
         try {
-            const fetchedQuestions = [];
+            const fetchedQuestions: Question[] = [];
             if (test.questionIds && test.questionIds.length > 0) {
               const questionIdsChunks = [];
               for (let i = 0; i < test.questionIds.length; i += 30) {
@@ -137,7 +137,7 @@ function ExistingSyllabusTestsList() {
                  const questionsSnap = await getDocs(questionsQuery);
                  questionsSnap.forEach(docSnap => {
                     const { classId, subjectId, ...questionData } = docSnap.data() as any;
-                    fetchedQuestions.push({ id: docSnap.id, ...questionData });
+                    fetchedQuestions.push({ id: docSnap.id, ...questionData } as Question);
                  });
               }
             }
