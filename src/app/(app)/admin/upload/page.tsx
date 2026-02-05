@@ -207,7 +207,7 @@ function ExistingUnitsList({ onUnitSelect }: { onUnitSelect: (unit: UnitWithName
             toast({
                 variant: 'destructive',
                 title: t('Error Deleting Unit'),
-                description: t('There was a problem deleting the unit.'),
+                description: t('error_deleting_unit_desc'),
             });
         }
     };
@@ -322,12 +322,14 @@ function ExistingMcqBanksList() {
         });
     }, [tests, searchTerm]);
 
-    const groupedByClass = useMemo(() => {
-        if (!filteredTests || !classes) return {};
-        
+    const samacheerTests = useMemo(() => filteredTests?.filter(t => t.bookType === 'samacheer' || !t.bookType), [filteredTests]);
+    const oldBookTests = useMemo(() => filteredTests?.filter(t => t.bookType === 'old'), [filteredTests]);
+
+    const groupTestsByClass = (testsToGroup: Test[] | undefined, classes: Class[] | null | undefined, language: string) => {
+        if (!testsToGroup || !classes) return {};
         const classMap = new Map(classes.map(c => [c.id, language === 'ta' && c.name_ta ? c.name_ta : c.name]));
 
-        return filteredTests.reduce((acc, test) => {
+        const grouped = testsToGroup.reduce((acc, test) => {
             if (!test.classId) return acc;
             const groupKey = classMap.get(test.classId) || test.classId;
             if (!acc[groupKey]) {
@@ -336,23 +338,29 @@ function ExistingMcqBanksList() {
             acc[groupKey].push(test);
             return acc;
         }, {} as Record<string, Test[]>);
+        return grouped;
+    };
 
-    }, [filteredTests, classes, language]);
+    const groupedSamacheer = useMemo(() => groupTestsByClass(samacheerTests, classes, language), [samacheerTests, classes, language]);
+    const groupedOldBook = useMemo(() => groupTestsByClass(oldBookTests, classes, language), [oldBookTests, classes, language]);
 
-    const sortedClasses = useMemo(() => {
+    const sortClasses = (groupedData: Record<string, Test[]>) => {
         const getNumber = (name: string) => {
             const match = name.match(/\d+/);
             return match ? parseInt(match[0], 10) : Infinity;
         };
-        return Object.keys(groupedByClass).sort((a, b) => getNumber(a) - getNumber(b));
-    }, [groupedByClass]);
+        return Object.keys(groupedData).sort((a, b) => getNumber(a) - getNumber(b));
+    }
+    
+    const sortedSamacheerClasses = useMemo(() => sortClasses(groupedSamacheer), [groupedSamacheer]);
+    const sortedOldBookClasses = useMemo(() => sortClasses(groupedOldBook), [groupedOldBook]);
 
 
     const handleDownload = async (test: Test) => {
         if (!firestore) return;
         
         try {
-            const fetchedQuestions = [];
+            const fetchedQuestions: Question[] = [];
             if (test.questionIds && test.questionIds.length > 0) {
               const questionIdsChunks = [];
               for (let i = 0; i < test.questionIds.length; i += 30) {
@@ -364,7 +372,7 @@ function ExistingMcqBanksList() {
                  const questionsSnap = await getDocs(questionsQuery);
                  questionsSnap.forEach(docSnap => {
                     const { classId, subjectId, ...questionData } = docSnap.data() as any;
-                    fetchedQuestions.push({ id: docSnap.id, ...questionData });
+                    fetchedQuestions.push({ id: docSnap.id, ...questionData } as Question);
                  });
               }
             }
@@ -414,6 +422,81 @@ function ExistingMcqBanksList() {
             });
         }
     };
+    
+    const renderAccordionFor = (groupedData: Record<string, Test[]>, sortedClassNames: string[], bookType: string) => {
+        if (sortedClassNames.length === 0) {
+            return (
+                <p className="text-muted-foreground text-center p-8">
+                    {searchTerm ? `No results for "${searchTerm}" in ${bookType} books.` : `No ${bookType} question banks created yet.`}
+                </p>
+            );
+        }
+
+        return (
+            <Accordion type="multiple" className="w-full">
+                {sortedClassNames.map((className) => (
+                    <AccordionItem value={`${bookType}-${className}`} key={`${bookType}-${className}`}>
+                        <AccordionTrigger className="text-lg font-semibold">{className}</AccordionTrigger>
+                        <AccordionContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Test Title</TableHead>
+                                        <TableHead>No. of Questions</TableHead>
+                                        <TableHead className="text-right">Actions</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                {groupedData[className].map(test => (
+                                    <TableRow key={test.id}>
+                                        <TableCell className="font-medium">{test.title}</TableCell>
+                                        <TableCell>{test.questionIds.length}</TableCell>
+                                        <TableCell className="text-right space-x-1">
+                                            <Button variant="outline" size="icon" onClick={() => handleDownload(test)}>
+                                                <Download className="h-4 w-4" />
+                                                <span className="sr-only">Download</span>
+                                            </Button>
+                                            <Button asChild variant="outline" size="icon">
+                                                <Link href={`/admin/upload/${encodeURIComponent(test.id)}/view`}>
+                                                    <View className="h-4 w-4" />
+                                                </Link>
+                                            </Button>
+                                            <Button asChild variant="outline" size="icon">
+                                                <Link href={`/admin/upload/${encodeURIComponent(test.id)}/edit`}>
+                                                    <Edit className="h-4 w-4" />
+                                                </Link>
+                                            </Button>
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button variant="destructive" size="icon">
+                                                        <Trash className="h-4 w-4" />
+                                                    </Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>{t('confirm_deletion_title')}</AlertDialogTitle>
+                                                        <AlertDialogDescription>
+                                                            {t('This will permanently delete the test, but not the questions themselves.')}
+                                                        </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                                                        <AlertDialogAction onClick={() => handleDelete(test.id)}>{t('delete')}</AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                                </TableBody>
+                            </Table>
+                        </AccordionContent>
+                    </AccordionItem>
+                ))}
+            </Accordion>
+        );
+    }
+
 
     if (isLoading) return <p>{t('Loading tests...')}...</p>
     
@@ -436,67 +519,18 @@ function ExistingMcqBanksList() {
                          {searchTerm ? `No results for "${searchTerm}"` : "No class-wise question banks created yet."}
                     </p>
                 ) : (
-                    <Accordion type="multiple" className="w-full">
-                        {sortedClasses.map((className) => (
-                            <AccordionItem value={className} key={className}>
-                                <AccordionTrigger className="text-lg font-semibold">{className}</AccordionTrigger>
-                                <AccordionContent>
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow>
-                                                <TableHead>Test Title</TableHead>
-                                                <TableHead>No. of Questions</TableHead>
-                                                <TableHead className="text-right">Actions</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                        {groupedByClass[className].map(test => (
-                                            <TableRow key={test.id}>
-                                                <TableCell className="font-medium">{test.title}</TableCell>
-                                                <TableCell>{test.questionIds.length}</TableCell>
-                                                <TableCell className="text-right space-x-1">
-                                                     <Button variant="outline" size="icon" onClick={() => handleDownload(test)}>
-                                                        <Download className="h-4 w-4" />
-                                                        <span className="sr-only">Download</span>
-                                                    </Button>
-                                                     <Button asChild variant="outline" size="icon">
-                                                        <Link href={`/admin/upload/${encodeURIComponent(test.id)}/view`}>
-                                                            <View className="h-4 w-4" />
-                                                        </Link>
-                                                    </Button>
-                                                    <Button asChild variant="outline" size="icon">
-                                                        <Link href={`/admin/upload/${encodeURIComponent(test.id)}/edit`}>
-                                                            <Edit className="h-4 w-4" />
-                                                        </Link>
-                                                    </Button>
-                                                    <AlertDialog>
-                                                        <AlertDialogTrigger asChild>
-                                                            <Button variant="destructive" size="icon">
-                                                                <Trash className="h-4 w-4" />
-                                                            </Button>
-                                                        </AlertDialogTrigger>
-                                                        <AlertDialogContent>
-                                                            <AlertDialogHeader>
-                                                                <AlertDialogTitle>{t('confirm_deletion_title')}</AlertDialogTitle>
-                                                                <AlertDialogDescription>
-                                                                    {t('This will permanently delete the test, but not the questions themselves.')}
-                                                                </AlertDialogDescription>
-                                                            </AlertDialogHeader>
-                                                            <AlertDialogFooter>
-                                                                <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                                                                <AlertDialogAction onClick={() => handleDelete(test.id)}>{t('delete')}</AlertDialogAction>
-                                                            </AlertDialogFooter>
-                                                        </AlertDialogContent>
-                                                    </AlertDialog>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                        </TableBody>
-                                    </Table>
-                                </AccordionContent>
-                            </AccordionItem>
-                        ))}
-                    </Accordion>
+                    <Tabs defaultValue="samacheer" className="w-full">
+                        <TabsList className="grid w-full grid-cols-2">
+                            <TabsTrigger value="samacheer">Samacheer Kalvi</TabsTrigger>
+                            <TabsTrigger value="old">Old Books</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="samacheer" className="pt-4">
+                           {renderAccordionFor(groupedSamacheer, sortedSamacheerClasses, 'Samacheer')}
+                        </TabsContent>
+                        <TabsContent value="old" className="pt-4">
+                           {renderAccordionFor(groupedOldBook, sortedOldBookClasses, 'Old Book')}
+                        </TabsContent>
+                    </Tabs>
                 )}
             </CardContent>
         </Card>
