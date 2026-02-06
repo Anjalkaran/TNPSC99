@@ -222,5 +222,6 @@
     "question_removed_title": "கேள்வி அகற்றப்பட்டது",
     "question_removed_desc": "கேள்வி இந்த தேர்விலிருந்து அகற்றப்பட்டது.",
     "error_title": "பிழை",
-    "remove_question_error_desc": "தேர்விலிருந்து கேள்வியை அகற்றுவதில் தோல்வி."
+    "remove_question_error_desc": "தேர்விலிருந்து கேள்வியை அகற்றுவதில் தோல்வி.",
+    "error_updating_unit_desc": "அலகு புதுப்பிக்கும்போது ஒரு சிக்கல் ஏற்பட்டது."
 }

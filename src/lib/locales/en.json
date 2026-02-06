@@ -180,14 +180,14 @@
     "The unit \"{{unitName}}\" has been successfully updated.": "The unit \"{{unitName}}\" has been successfully updated.",
     "Error Updating Unit": "Error Updating Unit",
     "unit_updated_title": "Unit Updated!",
-    "unit_updated_desc": "The unit \\\"{{unitName}}\\\" has been successfully updated.",
+    "unit_updated_desc": "The unit \"{{unitName}}\" has been successfully updated.",
     "error_updating_unit_title": "Error Updating Unit",
     "unit_deleted_title": "Unit Deleted",
     "unit_deleted_desc": "The unit has been successfully deleted.",
     "error_deleting_unit_title": "Error Deleting Unit",
     "subject_created_desc": "New subject '{{subjectName}}' was created.",
     "unit_created_title": "Unit Created!",
-    "unit_created_desc": "The unit \\\"{{unitName}}\\\" has been successfully created.",
+    "unit_created_desc": "The unit \"{{unitName}}\" has been successfully created.",
     "error_creating_unit_title": "Error Creating Unit",
     "error_creating_unit_desc": "There was a problem creating the unit.",
     "available_tests": "Available Tests for {{category}}",
@@ -222,5 +222,6 @@
     "question_removed_title": "Question Removed",
     "question_removed_desc": "The question has been removed from this test.",
     "error_title": "Error",
-    "remove_question_error_desc": "Failed to remove the question from the test."
+    "remove_question_error_desc": "Failed to remove the question from the test.",
+    "error_updating_unit_desc": "There was a problem updating the unit."
 }
