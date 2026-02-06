@@ -179,7 +179,6 @@
     "Unit Updated!": "Unit Updated!",
     "The unit \"{{unitName}}\" has been successfully updated.": "The unit \"{{unitName}}\" has been successfully updated.",
     "Error Updating Unit": "Error Updating Unit",
-    "error_updating_unit_desc": "There was a problem updating the unit.",
     "unit_updated_title": "Unit Updated!",
     "unit_updated_desc": "The unit \\\"{{unitName}}\\\" has been successfully updated.",
     "error_updating_unit_title": "Error Updating Unit",
@@ -219,5 +218,9 @@
     "test_has_no_questions": "This test has no questions yet.",
     "confirm_remove_title": "Confirm Removal",
     "question_text": "Question Text",
-    "unit_id": "Unit ID"
+    "unit_id": "Unit ID",
+    "question_removed_title": "Question Removed",
+    "question_removed_desc": "The question has been removed from this test.",
+    "error_title": "Error",
+    "remove_question_error_desc": "Failed to remove the question from the test."
 }

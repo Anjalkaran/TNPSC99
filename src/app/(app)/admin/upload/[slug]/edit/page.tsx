@@ -83,7 +83,7 @@ export default function EditTestPage() {
         console.error("Error fetching test data:", error);
         toast({
           variant: "destructive",
-          title: "Error",
+          title: t('error_title'),
           description: "Failed to load test data."
         });
       } finally {
@@ -92,7 +92,7 @@ export default function EditTestPage() {
     };
 
     fetchTestAndQuestions();
-  }, [testId, toast, firestore]);
+  }, [testId, toast, firestore, t]);
 
   const filteredQuestions = useMemo(() => {
     if (!questions) return [];
@@ -119,16 +119,16 @@ export default function EditTestPage() {
           setQuestions(prev => prev.filter(q => q.id !== questionId));
 
           toast({
-              title: "Question Removed",
-              description: "The question has been removed from this test."
+              title: t('question_removed_title'),
+              description: t('question_removed_desc')
           });
 
       } catch (error) {
           console.error("Error removing question:", error);
           toast({
               variant: "destructive",
-              title: "Error",
-              description: "Failed to remove the question from the test."
+              title: t('error_title'),
+              description: t('remove_question_error_desc')
           });
       }
   }
