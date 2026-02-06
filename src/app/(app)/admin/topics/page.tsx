@@ -118,7 +118,7 @@ function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, cla
     const selectedClass = classes?.find(c => c.id === classIdValue);
     const classNameValue = selectedClass?.name || '';
     const classNumberMatch = classNameValue.match(/\d+/);
-    const classNumber = parseInt(classNumberMatch ? classNumberMatch[0] : '0', 10);
+    const classNumber = classNumberMatch ? parseInt(classNumberMatch[0], 10) : 0;
 
     const showTermField = true;
 
@@ -410,7 +410,7 @@ function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, cla
                         <Button type="button" variant="secondary">{t('cancel')}</Button>
                     </DialogClose>
                     <Button type="submit" disabled={isSubmitting}>
-                        {isSubmitting ? t('Updating Unit...') : t('Update Unit')}
+                        {isSubmitting ? t('updating_unit') : t('update_unit')}
                     </Button>
                 </DialogFooter>
             </form>
@@ -549,9 +549,9 @@ function ExistingUnitsList() {
                                             </DialogTrigger>
                                             <DialogContent>
                                                 <DialogHeader>
-                                                    <DialogTitle>{t('Edit Unit')}</DialogTitle>
+                                                    <DialogTitle>{t('edit_unit')}</DialogTitle>
                                                     <DialogDescription>
-                                                        {t("Make changes to the unit details below.")}
+                                                        {t("edit_unit_desc")}
                                                     </DialogDescription>
                                                 </DialogHeader>
                                                 <EditUnitForm unit={unit} classes={classes} subjects={subjects} onFinished={() => setDialogState(unit.id, false)} />

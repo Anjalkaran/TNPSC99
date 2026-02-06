@@ -223,5 +223,9 @@
     "question_removed_desc": "The question has been removed from this test.",
     "error_title": "Error",
     "remove_question_error_desc": "Failed to remove the question from the test.",
-    "error_updating_unit_desc": "There was a problem updating the unit."
+    "error_updating_unit_desc": "There was a problem updating the unit.",
+    "edit_unit": "Edit Unit",
+    "edit_unit_desc": "Make changes to the unit details below.",
+    "update_unit": "Update Unit",
+    "updating_unit": "Updating Unit..."
 }
