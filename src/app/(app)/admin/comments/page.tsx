@@ -1,15 +1,26 @@
 'use client';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, orderBy, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, orderBy, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import type { QuestionComment } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Check, Edit } from 'lucide-react';
+import { Check, Edit, Trash } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Link from 'next/link';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 
 export default function AdminCommentsPage() {
@@ -31,6 +42,18 @@ export default function AdminCommentsPage() {
     } catch (error) {
       console.error("Error resolving comment:", error);
       toast({ variant: 'destructive', title: "Error", description: "Could not update the comment." });
+    }
+  };
+
+  const handleDelete = async (commentId: string) => {
+    if (!firestore) return;
+    const commentRef = doc(firestore, 'questionComments', commentId);
+    try {
+      await deleteDoc(commentRef);
+      toast({ title: "Comment deleted successfully." });
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      toast({ variant: 'destructive', title: "Error", description: "Could not delete the comment." });
     }
   };
   
@@ -72,6 +95,26 @@ export default function AdminCommentsPage() {
                                       <Check className="mr-2 h-4 w-4" />
                                       Mark as Resolved
                                   </Button>
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button variant="destructive" size="sm">
+                                        <Trash className="mr-2 h-4 w-4" />
+                                        Delete
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          This action cannot be undone. This will permanently delete the comment.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleDelete(comment.id)}>Delete</AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
                                 </div>
                             </div>
                             <p className="font-semibold mt-2 bg-muted p-2 rounded-md">Question: "{comment.questionText}"</p>
@@ -89,7 +132,28 @@ export default function AdminCommentsPage() {
                                     <p className="text-sm text-muted-foreground">From: {comment.username}</p>
                                     <p className="text-sm text-muted-foreground">Date: {comment.createdAt ? format(new Date(comment.createdAt), 'PPp') : 'N/A'}</p>
                                 </div>
-                                <Badge variant="secondary">Resolved</Badge>
+                                <div className="flex items-center gap-2">
+                                    <Badge variant="secondary">Resolved</Badge>
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                        <Button variant="destructive" size="icon">
+                                            <Trash className="h-4 w-4" />
+                                        </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                            This action cannot be undone. This will permanently delete the comment.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction onClick={() => handleDelete(comment.id)}>Delete</AlertDialogAction>
+                                        </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </div>
                             </div>
                             <p className="font-semibold mt-2 bg-background p-2 rounded-md">Question: "{comment.questionText}"</p>
                             <p className="mt-2 text-muted-foreground italic whitespace-pre-wrap">{comment.comment}</p>
