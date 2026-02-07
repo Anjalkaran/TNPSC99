@@ -1,8 +1,7 @@
-'use server';
 /**
  * @fileOverview An AI flow to analyze a user's test performance.
  *
- * - analyzePerformance - A function that takes subject performance data and returns an analysis.
+ * - analyzePerformance - a function that takes subject performance data and returns an analysis.
  * - PerformanceInput - The input type for the analysis.
  * - PerformanceOutput - The return type for the analysis.
  */
