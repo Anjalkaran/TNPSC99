@@ -8,7 +8,6 @@ import { useMemo, useState, useEffect } from 'react';
 import { useTranslation } from '@/hooks/use-translation';
 import { Progress } from '@/components/ui/progress';
 import { BrainCircuit, Sparkles, Target, TrendingUp, BookCheck, FolderKanban, Shapes } from 'lucide-react';
-import { analyzePerformance, type PerformanceInput, type PerformanceOutput } from '@/ai/flows/performance-analysis-flow';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useParams } from 'next/navigation';
 
@@ -31,6 +30,20 @@ interface UnitPerformanceMetric extends PerformanceMetric {
   term: string;
   unitNumber: number;
 }
+interface PerformanceInput {
+  subjects: { name: string; proficiency: number; attempts: number }[];
+  categories: { name: string; subjectName: string; proficiency: number; attempts: number }[];
+  units: { name: string; className: string; subjectName: string; term: string; unitNumber: number; proficiency: number; attempts: number }[];
+  language: 'en' | 'ta';
+}
+
+interface PerformanceOutput {
+  strengths: string[];
+  weaknesses: string[];
+  recommendations: string[];
+  overallSummary: string;
+}
+
 
 function AiAnalysis({ 
   subjectPerformance,
@@ -77,11 +90,31 @@ function AiAnalysis({
                     })),
                     language: language,
                 };
-                const result = await analyzePerformance(input);
+                
+                const response = await fetch('/api/genkit/performanceAnalysisFlow', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ data: input }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API request failed with status ${response.status}`);
+                }
+
+                const result: PerformanceOutput = await response.json();
                 setAnalysis(result);
+
             } catch (error) {
                 console.error("Error analyzing performance:", error);
-                setAnalysis(null);
+                const summary = language === 'ta' 
+                    ? "AI பகுப்பாய்வு கிடைக்கவில்லை. உங்கள் ஜெமினி API விசையை உள்ளமைக்கவும்." 
+                    : "AI analysis is unavailable. Please configure your Gemini API key.";
+                setAnalysis({
+                    strengths: [],
+                    weaknesses: [],
+                    recommendations: [],
+                    overallSummary: summary,
+                });
             } finally {
                 setIsLoading(false);
             }
