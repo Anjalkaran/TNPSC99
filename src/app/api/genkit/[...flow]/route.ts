@@ -2,4 +2,9 @@ import genkitHandler from '@genkit-ai/next';
 import { ai } from '@/ai/genkit';
 import '@/ai/flows/performance-analysis-flow';
 
-export const { GET, POST } = genkitHandler(ai);
+// The handler is now a single function
+const handler = genkitHandler(ai);
+
+// Export it for both GET and POST
+export const GET = handler;
+export const POST = handler;
