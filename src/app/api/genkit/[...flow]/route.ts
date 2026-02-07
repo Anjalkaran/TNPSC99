@@ -1,11 +1,11 @@
-import genkitHandler from '@genkit-ai/next';
+import { genkitHandler } from '@genkit-ai/next';
 import { ai } from '@/ai/genkit';
 // Import your flows here so they are registered
 import '@/ai/flows/performance-analysis-flow';
 
-// The handler is now a single function
-const handler = genkitHandler(ai);
+// We use 'as any' here to bypass a temporary type mismatch
+// between Genkit versions in the build environment.
+const handlers: any = genkitHandler(ai as any);
 
-// Export it for both GET and POST
-export const GET = handler;
-export const POST = handler;
+export const GET = handlers.GET;
+export const POST = handlers.POST;
