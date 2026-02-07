@@ -35,8 +35,15 @@ import { signOut } from 'firebase/auth';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { useTranslation } from '@/hooks/use-translation';
 import Image from 'next/image';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type ElementType } from 'react';
 
+interface SidebarLink {
+  href: string;
+  label: string;
+  icon: ElementType;
+  adminOnly?: boolean;
+  comingSoon?: boolean;
+}
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -61,16 +68,16 @@ export function AppSidebar() {
   );
   const { data: userProfile } = useDoc<UserProfile>(userProfileRef);
 
-  const allSidebarLinks = [
+  const allSidebarLinks: SidebarLink[] = [
       { href: '/dashboard', label: t('dashboard'), icon: LayoutDashboard },
       { href: '/bookmarks', label: 'Bookmarks', icon: Bookmark },
-      { href: '/ask-your-doubt', label: t('ask_your_doubt'), icon: HelpCircle, adminOnly: true },
+      { href: '/ask-your-doubt', label: t('ask_your_doubt'), icon: HelpCircle, adminOnly: true, comingSoon: true },
       { href: '/profile', label: t('profile'), icon: User },
       { href: '/exam-history', label: t('exam_history'), icon: History },
       { href: '/performance', label: t('performance'), icon: BarChart2 },
       { href: '/leaderboard', label: t('leaderboard'), icon: Award },
-      { href: '/feedback', label: t('feedback'), icon: Star, adminOnly: true },
-      { href: '/whatsapp-support', label: t('whatsapp_support'), icon: MessageSquare, adminOnly: true },
+      { href: '/feedback', label: t('feedback'), icon: Star, adminOnly: true, comingSoon: true },
+      { href: '/whatsapp-support', label: t('whatsapp_support'), icon: MessageSquare, adminOnly: true, comingSoon: true },
   ];
 
   const sidebarLinks = allSidebarLinks.filter(link => {
