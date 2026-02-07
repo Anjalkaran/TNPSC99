@@ -111,7 +111,7 @@ export default function TestPage() {
       if (userChoice === 'resume' && loadedAttempt) {
           setInProgressAttempt(loadedAttempt);
           const questionMap = new Map(allQuestions.map(q => [q.id, q]));
-          sessionQuestions = loadedAttempt.sessionQuestionIds.map(id => questionMap.get(id)).filter(Boolean) as Question[];
+          sessionQuestions = (loadedAttempt.sessionQuestionIds || []).map(id => questionMap.get(id)).filter(Boolean) as Question[];
       } else {
         setInProgressAttempt(null);
         const completedAttemptsQuery = query(attemptsRef, where('testId', '==', testData.id), where('status', '==', 'completed'));
