@@ -118,7 +118,7 @@ function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, cla
     const selectedClass = classes?.find(c => c.id === classIdValue);
     const classNameValue = selectedClass?.name || '';
     const classNumberMatch = classNameValue.match(/\d+/);
-    const classNumber = classNumberMatch ? parseInt(classNumberMatch[0], 10) : 0;
+    const classNumber = classNumberMatch ? parseInt(classNumberMatch[0]) : 0;
 
     const showTermField = true;
 
@@ -656,7 +656,7 @@ export default function TopicManagementPage() {
   const selectedClass = classes?.find(c => c.id === classIdValue);
   const classNameValue = selectedClass?.name || '';
   const classNumberMatch = classNameValue.match(/\d+/);
-  const classNumber = classNumberMatch ? parseInt(classNumberMatch[0], 10) : 0;
+  const classNumber = classNumberMatch ? parseInt(classNumberMatch[0]) : 0;
 
   const showTermField = true;
 
