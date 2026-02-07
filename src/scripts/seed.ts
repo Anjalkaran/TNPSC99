@@ -392,7 +392,7 @@ export async function seedDatabase() {
 
   // Seed Tests
   const testsCollection = collection(firestore, 'tests');
-  tests.forEach((test) => {
+  tests.forEach((test: any) => {
     const docRef = doc(testsCollection, test.id);
     const { image, ...testData } = test; // Exclude image from Firestore data
     batch.set(docRef, testData);
@@ -415,5 +415,6 @@ export async function seedDatabase() {
     
 
     
+
 
 
