@@ -15,7 +15,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { buttonVariants } from "@/components/ui/button";
 
 // Function to shuffle an array
 function shuffleArray<T>(array: T[]): T[] {
@@ -172,8 +171,11 @@ export default function TestPage() {
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogAction onClick={() => handleResumeChoice('new')} className={buttonVariants({ variant: "destructive" })}>
-                            {t('start_new_test')}
+                        <AlertDialogAction
+                          onClick={() => handleResumeChoice('new')}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          {t('start_new_test')}
                         </AlertDialogAction>
                         <AlertDialogAction onClick={() => handleResumeChoice('resume')}>
                             {t('continue_test')}
