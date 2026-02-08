@@ -807,11 +807,15 @@ export default function UploadMcqPage() {
                   questionIds: newQuestionIds,
                   classId: classId,
                   subjectId: subjectId,
-                  categoryId: categoryId,
                   term: term,
                   unitId: unitId,
                   bookType: bookType,
               };
+
+              if (categoryId) {
+                newTest.categoryId = categoryId;
+              }
+
               if (shouldAddUnitDetails) {
                 newTest.unitNumber = unitNumber;
                 newTest.unitName = unitName;
@@ -1118,3 +1122,5 @@ export default function UploadMcqPage() {
     </div>
   );
 }
+
+    
