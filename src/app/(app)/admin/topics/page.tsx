@@ -48,6 +48,7 @@ const unitFormSchema = z.object({
   bookType: z.enum(['samacheer', 'old'], { required_error: "Please select a book type." }),
   classId: z.string().min(1, { message: "Please select a class." }),
   subjectName: z.string().min(1, { message: "Subject name must be at least 1 character." }),
+  medium: z.enum(['tamil', 'english'], { required_error: "Please select a medium." }),
   term: z.string().min(1, { message: "Please select a term." }),
   addUnitForFullBook: z.enum(['yes', 'no']).optional(),
   unitNumber: z.coerce.number().optional(),
@@ -114,6 +115,7 @@ function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, cla
             bookType: unit.bookType || 'samacheer',
             classId: unit.classId,
             subjectName: unit.subjectName || '',
+            medium: unit.medium || 'tamil',
             term: unit.term,
             unitNumber: unit.unitNumber || undefined,
             unitName: unit.unitName || '',
@@ -142,6 +144,16 @@ function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, cla
     const showFullBookUnitQuestion = termValue === 'Full Book';
     const showUnitFields = termValue !== 'Full Book' || (termValue === 'Full Book' && addUnitForFullBookValue === 'yes');
 
+    const subjectNameValue = form.watch('subjectName');
+    const isTamilSubject = subjectNameValue.toLowerCase() === 'tamil' || subjectNameValue === 'தமிழ்';
+
+    useEffect(() => {
+        if (isTamilSubject) {
+            form.setValue('medium', 'tamil');
+        }
+    }, [isTamilSubject, form]);
+
+
     useEffect(() => {
         if (termValue !== 'Full Book') {
             form.setValue('addUnitForFullBook', undefined);
@@ -160,7 +172,7 @@ function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, cla
         setIsSubmitting(true);
 
         try {
-            const { bookType, classId, subjectName, term, unitNumber, unitName, categoryName, addUnitForFullBook } = values;
+            const { bookType, classId, subjectName, medium, term, unitNumber, unitName, categoryName, addUnitForFullBook } = values;
             
             const subjectsRef = collection(firestore, 'subjects');
             const subjectQuery = query(subjectsRef, where('name', '==', subjectName));
@@ -203,6 +215,7 @@ function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, cla
                 subjectId,
                 term: showTermField ? term : 'Full Book',
                 bookType,
+                medium,
             };
             
             if (categoryId) {
@@ -302,6 +315,33 @@ function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, cla
                             <FormMessage />
                         </FormItem>
                     )}
+                />
+                <FormField
+                  control={form.control}
+                  name="medium"
+                  render={({ field }) => (
+                      <FormItem className="space-y-3">
+                          <FormLabel>Medium</FormLabel>
+                          <FormControl>
+                              <RadioGroup
+                                  onValueChange={field.onChange}
+                                  value={field.value}
+                                  className="flex gap-4"
+                                  disabled={isTamilSubject}
+                              >
+                                  <FormItem className="flex items-center space-x-2 space-y-0">
+                                      <FormControl><RadioGroupItem value="tamil" /></FormControl>
+                                      <FormLabel className="font-normal">தமிழ்</FormLabel>
+                                  </FormItem>
+                                  <FormItem className="flex items-center space-x-2 space-y-0">
+                                      <FormControl><RadioGroupItem value="english" /></FormControl>
+                                      <FormLabel className="font-normal">English</FormLabel>
+                                  </FormItem>
+                              </RadioGroup>
+                          </FormControl>
+                          <FormMessage />
+                      </FormItem>
+                  )}
                 />
 
                <FormField
@@ -452,6 +492,7 @@ function ExistingUnitsList() {
         const mappedUnits = units.map(unit => ({
             ...unit,
             bookType: unit.bookType || 'samacheer',
+            medium: unit.medium || 'tamil',
             className: classMap.get(unit.classId) || unit.classId,
             subjectName: subjectMap.get(unit.subjectId) || 'Uncategorized',
             categoryName: unit.categoryId ? categoryMap.get(unit.categoryId) : undefined,
@@ -559,6 +600,7 @@ function ExistingUnitsList() {
                                                             <span>{unit.term}</span>
                                                             {unit.unitNumber && <span> • {t('Unit')} {unit.unitNumber}</span>}
                                                             {unit.categoryName && unit.unitName && <span> • {unit.categoryName}</span>}
+                                                            <Badge variant="outline">{unit.medium}</Badge>
                                                         </div>
                                                     </div>
                                                     <div className="flex gap-2">
@@ -675,7 +717,7 @@ export default function TopicManagementPage() {
 
   const form = useForm<UnitFormValues>({
     resolver: zodResolver(unitFormSchema),
-    defaultValues: { bookType: 'samacheer', classId: '', subjectName: '', term: '', unitNumber: undefined, unitName: '', categoryName: '', addUnitForFullBook: 'yes' },
+    defaultValues: { bookType: 'samacheer', classId: '', subjectName: '', medium: 'tamil', term: '', unitNumber: undefined, unitName: '', categoryName: '', addUnitForFullBook: 'yes' },
   });
 
   const classIdValue = form.watch('classId');
@@ -692,6 +734,15 @@ export default function TopicManagementPage() {
   const showFullBookUnitQuestion = termValue === 'Full Book';
   const showUnitFields = termValue !== 'Full Book' || (termValue === 'Full Book' && addUnitForFullBookValue === 'yes');
   
+  const subjectNameValue = form.watch('subjectName');
+  const isTamilSubject = subjectNameValue.toLowerCase() === 'tamil' || subjectNameValue === 'தமிழ்';
+
+  useEffect(() => {
+      if (isTamilSubject) {
+          form.setValue('medium', 'tamil');
+      }
+  }, [isTamilSubject, form]);
+
   useEffect(() => {
     if (termValue !== 'Full Book') {
         form.setValue('addUnitForFullBook', undefined);
@@ -721,7 +772,7 @@ export default function TopicManagementPage() {
     setIsSubmitting(true);
     
     try {
-        const { bookType, classId, subjectName, term, unitNumber, unitName, categoryName, addUnitForFullBook } = values;
+        const { bookType, classId, subjectName, medium, term, unitNumber, unitName, categoryName, addUnitForFullBook } = values;
         
         const subjectsRef = collection(firestore, 'subjects');
         const subjectQuery = query(subjectsRef, where('name', '==', subjectName));
@@ -773,6 +824,7 @@ export default function TopicManagementPage() {
             subjectId,
             term: showTermField ? term : 'Full Book',
             bookType,
+            medium,
         };
 
         if (categoryId) {
@@ -879,6 +931,34 @@ export default function TopicManagementPage() {
                       </FormControl>
                       <FormMessage />
                     </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="medium"
+                  render={({ field }) => (
+                      <FormItem className="space-y-3">
+                          <FormLabel>Medium</FormLabel>
+                          <FormControl>
+                              <RadioGroup
+                                  onValueChange={field.onChange}
+                                  value={field.value}
+                                  className="flex gap-4"
+                                  disabled={isTamilSubject}
+                              >
+                                  <FormItem className="flex items-center space-x-2 space-y-0">
+                                      <FormControl><RadioGroupItem value="tamil" /></FormControl>
+                                      <FormLabel className="font-normal">தமிழ்</FormLabel>
+                                  </FormItem>
+                                  <FormItem className="flex items-center space-x-2 space-y-0">
+                                      <FormControl><RadioGroupItem value="english" /></FormControl>
+                                      <FormLabel className="font-normal">English</FormLabel>
+                                  </FormItem>
+                              </RadioGroup>
+                          </FormControl>
+                          <FormMessage />
+                      </FormItem>
                   )}
                 />
                 

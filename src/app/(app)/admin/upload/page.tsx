@@ -58,6 +58,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 
 
 const jsonStructureExample = `[
@@ -80,6 +81,7 @@ const uploadFormSchema = z.object({
   bookType: z.enum(['samacheer', 'old'], { required_error: "Please select a book type." }),
   classId: z.string().min(1, { message: "Please select a class." }),
   subjectName: z.string().min(1, { message: "Subject name must be at least 1 character." }),
+  medium: z.enum(['tamil', 'english'], { required_error: "Please select a medium." }),
   term: z.string().min(1, { message: "Please select a term." }),
   addUnitForFullBook: z.enum(['yes', 'no']).optional(),
   unitNumber: z.coerce.number().optional(),
@@ -148,6 +150,7 @@ function ExistingUnitsList({ onUnitSelect }: { onUnitSelect: (unit: UnitWithName
         const mappedUnits = units.map(unit => ({
             ...unit,
             bookType: unit.bookType || 'samacheer',
+            medium: unit.medium || 'tamil',
             className: classMap.get(unit.classId) || unit.classId,
             subjectName: subjectMap.get(unit.subjectId) || 'Uncategorized',
             categoryName: unit.categoryId ? categoryMap.get(unit.categoryId) : undefined,
@@ -251,6 +254,7 @@ function ExistingUnitsList({ onUnitSelect }: { onUnitSelect: (unit: UnitWithName
                                                             <span>{unit.term}</span>
                                                             {unit.unitNumber && <span> • {t('Unit')} {unit.unitNumber}</span>}
                                                             {unit.categoryName && unit.unitName && <span> • {unit.categoryName}</span>}
+                                                            <Badge variant="outline">{unit.medium}</Badge>
                                                         </div>
                                                     </button>
                                                     <div className="flex gap-2">
@@ -474,7 +478,10 @@ function ExistingMcqBanksList() {
                                 <TableBody>
                                 {groupedData[className].map(test => (
                                     <TableRow key={test.id}>
-                                        <TableCell className="font-medium">{test.title}</TableCell>
+                                        <TableCell className="font-medium">
+                                          {test.title}
+                                          <Badge variant="outline" className="ml-2">{test.medium || 'tamil'}</Badge>
+                                        </TableCell>
                                         <TableCell>{test.questionIds.length}</TableCell>
                                         <TableCell className="text-right space-x-1">
                                             <Button variant="outline" size="icon" onClick={() => handleDownload(test)}>
@@ -572,7 +579,7 @@ export default function UploadMcqPage() {
     resolver: zodResolver(uploadFormSchema),
     defaultValues: {
       bookType: 'samacheer',
-      classId: '', subjectName: '', term: '', unitNumber: undefined, unitName: '', categoryName: '', jsonInput: '', referencePageOffset: undefined, addUnitForFullBook: 'yes'
+      classId: '', subjectName: '', term: '', unitNumber: undefined, unitName: '', categoryName: '', jsonInput: '', referencePageOffset: undefined, addUnitForFullBook: 'yes', medium: 'tamil'
     },
   });
 
@@ -605,6 +612,14 @@ export default function UploadMcqPage() {
   const showFullBookUnitQuestion = termValue === 'Full Book';
   const showUnitFields = termValue !== 'Full Book' || (termValue === 'Full Book' && addUnitForFullBookValue === 'yes');
   
+  const isTamilSubject = subjectNameValue.toLowerCase() === 'tamil' || subjectNameValue === 'தமிழ்';
+
+    useEffect(() => {
+        if (isTamilSubject) {
+            form.setValue('medium', 'tamil');
+        }
+    }, [isTamilSubject, form]);
+  
   useEffect(() => {
     if (termValue !== 'Full Book') {
         form.setValue('addUnitForFullBook', undefined);
@@ -635,6 +650,7 @@ export default function UploadMcqPage() {
         form.setValue('bookType', unit.bookType || 'samacheer');
         form.setValue('classId', unit.classId);
         form.setValue('subjectName', unit.subjectName || unit.subjectId);
+        form.setValue('medium', unit.medium || 'tamil');
         form.setValue('term', unit.term);
         form.setValue('unitNumber', unit.unitNumber);
         form.setValue('unitName', unit.unitName);
@@ -669,7 +685,7 @@ export default function UploadMcqPage() {
     try {
       if (!firestore) throw new Error('Firestore is not initialized');
 
-      const { bookType, classId, subjectName, term, unitNumber, unitName, categoryName, referencePageOffset, addUnitForFullBook } = values;
+      const { bookType, classId, subjectName, medium, term, unitNumber, unitName, categoryName, referencePageOffset, addUnitForFullBook } = values;
       const shouldAddUnitDetails = term !== 'Full Book' || (term === 'Full Book' && addUnitForFullBook === 'yes');
 
       // 1. Find or Create Subject
@@ -712,7 +728,8 @@ export default function UploadMcqPage() {
         where('classId', '==', classId),
         where('subjectId', '==', subjectId),
         where('term', '==', term),
-        where('bookType', '==', bookType)
+        where('bookType', '==', bookType),
+        where('medium', '==', medium)
       ];
 
       if (shouldAddUnitDetails) {
@@ -727,7 +744,7 @@ export default function UploadMcqPage() {
 
       if (!unitDoc) {
           const newUnitRef = doc(collection(firestore, 'units'));
-          const unitData: Partial<Unit> = { id: newUnitRef.id, classId, subjectId, term, categoryId, bookType };
+          const unitData: Partial<Unit> = { id: newUnitRef.id, classId, subjectId, term, categoryId, bookType, medium };
           if(shouldAddUnitDetails) {
               unitData.unitNumber = unitNumber;
               unitData.unitName = unitName;
@@ -744,6 +761,9 @@ export default function UploadMcqPage() {
           }
           if (bookType && unitDoc.data().bookType !== bookType) {
               updatePayload.bookType = bookType;
+          }
+          if (medium && unitDoc.data().medium !== medium) {
+            updatePayload.medium = medium;
           }
           if (Object.keys(updatePayload).length > 0) {
               await updateDoc(doc(firestore, 'units', unitId), updatePayload);
@@ -794,7 +814,7 @@ export default function UploadMcqPage() {
         testTitle += ` - ${categoryName}`;
       }
       
-      const testQuery = query(testsCollectionRef, where('title', '==', testTitle), where('bookType', '==', bookType));
+      const testQuery = query(testsCollectionRef, where('title', '==', testTitle), where('bookType', '==', bookType), where('medium', '==', medium));
       
       await runTransaction(firestore, async (transaction) => {
           const testSnapshot = await getDocs(testQuery);
@@ -810,6 +830,7 @@ export default function UploadMcqPage() {
                   term: term,
                   unitId: unitId,
                   bookType: bookType,
+                  medium: medium,
               };
 
               if (categoryId) {
@@ -829,7 +850,7 @@ export default function UploadMcqPage() {
               const testDoc = testSnapshot.docs[0];
               const existingQuestionIds = testDoc.data().questionIds || [];
               const updatedQuestionIds = [...new Set([...existingQuestionIds, ...newQuestionIds])];
-              const updateData: any = { questionIds: updatedQuestionIds, bookType: bookType };
+              const updateData: any = { questionIds: updatedQuestionIds, bookType: bookType, medium: medium };
               if (categoryId) {
                 updateData.categoryId = categoryId;
               }
@@ -951,6 +972,34 @@ export default function UploadMcqPage() {
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
+                                    )}
+                                />
+
+                                <FormField
+                                    control={form.control}
+                                    name="medium"
+                                    render={({ field }) => (
+                                        <FormItem className="space-y-3">
+                                            <FormLabel>Medium</FormLabel>
+                                            <FormControl>
+                                                <RadioGroup
+                                                    onValueChange={field.onChange}
+                                                    value={field.value}
+                                                    className="flex gap-4"
+                                                    disabled={isTamilSubject}
+                                                >
+                                                    <FormItem className="flex items-center space-x-2 space-y-0">
+                                                        <FormControl><RadioGroupItem value="tamil" /></FormControl>
+                                                        <FormLabel className="font-normal">தமிழ்</FormLabel>
+                                                    </FormItem>
+                                                    <FormItem className="flex items-center space-x-2 space-y-0">
+                                                        <FormControl><RadioGroupItem value="english" /></FormControl>
+                                                        <FormLabel className="font-normal">English</FormLabel>
+                                                    </FormItem>
+                                                </RadioGroup>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
                                     )}
                                 />
                                 

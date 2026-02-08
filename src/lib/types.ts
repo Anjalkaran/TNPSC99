@@ -35,6 +35,7 @@ export interface Test {
   isPreviousYearPaper?: boolean;
   referencePageOffset?: number;
   bookType?: 'samacheer' | 'old';
+  medium?: 'tamil' | 'english';
   examGroup?: 'Group I' | 'Group II' | 'Group IV';
   syllabusSubject?: string;
   syllabusTopic?: string;
@@ -75,6 +76,7 @@ export interface Unit {
   subjectName?: string; // For display purposes
   categoryName?: string; // For display purposes
   bookType?: 'samacheer' | 'old';
+  medium?: 'tamil' | 'english';
 }
 
 

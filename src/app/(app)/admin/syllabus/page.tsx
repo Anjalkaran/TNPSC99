@@ -60,6 +60,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Label } from '@/components/ui/label';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 
 
 const jsonStructureExample = `[
@@ -75,6 +76,7 @@ const jsonStructureExample = `[
 
 const syllabusUploadFormSchema = z.object({
   examGroup: z.enum(['Group I', 'Group II', 'Group IV'], { required_error: "Please select an exam group." }),
+  medium: z.enum(['tamil', 'english'], { required_error: "Please select a medium." }),
   syllabusSubject: z.string().min(1, { message: "Syllabus subject is required." }),
   syllabusTopic: z.string().min(1, { message: "Syllabus topic is required." }),
   jsonInput: z.string().min(1, { message: 'JSON data is required.' }),
@@ -230,6 +232,7 @@ function ExistingSyllabusTestsList() {
                                                         <span>{test.syllabusSubject}</span>
                                                         <p className="text-sm text-muted-foreground">{test.syllabusTopic}</p>
                                                     </div>
+                                                    <Badge variant="outline" className="mt-1">{test.medium || 'tamil'}</Badge>
                                                 </TableCell>
                                                 <TableCell>{test.questionIds.length}</TableCell>
                                                 <TableCell className="text-right space-x-1">
@@ -291,11 +294,21 @@ export default function SyllabusUploadPage() {
     resolver: zodResolver(syllabusUploadFormSchema),
     defaultValues: {
       examGroup: undefined,
+      medium: 'tamil',
       syllabusSubject: '',
       syllabusTopic: '',
       jsonInput: '',
     },
   });
+
+  const subjectNameValue = form.watch('syllabusSubject');
+  const isTamilSubject = subjectNameValue.toLowerCase() === 'tamil' || subjectNameValue === 'தமிழ்';
+
+  useEffect(() => {
+    if (isTamilSubject) {
+        form.setValue('medium', 'tamil');
+    }
+  }, [isTamilSubject, form]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -335,7 +348,7 @@ export default function SyllabusUploadPage() {
     try {
       if (!firestore) throw new Error('Firestore is not initialized');
 
-      const { examGroup, syllabusSubject, syllabusTopic } = values;
+      const { examGroup, medium, syllabusSubject, syllabusTopic } = values;
 
       // 1. Add Questions
       const batch = writeBatch(firestore);
@@ -361,7 +374,7 @@ export default function SyllabusUploadPage() {
       
       const testTitle = `${examGroup} - ${syllabusSubject} - ${syllabusTopic}`;
       
-      const testQuery = query(testsCollectionRef, where('title', '==', testTitle));
+      const testQuery = query(testsCollectionRef, where('title', '==', testTitle), where('medium', '==', medium));
       
       await runTransaction(firestore, async (transaction) => {
           const testSnapshot = await getDocs(testQuery);
@@ -373,6 +386,7 @@ export default function SyllabusUploadPage() {
                   description: `Syllabus-based test for ${examGroup}`,
                   questionIds: newQuestionIds,
                   examGroup: examGroup,
+                  medium: medium,
                   syllabusSubject: syllabusSubject,
                   syllabusTopic: syllabusTopic,
               };
@@ -381,7 +395,7 @@ export default function SyllabusUploadPage() {
               const testDoc = testSnapshot.docs[0];
               const existingQuestionIds = testDoc.data().questionIds || [];
               const updatedQuestionIds = [...new Set([...existingQuestionIds, ...newQuestionIds])];
-              const updateData: any = { questionIds: updatedQuestionIds };
+              const updateData: any = { questionIds: updatedQuestionIds, medium: medium };
               transaction.update(testDoc.ref, updateData);
           }
       });
@@ -437,6 +451,27 @@ export default function SyllabusUploadPage() {
                                 <SelectItem value="Group I">Group I</SelectItem>
                                 <SelectItem value="Group II">Group II</SelectItem>
                                 <SelectItem value="Group IV">Group IV</SelectItem>
+                            </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="medium"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Medium</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value} disabled={isTamilSubject}>
+                            <FormControl>
+                                <SelectTrigger>
+                                <SelectValue placeholder="Select a Medium" />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                <SelectItem value="tamil">தமிழ்</SelectItem>
+                                <SelectItem value="english">English</SelectItem>
                             </SelectContent>
                             </Select>
                             <FormMessage />
