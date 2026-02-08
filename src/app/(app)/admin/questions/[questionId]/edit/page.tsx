@@ -2,7 +2,7 @@
 
 import { useRouter, notFound, useParams } from 'next/navigation';
 import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, collection, query, where, getDocs, writeBatch, arrayRemove } from 'firebase/firestore';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -18,6 +18,17 @@ import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Trash } from 'lucide-react';
 import { useEffect } from 'react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 const questionEditSchema = z.object({
   text: z.string().min(1, 'Question text is required.'),
@@ -90,6 +101,48 @@ export default function EditQuestionPage() {
         title: 'Update Failed',
         description: error.message || 'Could not update the question.',
       });
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!firestore || !questionId) return;
+
+    try {
+        const batch = writeBatch(firestore);
+
+        // Find all tests containing the question
+        const testsRef = collection(firestore, 'tests');
+        const q = query(testsRef, where('questionIds', 'array-contains', questionId));
+        const testSnapshots = await getDocs(q);
+
+        // For each test, remove the questionId from its questionIds array
+        testSnapshots.forEach(testDoc => {
+            batch.update(testDoc.ref, {
+                questionIds: arrayRemove(questionId)
+            });
+        });
+        
+        // Delete the question document itself
+        if (questionRef) {
+          batch.delete(questionRef);
+        }
+        
+        await batch.commit();
+        
+        toast({
+            title: "Question Deleted",
+            description: "The question and its references in tests have been deleted.",
+        });
+
+        router.back();
+
+    } catch (error: any) {
+        console.error("Error deleting question:", error);
+        toast({
+            variant: "destructive",
+            title: "Deletion Failed",
+            description: error.message || "Could not delete the question.",
+        });
     }
   };
 
@@ -207,11 +260,34 @@ export default function EditQuestionPage() {
                 )}
               />
               
-              <div className="flex justify-end gap-2">
-                 <Button type="button" variant="ghost" onClick={() => router.back()}>Cancel</Button>
-                 <Button type="submit" disabled={form.formState.isSubmitting}>
-                    {form.formState.isSubmitting ? 'Saving...' : 'Save Changes'}
-                 </Button>
+              <div className="flex justify-between items-center pt-4">
+                 <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button type="button" variant="destructive">
+                            <Trash className="mr-2 h-4 w-4" />
+                            Delete Question
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                This action cannot be undone. This will permanently delete this question
+                                and remove it from all tests it belongs to.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+                <div className="flex justify-end gap-2">
+                    <Button type="button" variant="ghost" onClick={() => router.back()}>Cancel</Button>
+                    <Button type="submit" disabled={form.formState.isSubmitting}>
+                        {form.formState.isSubmitting ? 'Saving...' : 'Save Changes'}
+                    </Button>
+                </div>
               </div>
             </form>
           </Form>
