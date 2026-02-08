@@ -129,10 +129,16 @@ export default function SubjectTestsPage() {
     return query(
       testsCollection, 
       where('classId', '==', classId),
-      where('subjectId', '==', subjectId),
-      where('bookType', '==', bookType)
+      where('subjectId', '==', subjectId)
     );
-  }, [testsCollection, classId, subjectId, bookType]);
+  }, [testsCollection, classId, subjectId]);
+  
+  const { data: allSubjectTests, isLoading: testsLoading } = useCollection<Test>(subjectTestsQuery);
+  
+  const subjectTests = useMemo(() => {
+      if (!allSubjectTests) return null;
+      return allSubjectTests.filter(test => (test.bookType || 'samacheer') === bookType);
+  }, [allSubjectTests, bookType]);
   
   const categoriesCollection = useMemoFirebase(() => collection(firestore, 'categories'), [firestore]);
   const subjectCategoriesQuery = useMemoFirebase(() => {
@@ -141,7 +147,6 @@ export default function SubjectTestsPage() {
   }, [categoriesCollection, subjectId]);
 
 
-  const { data: subjectTests, isLoading: testsLoading } = useCollection<Test>(subjectTestsQuery);
   const { data: categories, isLoading: categoriesLoading } = useCollection<Category>(subjectCategoriesQuery);
   
   const categoryMap = useMemo(() => {

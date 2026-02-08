@@ -43,14 +43,15 @@ export default function ClassSubjectsPage() {
         }
 
         const testsRef = collection(firestore, 'tests');
-        const queryConstraints: QueryConstraint[] = [where('classId', '==', classId)];
-        if (bookType) {
-            queryConstraints.push(where('bookType', '==', bookType));
-        }
-
-        const testsQuery = query(testsRef, ...queryConstraints);
+        const testsQuery = query(testsRef, where('classId', '==', classId));
         const testSnapshots = await getDocs(testsQuery);
-        const testsForClass = testSnapshots.docs.map(d => d.data() as Test);
+        
+        const allTestsForClass = testSnapshots.docs.map(d => d.data() as Test);
+        
+        const effectiveBookType = bookType || 'samacheer';
+        const testsForClass = allTestsForClass.filter(test => 
+            (test.bookType || 'samacheer') === effectiveBookType
+        );
         
         if (testsForClass.length > 0) {
             const subjectIds = [...new Set(testsForClass.map(t => t.subjectId).filter(Boolean) as string[])];
