@@ -1,10 +1,10 @@
 import { MetadataRoute } from 'next';
-import { initializeFirebase } from '@/firebase';
+import { initializeFirebaseServer } from '@/firebase/server-init';
 import { collection, getDocs } from 'firebase/firestore';
 import type { Test } from '@/lib/types';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const { firestore } = initializeFirebase();
+  const { firestore } = initializeFirebaseServer();
   const baseUrl = 'https://tnpsc99.com';
 
   // Static Pages
