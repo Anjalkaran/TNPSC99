@@ -47,7 +47,7 @@ export default function ReferralsPage() {
             User Referral Program
           </CardTitle>
           <CardDescription>
-            Invite 10 friends to get free lifetime access to all tests. Share your code and track your progress here.
+            Invite 10 friends to get a one month free subscription to all tests. Share your code and track your progress here.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -82,11 +82,11 @@ export default function ReferralsPage() {
               {userProfile.subscriptionStatus === 'free_access' ? (
                  <div className="p-4 bg-green-100 border border-green-200 text-green-800 rounded-lg text-center">
                     <p className="font-bold">Congratulations!</p>
-                    <p>You have earned free lifetime access to all tests!</p>
+                    <p>You have earned a one month free subscription!</p>
                  </div>
               ) : (
                 <div className="text-center text-muted-foreground">
-                    <p>Refer {REFERRAL_GOAL - referrals} more friends to unlock free access.</p>
+                    <p>Refer {REFERRAL_GOAL - referrals} more friends to get a one month free subscription.</p>
                 </div>
               )}
             </>
