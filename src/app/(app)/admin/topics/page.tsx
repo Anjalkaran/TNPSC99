@@ -54,6 +54,14 @@ const unitFormSchema = z.object({
   unitName: z.string().optional(),
   categoryName: z.string().optional(),
 }).superRefine((data, ctx) => {
+    if ( (data.subjectName === 'தமிழ்' || data.subjectName.toLowerCase() === 'tamil') && (!data.categoryName || data.categoryName.trim().length < 1) ) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['categoryName'],
+            message: 'Category name is required for Tamil subject.',
+        });
+    }
+
     const needsUnit = data.term !== 'Full Book' || (data.term === 'Full Book' && data.addUnitForFullBook === 'yes');
 
     if (needsUnit && data.term) {
