@@ -25,6 +25,7 @@ import {
   MessageSquare,
   LogOut,
   Bookmark,
+  Gift,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useAuth, useUser, useDoc, useMemoFirebase, useFirestore } from '@/firebase';
@@ -71,6 +72,7 @@ export function AppSidebar() {
   const allSidebarLinks: SidebarLink[] = [
       { href: '/dashboard', label: t('dashboard'), icon: LayoutDashboard },
       { href: '/bookmarks', label: 'Bookmarks', icon: Bookmark },
+      { href: '/referrals', label: 'Referrals', icon: Gift },
       { href: '/ask-your-doubt', label: t('ask_your_doubt'), icon: HelpCircle, adminOnly: true, comingSoon: true },
       { href: '/profile', label: t('profile'), icon: User },
       { href: '/exam-history', label: t('exam_history'), icon: History },

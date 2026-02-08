@@ -19,6 +19,23 @@
         "name": {
           "type": "string",
           "description": "Full name of the user."
+        },
+        "referralCode": {
+            "type": "string",
+            "description": "The user's unique referral code."
+        },
+        "referredBy": {
+            "type": "string",
+            "description": "The ID of the user who made the referral."
+        },
+        "referralCount": {
+            "type": "number",
+            "description": "The number of users successfully referred."
+        },
+        "subscriptionStatus": {
+            "type": "string",
+            "description": "The user's current subscription status.",
+            "enum": ["none", "free_access"]
         }
       },
       "required": [
@@ -404,4 +421,3 @@
     "reasoning": "The Firestore data structure is designed to support the TNPSC Ace app's requirements for class-wise, subject-wise, and previous year question paper MCQ tests, along with score tracking. It prioritizes authorization independence through denormalization where necessary and ensures structural segregation for simplified security rules.\n\n*   **Users:** User data is stored in a dedicated `users` collection, enabling easy management of user profiles.\n*   **Subjects:** Subject data is stored in a dedicated `subjects` collection.\n*   **Class Tests, Subject Tests, and Previous Year Papers:** These are stored in separate collections (`classTests`, `subjectTests`, `previousYearPapers`) to maintain structural segregation. This simplifies security rules as each collection has a distinct security posture. Each test document contains references to questions.\n*   **Scores:** User scores are stored in the `users/{userId}/scores/{scoreId}` subcollection. This structure enforces ownership and allows easy retrieval of a user's scores. It automatically filters list operations to only the user's own scores (QAPs).\n\n**Authorization Independence and QAPs:**\n\n*   Authorization Independence is achieved through path-based ownership for user scores. A user can only access their own scores because the scores are stored under their respective user ID (`/users/{userId}/scores/{scoreId}`).\n*   QAPs are supported by using structural segregation. List operations on `/classTests`, `/subjectTests`, and `/previousYearPapers` are secure because the rules can be written to allow only authenticated users to view the tests (or, if desired, to make them publicly readable). The scores subcollection automatically filters list operations to the current user because of the path-based ownership.\n"
   }
 }
-    

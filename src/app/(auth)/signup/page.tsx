@@ -28,7 +28,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from 'firebase/auth';
-import { doc, setDoc, getFirestore, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getFirestore, getDoc, collection, query, where, getDocs, updateDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -42,6 +42,7 @@ const signupSchema = z
     email: z.string().email('தவறான மின்னஞ்சல் முகவரி.'),
     password: z.string().min(6, 'கடவுச்சொல் குறைந்தது 6 எழுத்துகள் இருக்க வேண்டும்.'),
     confirmPassword: z.string(),
+    referralCode: z.string().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'கடவுச்சொற்கள் பொருந்தவில்லை.',
@@ -71,6 +72,7 @@ export default function SignupPage() {
       email: '',
       password: '',
       confirmPassword: '',
+      referralCode: '',
     },
   });
 
@@ -97,6 +99,9 @@ export default function SignupPage() {
                 email: user.email!,
                 registrationDate: new Date().toISOString(),
                 isAdmin: user.email === 'admin@tnpsc99.com',
+                referralCode: user.uid.slice(0, 8),
+                referralCount: 0,
+                subscriptionStatus: 'none',
             };
 
             setDoc(userDocRef, userProfile).catch((error) => {
@@ -139,6 +144,12 @@ export default function SignupPage() {
 
       // Also update the user's auth profile
       await updateProfile(newUser, { displayName: values.username });
+      
+      // TODO: This is where the referral code logic would go.
+      // 1. Query the 'users' collection to find a user with the matching `values.referralCode`.
+      // 2. If a referrer is found, use a transaction to increment their `referralCount`.
+      // 3. If their new count reaches 10, update their `subscriptionStatus` to 'free_access'.
+      // This logic requires secure backend implementation (e.g., Cloud Functions) to prevent abuse.
 
       const userProfile: UserProfile = {
         id: newUser.uid,
@@ -146,6 +157,10 @@ export default function SignupPage() {
         email: values.email,
         registrationDate: new Date().toISOString(),
         isAdmin: values.email === 'admin@tnpsc99.com',
+        referralCode: newUser.uid.slice(0, 8), // Generate a unique code
+        referralCount: 0,
+        subscriptionStatus: 'none',
+        // referredBy: referrerId, // This would be set if a valid code was used
       };
 
       const userDocRef = doc(firestore, 'users', newUser.uid);
@@ -252,6 +267,19 @@ export default function SignupPage() {
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="referralCode"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Referral Code (Optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter code from a friend" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? 'உருவாக்கப்படுகிறது...' : 'கணக்கை உருவாக்கவும்'}
             </Button>
@@ -283,5 +311,3 @@ export default function SignupPage() {
     </Card>
   );
 }
-
-    

@@ -86,6 +86,10 @@ export interface UserProfile {
   isAdmin?: boolean;
   phone?: string;
   city?: string;
+  referralCode: string;
+  referredBy?: string;
+  referralCount: number;
+  subscriptionStatus: 'none' | 'free_access';
 }
 
 export interface UserTestAttempt {
@@ -132,4 +136,3 @@ export interface QuestionComment {
     createdAt: string;
     status: 'open' | 'resolved';
 }
-    
