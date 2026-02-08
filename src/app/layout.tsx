@@ -8,8 +8,12 @@ import { LanguageProvider } from '@/hooks/use-translation';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'tnpsc99.com',
-  description: 'Your partner for TNPSC exam preparation.',
+  title: {
+    default: 'tnpsc99.com - TNPSC Online Tests and Exam Preparation',
+    template: '%s | tnpsc99.com',
+  },
+  description: 'Your ultimate partner for TNPSC exam preparation. Practice with thousands of MCQs for Group II, Group IV, and class-wise tests on tnpsc99.com. Track your performance and ace the TNPSC exams.',
+  keywords: ['tnpsc', 'tnpsc99', 'tnpsc99.com', 'tnpsc exams', 'tnpsc online test', 'tnpsc preparation', 'tnpsc mcq', 'group 2', 'group 4', 'tnpsc ace'],
   manifest: '/manifest.json',
   icons: {
     icon: '/favicon.ico',
