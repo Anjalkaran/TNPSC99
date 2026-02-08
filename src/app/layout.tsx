@@ -9,10 +9,10 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: {
-    default: 'tnpsc99.com - TNPSC Online Tests and Exam Preparation',
+    default: 'tnpsc99.com: TNPSC Online Exam Preparation',
     template: '%s | tnpsc99.com',
   },
-  description: 'Your ultimate partner for TNPSC exam preparation. Practice with thousands of MCQs for Group II, Group IV, and class-wise tests on tnpsc99.com. Track your performance and ace the TNPSC exams.',
+  description: 'tnpsc99.com is your ultimate partner for TNPSC exam preparation. Practice with thousands of MCQs for Group II, Group IV, and class-wise tests. Track your performance and ace the TNPSC exams.',
   keywords: ['tnpsc', 'tnpsc99', 'tnpsc99.com', 'tnpsc exams', 'tnpsc online test', 'tnpsc preparation', 'tnpsc mcq', 'group 2', 'group 4', 'tnpsc ace'],
   manifest: '/manifest.json',
   icons: {
@@ -29,6 +29,7 @@ export default function RootLayout({
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "tnpsc99.com",
+    "alternateName": "tnpsc99",
     "url": "https://tnpsc99.com",
     "description": "Your ultimate partner for TNPSC exam preparation. Practice with thousands of MCQs for Group II, Group IV, and class-wise tests on tnpsc99.com. Track your performance and ace the TNPSC exams.",
     "potentialAction": {
