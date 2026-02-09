@@ -483,7 +483,7 @@ function ExistingUnitsList() {
     const { data: categories } = useCollection<Category>(categoriesCollection);
 
     const groupedUnits = useMemo(() => {
-        if (!units || !classes || !subjects || !categories) return {};
+        if (!units || !classes || !subjects || !categories) return { samacheer: {}, old: {} };
 
         const classMap = new Map(classes.map(c => [c.id, language === 'ta' && c.name_ta ? c.name_ta : c.name]));
         const subjectMap = new Map(subjects.map(s => [s.id, language === 'ta' && s.name_ta ? s.name_ta : s.name]));
@@ -498,25 +498,31 @@ function ExistingUnitsList() {
             categoryName: unit.categoryId ? categoryMap.get(unit.categoryId) : undefined,
         }));
         
-        const groupedByBookType: Record<string, Record<string, Record<string, typeof mappedUnits[0][]>>> = {
+        const grouped: {
+            samacheer: Record<string, Record<string, Record<string, typeof mappedUnits[0][]>>>,
+            old: Record<string, Record<string, Record<string, typeof mappedUnits[0][]>>>,
+        } = {
             samacheer: {},
-            old: {}
+            old: {},
         };
-        
+
         mappedUnits.forEach(unit => {
             const bookTypeKey = unit.bookType as 'samacheer' | 'old';
-            if (!groupedByBookType[bookTypeKey]) groupedByBookType[bookTypeKey] = {};
+            const className = unit.className;
+            const subjectName = unit.subjectName;
+            const termName = unit.term || 'Uncategorized Term';
 
-            const classKey = unit.className;
-            if (!groupedByBookType[bookTypeKey][classKey]) {
-                groupedByBookType[bookTypeKey][classKey] = {};
+            if (!grouped[bookTypeKey][className]) {
+                grouped[bookTypeKey][className] = {};
             }
-
-            const subjectKey = unit.subjectName;
-            if (!groupedByBookType[bookTypeKey][classKey][subjectKey]) {
-                groupedByBookType[bookTypeKey][classKey][subjectKey] = [];
+            if (!grouped[bookTypeKey][className][subjectName]) {
+                grouped[bookTypeKey][className][subjectName] = {};
             }
-            groupedByBookType[bookTypeKey][classKey][subjectKey].push(unit);
+            if (!grouped[bookTypeKey][className][subjectName][termName]) {
+                grouped[bookTypeKey][className][subjectName][termName] = [];
+            }
+            
+            grouped[bookTypeKey][className][subjectName][termName].push(unit);
         });
 
         const getNumber = (name: string) => {
@@ -524,33 +530,35 @@ function ExistingUnitsList() {
             return match ? parseInt(match[0], 10) : Infinity;
         };
 
-        for (const bookType in groupedByBookType) {
-            const classesInBookType = groupedByBookType[bookType as 'samacheer' | 'old'];
-            const sortedClassNames = Object.keys(classesInBookType).sort((a, b) => getNumber(a) - getNumber(b));
-            
-            const finalGroupedForBook: Record<string, Record<string, typeof mappedUnits[0][]>> = {};
+        const sortInnerObject = (obj: Record<string, Record<string, Record<string, typeof mappedUnits[0][]>>>) => {
+            const sortedClassNames = Object.keys(obj).sort((a, b) => getNumber(a) - getNumber(b));
+            const result: Record<string, Record<string, Record<string, typeof mappedUnits[0][]>>> = {};
             for (const className of sortedClassNames) {
-                const subjectsInClass = classesInBookType[className];
-                const sortedSubjectNames = Object.keys(subjectsInClass).sort((a, b) => a.localeCompare(b));
-                
-                const finalGroupedForClass: Record<string, typeof mappedUnits[0][]> = {};
-                for (const subjectName of sortedSubjectNames) {
-                    finalGroupedForClass[subjectName] = subjectsInClass[subjectName].sort((a, b) => {
-                        if ((a.term || '').localeCompare(b.term || '') !== 0) {
-                            return (a.term || '').localeCompare(b.term || '');
-                        }
-                         if ((a.unitNumber || 0) - (b.unitNumber || 0) !== 0) {
-                           return (a.unitNumber || 0) - (b.unitNumber || 0);
+                result[className] = {};
+                const sortedSubjects = Object.keys(obj[className]).sort((a, b) => a.localeCompare(b));
+                for (const subjectName of sortedSubjects) {
+                    result[className][subjectName] = {};
+                    const sortedTerms = Object.keys(obj[className][subjectName]).sort((a,b) => {
+                         if (a.startsWith('பருவம்')) {
+                            const numA = getNumber(a);
+                            const numB = getNumber(b);
+                            return numA - numB;
                          }
-                        return (a.categoryName || '').localeCompare(b.categoryName || '');
+                         return a.localeCompare(b);
                     });
+                     for (const termName of sortedTerms) {
+                        const sortedUnits = obj[className][subjectName][termName].sort((a, b) => (a.unitNumber || 0) - (b.unitNumber || 0));
+                        result[className][subjectName][termName] = sortedUnits;
+                    }
                 }
-                finalGroupedForBook[className] = finalGroupedForClass;
             }
-            groupedByBookType[bookType as 'samacheer' | 'old'] = finalGroupedForBook;
-        }
+            return result;
+        };
         
-        return groupedByBookType;
+        return {
+            samacheer: sortInnerObject(grouped.samacheer),
+            old: sortInnerObject(grouped.old),
+        };
 
     }, [units, classes, subjects, categories, language]);
 
@@ -580,71 +588,86 @@ function ExistingUnitsList() {
 
     if (isLoading) return <p>{t('Loading units...')}...</p>
     
-    const renderAccordion = (unitsByClass: Record<string, Record<string, any[]>>, bookType: string) => (
+    const renderAccordion = (groupedData: Record<string, Record<string, Record<string, any[]>>>, bookType: string) => {
+        const sortedClassNames = Object.keys(groupedData);
+         if (sortedClassNames.length === 0) {
+            return (
+                <p className="text-center text-muted-foreground pt-4">{t('No units found for Samacheer Kalvi.')}</p>
+            );
+        }
+        return (
         <Accordion type="multiple" className="w-full">
-            {Object.entries(unitsByClass).map(([className, subjectsInClass]) => (
+            {sortedClassNames.map((className) => (
                 <AccordionItem value={`${bookType}-${className}`} key={`${bookType}-${className}`}>
                     <AccordionTrigger className="text-lg font-semibold">{className}</AccordionTrigger>
                     <AccordionContent>
-                        <Accordion type="multiple" className="w-full pl-4" defaultValue={Object.keys(subjectsInClass).map(subjectName => `${bookType}-${className}-${subjectName}`)}>
-                            {Object.entries(subjectsInClass).map(([subjectName, subjectUnits]) => (
+                        <Accordion type="multiple" className="w-full pl-4" defaultValue={Object.keys(groupedData[className]).map(subjectName => `${bookType}-${className}-${subjectName}`)}>
+                            {Object.entries(groupedData[className]).map(([subjectName, termsInSubject]) => (
                                 <AccordionItem value={`${bookType}-${className}-${subjectName}`} key={`${bookType}-${className}-${subjectName}`} className="border-b-0">
                                     <AccordionTrigger className="border-b text-base font-medium">{subjectName}</AccordionTrigger>
                                     <AccordionContent className="pt-2">
-                                        <ul className="space-y-2">
-                                            {subjectUnits.map(unit => (
-                                                <li key={unit.id} className="flex justify-between items-center p-3 border rounded-md">
-                                                    <div>
-                                                        <p className="font-semibold">{unit.unitName || unit.categoryName || unit.term}</p>
-                                                        <div className="text-sm text-muted-foreground flex items-center gap-x-2 flex-wrap">
-                                                            <span>{unit.term}</span>
-                                                            {unit.unitNumber && <span> • {t('Unit')} {unit.unitNumber}</span>}
-                                                            {unit.categoryName && unit.unitName && <span> • {unit.categoryName}</span>}
-                                                            <Badge variant="outline">{unit.medium}</Badge>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex gap-2">
-                                                        <Dialog open={openDialogs[unit.id] || false} onOpenChange={(isOpen) => setDialogState(unit.id, isOpen)}>
-                                                            <DialogTrigger asChild>
-                                                                <Button variant="ghost" size="icon">
-                                                                    <Edit className="h-4 w-4" />
-                                                                    <span className="sr-only">{t('edit')}</span>
-                                                                </Button>
-                                                            </DialogTrigger>
-                                                            <DialogContent>
-                                                                <DialogHeader>
-                                                                    <DialogTitle>{t('edit_unit')}</DialogTitle>
-                                                                    <DialogDescription>
-                                                                        {t("edit_unit_desc")}
-                                                                    </DialogDescription>
-                                                                </DialogHeader>
-                                                                <EditUnitForm unit={unit} classes={classes} subjects={subjects} onFinished={() => setDialogState(unit.id, false)} />
-                                                            </DialogContent>
-                                                        </Dialog>
-                                                        <AlertDialog>
-                                                            <AlertDialogTrigger asChild>
-                                                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-                                                                    <Trash className="h-4 w-4" />
-                                                                    <span className="sr-only">{t('delete')}</span>
-                                                                </Button>
-                                                            </AlertDialogTrigger>
-                                                            <AlertDialogContent>
-                                                                <AlertDialogHeader>
-                                                                    <AlertDialogTitle>{t('confirm_deletion_title')}</AlertDialogTitle>
-                                                                    <AlertDialogDescription>
-                                                                        {t('This action will permanently delete the unit \'{{unitName}}\'.', { unitName: unit.unitName || unit.id })}
-                                                                    </AlertDialogDescription>
-                                                                </AlertDialogHeader>
-                                                                <AlertDialogFooter>
-                                                                    <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                                                                    <AlertDialogAction onClick={() => handleDelete(unit.id)}>{t('delete')}</AlertDialogAction>
-                                                                </AlertDialogFooter>
-                                                            </AlertDialogContent>
-                                                        </AlertDialog>
-                                                    </div>
-                                                </li>
+                                        <Accordion type="multiple" className="w-full pl-2" defaultValue={Object.keys(termsInSubject).map(term => `${bookType}-${className}-${subjectName}-${term}`)}>
+                                            {Object.entries(termsInSubject).map(([termName, unitsInTerm]) => (
+                                                <AccordionItem value={`${bookType}-${className}-${subjectName}-${termName}`} key={`${bookType}-${className}-${subjectName}-${termName}`} className="border-b-0">
+                                                    <AccordionTrigger className="text-sm font-semibold">{termName}</AccordionTrigger>
+                                                    <AccordionContent className="pt-2 pl-2">
+                                                        <ul className="space-y-2">
+                                                            {unitsInTerm.map(unit => (
+                                                                <li key={unit.id} className="flex justify-between items-center p-3 border rounded-md">
+                                                                    <div>
+                                                                        <p className="font-semibold">{unit.unitName || unit.categoryName || 'Unit-level Test'}</p>
+                                                                        <div className="text-sm text-muted-foreground flex items-center gap-x-2 flex-wrap">
+                                                                            {unit.unitNumber && <span>{t('Unit')} {unit.unitNumber}</span>}
+                                                                            {unit.categoryName && unit.unitName && <span className="italic"> • {unit.categoryName}</span>}
+                                                                            <Badge variant="outline">{unit.medium}</Badge>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="flex gap-2">
+                                                                        <Dialog open={openDialogs[unit.id] || false} onOpenChange={(isOpen) => setDialogState(unit.id, isOpen)}>
+                                                                            <DialogTrigger asChild>
+                                                                                <Button variant="ghost" size="icon">
+                                                                                    <Edit className="h-4 w-4" />
+                                                                                    <span className="sr-only">{t('edit')}</span>
+                                                                                </Button>
+                                                                            </DialogTrigger>
+                                                                            <DialogContent>
+                                                                                <DialogHeader>
+                                                                                    <DialogTitle>{t('edit_unit')}</DialogTitle>
+                                                                                    <DialogDescription>
+                                                                                        {t("edit_unit_desc")}
+                                                                                    </DialogDescription>
+                                                                                </DialogHeader>
+                                                                                <EditUnitForm unit={unit} classes={classes} subjects={subjects} onFinished={() => setDialogState(unit.id, false)} />
+                                                                            </DialogContent>
+                                                                        </Dialog>
+                                                                        <AlertDialog>
+                                                                            <AlertDialogTrigger asChild>
+                                                                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                                                                    <Trash className="h-4 w-4" />
+                                                                                    <span className="sr-only">{t('delete')}</span>
+                                                                                </Button>
+                                                                            </AlertDialogTrigger>
+                                                                            <AlertDialogContent>
+                                                                                <AlertDialogHeader>
+                                                                                    <AlertDialogTitle>{t('confirm_deletion_title')}</AlertDialogTitle>
+                                                                                    <AlertDialogDescription>
+                                                                                        {t('This action will permanently delete the unit \'{{unitName}}\'.', { unitName: unit.unitName || unit.id })}
+                                                                                    </AlertDialogDescription>
+                                                                                </AlertDialogHeader>
+                                                                                <AlertDialogFooter>
+                                                                                    <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                                                                                    <AlertDialogAction onClick={() => handleDelete(unit.id)}>{t('delete')}</AlertDialogAction>
+                                                                                </AlertDialogFooter>
+                                                                            </AlertDialogContent>
+                                                                        </AlertDialog>
+                                                                    </div>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    </AccordionContent>
+                                                </AccordionItem>
                                             ))}
-                                        </ul>
+                                        </Accordion>
                                     </AccordionContent>
                                 </AccordionItem>
                             ))}
@@ -653,7 +676,8 @@ function ExistingUnitsList() {
                 </AccordionItem>
             ))}
         </Accordion>
-    );
+        );
+    }
 
     return (
         <Card>
