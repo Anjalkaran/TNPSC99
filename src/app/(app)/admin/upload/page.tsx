@@ -361,9 +361,12 @@ function ExistingMcqBanksList() {
         const classMap = new Map(classes.map(c => [c.id, language === 'ta' && c.name_ta ? c.name_ta : c.name]));
         const subjectMap = new Map(subjects.map(s => [s.id, language === 'ta' && s.name_ta ? s.name_ta : s.name]));
 
-        const grouped = {
-            samacheer: {} as Record<string, Record<string, Test[]>>,
-            old: {} as Record<string, Record<string, Test[]>>,
+        const grouped: {
+            samacheer: Record<string, Record<string, Record<string, Test[]>>>,
+            old: Record<string, Record<string, Record<string, Test[]>>>,
+        } = {
+            samacheer: {},
+            old: {},
         };
 
         filteredTests.forEach(test => {
@@ -372,14 +375,19 @@ function ExistingMcqBanksList() {
 
             const className = classMap.get(test.classId) || 'Uncategorized Class';
             const subjectName = subjectMap.get(test.subjectId) || 'Uncategorized Subject';
+            const termName = test.term || 'Uncategorized Term';
 
             if (!grouped[bookTypeKey][className]) {
                 grouped[bookTypeKey][className] = {};
             }
             if (!grouped[bookTypeKey][className][subjectName]) {
-                grouped[bookTypeKey][className][subjectName] = [];
+                grouped[bookTypeKey][className][subjectName] = {};
             }
-            grouped[bookTypeKey][className][subjectName].push(test);
+            if (!grouped[bookTypeKey][className][subjectName][termName]) {
+                grouped[bookTypeKey][className][subjectName][termName] = [];
+            }
+            
+            grouped[bookTypeKey][className][subjectName][termName].push(test);
         });
 
         const getNumber = (name: string) => {
@@ -387,14 +395,26 @@ function ExistingMcqBanksList() {
             return match ? parseInt(match[0], 10) : Infinity;
         };
 
-        const sortInnerObject = (obj: Record<string, Record<string, Test[]>>) => {
+        const sortInnerObject = (obj: Record<string, Record<string, Record<string, Test[]>>>) => {
             const sortedClasses = Object.keys(obj).sort((a, b) => getNumber(a) - getNumber(b));
-            const result: Record<string, Record<string, Test[]>> = {};
+            const result: Record<string, Record<string, Record<string, Test[]>>> = {};
             for (const className of sortedClasses) {
-                const sortedSubjects = Object.keys(obj[className]).sort((a, b) => a.localeCompare(b));
                 result[className] = {};
+                const sortedSubjects = Object.keys(obj[className]).sort((a, b) => a.localeCompare(b));
                 for (const subjectName of sortedSubjects) {
-                    result[className][subjectName] = obj[className][subjectName];
+                    result[className][subjectName] = {};
+                    const sortedTerms = Object.keys(obj[className][subjectName]).sort((a,b) => {
+                         if (a.startsWith('பருவம்')) {
+                            const numA = getNumber(a);
+                            const numB = getNumber(b);
+                            return numA - numB;
+                         }
+                         return a.localeCompare(b);
+                    });
+                     for (const termName of sortedTerms) {
+                        const sortedTests = obj[className][subjectName][termName].sort((a, b) => (a.unitNumber || 0) - (b.unitNumber || 0));
+                        result[className][subjectName][termName] = sortedTests;
+                    }
                 }
             }
             return result;
@@ -475,7 +495,7 @@ function ExistingMcqBanksList() {
         }
     };
     
-    const renderAccordionFor = (groupedData: Record<string, Record<string, Test[]>>, bookType: string) => {
+    const renderAccordionFor = (groupedData: Record<string, Record<string, Record<string, Test[]>>>, bookType: string) => {
         const sortedClassNames = Object.keys(groupedData);
         if (sortedClassNames.length === 0) {
             return (
@@ -496,61 +516,71 @@ function ExistingMcqBanksList() {
                                     <AccordionItem value={`${bookType}-${className}-${subjectName}`} key={`${bookType}-${className}-${subjectName}`} className="border-b-0">
                                         <AccordionTrigger className="border-b text-base font-medium">{subjectName}</AccordionTrigger>
                                         <AccordionContent className="pt-2">
-                                            <Table>
-                                                <TableHeader>
-                                                    <TableRow>
-                                                        <TableHead>Test Title</TableHead>
-                                                        <TableHead>No. of Questions</TableHead>
-                                                        <TableHead className="text-right">Actions</TableHead>
-                                                    </TableRow>
-                                                </TableHeader>
-                                                <TableBody>
-                                                {groupedData[className][subjectName].map(test => (
-                                                    <TableRow key={test.id}>
-                                                        <TableCell className="font-medium">
-                                                        {test.title}
-                                                        <Badge variant="outline" className="ml-2">{test.medium || 'tamil'}</Badge>
-                                                        </TableCell>
-                                                        <TableCell>{test.questionIds.length}</TableCell>
-                                                        <TableCell className="text-right space-x-1">
-                                                            <Button variant="outline" size="icon" onClick={() => handleDownload(test)}>
-                                                                <Download className="h-4 w-4" />
-                                                                <span className="sr-only">Download</span>
-                                                            </Button>
-                                                            <Button asChild variant="outline" size="icon">
-                                                                <Link href={`/admin/upload/${encodeURIComponent(test.id)}/view`}>
-                                                                    <View className="h-4 w-4" />
-                                                                </Link>
-                                                            </Button>
-                                                            <Button asChild variant="outline" size="icon">
-                                                                <Link href={`/admin/upload/${encodeURIComponent(test.id)}/edit`}>
-                                                                    <Edit className="h-4 w-4" />
-                                                                </Link>
-                                                            </Button>
-                                                            <AlertDialog>
-                                                                <AlertDialogTrigger asChild>
-                                                                    <Button variant="destructive" size="icon">
-                                                                        <Trash className="h-4 w-4" />
-                                                                    </Button>
-                                                                </AlertDialogTrigger>
-                                                                <AlertDialogContent>
-                                                                    <AlertDialogHeader>
-                                                                        <AlertDialogTitle>{t('confirm_deletion_title')}</AlertDialogTitle>
-                                                                        <AlertDialogDescription>
-                                                                            {t('This will permanently delete the test, but not the questions themselves.')}
-                                                                        </AlertDialogDescription>
-                                                                    </AlertDialogHeader>
-                                                                    <AlertDialogFooter>
-                                                                        <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                                                                        <AlertDialogAction onClick={() => handleDelete(test.id)}>{t('delete')}</AlertDialogAction>
-                                                                    </AlertDialogFooter>
-                                                                </AlertDialogContent>
-                                                            </AlertDialog>
-                                                        </TableCell>
-                                                    </TableRow>
+                                             <Accordion type="multiple" className="w-full pl-2" defaultValue={Object.keys(groupedData[className][subjectName]).map(term => `${bookType}-${className}-${subjectName}-${term}`)}>
+                                                {Object.entries(groupedData[className][subjectName]).map(([termName, testsInTerm]) => (
+                                                    <AccordionItem value={`${bookType}-${className}-${subjectName}-${termName}`} key={`${bookType}-${className}-${subjectName}-${termName}`} className="border-b-0">
+                                                        <AccordionTrigger className="text-sm font-semibold">{termName}</AccordionTrigger>
+                                                        <AccordionContent className="pt-2 pl-2">
+                                                            <Table>
+                                                                <TableHeader>
+                                                                    <TableRow>
+                                                                        <TableHead>Unit / Test Title</TableHead>
+                                                                        <TableHead>No. of Questions</TableHead>
+                                                                        <TableHead className="text-right">Actions</TableHead>
+                                                                    </TableRow>
+                                                                </TableHeader>
+                                                                <TableBody>
+                                                                {testsInTerm.map(test => (
+                                                                    <TableRow key={test.id}>
+                                                                        <TableCell className="font-medium">
+                                                                            {test.unitName ? `Unit ${test.unitNumber}: ${test.unitName}` : test.title}
+                                                                            {test.categoryName && <p className="text-xs text-muted-foreground">{test.categoryName}</p>}
+                                                                            <Badge variant="outline" className="mt-1">{test.medium || 'tamil'}</Badge>
+                                                                        </TableCell>
+                                                                        <TableCell>{test.questionIds.length}</TableCell>
+                                                                        <TableCell className="text-right space-x-1">
+                                                                            <Button variant="outline" size="icon" onClick={() => handleDownload(test)}>
+                                                                                <Download className="h-4 w-4" />
+                                                                                <span className="sr-only">Download</span>
+                                                                            </Button>
+                                                                            <Button asChild variant="outline" size="icon">
+                                                                                <Link href={`/admin/upload/${encodeURIComponent(test.id)}/view`}>
+                                                                                    <View className="h-4 w-4" />
+                                                                                </Link>
+                                                                            </Button>
+                                                                            <Button asChild variant="outline" size="icon">
+                                                                                <Link href={`/admin/upload/${encodeURIComponent(test.id)}/edit`}>
+                                                                                    <Edit className="h-4 w-4" />
+                                                                                </Link>
+                                                                            </Button>
+                                                                            <AlertDialog>
+                                                                                <AlertDialogTrigger asChild>
+                                                                                    <Button variant="destructive" size="icon">
+                                                                                        <Trash className="h-4 w-4" />
+                                                                                    </Button>
+                                                                                </AlertDialogTrigger>
+                                                                                <AlertDialogContent>
+                                                                                    <AlertDialogHeader>
+                                                                                        <AlertDialogTitle>{t('confirm_deletion_title')}</AlertDialogTitle>
+                                                                                        <AlertDialogDescription>
+                                                                                            {t('This will permanently delete the test, but not the questions themselves.')}
+                                                                                        </AlertDialogDescription>
+                                                                                    </AlertDialogHeader>
+                                                                                    <AlertDialogFooter>
+                                                                                        <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                                                                                        <AlertDialogAction onClick={() => handleDelete(test.id)}>{t('delete')}</AlertDialogAction>
+                                                                                    </AlertDialogFooter>
+                                                                                </AlertDialogContent>
+                                                                            </AlertDialog>
+                                                                        </TableCell>
+                                                                    </TableRow>
+                                                                ))}
+                                                                </TableBody>
+                                                            </Table>
+                                                        </AccordionContent>
+                                                    </AccordionItem>
                                                 ))}
-                                                </TableBody>
-                                            </Table>
+                                            </Accordion>
                                         </AccordionContent>
                                     </AccordionItem>
                                 ))}
