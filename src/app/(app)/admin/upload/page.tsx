@@ -675,13 +675,16 @@ export default function UploadMcqPage() {
   const showFullBookUnitQuestion = termValue === 'Full Book';
   const showUnitFields = termValue !== 'Full Book' || (termValue === 'Full Book' && addUnitForFullBookValue === 'yes');
   
-  const isTamilSubject = subjectNameValue.toLowerCase() === 'tamil' || subjectNameValue === 'தமிழ்';
+  const isTamil = subjectNameValue.toLowerCase() === 'tamil' || subjectNameValue === 'தமிழ்';
+  const isEnglish = subjectNameValue.toLowerCase() === 'english';
+  const unitCount = isTamil || isEnglish ? 10 : 30;
+  const unitLabel = isTamil ? 'இயல்' : 'Unit';
 
     useEffect(() => {
-        if (isTamilSubject) {
+        if (isTamil) {
             form.setValue('medium', 'tamil');
         }
-    }, [isTamilSubject, form]);
+    }, [isTamil, form]);
   
   useEffect(() => {
     if (termValue !== 'Full Book') {
@@ -1049,7 +1052,7 @@ export default function UploadMcqPage() {
                                                     onValueChange={field.onChange}
                                                     value={field.value}
                                                     className="flex gap-4"
-                                                    disabled={isTamilSubject}
+                                                    disabled={isTamil}
                                                 >
                                                     <FormItem className="flex items-center space-x-2 space-y-0">
                                                         <FormControl><RadioGroupItem value="tamil" /></FormControl>
@@ -1142,8 +1145,8 @@ export default function UploadMcqPage() {
                                                         </SelectTrigger>
                                                     </FormControl>
                                                     <SelectContent>
-                                                        {Array.from({ length: 10 }, (_, i) => i + 1).map(num => (
-                                                            <SelectItem key={num} value={String(num)}>இயல் {num}</SelectItem>
+                                                        {Array.from({ length: unitCount }, (_, i) => i + 1).map(num => (
+                                                            <SelectItem key={num} value={String(num)}>{unitLabel} {num}</SelectItem>
                                                         ))}
                                                     </SelectContent>
                                                 </Select>
@@ -1234,5 +1237,3 @@ export default function UploadMcqPage() {
     </div>
   );
 }
-
-    
