@@ -34,26 +34,33 @@ async function addUnits() {
 
   // 1. Find the subjectId for "Science" or "அறிவியல்"
   const subjectsRef = collection(firestore, 'subjects');
-  const englishQuery = query(subjectsRef, where('name', '==', 'Science'));
-  const tamilQuery = query(subjectsRef, where('name_ta', '==', 'அறிவியல்'));
+  // Try to find the subject by a few common names
+  const scienceQuery = query(subjectsRef, where('name', '==', 'Science'));
+  const ariviyalQuery = query(subjectsRef, where('name', '==', 'அறிவியல்'));
+  const ariviyalTaQuery = query(subjectsRef, where('name_ta', '==', 'அறிவியல்'));
 
   let scienceSubjectId: string | null = null;
   
-  const englishSnapshot = await getDocs(englishQuery);
-  if (!englishSnapshot.empty) {
-    scienceSubjectId = englishSnapshot.docs[0].id;
-    console.log(`Found "Science" subject with ID: ${scienceSubjectId}`);
+  const scienceSnapshot = await getDocs(scienceQuery);
+  if (!scienceSnapshot.empty) {
+    scienceSubjectId = scienceSnapshot.docs[0].id;
+    console.log(`Found subject with name "Science" (ID: ${scienceSubjectId})`);
   } else {
-    console.log('"Science" subject not found. Trying to find "அறிவியல்"...');
-    const tamilSnapshot = await getDocs(tamilQuery);
-    if (!tamilSnapshot.empty) {
-        scienceSubjectId = tamilSnapshot.docs[0].id;
-        console.log(`Found "அறிவியல்" subject with ID: ${scienceSubjectId}`);
+    const ariviyalSnapshot = await getDocs(ariviyalQuery);
+    if (!ariviyalSnapshot.empty) {
+        scienceSubjectId = ariviyalSnapshot.docs[0].id;
+        console.log(`Found subject with name "அறிவியல்" (ID: ${scienceSubjectId})`);
+    } else {
+        const ariviyalTaSnapshot = await getDocs(ariviyalTaQuery);
+        if (!ariviyalTaSnapshot.empty) {
+            scienceSubjectId = ariviyalTaSnapshot.docs[0].id;
+            console.log(`Found subject with name_ta "அறிவியல்" (ID: ${scienceSubjectId})`);
+        }
     }
   }
 
   if (!scienceSubjectId) {
-    console.error('Error: Neither "Science" nor "அறிவியல்" subject found in the database. Please ensure the subject exists or run `npm run seed`.');
+    console.error('Error: "Science" or "அறிவியல்" subject not found in the database. Please ensure the subject exists or run `npm run seed`.');
     return;
   }
 
@@ -79,7 +86,7 @@ async function addUnits() {
   try {
     await batch.commit();
     console.log(`Successfully added ${unitsToAdd.length} new units for Class 8 Science.`);
-    console.log("Please delete the units that were previously created under 'Uncategorized' from the Topic Management page.");
+    console.log("Please delete the units that were previously created under 'Uncategorized' from the Topic Management page if necessary.");
   } catch (error) {
     console.error('Error adding units:', error);
   }
