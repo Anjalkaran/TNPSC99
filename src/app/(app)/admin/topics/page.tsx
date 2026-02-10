@@ -176,7 +176,8 @@ function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, cla
 
         try {
             const { bookType, classId, subjectName, medium, term, unitNumber, unitName, categoryName, addUnitForFullBook } = values;
-            
+            const effectiveCategoryName = categoryName || subjectName;
+
             const subjectsRef = collection(firestore, 'subjects');
             const subjectQuery = query(subjectsRef, where('name', '==', subjectName));
             const subjectSnapshot = await getDocs(subjectQuery);
@@ -192,16 +193,16 @@ function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, cla
             }
 
             let categoryId: string | undefined = undefined;
-            if (categoryName && subjectId) {
+            if (effectiveCategoryName && subjectId) {
                 const categoriesRef = collection(firestore, 'categories');
-                const categoryQuery = query(categoriesRef, where('name', '==', categoryName), where('subjectId', '==', subjectId));
+                const categoryQuery = query(categoriesRef, where('name', '==', effectiveCategoryName), where('subjectId', '==', subjectId));
                 const categorySnapshot = await getDocs(categoryQuery);
 
                 if(categorySnapshot.empty) {
                     const newCategoryRef = doc(categoriesRef);
                     const newCategory: Category = {
                         id: newCategoryRef.id,
-                        name: categoryName,
+                        name: effectiveCategoryName,
                         subjectId: subjectId
                     };
                     await setDoc(newCategoryRef, newCategory);
@@ -803,7 +804,8 @@ export default function TopicManagementPage() {
     
     try {
         const { bookType, classId, subjectName, medium, term, unitNumber, unitName, categoryName, addUnitForFullBook } = values;
-        
+        const effectiveCategoryName = categoryName || subjectName;
+
         const subjectsRef = collection(firestore, 'subjects');
         const subjectQuery = query(subjectsRef, where('name', '==', subjectName));
         const subjectSnapshot = await getDocs(subjectQuery);
@@ -827,16 +829,16 @@ export default function TopicManagementPage() {
         }
 
         let categoryId: string | undefined = undefined;
-        if (categoryName && subjectId) {
+        if (effectiveCategoryName && subjectId) {
             const categoriesRef = collection(firestore, 'categories');
-            const categoryQuery = query(categoriesRef, where('name', '==', categoryName), where('subjectId', '==', subjectId));
+            const categoryQuery = query(categoriesRef, where('name', '==', effectiveCategoryName), where('subjectId', '==', subjectId));
             const categorySnapshot = await getDocs(categoryQuery);
 
             if(categorySnapshot.empty) {
                 const newCategoryRef = doc(categoriesRef);
                 const newCategory: Category = {
                     id: newCategoryRef.id,
-                    name: categoryName,
+                    name: effectiveCategoryName,
                     subjectId: subjectId
                 };
                 await setDoc(newCategoryRef, newCategory);

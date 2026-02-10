@@ -752,6 +752,8 @@ export default function UploadMcqPage() {
       if (!firestore) throw new Error('Firestore is not initialized');
 
       const { bookType, classId, subjectName, medium, term, unitNumber, unitName, categoryName, referencePageOffset, addUnitForFullBook } = values;
+      const effectiveCategoryName = categoryName || subjectName;
+
       const shouldAddUnitDetails = term !== 'Full Book' || (term === 'Full Book' && addUnitForFullBook === 'yes');
 
       // 1. Find or Create Subject
@@ -771,14 +773,14 @@ export default function UploadMcqPage() {
       
       // 2. Find or Create Category
       let categoryId: string | undefined = undefined;
-      if (categoryName && subjectId) {
+      if (effectiveCategoryName && subjectId) {
         const categoriesRef = collection(firestore, 'categories');
-        const categoryQuery = query(categoriesRef, where('name', '==', categoryName), where('subjectId', '==', subjectId));
+        const categoryQuery = query(categoriesRef, where('name', '==', effectiveCategoryName), where('subjectId', '==', subjectId));
         const categorySnapshot = await getDocs(categoryQuery);
 
         if(categorySnapshot.empty) {
             const newCategoryRef = doc(categoriesRef);
-            const newCategory: Category = { id: newCategoryRef.id, name: categoryName, subjectId: subjectId };
+            const newCategory: Category = { id: newCategoryRef.id, name: effectiveCategoryName, subjectId: subjectId };
             await setDoc(newCategoryRef, newCategory);
             categoryId = newCategoryRef.id;
         } else {
@@ -876,8 +878,8 @@ export default function UploadMcqPage() {
         ? `${className || 'Class'} - ${subjectName} - ${term} - இயல் ${unitNumber} - ${unitName}`
         : `${className || 'Class'} - ${subjectName} - ${term}`;
       
-      if (categoryName) {
-        testTitle += ` - ${categoryName}`;
+      if (effectiveCategoryName) {
+        testTitle += ` - ${effectiveCategoryName}`;
       }
       
       const testQuery = query(testsCollectionRef, where('title', '==', testTitle), where('bookType', '==', bookType), where('medium', '==', medium));
