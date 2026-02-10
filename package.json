@@ -13,7 +13,8 @@
     "migrate:questions": "tsx src/scripts/migrate-questions.ts",
     "fix:subjects": "tsx src/scripts/fix-subject-links.ts",
     "fix:book-types": "tsx src/scripts/fix-book-types.ts",
-    "fix:medium": "tsx src/scripts/set-default-medium.ts"
+    "fix:medium": "tsx src/scripts/set-default-medium.ts",
+    "add:c8-science": "tsx src/scripts/add-class8-science-units.ts"
   },
   "dependencies": {
     "@genkit-ai/core": "latest",
