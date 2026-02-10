@@ -32,17 +32,30 @@ async function addUnits() {
   console.log('Adding Class 8 Science units...');
   const { firestore } = initializeFirebaseServer();
 
-  // 1. Find the subjectId for "Science"
+  // 1. Find the subjectId for "Science" or "அறிவியல்"
   const subjectsRef = collection(firestore, 'subjects');
-  const q = query(subjectsRef, where('name', '==', 'Science'));
-  const querySnapshot = await getDocs(q);
+  const englishQuery = query(subjectsRef, where('name', '==', 'Science'));
+  const tamilQuery = query(subjectsRef, where('name_ta', '==', 'அறிவியல்'));
 
-  if (querySnapshot.empty) {
-    console.error('Error: "Science" subject not found in the database. Please seed the database first using `npm run seed`.');
+  let scienceSubjectId: string | null = null;
+  
+  const englishSnapshot = await getDocs(englishQuery);
+  if (!englishSnapshot.empty) {
+    scienceSubjectId = englishSnapshot.docs[0].id;
+    console.log(`Found "Science" subject with ID: ${scienceSubjectId}`);
+  } else {
+    console.log('"Science" subject not found. Trying to find "அறிவியல்"...');
+    const tamilSnapshot = await getDocs(tamilQuery);
+    if (!tamilSnapshot.empty) {
+        scienceSubjectId = tamilSnapshot.docs[0].id;
+        console.log(`Found "அறிவியல்" subject with ID: ${scienceSubjectId}`);
+    }
+  }
+
+  if (!scienceSubjectId) {
+    console.error('Error: Neither "Science" nor "அறிவியல்" subject found in the database. Please ensure the subject exists or run `npm run seed`.');
     return;
   }
-  const scienceSubjectId = querySnapshot.docs[0].id;
-  console.log(`Found "Science" subject with ID: ${scienceSubjectId}`);
 
   // 2. Add units with the correct subjectId
   const batch = writeBatch(firestore);
