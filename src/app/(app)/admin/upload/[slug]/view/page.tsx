@@ -13,7 +13,7 @@ export default function ViewTestJsonPage() {
   const { t } = useTranslation();
   
   const [test, setTest] = useState<Test | null>(null);
-  const [questions, setQuestions] = useState<Omit<Question, 'id' | 'classId' | 'subjectId'>[]>([]);
+  const [questions, setQuestions] = useState<Omit<Question, 'classId' | 'subjectId'>[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -34,7 +34,7 @@ export default function ViewTestJsonPage() {
         const testData = { id: testDocSnap.id, ...testDocSnap.data() } as Test;
         setTest(testData);
 
-        const fetchedQuestions: Omit<Question, 'id' | 'classId' | 'subjectId'>[] = [];
+        const fetchedQuestions: Omit<Question, 'classId' | 'subjectId'>[] = [];
         if (testData.questionIds && testData.questionIds.length > 0) {
           const questionIdsChunks = [];
           for (let i = 0; i < testData.questionIds.length; i += 30) {
@@ -46,8 +46,9 @@ export default function ViewTestJsonPage() {
                 const questionsQuery = query(collection(firestore, 'questions'), where('__name__', 'in', chunk));
                 const questionsSnap = await getDocs(questionsQuery);
                 questionsSnap.forEach(docSnap => {
-                    const { id, classId, subjectId, ...questionData } = docSnap.data() as Question;
-                    fetchedQuestions.push(questionData);
+                    const data = docSnap.data() as Question;
+                    const { classId, subjectId, ...questionData } = data;
+                    fetchedQuestions.push({ ...questionData, id: docSnap.id });
                 });
              }
           }
