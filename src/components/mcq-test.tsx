@@ -58,6 +58,7 @@ export function McqTest({
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const [attemptId, setAttemptId] = useState<string | null>(inProgressAttempt?.id || null);
   const isSavingRef = useRef(false);
+  const isExitingIntentionally = useRef(false);
 
   const [isCommentDialogOpen, setIsCommentDialogOpen] = useState(false);
   const [commentQuestion, setCommentQuestion] = useState<Question | null>(null);
@@ -180,7 +181,7 @@ export function McqTest({
   
   useEffect(() => {
     const handleBeforeUnload = () => {
-      if (!isSubmitted) {
+      if (!isSubmitted && !isExitingIntentionally.current) {
         saveProgress('in-progress');
       }
     };
@@ -202,6 +203,7 @@ export function McqTest({
   }, [saveProgress, toast]);
 
   const handleExit = useCallback(async () => {
+    isExitingIntentionally.current = true;
     await saveProgress('in-progress');
     toast({ description: t('progress_saved') });
     router.push(getReturnHref());
