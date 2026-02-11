@@ -20,6 +20,14 @@ const unitsToAdd = [
     { unitNumber: 13, unitName: 'உயிரினங்களின் அமைப்பு நிலைகள்' },
     { unitNumber: 14, unitName: 'தாவரங்களின் கடத்துதல் மற்றும் விலங்குகளின் சுற்றோட்டம்' },
     { unitNumber: 15, unitName: 'நரம்பு மண்டலம்' },
+    { unitNumber: 16, unitName: 'தாவர மற்றும் விலங்கு ஹார்மோன்கள்' },
+    { unitNumber: 17, unitName: 'தாவரங்கள் மற்றும் விலங்குகளில் இனப்பெருக்கம்' },
+    { unitNumber: 18, unitName: 'மரபியல்' },
+    { unitNumber: 19, unitName: 'உயிரின் தோற்றமும் பரிணாமமும்' },
+    { unitNumber: 20, unitName: 'இனக்கலப்பு மற்றும் உயிரித்தொழில்நுட்பவியல்' },
+    { unitNumber: 21, unitName: 'உடல் நலம் மற்றும் நோய்கள்' },
+    { unitNumber: 22, unitName: 'சுற்றுச்சூழல் மேலாண்மை' },
+    { unitNumber: 23, unitName: 'காட்சித் தொடர்பு' },
 ];
 
 async function addUnits() {
