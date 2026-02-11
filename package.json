@@ -15,7 +15,8 @@
     "fix:book-types": "tsx src/scripts/fix-book-types.ts",
     "fix:medium": "tsx src/scripts/set-default-medium.ts",
     "add:c8-science": "tsx src/scripts/add-class8-science-units.ts",
-    "add:c9-science": "tsx src/scripts/add-class9-science-units.ts"
+    "add:c9-science": "tsx src/scripts/add-class9-science-units.ts",
+    "add:c10-science": "tsx src/scripts/add-class10-science-units.ts"
   },
   "dependencies": {
     "@genkit-ai/core": "latest",
