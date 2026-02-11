@@ -179,20 +179,6 @@ export function McqTest({
     }
   }, [user, firestore, questions, answers, test, decodedTitle, currentQuestionIndex, attemptId]);
   
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      if (!isSubmitted && !isExitingIntentionally.current) {
-        saveProgress('in-progress');
-      }
-    };
-    
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, [saveProgress, isSubmitted]);
-
   const handleFinalSubmit = useCallback(async () => {
     await saveProgress('completed');
     setIsSubmitted(true);
