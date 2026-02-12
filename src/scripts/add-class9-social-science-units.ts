@@ -27,6 +27,21 @@ const unitsData = {
     { unitNumber: 6, unitName: 'மனிதனும் சுற்றுச் சூழலும்' },
     { unitNumber: 7, unitName: 'நிலவரைபடத் திறன்கள்' },
     { unitNumber: 8, unitName: 'பேரிடர் மேலாண்மை - பேரிடரை எதிர்கொள்ளுதல்' },
+  ],
+  'குடிமையியல்': [
+    { unitNumber: 1, unitName: 'அரசாங்க அமைப்புகள் மற்றும் மக்களாட்சி' },
+    { unitNumber: 2, unitName: 'தேர்தல், அரசியல் கட்சிகள் மற்றும் அழுத்தக் குழுக்கள்' },
+    { unitNumber: 3, unitName: 'மனித உரிமைகள்' },
+    { unitNumber: 4, unitName: 'அரசாங்கங்களின் வகைகள்' },
+    { unitNumber: 5, unitName: 'உள்ளாட்சி அமைப்புகள்' },
+    { unitNumber: 6, unitName: 'சாலை பாதுகாப்பு' },
+  ],
+  'பொருளியல்': [
+    { unitNumber: 1, unitName: 'மேம்பாட்டை அறிவோம்: தொலைநோக்கு, அளவீடு மற்றும் நிலைத் தன்மை' },
+    { unitNumber: 2, unitName: 'இந்தியா மற்றும் தமிழ்நாட்டில் வேலைவாய்ப்பு' },
+    { unitNumber: 3, unitName: 'பணம் மற்றும் கடன்' },
+    { unitNumber: 4, unitName: 'தமிழகத்தில் வேளாண்மை' },
+    { unitNumber: 5, unitName: 'இடம்பெயர்தல்' },
   ]
 };
 
@@ -95,6 +110,8 @@ async function addClass9SocialScienceUnits() {
   const categoryMap = {
     'வரலாறு': 'History',
     'புவியியல்': 'Geography',
+    'குடிமையியல்': 'Civics',
+    'பொருளியல்': 'Economics',
   };
 
   for (const [categoryNameTa, units] of Object.entries(unitsData)) {
