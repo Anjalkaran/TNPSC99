@@ -66,8 +66,17 @@ async function addClass6SocialScienceUnits() {
   }
 
   if (!socialScienceSubject) {
-    console.error('Error: "Social Science" or "சமூக அறிவியல்" subject not found in the database. Please ensure the subject exists (e.g., by running `npm run seed`).');
-    return;
+    console.log('"Social Science" subject not found. Creating it...');
+    const newSubjectRef = doc(subjectsRef, 'social-science'); // Use a predictable ID
+    socialScienceSubject = {
+        id: newSubjectRef.id,
+        name: 'Social Science',
+        name_ta: 'சமூக அறிவியல்',
+        description: 'Social Science',
+        description_ta: 'சமூக அறிவியல்',
+    };
+    await setDoc(newSubjectRef, socialScienceSubject);
+    console.log(`Created subject "Social Science" with ID: ${newSubjectRef.id}`);
   }
   
   const socialScienceSubjectId = socialScienceSubject.id;
