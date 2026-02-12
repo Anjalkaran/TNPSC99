@@ -25,6 +25,20 @@ const unitsData = {
     { unitNumber: 5, unitName: 'இந்தியா - மக்கள் தொகை, போக்குவரத்து, தகவல் தொடர்பு மற்றும் வணிகம்' },
     { unitNumber: 6, unitName: 'தமிழ்நாடு - இயற்கைப் பிரிவுகள்' },
     { unitNumber: 7, unitName: 'தமிழ்நாடு - மானுடப் புவியியல்' },
+  ],
+  'குடிமையியல்': [
+    { unitNumber: 1, unitName: 'இந்திய அரசியலமைப்பு' },
+    { unitNumber: 2, unitName: 'நடுவண் அரசு' },
+    { unitNumber: 3, unitName: 'மாநில அரசு' },
+    { unitNumber: 4, unitName: 'இந்தியாவின் வெளியுறவுக் கொள்கை' },
+    { unitNumber: 5, unitName: 'இந்தியாவின் சர்வதேச உறவுகள்' },
+  ],
+  'பொருளியல்': [
+    { unitNumber: 1, unitName: 'மொத்த உள்நாட்டு உற்பத்தி மற்றும் அதன் வளர்ச்சி: ஓர் அறிமுகம்' },
+    { unitNumber: 2, unitName: 'உலகமயமாதல் மற்றும் வர்த்தகம்' },
+    { unitNumber: 3, unitName: 'உணவு பாதுகாப்பு மற்றும் ஊட்டச்சத்து' },
+    { unitNumber: 4, unitName: 'அரசாங்கமும் வரிகளும்' },
+    { unitNumber: 5, unitName: 'தமிழ்நாட்டில் தொழில்துறை தொகுப்புகள்' },
   ]
 };
 
@@ -93,6 +107,8 @@ async function addClass10SocialScienceUnits() {
   const categoryMap = {
     'வரலாறு': 'History',
     'புவியியல்': 'Geography',
+    'குடிமையியல்': 'Civics',
+    'பொருளியல்': 'Economics',
   };
 
   for (const [categoryNameTa, units] of Object.entries(unitsData)) {
