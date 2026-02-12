@@ -21,6 +21,7 @@
     "add:c7-ss-t2": "tsx src/scripts/add-class7-social-science-term2-units.ts",
     "add:c7-ss-t3": "tsx src/scripts/add-class7-social-science-term3-units.ts",
     "add:c8-science": "tsx src/scripts/add-class8-science-units.ts",
+    "add:c8-ss": "tsx src/scripts/add-class8-social-science-units.ts",
     "add:c9-science": "tsx src/scripts/add-class9-science-units.ts",
     "add:c10-science": "tsx src/scripts/add-class10-science-units.ts",
     "clean:options": "tsx src/scripts/clean-answer-options.ts"
