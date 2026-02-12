@@ -76,13 +76,31 @@ export function McqTest({
   };
   
   const getReturnHref = useCallback(() => {
-    if (test.classId && test.subjectId) {
-        if (test.subjectId === 'tamil' && test.categoryId) {
-            const categoryName = test.title.includes('இலக்கணம்') ? 'ilakkanam' : 'urai-seyyul';
-            return `/class/${test.classId}/tamil/${categoryName}`;
-        }
-        return `/class/${test.classId}/subject/${test.subjectId}`;
+    // Special handling for Tamil categories which have a different URL structure
+    // and don't seem to use the bookType parameter.
+    if (test.classId && test.subjectId === 'tamil' && test.categoryId) {
+      const categoryName = test.title.includes('இலக்கணம்') ? 'ilakkanam' : 'urai-seyyul';
+      return `/class/${test.classId}/tamil/${categoryName}`;
     }
+
+    // For all other class-based tests
+    if (test.classId && test.subjectId) {
+      const params = new URLSearchParams();
+      if (test.bookType) {
+        params.set('bookType', test.bookType);
+      }
+      // If coming from a categorized view within a subject, preserve it.
+      if (test.categoryId) {
+        params.set('category', test.categoryId);
+      }
+
+      const queryString = params.toString();
+      const basePath = `/class/${test.classId}/subject/${test.subjectId}`;
+      
+      return `${basePath}${queryString ? `?${queryString}` : ''}`;
+    }
+
+    // Fallback for tests that aren't tied to a class/subject (e.g., previous year papers)
     return '/dashboard';
   }, [test]);
 
@@ -189,6 +207,7 @@ export function McqTest({
   }, [saveProgress, toast]);
 
   const handleExit = useCallback(async () => {
+    if (isExitingIntentionally.current) return;
     isExitingIntentionally.current = true;
     await saveProgress('in-progress');
     toast({ description: t('progress_saved') });
