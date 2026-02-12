@@ -24,6 +24,19 @@ const unitsData = {
     { unitNumber: 6, unitName: 'தொழிலகங்கள்' },
     { unitNumber: 7, unitName: 'கண்டங்களை ஆராய்தல் (ஆப்பிரிக்கா, ஆஸ்திரேலியா மற்றும் அண்டார்டிகா)' },
     { unitNumber: 8, unitName: 'புவிப்படங்களைக் கற்றறிதல்' }
+  ],
+  'குடிமையியல்': [
+    { unitNumber: 1, unitName: 'மாநில அரசு எவ்வாறு செயல்படுகிறது' },
+    { unitNumber: 2, unitName: 'குடிமக்களும் குடியுரிமையும்' },
+    { unitNumber: 3, unitName: 'சமயச்சார்பின்மையைப் புரிந்துகொள்ளுதல்' },
+    { unitNumber: 4, unitName: 'மனித உரிமைகளும் ஐக்கிய நாடுகள் சபையும்' },
+    { unitNumber: 5, unitName: 'சாலை பாதுகாப்பு விதிகள் மற்றும் நெறிமுறைகள்' },
+    { unitNumber: 6, unitName: 'பாதுகாப்பு மற்றும் வெளியுறவுக் கொள்கை' },
+    { unitNumber: 7, unitName: 'நீதித்துறை' },
+  ],
+  'பொருளியல்': [
+    { unitNumber: 1, unitName: 'பணம், சேமிப்பு மற்றும் முதலீடுகள்' },
+    { unitNumber: 2, unitName: 'பொது மற்றும் தனியார் துறைகள்' },
   ]
 };
 
@@ -92,6 +105,8 @@ async function addClass8SocialScienceUnits() {
   const categoryMap = {
     'வரலாறு': 'History',
     'புவியியல்': 'Geography',
+    'குடிமையியல்': 'Civics',
+    'பொருளியல்': 'Economics',
   };
 
   for (const [categoryNameTa, units] of Object.entries(unitsData)) {
