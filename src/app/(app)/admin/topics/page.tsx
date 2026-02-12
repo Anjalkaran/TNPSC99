@@ -95,7 +95,7 @@ function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, cla
     const sortedClasses = useMemo(() => {
         if (!classes) return [];
         const getNumber = (cls: Class) => {
-            const nameToUse = language === 'ta' && cls.name_ta ? cls.name_ta : cls.name;
+            const nameToUse = cls.name_ta || cls.name;
             const match = nameToUse.match(/\d+/);
             if (match) {
                 return parseInt(match[0], 10);
@@ -107,7 +107,7 @@ function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, cla
             return Infinity;
         };
         return [...classes].sort((a, b) => getNumber(a) - getNumber(b));
-    }, [classes, language]);
+    }, [classes]);
 
     const form = useForm<UnitFormValues>({
         resolver: zodResolver(unitFormSchema),
@@ -299,7 +299,7 @@ function EditUnitForm({ unit, classes, subjects, onFinished }: { unit: Unit, cla
                                     </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                    {sortedClasses?.map(c => <SelectItem key={c.id} value={c.id}>{language === 'ta' && c.name_ta ? c.name_ta : c.name}</SelectItem>)}
+                                    {sortedClasses?.map(c => <SelectItem key={c.id} value={c.id}>{c.name_ta || c.name}</SelectItem>)}
                                 </SelectContent>
                             </Select>
                             <FormMessage />
@@ -489,9 +489,9 @@ function ExistingUnitsList() {
     const groupedUnits = useMemo(() => {
         if (!units || !classes || !subjects || !categories) return { samacheer: {}, old: {} };
 
-        const classMap = new Map(classes.map(c => [c.id, language === 'ta' && c.name_ta ? c.name_ta : c.name]));
-        const subjectMap = new Map(subjects.map(s => [s.id, language === 'ta' && s.name_ta ? s.name_ta : s.name]));
-        const categoryMap = new Map(categories.map(cat => [cat.id, language === 'ta' && cat.name_ta ? cat.name_ta : cat.name]));
+        const classMap = new Map(classes.map(c => [c.id, c.name_ta || c.name]));
+        const subjectMap = new Map(subjects.map(s => [s.id, s.name_ta || s.name]));
+        const categoryMap = new Map(categories.map(cat => [cat.id, cat.name_ta || cat.name]));
 
         const mappedUnits = units.map(unit => ({
             ...unit,
@@ -729,7 +729,7 @@ export default function TopicManagementPage() {
   const sortedClasses = useMemo(() => {
     if (!classes) return [];
     const getNumber = (cls: Class) => {
-        const nameToUse = language === 'ta' && cls.name_ta ? cls.name_ta : cls.name;
+        const nameToUse = cls.name_ta || cls.name;
         const match = nameToUse.match(/\d+/);
         if (match) {
             return parseInt(match[0], 10);
@@ -741,7 +741,7 @@ export default function TopicManagementPage() {
         return Infinity;
     };
     return [...classes].sort((a, b) => getNumber(a) - getNumber(b));
-  }, [classes, language]);
+  }, [classes]);
 
   const form = useForm<UnitFormValues>({
     resolver: zodResolver(unitFormSchema),
@@ -944,7 +944,7 @@ export default function TopicManagementPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {sortedClasses?.map(c => <SelectItem key={c.id} value={c.id}>{language === 'ta' && c.name_ta ? c.name_ta : c.name}</SelectItem>)}
+                          {sortedClasses?.map(c => <SelectItem key={c.id} value={c.id}>{c.name_ta || c.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
                       <FormMessage />

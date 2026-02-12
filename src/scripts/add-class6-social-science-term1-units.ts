@@ -2,7 +2,7 @@
 
 import { initializeFirebaseServer } from '@/firebase/server-init';
 import { collection, writeBatch, doc, query, where, getDocs, setDoc } from 'firebase/firestore';
-import type { Unit, Category } from '@/lib/types';
+import type { Unit, Category, Subject } from '@/lib/types';
 
 const unitsData = {
   'வரலாறு': [
@@ -48,7 +48,29 @@ async function addClass6SocialScienceUnits() {
   console.log('Adding Class 6 Social Science Term 1 units...');
   const { firestore } = initializeFirebaseServer();
 
-  const socialScienceSubjectId = 'social-science'; // From seed.ts
+  const subjectsRef = collection(firestore, 'subjects');
+  let socialScienceSubject: Subject | null = null;
+
+  const queries = [
+    query(subjectsRef, where('name', '==', 'Social Science')),
+    query(subjectsRef, where('name_ta', '==', 'சமூக அறிவியல்')),
+  ];
+  
+  for (const q of queries) {
+      const snapshot = await getDocs(q);
+      if (!snapshot.empty) {
+          socialScienceSubject = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as Subject;
+          console.log(`Found subject: "${socialScienceSubject.name}" (ID: ${socialScienceSubject.id})`);
+          break;
+      }
+  }
+
+  if (!socialScienceSubject) {
+    console.error('Error: "Social Science" or "சமூக அறிவியல்" subject not found in the database. Please ensure the subject exists (e.g., by running `npm run seed`).');
+    return;
+  }
+  
+  const socialScienceSubjectId = socialScienceSubject.id;
 
   const batch = writeBatch(firestore);
   const unitsCollection = collection(firestore, 'units');
@@ -85,6 +107,8 @@ async function addClass6SocialScienceUnits() {
   try {
     await batch.commit();
     console.log(`Successfully added new units for Class 6 Social Science Term 1.`);
+    console.log('Please delete the old "Uncategorized" units from the Topic Management page if necessary.');
+
   } catch (error) {
     console.error('Error adding units:', error);
   }
