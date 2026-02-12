@@ -6,10 +6,10 @@ import {
   Library,
   Archive,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -66,32 +66,25 @@ export default function DashboardPage() {
 
       <section className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
         {categories.map((category) => (
-          <Card
-            key={category.title}
-            className="flex flex-col overflow-hidden hover:shadow-xl transition-shadow duration-300"
-          >
-            <CardHeader className="flex flex-row items-center gap-4 pb-2">
-              {category.icon}
-              <CardTitle className="text-xl">{category.title}</CardTitle>
-            </CardHeader>
-            <CardContent className="flex-grow flex flex-col justify-between">
-              <p className="text-muted-foreground mb-4">
-                {category.description}
-              </p>
-              <Button
-                asChild
-                className="w-full mt-auto"
-                style={{
-                  backgroundColor: 'hsl(var(--accent))',
-                  color: 'hsl(var(--accent-foreground))',
-                }}
-              >
-                <Link href={category.href}>
-                  {t('view_tests')} <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
+           <Link href={category.href} key={category.title} className="block hover:no-underline">
+            <Card className="flex h-full flex-col overflow-hidden transition-shadow duration-300 hover:shadow-xl group">
+              <CardHeader className="flex flex-row items-center gap-4 pb-2">
+                {category.icon}
+                <CardTitle className="text-xl">{category.title}</CardTitle>
+              </CardHeader>
+              <CardContent className="flex-grow">
+                <p className="text-muted-foreground">
+                  {category.description}
+                </p>
+              </CardContent>
+              <CardFooter>
+                 <div className="flex items-center text-sm font-medium text-accent group-hover:underline">
+                    {t('view_tests')}
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                </div>
+              </CardFooter>
+            </Card>
+          </Link>
         ))}
       </section>
     </div>
