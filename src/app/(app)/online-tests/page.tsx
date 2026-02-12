@@ -1,7 +1,6 @@
 'use client';
 import Link from "next/link";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { ArrowRight, BookText } from "lucide-react";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, query } from "firebase/firestore";
@@ -12,7 +11,7 @@ import { useSearchParams } from "next/navigation";
 
 export default function OnlineTestsPage() {
   const firestore = useFirestore();
-  const { language } = useTranslation();
+  const { language, t } = useTranslation();
   const searchParams = useSearchParams();
   const bookType = searchParams.get('bookType') || 'samacheer';
 
@@ -65,19 +64,21 @@ export default function OnlineTestsPage() {
       {!isLoading && sortedClasses && sortedClasses.length > 0 ? (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {sortedClasses.map((cls) => (
-            <Card key={cls.id} className="flex flex-col overflow-hidden hover:shadow-xl transition-shadow duration-300">
-              <CardHeader className="flex-row items-center gap-4">
-                <BookText className="w-8 w-8 text-primary" />
-                <CardTitle className="text-xl">{cls.name_ta || cls.name}</CardTitle>
-              </CardHeader>
-              <CardContent className="flex-grow flex flex-col justify-end">
-                <Button asChild className="w-full mt-4" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
-                  <Link href={`/class/${cls.id}?bookType=${bookType}`}>
-                    பாடங்களைக் காண்க <ArrowRight className="ml-2 h-4 w-4" />
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
+            <Link key={cls.id} href={`/class/${cls.id}?bookType=${bookType}`} className="block hover:no-underline">
+              <Card className="flex h-full flex-col overflow-hidden transition-shadow duration-300 hover:shadow-xl group">
+                <CardHeader className="flex-row items-center gap-4">
+                  <BookText className="w-8 w-8 text-primary" />
+                  <CardTitle className="text-xl">{cls.name_ta || cls.name}</CardTitle>
+                </CardHeader>
+                <CardContent className="flex-grow" />
+                <CardFooter>
+                  <div className="flex items-center text-sm font-medium text-accent group-hover:underline">
+                      {t('view_tests')}
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                  </div>
+                </CardFooter>
+              </Card>
+            </Link>
           ))}
         </div>
       ) : (
