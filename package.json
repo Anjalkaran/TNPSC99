@@ -24,7 +24,8 @@
     "add:c8-ss": "tsx src/scripts/add-class8-social-science-units.ts",
     "add:c9-science": "tsx src/scripts/add-class9-science-units.ts",
     "add:c10-science": "tsx src/scripts/add-class10-science-units.ts",
-    "clean:options": "tsx src/scripts/clean-answer-options.ts"
+    "clean:options": "tsx src/scripts/clean-answer-options.ts",
+    "add:c9-ss": "tsx src/scripts/add-class9-social-science-units.ts"
   },
   "dependencies": {
     "@genkit-ai/core": "latest",
