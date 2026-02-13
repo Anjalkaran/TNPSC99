@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import {
   writeBatch,
@@ -169,6 +169,72 @@ function ExistingSyllabusTestsList() {
             });
         }
     };
+    
+    const handleDownloadAll = async () => {
+        if (!firestore || !filteredTests || filteredTests.length === 0) return;
+
+        toast({
+            title: "Preparing Download",
+            description: `Bundling ${filteredTests.length} syllabus banks. This may take a moment.`,
+        });
+
+        try {
+            const allTestsData = [];
+
+            for (const test of filteredTests) {
+                const fetchedQuestions: Question[] = [];
+                if (test.questionIds && test.questionIds.length > 0) {
+                    const questionIdsChunks = [];
+                    for (let i = 0; i < test.questionIds.length; i += 30) {
+                        questionIdsChunks.push(test.questionIds.slice(i, i + 30));
+                    }
+
+                    for (const chunk of questionIdsChunks) {
+                        if (chunk.length > 0) {
+                            const questionsQuery = query(collection(firestore, 'questions'), where('__name__', 'in', chunk));
+                            const questionsSnap = await getDocs(questionsQuery);
+                            questionsSnap.forEach(docSnap => {
+                                const { classId, subjectId, ...questionData } = docSnap.data() as any;
+                                fetchedQuestions.push({ id: docSnap.id, ...questionData } as Question);
+                            });
+                        }
+                    }
+                }
+                allTestsData.push({
+                    testDetails: {
+                        id: test.id,
+                        title: test.title,
+                        description: test.description
+                    },
+                    questions: fetchedQuestions
+                });
+            }
+
+            const jsonString = JSON.stringify(allTestsData, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `all_syllabus_mcq_banks.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            toast({
+                title: "Download Started",
+                description: `Downloading all syllabus banks as a single JSON file.`,
+            });
+
+        } catch (error) {
+            console.error("Error downloading all test data:", error);
+            toast({
+                variant: 'destructive',
+                title: "Download Failed",
+                description: "There was a problem bundling the question banks.",
+            });
+        }
+    };
 
 
     const handleDelete = async (testId: string) => {
@@ -197,12 +263,17 @@ function ExistingSyllabusTestsList() {
             <CardHeader>
                 <CardTitle>Existing Syllabus Banks</CardTitle>
                  <CardDescription>View, edit, or delete your existing syllabus-based question banks.</CardDescription>
-                 <div className="pt-2">
+                 <div className="flex items-center gap-2 pt-2">
                     <Input
                         placeholder="Search by group, subject, topic..."
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
+                        className="flex-grow"
                     />
+                    <Button onClick={handleDownloadAll} disabled={isLoading || !filteredTests || filteredTests.length === 0}>
+                        <Download className="mr-2 h-4 w-4" />
+                        Download All
+                    </Button>
                 </div>
             </CardHeader>
             <CardContent>

@@ -149,7 +149,7 @@ function ExistingUnitsList({ onUnitSelect }: { onUnitSelect: (unit: UnitWithName
             if (language === 'ta') {
                 if (s.name_ta) {
                     name = s.name_ta;
-                } else if (s.name === 'Social Science') {
+                } else if (s.name === 'Social Science' || s.id === 'social-science') {
                     name = 'சமூக அறிவியல்';
                 }
             }
@@ -395,13 +395,11 @@ function ExistingMcqBanksList() {
         
         const classMap = new Map(classes.map(c => [c.id, language === 'ta' && c.name_ta ? c.name_ta : c.name]));
         const subjectMap = new Map(subjects.map(s => {
-            let name = s.name; // default to english name
-            if (language === 'ta') {
-                if (s.name_ta) {
-                    name = s.name_ta;
-                } else if (s.name === 'Social Science') {
-                    name = 'சமூக அறிவியல்';
-                }
+            let name = s.name;
+            if (language === 'ta' && s.name_ta) {
+                name = s.name_ta;
+            } else if (language === 'ta' && (s.id === 'social-science' || s.name === 'Social Science')) {
+                name = 'சமூக அறிவியல்';
             }
             return [s.id, name];
         }));
@@ -516,6 +514,72 @@ function ExistingMcqBanksList() {
                 variant: 'destructive',
                 title: "Download Failed",
                 description: "There was a problem downloading the question bank.",
+            });
+        }
+    };
+    
+    const handleDownloadAll = async () => {
+        if (!firestore || !filteredTests || filteredTests.length === 0) return;
+
+        toast({
+            title: "Preparing Download",
+            description: `Bundling ${filteredTests.length} test banks. This may take a moment.`,
+        });
+
+        try {
+            const allTestsData = [];
+
+            for (const test of filteredTests) {
+                const fetchedQuestions: Question[] = [];
+                if (test.questionIds && test.questionIds.length > 0) {
+                    const questionIdsChunks = [];
+                    for (let i = 0; i < test.questionIds.length; i += 30) {
+                        questionIdsChunks.push(test.questionIds.slice(i, i + 30));
+                    }
+
+                    for (const chunk of questionIdsChunks) {
+                        if (chunk.length > 0) {
+                            const questionsQuery = query(collection(firestore, 'questions'), where('__name__', 'in', chunk));
+                            const questionsSnap = await getDocs(questionsQuery);
+                            questionsSnap.forEach(docSnap => {
+                                const { classId, subjectId, ...questionData } = docSnap.data() as any;
+                                fetchedQuestions.push({ id: docSnap.id, ...questionData } as Question);
+                            });
+                        }
+                    }
+                }
+                allTestsData.push({
+                    testDetails: {
+                        id: test.id,
+                        title: test.title,
+                        description: test.description
+                    },
+                    questions: fetchedQuestions
+                });
+            }
+
+            const jsonString = JSON.stringify(allTestsData, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `all_class_wise_mcq_banks.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            toast({
+                title: "Download Started",
+                description: `Downloading all MCQ banks as a single JSON file.`,
+            });
+
+        } catch (error) {
+            console.error("Error downloading all test data:", error);
+            toast({
+                variant: 'destructive',
+                title: "Download Failed",
+                description: "There was a problem bundling the question banks.",
             });
         }
     };
@@ -648,12 +712,17 @@ function ExistingMcqBanksList() {
             <CardHeader>
                 <CardTitle>Existing Class-wise Banks</CardTitle>
                  <CardDescription>View, edit, or delete your existing class-wise question banks.</CardDescription>
-                 <div className="pt-2">
+                 <div className="flex items-center gap-2 pt-2">
                     <Input
                         placeholder="Search by title..."
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
+                        className="flex-grow"
                     />
+                    <Button onClick={handleDownloadAll} disabled={isLoading || !filteredTests || filteredTests.length === 0}>
+                        <Download className="mr-2 h-4 w-4" />
+                        Download All
+                    </Button>
                 </div>
             </CardHeader>
             <CardContent>
