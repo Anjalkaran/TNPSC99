@@ -387,17 +387,17 @@ function ExistingMcqBanksList() {
             const subjectName = subjectMap.get(test.subjectId) || 'Uncategorized Subject';
             const termName = test.term || 'Uncategorized Term';
 
-            if (!grouped[bookTypeKey][className]) {
-                grouped[bookTypeKey][className] = {};
+            if (!grouped[bookTypeKey as 'samacheer' | 'old'][className]) {
+                grouped[bookTypeKey as 'samacheer' | 'old'][className] = {};
             }
-            if (!grouped[bookTypeKey][className][subjectName]) {
-                grouped[bookTypeKey][className][subjectName] = {};
+            if (!grouped[bookTypeKey as 'samacheer' | 'old'][className][subjectName]) {
+                grouped[bookTypeKey as 'samacheer' | 'old'][className][subjectName] = {};
             }
-            if (!grouped[bookTypeKey][className][subjectName][termName]) {
-                grouped[bookTypeKey][className][subjectName][termName] = [];
+            if (!grouped[bookTypeKey as 'samacheer' | 'old'][className][subjectName][termName]) {
+                grouped[bookTypeKey as 'samacheer' | 'old'][className][subjectName][termName] = [];
             }
             
-            grouped[bookTypeKey][className][subjectName][termName].push(test);
+            grouped[bookTypeKey as 'samacheer' | 'old'][className][subjectName][termName].push(test);
         });
 
         const getNumber = (name: string) => {
