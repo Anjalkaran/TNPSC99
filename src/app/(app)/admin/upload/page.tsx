@@ -145,10 +145,15 @@ function ExistingUnitsList({ onUnitSelect }: { onUnitSelect: (unit: UnitWithName
 
         const classMap = new Map(classes.map(c => [c.id, language === 'ta' && c.name_ta ? c.name_ta : c.name]));
         const subjectMap = new Map(subjects.map(s => {
+            let name = s.name; // default to english name
             if (language === 'ta') {
-                return [s.id, s.name_ta || (s.name === 'Social Science' ? 'சமூக அறிவியல்' : s.name)];
+                if (s.name_ta) {
+                    name = s.name_ta;
+                } else if (s.name === 'Social Science') {
+                    name = 'சமூக அறிவியல்';
+                }
             }
-            return [s.id, s.name];
+            return [s.id, name];
         }));
         const categoryMap = new Map(categories.map(cat => [cat.id, language === 'ta' && cat.name_ta ? cat.name_ta : cat.name]));
 
@@ -365,10 +370,15 @@ function ExistingMcqBanksList() {
         
         const classMap = new Map(classes.map(c => [c.id, language === 'ta' && c.name_ta ? c.name_ta : c.name]));
         const subjectMap = new Map(subjects.map(s => {
+            let name = s.name; // default to english name
             if (language === 'ta') {
-                return [s.id, s.name_ta || (s.name === 'Social Science' ? 'சமூக அறிவியல்' : s.name)];
+                if (s.name_ta) {
+                    name = s.name_ta;
+                } else if (s.name === 'Social Science') {
+                    name = 'சமூக அறிவியல்';
+                }
             }
-            return [s.id, s.name];
+            return [s.id, name];
         }));
 
         const grouped: {
