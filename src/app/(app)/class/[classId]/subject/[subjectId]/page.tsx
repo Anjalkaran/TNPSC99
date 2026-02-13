@@ -304,7 +304,7 @@ export default function SubjectTestsPage() {
             </Link>
         </Button>
         <h1 className="text-3xl md:text-4xl font-bold">{className} - {subjectName}</h1>
-        <p className="text-muted-foreground mt-2">Select a category to view tests.</p>
+        <p className="text-muted-foreground mt-2">{t('select_category_to_view_tests')}</p>
       </div>
       
       {sortedCategoryIds.length > 0 && subjectTests && subjectTests.length > 0 ? (

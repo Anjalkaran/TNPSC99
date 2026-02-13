@@ -27,7 +27,8 @@
     "add:c10-science": "tsx src/scripts/add-class10-science-units.ts",
     "add:c10-ss": "tsx src/scripts/add-class10-social-science-units.ts",
     "clean:options": "tsx src/scripts/clean-answer-options.ts",
-    "rename:ss-id": "tsx src/scripts/rename-social-science-id.ts"
+    "rename:ss-id": "tsx src/scripts/rename-social-science-id.ts",
+    "fix:categories": "tsx src/scripts/fix-category-names.ts"
   },
   "dependencies": {
     "@genkit-ai/core": "latest",
