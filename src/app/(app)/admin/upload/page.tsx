@@ -370,6 +370,9 @@ function ExistingMcqBanksList() {
     const subjectsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'subjects') : null, [firestore]);
     const { data: subjects } = useCollection<Subject>(subjectsCollection);
 
+    const categoriesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'categories') : null, [firestore]);
+    const { data: categories } = useCollection<Category>(categoriesCollection);
+
 
     const filteredTests = useMemo(() => {
         if (!tests) return [];
@@ -382,6 +385,11 @@ function ExistingMcqBanksList() {
         });
     }, [tests, searchTerm]);
     
+    const categoryMap = useMemo(() => {
+        if (!categories) return new Map<string, string>();
+        return new Map(categories.map(cat => [cat.id, language === 'ta' && cat.name_ta ? cat.name_ta : cat.name]));
+    }, [categories, language]);
+
     const groupedAndSortedTests = useMemo(() => {
         if (!filteredTests || !classes || !subjects) return { samacheer: {}, old: {} };
         
@@ -567,51 +575,54 @@ function ExistingMcqBanksList() {
                                                                     </TableRow>
                                                                 </TableHeader>
                                                                 <TableBody>
-                                                                {testsInTerm.map(test => (
-                                                                    <TableRow key={test.id}>
-                                                                        <TableCell className="font-medium">
-                                                                            {test.unitName ? `Unit ${test.unitNumber}: ${test.unitName}` : test.title}
-                                                                            {test.categoryName && <p className="text-xs text-muted-foreground">{test.categoryName}</p>}
-                                                                            <Badge variant="outline" className="mt-1">{test.medium || 'tamil'}</Badge>
-                                                                        </TableCell>
-                                                                        <TableCell>{test.questionIds.length}</TableCell>
-                                                                        <TableCell className="text-right space-x-1">
-                                                                            <Button variant="outline" size="icon" onClick={() => handleDownload(test)}>
-                                                                                <Download className="h-4 w-4" />
-                                                                                <span className="sr-only">Download</span>
-                                                                            </Button>
-                                                                            <Button asChild variant="outline" size="icon">
-                                                                                <Link href={`/admin/upload/${encodeURIComponent(test.id)}/view`}>
-                                                                                    <View className="h-4 w-4" />
-                                                                                </Link>
-                                                                            </Button>
-                                                                            <Button asChild variant="outline" size="icon">
-                                                                                <Link href={`/admin/upload/${encodeURIComponent(test.id)}/edit`}>
-                                                                                    <Edit className="h-4 w-4" />
-                                                                                </Link>
-                                                                            </Button>
-                                                                            <AlertDialog>
-                                                                                <AlertDialogTrigger asChild>
-                                                                                    <Button variant="destructive" size="icon">
-                                                                                        <Trash className="h-4 w-4" />
-                                                                                    </Button>
-                                                                                </AlertDialogTrigger>
-                                                                                <AlertDialogContent>
-                                                                                    <AlertDialogHeader>
-                                                                                        <AlertDialogTitle>{t('confirm_deletion_title')}</AlertDialogTitle>
-                                                                                        <AlertDialogDescription>
-                                                                                            {t('This will permanently delete the test, but not the questions themselves.')}
-                                                                                        </AlertDialogDescription>
-                                                                                    </AlertDialogHeader>
-                                                                                    <AlertDialogFooter>
-                                                                                        <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                                                                                        <AlertDialogAction onClick={() => handleDelete(test.id)}>{t('delete')}</AlertDialogAction>
-                                                                                    </AlertDialogFooter>
-                                                                                </AlertDialogContent>
-                                                                            </AlertDialog>
-                                                                        </TableCell>
-                                                                    </TableRow>
-                                                                ))}
+                                                                {testsInTerm.map(test => {
+                                                                    const categoryName = test.categoryId ? categoryMap.get(test.categoryId) : null;
+                                                                    return (
+                                                                        <TableRow key={test.id}>
+                                                                            <TableCell className="font-medium">
+                                                                                {test.unitName ? `Unit ${test.unitNumber}: ${test.unitName}` : test.title}
+                                                                                {categoryName && <p className="text-xs text-muted-foreground">{categoryName}</p>}
+                                                                                <Badge variant="outline" className="mt-1">{test.medium || 'tamil'}</Badge>
+                                                                            </TableCell>
+                                                                            <TableCell>{test.questionIds.length}</TableCell>
+                                                                            <TableCell className="text-right space-x-1">
+                                                                                <Button variant="outline" size="icon" onClick={() => handleDownload(test)}>
+                                                                                    <Download className="h-4 w-4" />
+                                                                                    <span className="sr-only">Download</span>
+                                                                                </Button>
+                                                                                <Button asChild variant="outline" size="icon">
+                                                                                    <Link href={`/admin/upload/${encodeURIComponent(test.id)}/view`}>
+                                                                                        <View className="h-4 w-4" />
+                                                                                    </Link>
+                                                                                </Button>
+                                                                                <Button asChild variant="outline" size="icon">
+                                                                                    <Link href={`/admin/upload/${encodeURIComponent(test.id)}/edit`}>
+                                                                                        <Edit className="h-4 w-4" />
+                                                                                    </Link>
+                                                                                </Button>
+                                                                                <AlertDialog>
+                                                                                    <AlertDialogTrigger asChild>
+                                                                                        <Button variant="destructive" size="icon">
+                                                                                            <Trash className="h-4 w-4" />
+                                                                                        </Button>
+                                                                                    </AlertDialogTrigger>
+                                                                                    <AlertDialogContent>
+                                                                                        <AlertDialogHeader>
+                                                                                            <AlertDialogTitle>{t('confirm_deletion_title')}</AlertDialogTitle>
+                                                                                            <AlertDialogDescription>
+                                                                                                {t('This will permanently delete the test, but not the questions themselves.')}
+                                                                                            </AlertDialogDescription>
+                                                                                        </AlertDialogHeader>
+                                                                                        <AlertDialogFooter>
+                                                                                            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                                                                                            <AlertDialogAction onClick={() => handleDelete(test.id)}>{t('delete')}</AlertDialogAction>
+                                                                                        </AlertDialogFooter>
+                                                                                    </AlertDialogContent>
+                                                                                </AlertDialog>
+                                                                            </TableCell>
+                                                                        </TableRow>
+                                                                    );
+                                                                })}
                                                                 </TableBody>
                                                             </Table>
                                                         </AccordionContent>
