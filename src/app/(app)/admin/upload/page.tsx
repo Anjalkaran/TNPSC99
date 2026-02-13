@@ -155,7 +155,24 @@ function ExistingUnitsList({ onUnitSelect }: { onUnitSelect: (unit: UnitWithName
             }
             return [s.id, name];
         }));
-        const categoryMap = new Map(categories.map(cat => [cat.id, language === 'ta' && cat.name_ta ? cat.name_ta : cat.name]));
+        
+        const categoryMap = new Map(categories.map(cat => {
+            let name = cat.name;
+            if (language === 'ta') {
+                if (cat.name_ta) {
+                    name = cat.name_ta;
+                } else if (cat.name === 'History') {
+                    name = 'வரலாறு';
+                } else if (cat.name === 'Geography') {
+                    name = 'புவியியல்';
+                } else if (cat.name === 'Civics') {
+                    name = 'குடிமையியல்';
+                } else if (cat.name === 'Economics') {
+                    name = 'பொருளியல்';
+                }
+            }
+            return [cat.id, name];
+        }));
 
         const mappedUnits = units.map(unit => ({
             ...unit,
