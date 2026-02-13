@@ -183,7 +183,7 @@ function ExistingUnitsList({ onUnitSelect }: { onUnitSelect: (unit: UnitWithName
             categoryName: unit.categoryId ? categoryMap.get(unit.categoryId) : undefined,
         }));
         
-        const grouped: Record<string, Record<string, Record<string, Record<string, typeof mappedUnits[0][]>>>> = {
+        const grouped: Record<string, Record<string, Record<string, Record<string, Record<string, typeof mappedUnits[0][]>>>>> = {
             samacheer: {},
             old: {}
         };
@@ -204,9 +204,15 @@ function ExistingUnitsList({ onUnitSelect }: { onUnitSelect: (unit: UnitWithName
             
             const termKey = unit.term || 'Uncategorized';
             if (!grouped[bookTypeKey][classKey][subjectKey][termKey]) {
-                grouped[bookTypeKey][classKey][subjectKey][termKey] = [];
+                grouped[bookTypeKey][classKey][subjectKey][termKey] = {};
             }
-            grouped[bookTypeKey][classKey][subjectKey][termKey].push(unit);
+
+            const categoryKey = unit.categoryName || 'Uncategorized';
+            if (!grouped[bookTypeKey][classKey][subjectKey][termKey][categoryKey]) {
+                grouped[bookTypeKey][classKey][subjectKey][termKey][categoryKey] = [];
+            }
+
+            grouped[bookTypeKey][classKey][subjectKey][termKey][categoryKey].push(unit);
         });
 
         // SORTING LOGIC
@@ -238,12 +244,16 @@ function ExistingUnitsList({ onUnitSelect }: { onUnitSelect: (unit: UnitWithName
                     
                     const finalGroupedForSubject: typeof termsInSubject = {};
                     for(const termName of sortedTermNames) {
-                        finalGroupedForSubject[termName] = termsInSubject[termName].sort((a,b) => {
-                             if ((a.unitNumber || 0) - (b.unitNumber || 0) !== 0) {
-                               return (a.unitNumber || 0) - (b.unitNumber || 0);
-                             }
-                             return (a.categoryName || '').localeCompare(b.categoryName || '');
-                        });
+                        const categoriesInTerm = termsInSubject[termName];
+                        const sortedCategoryNames = Object.keys(categoriesInTerm).sort((a,b) => a.localeCompare(b));
+
+                        const finalGroupedForTerm: typeof categoriesInTerm = {};
+                        for (const categoryName of sortedCategoryNames) {
+                             finalGroupedForTerm[categoryName] = categoriesInTerm[categoryName].sort((a,b) => {
+                                 return (a.unitNumber || 0) - (b.unitNumber || 0);
+                            });
+                        }
+                        finalGroupedForSubject[termName] = finalGroupedForTerm;
                     }
                     finalGroupedForClass[subjectName] = finalGroupedForSubject;
                 }
@@ -278,7 +288,7 @@ function ExistingUnitsList({ onUnitSelect }: { onUnitSelect: (unit: UnitWithName
 
     if (isLoading) return <p>{t('Loading units...')}...</p>
 
-    const renderAccordion = (unitsByClass: Record<string, Record<string, Record<string, any[]>>>, bookType: string) => (
+    const renderAccordion = (unitsByClass: Record<string, Record<string, Record<string, Record<string, any[]>>>>, bookType: string) => (
         <Accordion type="multiple" className="w-full max-h-96 overflow-y-auto">
             {Object.entries(unitsByClass).map(([className, subjectsInClass]) => (
                  <AccordionItem value={`${bookType}-${className}`} key={`${bookType}-${className}`}>
@@ -290,46 +300,54 @@ function ExistingUnitsList({ onUnitSelect }: { onUnitSelect: (unit: UnitWithName
                                     <AccordionTrigger className="border-b text-base font-medium">{subjectName}</AccordionTrigger>
                                     <AccordionContent className="pt-2">
                                         <Accordion type="multiple" className="w-full pl-2" defaultValue={Object.keys(termsInSubject).map(term => `${bookType}-${className}-${subjectName}-${term}`)}>
-                                            {Object.entries(termsInSubject).map(([termName, unitsInTerm]) => (
+                                            {Object.entries(termsInSubject).map(([termName, categoriesInTerm]) => (
                                                 <AccordionItem value={`${bookType}-${className}-${subjectName}-${termName}`} key={`${bookType}-${className}-${subjectName}-${termName}`} className="border-b-0">
                                                     <AccordionTrigger className="text-sm font-semibold">{termName}</AccordionTrigger>
                                                     <AccordionContent className="pt-2 pl-2">
-                                                        <ul className="space-y-2">
-                                                            {unitsInTerm.map(unit => (
-                                                                <li key={unit.id} className="flex justify-between items-center p-3 border rounded-md">
-                                                                    <button type="button" className="text-left flex-grow" onClick={() => onUnitSelect(unit)}>
-                                                                        <p className="font-semibold">{unit.unitName || unit.categoryName || 'Unit-level Test'}</p>
-                                                                        <div className="text-sm text-muted-foreground flex items-center gap-x-2 flex-wrap">
-                                                                            {unit.unitNumber && <span>{t('Unit')} {unit.unitNumber}</span>}
-                                                                            {unit.categoryName && unit.unitName && <span className="italic"> • {unit.categoryName}</span>}
-                                                                            <Badge variant="outline">{unit.medium}</Badge>
-                                                                        </div>
-                                                                    </button>
-                                                                    <div className="flex gap-2">
-                                                                        <AlertDialog>
-                                                                            <AlertDialogTrigger asChild>
-                                                                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-                                                                                    <Trash className="h-4 w-4" />
-                                                                                    <span className="sr-only">{t('delete')}</span>
-                                                                                </Button>
-                                                                            </AlertDialogTrigger>
-                                                                            <AlertDialogContent>
-                                                                                <AlertDialogHeader>
-                                                                                    <AlertDialogTitle>{t('confirm_deletion_title')}</AlertDialogTitle>
-                                                                                    <AlertDialogDescription>
-                                                                                        {t('This action will permanently delete the unit \'{{unitName}}\'.', { unitName: unit.unitName || unit.id })}
-                                                                                    </AlertDialogDescription>
-                                                                                </AlertDialogHeader>
-                                                                                <AlertDialogFooter>
-                                                                                    <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                                                                                    <AlertDialogAction onClick={() => handleDelete(unit.id)}>{t('delete')}</AlertDialogAction>
-                                                                                </AlertDialogFooter>
-                                                                            </AlertDialogContent>
-                                                                        </AlertDialog>
-                                                                    </div>
-                                                                </li>
+                                                        <Accordion type="multiple" className="w-full" defaultValue={Object.keys(categoriesInTerm).map(cat => `${bookType}-${className}-${subjectName}-${termName}-${cat}`)}>
+                                                            {Object.entries(categoriesInTerm).map(([categoryName, unitsInCategory]) => (
+                                                                <AccordionItem value={`${bookType}-${className}-${subjectName}-${termName}-${categoryName}`} key={`${bookType}-${className}-${subjectName}-${termName}-${categoryName}`} className="border-b-0">
+                                                                    <AccordionTrigger className="text-xs font-medium italic">{categoryName}</AccordionTrigger>
+                                                                    <AccordionContent className="pt-2 pl-2">
+                                                                        <ul className="space-y-2">
+                                                                            {unitsInCategory.map(unit => (
+                                                                                <li key={unit.id} className="flex justify-between items-center p-3 border rounded-md">
+                                                                                    <button type="button" className="text-left flex-grow" onClick={() => onUnitSelect(unit)}>
+                                                                                        <p className="font-semibold">{unit.unitName || 'Unit-level Test'}</p>
+                                                                                        <div className="text-sm text-muted-foreground flex items-center gap-x-2 flex-wrap">
+                                                                                            {unit.unitNumber && <span>{t('Unit')} {unit.unitNumber}</span>}
+                                                                                            <Badge variant="outline">{unit.medium}</Badge>
+                                                                                        </div>
+                                                                                    </button>
+                                                                                    <div className="flex gap-2">
+                                                                                        <AlertDialog>
+                                                                                            <AlertDialogTrigger asChild>
+                                                                                                <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                                                                                    <Trash className="h-4 w-4" />
+                                                                                                    <span className="sr-only">{t('delete')}</span>
+                                                                                                </Button>
+                                                                                            </AlertDialogTrigger>
+                                                                                            <AlertDialogContent>
+                                                                                                <AlertDialogHeader>
+                                                                                                    <AlertDialogTitle>{t('confirm_deletion_title')}</AlertDialogTitle>
+                                                                                                    <AlertDialogDescription>
+                                                                                                        {t('This action will permanently delete the unit \'{{unitName}}\'.', { unitName: unit.unitName || unit.id })}
+                                                                                                    </AlertDialogDescription>
+                                                                                                </AlertDialogHeader>
+                                                                                                <AlertDialogFooter>
+                                                                                                    <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                                                                                                    <AlertDialogAction onClick={() => handleDelete(unit.id)}>{t('delete')}</AlertDialogAction>
+                                                                                                </AlertDialogFooter>
+                                                                                            </AlertDialogContent>
+                                                                                        </AlertDialog>
+                                                                                    </div>
+                                                                                </li>
+                                                                            ))}
+                                                                        </ul>
+                                                                    </AccordionContent>
+                                                                </AccordionItem>
                                                             ))}
-                                                        </ul>
+                                                        </Accordion>
                                                     </AccordionContent>
                                                 </AccordionItem>
                                             ))}
