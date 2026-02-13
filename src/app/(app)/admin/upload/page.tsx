@@ -359,7 +359,13 @@ function ExistingMcqBanksList() {
         if (!filteredTests || !classes || !subjects) return { samacheer: {}, old: {} };
         
         const classMap = new Map(classes.map(c => [c.id, language === 'ta' && c.name_ta ? c.name_ta : c.name]));
-        const subjectMap = new Map(subjects.map(s => [s.id, language === 'ta' && s.name_ta ? s.name_ta : s.name]));
+        const subjectMap = new Map(subjects.map(s => {
+            if (language === 'ta') {
+                if (s.name_ta) return [s.id, s.name_ta];
+                if (s.name === 'Social Science') return [s.id, 'சமூக அறிவியல்'];
+            }
+            return [s.id, s.name];
+        }));
 
         const grouped: {
             samacheer: Record<string, Record<string, Record<string, Test[]>>>,
