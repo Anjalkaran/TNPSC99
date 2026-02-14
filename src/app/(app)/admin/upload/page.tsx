@@ -430,7 +430,25 @@ function ExistingMcqBanksList() {
     
     const categoryMap = useMemo(() => {
         if (!categories) return new Map<string, string>();
-        return new Map(categories.map(cat => [cat.id, language === 'ta' && cat.name_ta ? cat.name_ta : cat.name]));
+    
+        const categoryTranslations: { [key: string]: string } = {
+            'History': 'வரலாறு',
+            'Geography': 'புவியியல்',
+            'Civics': 'குடிமையியல்',
+            'Economics': 'பொருளியல்',
+        };
+    
+        return new Map(categories.map(cat => {
+            let name = cat.name;
+            if (language === 'ta') {
+                if (cat.name_ta) {
+                    name = cat.name_ta;
+                } else if (categoryTranslations[cat.name]) {
+                    name = categoryTranslations[cat.name];
+                }
+            }
+            return [cat.id, name];
+        }));
     }, [categories, language]);
 
     const groupedAndSortedTests = useMemo(() => {
