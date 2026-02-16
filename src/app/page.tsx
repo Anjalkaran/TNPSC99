@@ -77,14 +77,14 @@ export default function PublicHomePage() {
             backgroundRepeat: 'no-repeat',
           }}
         >
-          <div className="relative container mx-auto px-4 text-center">
+          <div className="relative container mx-auto px-4 text-left">
             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-white">
               {t('home_title')}
             </h1>
-            <p className="max-w-2xl mx-auto text-lg text-primary-foreground/90 mb-8">
+            <p className="max-w-2xl text-lg text-primary-foreground/90 mb-8">
               {t('home_subtitle')}
             </p>
-            <div className="flex justify-center gap-4">
+            <div className="flex justify-start gap-4">
               <Button asChild size="lg">
                 <Link href="/signup">
                   {t('get_started_free')} <ArrowRight className="ml-2 h-5 w-5" />
