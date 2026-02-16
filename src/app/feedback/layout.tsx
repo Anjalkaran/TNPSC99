@@ -1,2 +1,9 @@
-// This layout has been moved to /contact.
-// This file is intentionally left blank to avoid routing conflicts.
+import React from 'react';
+
+export default function FeedbackLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return <>{children}</>;
+}
