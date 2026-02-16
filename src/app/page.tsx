@@ -29,6 +29,7 @@ export default function PublicHomePage() {
   const heroImage = PlaceHolderImages.find((img) => img.id === 'homepage-hero');
 
   const homeTitleLines = t('home_title').split('\n');
+  const homeSubtitleLines = t('home_subtitle').split('\n');
 
   useEffect(() => {
     if (!isUserLoading && user) {
@@ -90,7 +91,12 @@ export default function PublicHomePage() {
               ))}
             </h1>
             <p className="max-w-2xl text-lg text-primary-foreground/90 mb-8">
-              {t('home_subtitle')}
+              {homeSubtitleLines.map((line, index) => (
+                <React.Fragment key={index}>
+                  {line}
+                  {index < homeSubtitleLines.length - 1 && <br />}
+                </React.Fragment>
+              ))}
             </p>
             <div className="flex justify-start gap-4">
               <Button asChild size="lg">
