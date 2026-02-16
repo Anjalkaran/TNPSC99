@@ -64,19 +64,23 @@ export default function PublicHomePage() {
   ];
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div
+      className="flex min-h-screen flex-col bg-background"
+      style={{
+        backgroundImage: `url('${heroImage?.imageUrl}')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed',
+      }}
+    >
       <SiteHeader />
       <main className="flex-1">
         {/* Hero Section */}
         <section
           className="relative py-20 md:py-32"
-          style={{
-            backgroundImage: `url('${heroImage?.imageUrl}')`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-          }}
         >
+          <div className="absolute inset-0 bg-black/50" />
           <div className="relative container mx-auto px-4 text-left">
             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-white">
               {t('home_title')}
@@ -98,7 +102,7 @@ export default function PublicHomePage() {
         </section>
 
         {/* Features Section */}
-        <section className="py-16 md:py-24">
+        <section className="py-16 md:py-24 bg-background">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold tracking-tight">
@@ -170,7 +174,7 @@ export default function PublicHomePage() {
         </section>
 
         {/* Final CTA Section */}
-        <section className="py-16 md:py-24">
+        <section className="py-16 md:py-24 bg-background">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl font-bold mb-4">{t('ready_to_start')}</h2>
             <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
