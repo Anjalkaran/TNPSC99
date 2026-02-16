@@ -69,10 +69,14 @@ export default function PublicHomePage() {
       <main className="flex-1">
         {/* Hero Section */}
         <section
-          className="relative bg-cover bg-center py-20 md:py-32"
-          style={{ backgroundImage: `url(${heroImage?.imageUrl})` }}
+          className="relative py-20 md:py-32"
+          style={{
+            backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('${heroImage?.imageUrl}')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+          }}
         >
-          <div className="absolute inset-0 bg-black/60" aria-hidden="true" />
           <div className="relative container mx-auto px-4 text-center">
             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-white">
               {t('home_title')}
