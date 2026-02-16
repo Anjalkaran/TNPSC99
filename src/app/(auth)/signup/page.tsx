@@ -205,10 +205,10 @@ export default function SignupPage() {
   }
 
   return (
-    <Card className="w-full max-w-sm">
+    <Card className="w-full max-w-sm text-white bg-black/40 backdrop-blur-lg border-white/20">
       <CardHeader>
         <CardTitle>புதிய கணக்கை உருவாக்கவும்</CardTitle>
-        <CardDescription>
+        <CardDescription className="text-gray-300">
           தொடங்க உங்கள் விவரங்களை உள்ளிடவும்.
         </CardDescription>
       </CardHeader>
@@ -222,7 +222,7 @@ export default function SignupPage() {
                 <FormItem>
                   <FormLabel>பயனர்பெயர்</FormLabel>
                   <FormControl>
-                    <Input placeholder="Your Name" {...field} />
+                    <Input className="bg-transparent placeholder:text-gray-400" placeholder="Your Name" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -235,7 +235,7 @@ export default function SignupPage() {
                 <FormItem>
                   <FormLabel>மின்னஞ்சல்</FormLabel>
                   <FormControl>
-                    <Input placeholder="name@example.com" {...field} />
+                    <Input className="bg-transparent placeholder:text-gray-400" placeholder="name@example.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -248,7 +248,7 @@ export default function SignupPage() {
                 <FormItem>
                   <FormLabel>கடவுச்சொல்</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="••••••••" {...field} />
+                    <Input className="bg-transparent placeholder:text-gray-400" type="password" placeholder="••••••••" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -261,7 +261,7 @@ export default function SignupPage() {
                 <FormItem>
                   <FormLabel>கடவுச்சொல்லை உறுதிப்படுத்தவும்</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="••••••••" {...field} />
+                    <Input className="bg-transparent placeholder:text-gray-400" type="password" placeholder="••••••••" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -274,7 +274,7 @@ export default function SignupPage() {
                 <FormItem>
                   <FormLabel>Referral Code (Optional)</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter code from a friend" {...field} />
+                    <Input className="bg-transparent placeholder:text-gray-400" placeholder="Enter code from a friend" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -287,23 +287,23 @@ export default function SignupPage() {
         </Form>
         <div className="relative my-4">
           <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t" />
+            <span className="w-full border-t border-white/30" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">
+            <span className="bg-black/40 px-2 text-gray-300">
               அல்லது தொடரவும்
             </span>
           </div>
         </div>
-        <Button variant="outline" className="w-full" onClick={handleGoogleSignUp} disabled={isSubmitting}>
+        <Button variant="outline" className="w-full bg-transparent hover:bg-white/10" onClick={handleGoogleSignUp} disabled={isSubmitting}>
           <GoogleIcon className="mr-2 h-4 w-4" />
           Google
         </Button>
       </CardContent>
       <CardFooter className="flex justify-center">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-gray-300">
           ஏற்கனவே கணக்கு உள்ளதா?{' '}
-          <Link href="/login" className="text-primary hover:underline">
+          <Link href="/login" className="text-white hover:underline">
             உள்நுழைக
           </Link>
         </p>

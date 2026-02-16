@@ -185,10 +185,10 @@ export default function LoginPage() {
   }
 
   return (
-    <Card className="w-full max-w-sm">
+    <Card className="w-full max-w-sm text-white bg-black/40 backdrop-blur-lg border-white/20">
       <CardHeader>
         <CardTitle>உள்நுழைக</CardTitle>
-        <CardDescription>
+        <CardDescription className="text-gray-300">
           உங்கள் கணக்கைத் தொடர உள்நுழையவும்.
         </CardDescription>
       </CardHeader>
@@ -202,7 +202,7 @@ export default function LoginPage() {
                 <FormItem>
                   <FormLabel>மின்னஞ்சல்</FormLabel>
                   <FormControl>
-                    <Input placeholder="name@example.com" {...field} />
+                    <Input className="bg-transparent placeholder:text-gray-400" placeholder="name@example.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -220,7 +220,7 @@ export default function LoginPage() {
                         <Button
                           type="button"
                           variant="link"
-                          className="p-0 h-auto text-xs"
+                          className="p-0 h-auto text-xs text-gray-300 hover:text-white"
                         >
                           கடவுச்சொல்லை மறந்துவிட்டீர்களா?
                         </Button>
@@ -251,7 +251,7 @@ export default function LoginPage() {
                     </AlertDialog>
                   </div>
                   <FormControl>
-                    <Input type="password" placeholder="••••••••" {...field} />
+                    <Input className="bg-transparent placeholder:text-gray-400" type="password" placeholder="••••••••" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -264,23 +264,23 @@ export default function LoginPage() {
         </Form>
         <div className="relative my-4">
           <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t" />
+            <span className="w-full border-t border-white/30" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">
+            <span className="bg-black/40 px-2 text-gray-300">
               அல்லது தொடரவும்
             </span>
           </div>
         </div>
-        <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isSubmitting}>
+        <Button variant="outline" className="w-full bg-transparent hover:bg-white/10" onClick={handleGoogleSignIn} disabled={isSubmitting}>
           <GoogleIcon className="mr-2 h-4 w-4" />
           Google
         </Button>
       </CardContent>
       <CardFooter className="flex justify-center">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-gray-300">
           கணக்கு இல்லையா?{' '}
-          <Link href="/signup" className="text-primary hover:underline">
+          <Link href="/signup" className="text-white hover:underline">
             பதிவு செய்க
           </Link>
         </p>
@@ -288,5 +288,3 @@ export default function LoginPage() {
     </Card>
   );
 }
-
-    
