@@ -82,10 +82,10 @@ export default function PublicHomePage() {
           className="relative py-20 md:py-32"
         >
            <div className="relative container mx-auto px-4 text-left">
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-white">
+            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-accent">
               {t('home_title')}
             </h1>
-            <p className="max-w-2xl text-lg text-primary-foreground/90 mb-8">
+            <p className="max-w-2xl text-lg text-foreground/90 mb-8">
               {t('home_subtitle')}
             </p>
             <div className="flex justify-start gap-4">
@@ -105,10 +105,10 @@ export default function PublicHomePage() {
         <section className="py-16 md:py-24">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold tracking-tight text-white">
+              <h2 className="text-3xl font-bold tracking-tight text-accent">
                 Everything You Need to Succeed
               </h2>
-              <p className="max-w-2xl mx-auto mt-2 text-primary-foreground/80">
+              <p className="max-w-2xl mx-auto mt-2 text-foreground/80">
                 Our platform is designed to provide a complete preparation
                 experience.
               </p>
@@ -135,18 +135,18 @@ export default function PublicHomePage() {
         <section className="py-16 md:py-24">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold tracking-tight text-white">How It Works</h2>
-              <p className="max-w-xl mx-auto mt-2 text-primary-foreground/80">
+              <h2 className="text-3xl font-bold tracking-tight text-accent">How It Works</h2>
+              <p className="max-w-xl mx-auto mt-2 text-foreground/80">
                 Get started in just a few simple steps.
               </p>
             </div>
-            <div className="grid md:grid-cols-3 gap-8 text-center max-w-4xl mx-auto text-white">
+            <div className="grid md:grid-cols-3 gap-8 text-center max-w-4xl mx-auto">
               <div className="flex flex-col items-center">
                 <div className="flex items-center justify-center h-16 w-16 rounded-full bg-primary text-primary-foreground mb-4">
                   <UserPlus className="h-8 w-8" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">1. Create Account</h3>
-                <p className="text-primary-foreground/80">
+                <h3 className="text-xl font-semibold mb-2 text-accent">1. Create Account</h3>
+                <p className="text-foreground/80">
                   Sign up for free and get immediate access to our platform.
                 </p>
               </div>
@@ -154,8 +154,8 @@ export default function PublicHomePage() {
                 <div className="flex items-center justify-center h-16 w-16 rounded-full bg-primary text-primary-foreground mb-4">
                   <FilePenLine className="h-8 w-8" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">2. Take Tests</h3>
-                <p className="text-primary-foreground/80">
+                <h3 className="text-xl font-semibold mb-2 text-accent">2. Take Tests</h3>
+                <p className="text-foreground/80">
                   Choose from a wide variety of tests to practice and improve.
                 </p>
               </div>
@@ -163,8 +163,8 @@ export default function PublicHomePage() {
                 <div className="flex items-center justify-center h-16 w-16 rounded-full bg-primary text-primary-foreground mb-4">
                   <BarChart2 className="h-8 w-8" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">3. Track Progress</h3>
-                <p className="text-primary-foreground/80">
+                <h3 className="text-xl font-semibold mb-2 text-accent">3. Track Progress</h3>
+                <p className="text-foreground/80">
                   Use our analytics to monitor your performance and focus on weak
                   areas.
                 </p>
@@ -176,8 +176,8 @@ export default function PublicHomePage() {
         {/* Final CTA Section */}
         <section className="py-16 md:py-24">
           <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl font-bold mb-4 text-white">{t('ready_to_start')}</h2>
-            <p className="text-primary-foreground/80 mb-8 max-w-xl mx-auto">
+            <h2 className="text-3xl font-bold mb-4 text-accent">{t('ready_to_start')}</h2>
+            <p className="text-foreground/80 mb-8 max-w-xl mx-auto">
               {t('start_your_preparation')}
             </p>
             <Button asChild size="lg">
