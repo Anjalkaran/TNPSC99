@@ -20,11 +20,13 @@ import {
   Card,
   CardContent,
 } from '@/components/ui/card';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 export default function PublicHomePage() {
   const { user, isUserLoading } = useUser();
   const router = useRouter();
   const { t } = useTranslation();
+  const heroImage = PlaceHolderImages.find((img) => img.id === 'homepage-hero');
 
   useEffect(() => {
     if (!isUserLoading && user) {
@@ -66,12 +68,16 @@ export default function PublicHomePage() {
       <SiteHeader />
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="bg-slate-50 dark:bg-slate-900/50 py-20 md:py-32">
-          <div className="container mx-auto px-4 text-center">
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
+        <section
+          className="relative bg-cover bg-center py-20 md:py-32"
+          style={{ backgroundImage: `url(${heroImage?.imageUrl})` }}
+        >
+          <div className="absolute inset-0 bg-black/60" aria-hidden="true" />
+          <div className="relative container mx-auto px-4 text-center">
+            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-white">
               {t('home_title')}
             </h1>
-            <p className="max-w-2xl mx-auto text-lg text-muted-foreground mb-8">
+            <p className="max-w-2xl mx-auto text-lg text-primary-foreground/90 mb-8">
               {t('home_subtitle')}
             </p>
             <div className="flex justify-center gap-4">
@@ -80,7 +86,7 @@ export default function PublicHomePage() {
                   {t('get_started_free')} <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="lg">
+              <Button asChild variant="secondary" size="lg">
                 <Link href="/login">{t('login')}</Link>
               </Button>
             </div>
