@@ -104,9 +104,6 @@ export default function PublicHomePage() {
                   {t('get_started_free')} <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
-              <Button asChild variant="secondary" size="lg">
-                <Link href="/login">{t('login')}</Link>
-              </Button>
             </div>
           </div>
         </section>
