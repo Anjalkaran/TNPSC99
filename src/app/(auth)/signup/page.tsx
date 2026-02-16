@@ -303,7 +303,7 @@ export default function SignupPage() {
       <CardFooter className="flex justify-center">
         <p className="text-sm text-gray-400">
           ஏற்கனவே கணக்கு உள்ளதா?{' '}
-          <Link href="/login" className="text-white hover:underline">
+          <Link href="/login" className="text-orange-500 hover:text-orange-400 hover:underline">
             உள்நுழைக
           </Link>
         </p>

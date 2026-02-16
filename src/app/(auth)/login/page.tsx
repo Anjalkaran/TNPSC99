@@ -220,7 +220,7 @@ export default function LoginPage() {
                         <Button
                           type="button"
                           variant="link"
-                          className="p-0 h-auto text-xs text-white hover:underline"
+                          className="p-0 h-auto text-xs text-orange-500 hover:text-orange-400 hover:underline"
                         >
                           கடவுச்சொல்லை மறந்துவிட்டீர்களா?
                         </Button>
@@ -280,7 +280,7 @@ export default function LoginPage() {
       <CardFooter className="flex justify-center">
         <p className="text-sm text-gray-400">
           கணக்கு இல்லையா?{' '}
-          <Link href="/signup" className="text-white hover:underline">
+          <Link href="/signup" className="text-orange-500 hover:text-orange-400 hover:underline">
             பதிவு செய்க
           </Link>
         </p>
