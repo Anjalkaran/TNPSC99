@@ -25,8 +25,8 @@
     "group_4_tests": "Group IV Tests",
     "group_4_tests_desc": "Practice tests tailored for the Group IV exam.",
     "view_tests": "View Tests",
-    "home_title": "tnpsc99.com: Master the TNPSC Exams",
-    "home_subtitle": "tnpsc99.com is your ultimate partner for TNPSC exam preparation. Access a vast library of MCQs and track your progress to ace the exam.",
+    "home_title": "Master the TNPSC Exams with TNPSC99",
+    "home_subtitle": "Access thousands of curated MCQs and real-time progress tracking designed to help you ace your exams and secure your future.",
     "login": "Login",
     "sign_up": "Sign Up",
     "ready_to_start": "Ready to get started?",
@@ -230,3 +230,4 @@
     "updating_unit": "Updating Unit...",
     "select_category_to_view_tests": "Select a category to view tests."
 }
+    
