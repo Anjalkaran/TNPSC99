@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { SiteHeader } from '@/components/site-header';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/firebase';
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from '@/hooks/use-translation';
 import {
   Card,
@@ -27,6 +27,8 @@ export default function PublicHomePage() {
   const router = useRouter();
   const { t } = useTranslation();
   const heroImage = PlaceHolderImages.find((img) => img.id === 'homepage-hero');
+
+  const homeTitleLines = t('home_title').split('\n');
 
   useEffect(() => {
     if (!isUserLoading && user) {
@@ -80,7 +82,12 @@ export default function PublicHomePage() {
         >
            <div className="relative container mx-auto px-4 text-left">
             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-white">
-              {t('home_title')}
+              {homeTitleLines.map((line, index) => (
+                <React.Fragment key={index}>
+                  {line}
+                  {index < homeTitleLines.length - 1 && <br />}
+                </React.Fragment>
+              ))}
             </h1>
             <p className="max-w-2xl text-lg text-primary-foreground/90 mb-8">
               {t('home_subtitle')}
