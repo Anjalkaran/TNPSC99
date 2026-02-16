@@ -452,7 +452,12 @@ function ExistingMcqBanksList() {
     }, [categories, language]);
 
     const groupedAndSortedTests = useMemo(() => {
-        if (!filteredTests || !classes || !subjects || !categories) return { samacheer: {}, old: {} };
+        if (!filteredTests || !classes || !subjects || !categories) {
+            return {
+                samacheer: { tamil: {}, english: {} },
+                old: { tamil: {}, english: {} }
+            };
+        }
         
         const classMap = new Map(classes.map(c => [c.id, language === 'ta' && c.name_ta ? c.name_ta : c.name]));
         const subjectMap = new Map(subjects.map(s => {
@@ -466,36 +471,39 @@ function ExistingMcqBanksList() {
         }));
 
         const grouped: {
-            samacheer: Record<string, Record<string, Record<string, Record<string, Test[]>>>>,
-            old: Record<string, Record<string, Record<string, Record<string, Test[]>>>>,
+            samacheer: { tamil: Record<string, any>, english: Record<string, any> },
+            old: { tamil: Record<string, any>, english: Record<string, any> }
         } = {
-            samacheer: {},
-            old: {},
+            samacheer: { tamil: {}, english: {} },
+            old: { tamil: {}, english: {} },
         };
 
         filteredTests.forEach(test => {
-            const bookTypeKey = test.bookType || 'samacheer';
+            const bookTypeKey = (test.bookType || 'samacheer') as 'samacheer' | 'old';
+            const mediumKey = (test.medium || 'tamil') as 'tamil' | 'english';
             if (!test.classId || !test.subjectId) return;
 
             const className = classMap.get(test.classId) || 'Uncategorized Class';
             const subjectName = subjectMap.get(test.subjectId) || 'Uncategorized Subject';
             const termName = test.term || 'Uncategorized Term';
             const categoryName = (test.categoryId ? categoryMap.get(test.categoryId) : null) || 'Uncategorized';
+            
+            const targetGroup = grouped[bookTypeKey][mediumKey];
 
-            if (!grouped[bookTypeKey as 'samacheer' | 'old'][className]) {
-                grouped[bookTypeKey as 'samacheer' | 'old'][className] = {};
+            if (!targetGroup[className]) {
+                targetGroup[className] = {};
             }
-            if (!grouped[bookTypeKey as 'samacheer' | 'old'][className][subjectName]) {
-                grouped[bookTypeKey as 'samacheer' | 'old'][className][subjectName] = {};
+            if (!targetGroup[className][subjectName]) {
+                targetGroup[className][subjectName] = {};
             }
-            if (!grouped[bookTypeKey as 'samacheer' | 'old'][className][subjectName][termName]) {
-                grouped[bookTypeKey as 'samacheer' | 'old'][className][subjectName][termName] = {};
+            if (!targetGroup[className][subjectName][termName]) {
+                targetGroup[className][subjectName][termName] = {};
             }
-             if (!grouped[bookTypeKey as 'samacheer' | 'old'][className][subjectName][termName][categoryName]) {
-                grouped[bookTypeKey as 'samacheer' | 'old'][className][subjectName][termName][categoryName] = [];
+             if (!targetGroup[className][subjectName][termName][categoryName]) {
+                targetGroup[className][subjectName][termName][categoryName] = [];
             }
             
-            grouped[bookTypeKey as 'samacheer' | 'old'][className][subjectName][termName][categoryName].push(test);
+            targetGroup[className][subjectName][termName][categoryName].push(test);
         });
 
         const getNumber = (name: string) => {
@@ -534,8 +542,14 @@ function ExistingMcqBanksList() {
         };
         
         return {
-            samacheer: sortInnerObject(grouped.samacheer),
-            old: sortInnerObject(grouped.old),
+            samacheer: {
+                tamil: sortInnerObject(grouped.samacheer.tamil),
+                english: sortInnerObject(grouped.samacheer.english),
+            },
+            old: {
+                tamil: sortInnerObject(grouped.old.tamil),
+                english: sortInnerObject(grouped.old.english),
+            }
         };
 
     }, [filteredTests, classes, subjects, categories, language, categoryMap]);
@@ -679,7 +693,7 @@ function ExistingMcqBanksList() {
         if (sortedClassNames.length === 0) {
             return (
                 <p className="text-muted-foreground text-center p-8">
-                    {searchTerm ? `No results for "${searchTerm}" in ${bookType} books.` : `No ${bookType} question banks created yet.`}
+                    {searchTerm ? `No results for "${searchTerm}" in this section.` : `No question banks created for this section yet.`}
                 </p>
             );
         }
@@ -814,10 +828,32 @@ function ExistingMcqBanksList() {
                             <TabsTrigger value="old">Old Books</TabsTrigger>
                         </TabsList>
                         <TabsContent value="samacheer" className="pt-4">
-                           {renderAccordionFor(groupedAndSortedTests.samacheer, 'Samacheer')}
+                           <Tabs defaultValue="tamil" className="w-full">
+                               <TabsList className="grid w-full grid-cols-2">
+                                   <TabsTrigger value="tamil">Tamil Medium</TabsTrigger>
+                                   <TabsTrigger value="english">English Medium</TabsTrigger>
+                               </TabsList>
+                               <TabsContent value="tamil" className="pt-4">
+                                   {renderAccordionFor(groupedAndSortedTests.samacheer.tamil, 'Samacheer Tamil')}
+                               </TabsContent>
+                               <TabsContent value="english" className="pt-4">
+                                   {renderAccordionFor(groupedAndSortedTests.samacheer.english, 'Samacheer English')}
+                               </TabsContent>
+                           </Tabs>
                         </TabsContent>
                         <TabsContent value="old" className="pt-4">
-                           {renderAccordionFor(groupedAndSortedTests.old, 'Old Book')}
+                           <Tabs defaultValue="tamil" className="w-full">
+                               <TabsList className="grid w-full grid-cols-2">
+                                   <TabsTrigger value="tamil">Tamil Medium</TabsTrigger>
+                                   <TabsTrigger value="english">English Medium</TabsTrigger>
+                               </TabsList>
+                               <TabsContent value="tamil" className="pt-4">
+                                   {renderAccordionFor(groupedAndSortedTests.old.tamil, 'Old Book Tamil')}
+                               </TabsContent>
+                               <TabsContent value="english" className="pt-4">
+                                   {renderAccordionFor(groupedAndSortedTests.old.english, 'Old Book English')}
+                               </TabsContent>
+                           </Tabs>
                         </TabsContent>
                     </Tabs>
                 )}
