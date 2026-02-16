@@ -100,7 +100,11 @@ export default function ClassSubjectsPage() {
       ) : subjects.length > 0 ? (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {subjects.map(subject => {
-            const href = `/class/${classId}/subject/${subject.id}${bookType ? `?bookType=${bookType}`: ''}`;
+            const isTamilSubject = subject.id === 'tamil';
+            const href = isTamilSubject
+                ? `/class/${classId}/tamil${bookType ? `?bookType=${bookType}`: ''}`
+                : `/class/${classId}/subject/${subject.id}${bookType ? `?bookType=${bookType}`: ''}`;
+
             return (
               <Link key={subject.id} href={href} className="block hover:no-underline group">
                 <Card className="flex h-full flex-col overflow-hidden transition-shadow duration-300 hover:shadow-xl">
