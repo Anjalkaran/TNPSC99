@@ -28,6 +28,7 @@ export default function PublicHomePage() {
   const { t } = useTranslation();
   const heroImage = PlaceHolderImages.find((img) => img.id === 'homepage-hero');
 
+
   useEffect(() => {
     if (!isUserLoading && user) {
       router.push('/dashboard');
@@ -65,7 +66,7 @@ export default function PublicHomePage() {
 
   return (
     <div
-      className="flex min-h-screen flex-col bg-background"
+      className="flex min-h-screen flex-col"
       style={{
         backgroundImage: `url('${heroImage?.imageUrl}')`,
         backgroundSize: 'cover',
@@ -80,7 +81,11 @@ export default function PublicHomePage() {
         <section
           className="relative py-20 md:py-32"
         >
-          <div className="relative container mx-auto px-4 text-left">
+          <div
+            className="absolute inset-0 bg-black/70"
+            aria-hidden="true"
+          ></div>
+           <div className="relative container mx-auto px-4 text-left">
             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-white">
               {t('home_title')}
             </h1>
@@ -101,7 +106,7 @@ export default function PublicHomePage() {
         </section>
 
         {/* Features Section */}
-        <section className="py-16 md:py-24 bg-background">
+        <section className="py-16 md:py-24 bg-background/90 backdrop-blur-sm">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold tracking-tight">
@@ -131,7 +136,7 @@ export default function PublicHomePage() {
         </section>
 
         {/* How It Works Section */}
-        <section className="bg-muted py-16 md:py-24">
+        <section className="bg-muted/90 backdrop-blur-sm py-16 md:py-24">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold tracking-tight">How It Works</h2>
@@ -173,7 +178,7 @@ export default function PublicHomePage() {
         </section>
 
         {/* Final CTA Section */}
-        <section className="py-16 md:py-24 bg-background">
+        <section className="py-16 md:py-24 bg-background/90 backdrop-blur-sm">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl font-bold mb-4">{t('ready_to_start')}</h2>
             <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
