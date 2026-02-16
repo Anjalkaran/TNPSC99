@@ -1,14 +1,2 @@
-import { SiteHeader } from '@/components/site-header';
-
-export default function FeedbackLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <SiteHeader />
-      <main className="flex-1">{children}</main>
-    </div>
-  );
-}
+// This layout has been moved to /contact.
+// This file is intentionally left blank to avoid routing conflicts.
