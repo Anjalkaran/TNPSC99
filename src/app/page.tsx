@@ -74,7 +74,7 @@ export default function PublicHomePage() {
         <section
           className="relative py-20 md:py-32"
           style={{
-            backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${heroImage?.imageUrl})`,
+            backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url(${heroImage?.imageUrl})`,
             backgroundSize: 'cover',
             backgroundPosition: '70% 60%',
             backgroundRepeat: 'no-repeat',
@@ -107,6 +107,42 @@ export default function PublicHomePage() {
             </div>
           </div>
         </section>
+
+        {/* Exam Categories Section */}
+        <section className="py-16 md:py-24 bg-muted">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold tracking-tight text-accent">Exam Categories</h2>
+              <p className="max-w-xl mx-auto mt-2 text-muted-foreground">
+                Choose your exam group and start preparing.
+              </p>
+            </div>
+            <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+              <Link href="/exam-wise/group-1" className="block hover:no-underline">
+                <Card className="text-center transition-all hover:shadow-lg hover:scale-105">
+                  <CardContent className="p-8">
+                    <h3 className="text-xl font-semibold text-accent">Group I</h3>
+                  </CardContent>
+                </Card>
+              </Link>
+              <Link href="/exam-wise/group-2" className="block hover:no-underline">
+                <Card className="text-center transition-all hover:shadow-lg hover:scale-105">
+                  <CardContent className="p-8">
+                    <h3 className="text-xl font-semibold text-accent">Group II/IIA</h3>
+                  </CardContent>
+                </Card>
+              </Link>
+              <Link href="/exam-wise/group-4" className="block hover:no-underline">
+                <Card className="text-center transition-all hover:shadow-lg hover:scale-105">
+                  <CardContent className="p-8">
+                    <h3 className="text-xl font-semibold text-accent">Group IV</h3>
+                  </CardContent>
+                </Card>
+              </Link>
+            </div>
+          </div>
+        </section>
+
 
         {/* Features Section */}
         <section className="py-16 md:py-24 bg-background">
