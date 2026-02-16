@@ -836,7 +836,7 @@ export default function UploadMcqPage() {
     resolver: zodResolver(uploadFormSchema),
     defaultValues: {
       bookType: 'samacheer',
-      classId: '', subjectName: '', term: '', unitNumber: undefined, unitName: '', categoryName: '', jsonInput: '', referencePageOffset: undefined, addUnitForFullBook: 'yes', medium: 'tamil'
+      classId: '', subjectName: '', term: '', unitNumber: undefined, unitName: '', categoryName: '', jsonInput: '', referencePageOffset: undefined, addUnitForFullBook: 'yes', medium: undefined
     },
   });
 

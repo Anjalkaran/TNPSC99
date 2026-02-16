@@ -365,7 +365,7 @@ export default function SyllabusUploadPage() {
     resolver: zodResolver(syllabusUploadFormSchema),
     defaultValues: {
       examGroup: undefined,
-      medium: 'tamil',
+      medium: undefined,
       syllabusSubject: '',
       syllabusTopic: '',
       jsonInput: '',

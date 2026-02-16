@@ -745,7 +745,7 @@ export default function TopicManagementPage() {
 
   const form = useForm<UnitFormValues>({
     resolver: zodResolver(unitFormSchema),
-    defaultValues: { bookType: 'samacheer', classId: '', subjectName: '', medium: 'tamil', term: '', unitNumber: undefined, unitName: '', categoryName: '', addUnitForFullBook: 'yes' },
+    defaultValues: { bookType: 'samacheer', classId: '', subjectName: '', medium: undefined, term: '', unitNumber: undefined, unitName: '', categoryName: '', addUnitForFullBook: 'yes' },
   });
 
   const classIdValue = form.watch('classId');
