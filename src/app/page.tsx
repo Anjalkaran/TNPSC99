@@ -85,7 +85,7 @@ export default function PublicHomePage() {
             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-accent">
               {t('home_title')}
             </h1>
-            <p className="max-w-2xl text-lg text-foreground/90 mb-8">
+            <p className="max-w-2xl text-lg text-gray-200 mb-8">
               {t('home_subtitle')}
             </p>
             <div className="flex justify-start gap-4">
@@ -108,7 +108,7 @@ export default function PublicHomePage() {
               <h2 className="text-3xl font-bold tracking-tight text-accent">
                 Everything You Need to Succeed
               </h2>
-              <p className="max-w-2xl mx-auto mt-2 text-foreground/80">
+              <p className="max-w-2xl mx-auto mt-2 text-gray-300">
                 Our platform is designed to provide a complete preparation
                 experience.
               </p>
@@ -136,7 +136,7 @@ export default function PublicHomePage() {
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold tracking-tight text-accent">How It Works</h2>
-              <p className="max-w-xl mx-auto mt-2 text-foreground/80">
+              <p className="max-w-xl mx-auto mt-2 text-gray-300">
                 Get started in just a few simple steps.
               </p>
             </div>
@@ -146,7 +146,7 @@ export default function PublicHomePage() {
                   <UserPlus className="h-8 w-8" />
                 </div>
                 <h3 className="text-xl font-semibold mb-2 text-accent">1. Create Account</h3>
-                <p className="text-foreground/80">
+                <p className="text-gray-300">
                   Sign up for free and get immediate access to our platform.
                 </p>
               </div>
@@ -155,7 +155,7 @@ export default function PublicHomePage() {
                   <FilePenLine className="h-8 w-8" />
                 </div>
                 <h3 className="text-xl font-semibold mb-2 text-accent">2. Take Tests</h3>
-                <p className="text-foreground/80">
+                <p className="text-gray-300">
                   Choose from a wide variety of tests to practice and improve.
                 </p>
               </div>
@@ -164,7 +164,7 @@ export default function PublicHomePage() {
                   <BarChart2 className="h-8 w-8" />
                 </div>
                 <h3 className="text-xl font-semibold mb-2 text-accent">3. Track Progress</h3>
-                <p className="text-foreground/80">
+                <p className="text-gray-300">
                   Use our analytics to monitor your performance and focus on weak
                   areas.
                 </p>
@@ -177,7 +177,7 @@ export default function PublicHomePage() {
         <section className="py-16 md:py-24">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl font-bold mb-4 text-accent">{t('ready_to_start')}</h2>
-            <p className="text-foreground/80 mb-8 max-w-xl mx-auto">
+            <p className="text-gray-300 mb-8 max-w-xl mx-auto">
               {t('start_your_preparation')}
             </p>
             <Button asChild size="lg">
