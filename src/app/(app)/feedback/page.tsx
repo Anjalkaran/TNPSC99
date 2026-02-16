@@ -1,3 +1,5 @@
-// This file's content has been removed to resolve a build conflict.
-// The public feedback page is now located at /src/app/feedback/page.tsx
-// and this file is no longer needed.
+// This file intentionally does not export a React component
+// to resolve a Next.js routing conflict. The public feedback
+// page is located at /src/app/feedback/page.tsx.
+const ConflictingFeedbackPage = null;
+export default ConflictingFeedbackPage;
