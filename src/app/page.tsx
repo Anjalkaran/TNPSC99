@@ -80,7 +80,6 @@ export default function PublicHomePage() {
         <section
           className="relative py-20 md:py-32"
         >
-          <div className="absolute inset-0 bg-black/50" />
           <div className="relative container mx-auto px-4 text-left">
             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-white">
               {t('home_title')}
