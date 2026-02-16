@@ -25,7 +25,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
 import { useTranslation } from '@/hooks/use-translation';
 import { useUser } from '@/firebase';
-import { Send } from 'lucide-react';
+import { Mail, Send, Twitter, Facebook, Instagram } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 
 const feedbackSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
@@ -64,8 +65,8 @@ export default function FeedbackPage() {
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     toast({
-      title: 'Feedback Sent!',
-      description: "Thank you for your message. We'll get back to you soon.",
+      title: 'Message Sent!',
+      description: "Thank you for contacting us. We'll get back to you soon.",
     });
 
     form.reset();
@@ -77,9 +78,9 @@ export default function FeedbackPage() {
     <div className="container mx-auto p-4 sm:p-6 md:p-8">
       <Card className="w-full max-w-2xl mx-auto">
         <CardHeader>
-          <CardTitle className="text-3xl">Send Feedback or Contact Us</CardTitle>
+          <CardTitle className="text-3xl">Contact Us</CardTitle>
           <CardDescription>
-            Have a question, suggestion, or issue? Let us know. We appreciate your input!
+            We'd love to hear from you. Please fill out the form below or reach out to us through our other channels.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -134,6 +135,29 @@ export default function FeedbackPage() {
               </Button>
             </form>
           </Form>
+          
+          <Separator className="my-8" />
+
+          <div className="space-y-4 text-center">
+            <h3 className="text-lg font-semibold">Other Ways to Reach Us</h3>
+            <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                <Mail className="h-4 w-4" />
+                <a href="mailto:contact@tnpsc99.com" className="hover:underline">contact@tnpsc99.com</a>
+            </div>
+            <p className="text-sm text-muted-foreground pt-2">Follow us on social media:</p>
+            <div className="flex items-center justify-center gap-6">
+                <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+                    <Twitter className="h-6 w-6" />
+                </a>
+                <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+                    <Facebook className="h-6 w-6" />
+                </a>
+                <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+                    <Instagram className="h-6 w-6" />
+                </a>
+            </div>
+          </div>
+
         </CardContent>
       </Card>
     </div>
