@@ -99,7 +99,7 @@ export default function PublicHomePage() {
               ))}
             </p>
             <div className="flex justify-start gap-4">
-              <Button asChild size="lg">
+              <Button asChild size="lg" className="hover:bg-accent">
                 <Link href="/signup">
                   {t('get_started_free')} <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
