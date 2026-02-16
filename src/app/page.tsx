@@ -71,7 +71,7 @@ export default function PublicHomePage() {
         <section
           className="relative py-20 md:py-32"
           style={{
-            backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('${heroImage?.imageUrl}')`,
+            backgroundImage: `url('${heroImage?.imageUrl}')`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
