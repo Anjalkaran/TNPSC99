@@ -185,7 +185,7 @@ export default function LoginPage() {
   }
 
   return (
-    <Card className="w-full max-w-sm text-white bg-black/40 backdrop-blur-lg border-white/20">
+    <Card className="w-full max-w-sm text-white bg-black/30 backdrop-blur-lg border-white/20">
       <CardHeader>
         <CardTitle>உள்நுழைக</CardTitle>
         <CardDescription className="text-gray-300">
@@ -267,7 +267,7 @@ export default function LoginPage() {
             <span className="w-full border-t border-white/30" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-black/40 px-2 text-gray-300">
+            <span className="bg-black/30 px-2 text-gray-300">
               அல்லது தொடரவும்
             </span>
           </div>
