@@ -28,7 +28,6 @@ export default function PublicHomePage() {
   const { t } = useTranslation();
   const heroImage = PlaceHolderImages.find((img) => img.id === 'homepage-hero');
 
-
   useEffect(() => {
     if (!isUserLoading && user) {
       router.push('/dashboard');
@@ -65,27 +64,24 @@ export default function PublicHomePage() {
   ];
 
   return (
-    <div
-      className="flex min-h-screen flex-col"
-      style={{
-        backgroundImage: `url('${heroImage?.imageUrl}')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        backgroundAttachment: 'fixed',
-      }}
-    >
+    <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader />
       <main className="flex-1">
         {/* Hero Section */}
         <section
           className="relative py-20 md:py-32"
+          style={{
+            backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${heroImage?.imageUrl})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+          }}
         >
            <div className="relative container mx-auto px-4 text-left">
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-accent">
+            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-white">
               {t('home_title')}
             </h1>
-            <p className="max-w-2xl text-lg text-gray-200 mb-8">
+            <p className="max-w-2xl text-lg text-primary-foreground/90 mb-8">
               {t('home_subtitle')}
             </p>
             <div className="flex justify-start gap-4">
@@ -102,23 +98,23 @@ export default function PublicHomePage() {
         </section>
 
         {/* Features Section */}
-        <section className="py-16 md:py-24">
+        <section className="py-16 md:py-24 bg-background">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold tracking-tight text-accent">
                 Everything You Need to Succeed
               </h2>
-              <p className="max-w-2xl mx-auto mt-2 text-gray-300">
+              <p className="max-w-2xl mx-auto mt-2 text-muted-foreground">
                 Our platform is designed to provide a complete preparation
                 experience.
               </p>
             </div>
             <div className="grid md:grid-cols-3 gap-8">
               {features.map((feature, index) => (
-                <Card key={index} className="text-center">
+                <Card key={index} className="text-center bg-card">
                   <CardContent className="p-8">
                     {feature.icon}
-                    <h3 className="text-xl font-semibold mb-2">
+                    <h3 className="text-xl font-semibold mb-2 text-accent">
                       {feature.title}
                     </h3>
                     <p className="text-muted-foreground">
@@ -132,11 +128,11 @@ export default function PublicHomePage() {
         </section>
 
         {/* How It Works Section */}
-        <section className="py-16 md:py-24">
+        <section className="bg-muted py-16 md:py-24">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold tracking-tight text-accent">How It Works</h2>
-              <p className="max-w-xl mx-auto mt-2 text-gray-300">
+              <p className="max-w-xl mx-auto mt-2 text-muted-foreground">
                 Get started in just a few simple steps.
               </p>
             </div>
@@ -146,7 +142,7 @@ export default function PublicHomePage() {
                   <UserPlus className="h-8 w-8" />
                 </div>
                 <h3 className="text-xl font-semibold mb-2 text-accent">1. Create Account</h3>
-                <p className="text-gray-300">
+                <p className="text-muted-foreground">
                   Sign up for free and get immediate access to our platform.
                 </p>
               </div>
@@ -155,7 +151,7 @@ export default function PublicHomePage() {
                   <FilePenLine className="h-8 w-8" />
                 </div>
                 <h3 className="text-xl font-semibold mb-2 text-accent">2. Take Tests</h3>
-                <p className="text-gray-300">
+                <p className="text-muted-foreground">
                   Choose from a wide variety of tests to practice and improve.
                 </p>
               </div>
@@ -164,7 +160,7 @@ export default function PublicHomePage() {
                   <BarChart2 className="h-8 w-8" />
                 </div>
                 <h3 className="text-xl font-semibold mb-2 text-accent">3. Track Progress</h3>
-                <p className="text-gray-300">
+                <p className="text-muted-foreground">
                   Use our analytics to monitor your performance and focus on weak
                   areas.
                 </p>
@@ -174,10 +170,10 @@ export default function PublicHomePage() {
         </section>
 
         {/* Final CTA Section */}
-        <section className="py-16 md:py-24">
+        <section className="py-16 md:py-24 bg-background">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl font-bold mb-4 text-accent">{t('ready_to_start')}</h2>
-            <p className="text-gray-300 mb-8 max-w-xl mx-auto">
+            <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
               {t('start_your_preparation')}
             </p>
             <Button asChild size="lg">
