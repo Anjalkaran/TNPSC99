@@ -73,8 +73,9 @@ export default function PublicHomePage() {
           style={{
             backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${heroImage?.imageUrl})`,
             backgroundSize: 'cover',
-            backgroundPosition: 'center',
+            backgroundPosition: '60% 60%',
             backgroundRepeat: 'no-repeat',
+            backgroundAttachment: 'fixed',
           }}
         >
            <div className="relative container mx-auto px-4 text-left">
