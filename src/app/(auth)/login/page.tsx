@@ -185,7 +185,7 @@ export default function LoginPage() {
   }
 
   return (
-    <Card className="w-full max-w-sm text-white bg-black/30 backdrop-blur-lg border-white/20">
+    <Card className="w-full max-w-sm text-white bg-black/40 backdrop-blur-lg border-white/20">
       <CardHeader>
         <CardTitle>உள்நுழைக</CardTitle>
         <CardDescription className="text-gray-300">
@@ -220,7 +220,7 @@ export default function LoginPage() {
                         <Button
                           type="button"
                           variant="link"
-                          className="p-0 h-auto text-xs text-gray-300 hover:text-white"
+                          className="p-0 h-auto text-xs text-white hover:underline"
                         >
                           கடவுச்சொல்லை மறந்துவிட்டீர்களா?
                         </Button>
@@ -267,7 +267,7 @@ export default function LoginPage() {
             <span className="w-full border-t border-white/30" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-black/30 px-2 text-gray-300">
+            <span className="bg-black/30 px-2 text-gray-400">
               அல்லது தொடரவும்
             </span>
           </div>
@@ -278,7 +278,7 @@ export default function LoginPage() {
         </Button>
       </CardContent>
       <CardFooter className="flex justify-center">
-        <p className="text-sm text-gray-300">
+        <p className="text-sm text-gray-400">
           கணக்கு இல்லையா?{' '}
           <Link href="/signup" className="text-white hover:underline">
             பதிவு செய்க

@@ -205,7 +205,7 @@ export default function SignupPage() {
   }
 
   return (
-    <Card className="w-full max-w-sm text-white bg-black/30 backdrop-blur-lg border-white/20">
+    <Card className="w-full max-w-sm text-white bg-black/40 backdrop-blur-lg border-white/20">
       <CardHeader>
         <CardTitle>புதிய கணக்கை உருவாக்கவும்</CardTitle>
         <CardDescription className="text-gray-300">
@@ -290,7 +290,7 @@ export default function SignupPage() {
             <span className="w-full border-t border-white/30" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-black/30 px-2 text-gray-300">
+            <span className="bg-black/30 px-2 text-gray-400">
               அல்லது தொடரவும்
             </span>
           </div>
@@ -301,7 +301,7 @@ export default function SignupPage() {
         </Button>
       </CardContent>
       <CardFooter className="flex justify-center">
-        <p className="text-sm text-gray-300">
+        <p className="text-sm text-gray-400">
           ஏற்கனவே கணக்கு உள்ளதா?{' '}
           <Link href="/login" className="text-white hover:underline">
             உள்நுழைக
