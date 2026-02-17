@@ -147,14 +147,18 @@ export default function PublicHomePage() {
             <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
               {examCategories.map((category) => (
                 <Link href={category.href} key={category.title} className="block hover:no-underline group">
-                  <Card className="flex h-full flex-col items-center text-center p-6 overflow-hidden transition-shadow duration-300 hover:shadow-xl">
-                      <div className="mb-4 text-primary">
-                        {category.icon}
-                      </div>
-                      <h3 className="text-xl font-semibold text-gray-800 mb-1">{category.title}</h3>
-                      <p className="text-muted-foreground text-sm">
-                        {category.description}
-                      </p>
+                  <Card className="text-center h-full transition-all hover:shadow-lg hover:border-green-300">
+                    <CardContent className="p-6 flex flex-col items-center justify-center">
+                        <div className="p-3 bg-green-100 rounded-lg mb-4 text-green-700">
+                            {category.icon}
+                        </div>
+                        <h3 className="text-md md:text-lg font-semibold mb-1 text-gray-800">
+                          {category.title}
+                        </h3>
+                        <p className="text-xs text-gray-500">
+                          {category.description}
+                        </p>
+                    </CardContent>
                   </Card>
                 </Link>
               ))}
