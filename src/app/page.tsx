@@ -55,12 +55,6 @@ export default function PublicHomePage() {
       href: '/online-tests'
     },
     {
-      icon: <CalendarDays className="h-8 w-8 text-purple-500" />,
-      title: 'Study Planner',
-      description: 'Organize Learning',
-      href: '/online-tests'
-    },
-    {
       icon: <FileText className="h-8 w-8 text-red-500" />,
       title: 'PDF Notes',
       description: 'Downloadable Content',
