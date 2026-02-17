@@ -82,21 +82,21 @@ export default function PublicHomePage() {
   const examCategories = [
     {
       title: t('group_1_tests'),
-      description: t('group_1_tests_desc'),
+      description: t('group_1_tests_short_desc'),
       href: '/exam-wise/group-1', // Assuming this path
-      icon: <Layers className="h-8 w-8 text-primary" />,
+      icon: <Layers className="h-8 w-8" />,
     },
     {
       title: t('group_2_tests'),
-      description: t('group_2_tests_desc'),
+      description: t('group_2_tests_short_desc'),
       href: '/exam-wise/group-2',
-      icon: <BookCopy className="h-8 w-8 text-primary" />,
+      icon: <BookCopy className="h-8 w-8" />,
     },
     {
       title: t('group_4_tests'),
-      description: t('group_4_tests_desc'),
+      description: t('group_4_tests_short_desc'),
       href: '/exam-wise/group-4',
-      icon: <Archive className="h-8 w-8 text-primary" />,
+      icon: <Archive className="h-8 w-8" />,
     },
   ];
 
@@ -130,21 +130,15 @@ export default function PublicHomePage() {
             </div>
             <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
               {examCategories.map((category) => (
-                <Link href={category.href} key={category.title} className="block hover:no-underline">
-                  <Card className="flex h-full flex-col overflow-hidden transition-shadow duration-300 hover:shadow-xl group">
-                    <CardContent className="p-6">
-                      <div className="flex items-center gap-4 mb-4">
+                <Link href={category.href} key={category.title} className="block hover:no-underline group">
+                  <Card className="flex h-full flex-col items-center text-center p-6 overflow-hidden transition-shadow duration-300 hover:shadow-xl">
+                      <div className="mb-4 text-primary">
                         {category.icon}
-                        <h3 className="text-xl font-semibold text-gray-800">{category.title}</h3>
                       </div>
-                      <p className="text-muted-foreground flex-grow">
+                      <h3 className="text-xl font-semibold text-gray-800 mb-1">{category.title}</h3>
+                      <p className="text-muted-foreground text-sm">
                         {category.description}
                       </p>
-                      <div className="flex items-center text-sm font-medium text-accent group-hover:underline mt-4">
-                          {t('view_tests')}
-                          <ArrowRight className="ml-2 h-4 w-4" />
-                      </div>
-                    </CardContent>
                   </Card>
                 </Link>
               ))}
