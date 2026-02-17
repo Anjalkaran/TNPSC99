@@ -112,9 +112,12 @@ export default function PublicHomePage() {
             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-3 text-blue-700">
               Crack TNPSC in Your First Attempt with TNPSC99
             </h1>
-            <p className="max-w-3xl mx-auto text-lg text-gray-600 mb-6">
+            <p className="max-w-3xl mx-auto text-lg text-gray-600 mb-8">
               Curated MCQs for Group 1, 2, 2A, 4 & VAO • Real-Time Performance Tracking • Previous Year Questions with Explanations • Ace Your Exam with Confidence
             </p>
+            <Button asChild size="lg">
+                <Link href="/signup">{t('get_started_free')}</Link>
+            </Button>
           </div>
         </section>
 
