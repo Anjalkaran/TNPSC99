@@ -79,11 +79,7 @@ export default function DashboardPage() {
                 {category.icon}
                 <CardTitle className="text-xl">{category.title}</CardTitle>
               </CardHeader>
-              <CardContent className="flex-grow">
-                <p className="text-muted-foreground">
-                  {category.description}
-                </p>
-              </CardContent>
+              <CardContent className="flex-grow" />
               <CardFooter>
                  <div className="flex items-center text-sm font-medium text-accent group-hover:underline">
                     {t('view_tests')}
