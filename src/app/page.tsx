@@ -32,8 +32,6 @@ export default function PublicHomePage() {
   const router = useRouter();
   const { t } = useTranslation();
 
-  const welcomeName = 'Aspirant';
-
   useEffect(() => {
     if (!isUserLoading && user) {
       router.push('/dashboard');
@@ -112,10 +110,10 @@ export default function PublicHomePage() {
         >
            <div className="container mx-auto px-4">
             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-3 text-blue-700">
-              Welcome {welcomeName}
+              Crack TNPSC in Your First Attempt with TNPSC99
             </h1>
-            <p className="max-w-2xl mx-auto text-lg text-gray-600 mb-6 hidden md:block">
-              Mission Inspector Posts: Start Now. Finish Strong.
+            <p className="max-w-3xl mx-auto text-lg text-gray-600 mb-6">
+              Curated MCQs for Group 1, 2, 2A, 4 & VAO • Real-Time Performance Tracking • Previous Year Questions with Explanations • Ace Your Exam with Confidence
             </p>
           </div>
         </section>
