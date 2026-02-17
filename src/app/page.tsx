@@ -85,19 +85,19 @@ export default function PublicHomePage() {
       title: t('group_1_tests'),
       description: t('group_1_tests_short_desc'),
       href: '/exam-wise/group-1', // Assuming this path
-      icon: <Layers className="h-8 w-8" />,
+      icon: <Layers className="h-8 w-8 text-blue-500" />,
     },
     {
       title: t('group_2_tests'),
       description: t('group_2_tests_short_desc'),
       href: '/exam-wise/group-2',
-      icon: <BookCopy className="h-8 w-8" />,
+      icon: <BookCopy className="h-8 w-8 text-green-500" />,
     },
     {
       title: t('group_4_tests'),
       description: t('group_4_tests_short_desc'),
       href: '/exam-wise/group-4',
-      icon: <Archive className="h-8 w-8" />,
+      icon: <Archive className="h-8 w-8 text-red-500" />,
     },
   ];
 
