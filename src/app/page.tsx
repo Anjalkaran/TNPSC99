@@ -141,7 +141,7 @@ export default function PublicHomePage() {
         <section className="py-8 md:py-12 bg-white">
           <div className="container mx-auto px-4">
             <div className="text-center mb-10">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-800">Exam Categories</h2>
+              <h2 className="text-3xl md:text-4xl font-bold text-green-700">Exam Categories</h2>
               <p className="mt-2 text-gray-500">Focus your preparation on specific exam groups</p>
             </div>
             <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
