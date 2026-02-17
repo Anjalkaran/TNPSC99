@@ -107,7 +107,7 @@ export default function PublicHomePage() {
       <main className="flex-1">
         {/* Hero Section */}
         <section
-          className="py-12 md:py-16 text-center bg-gray-50"
+          className="py-12 md:py-16 text-center bg-[#F1F8E9]"
         >
            <div className="container mx-auto px-4">
             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-3 text-green-700">
@@ -162,7 +162,7 @@ export default function PublicHomePage() {
         </section>
 
         {/* Features Section */}
-        <section className="pb-8 md:pb-12 bg-gray-50">
+        <section className="pb-8 md:pb-12 bg-[#F5F5F5]">
           <div className="container mx-auto px-4">
             <div className="text-center mb-10">
               <h2 className="text-3xl md:text-4xl font-bold text-gray-800">Our Core Features</h2>
