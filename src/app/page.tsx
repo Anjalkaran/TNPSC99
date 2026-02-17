@@ -113,21 +113,6 @@ export default function PublicHomePage() {
             <p className="max-w-2xl mx-auto text-lg text-gray-600 mb-6">
               Mission Inspector Posts: Start Now. Finish Strong.
             </p>
-            <div className="flex flex-col items-center justify-center gap-4">
-              <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto max-w-xs">
-                <Link href="#">
-                  <Download className="mr-2 h-5 w-5" />
-                  Download Our Android App
-                </Link>
-              </Button>
-               <Button asChild size="lg" variant="outline" className="border-0 bg-gradient-to-r from-orange-400 via-pink-500 to-purple-600 text-white w-full sm:w-auto max-w-xs shadow-lg hover:shadow-xl transition-shadow">
-                <Link href="/online-tests">
-                  <Flame className="mr-2 h-5 w-5" />
-                  Live: All India Mock Tests
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
-            </div>
           </div>
         </section>
 
