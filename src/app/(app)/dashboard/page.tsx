@@ -75,12 +75,11 @@ export default function DashboardPage() {
         {categories.map((category) => (
            <Link href={category.href} key={category.title} className="block hover:no-underline">
             <Card className="flex h-full flex-col overflow-hidden transition-shadow duration-300 hover:shadow-xl group">
-              <CardHeader className="flex flex-row items-center gap-4 pb-2">
+              <CardContent className="flex flex-grow flex-col items-center justify-center p-6 gap-4 text-center">
                 {category.icon}
                 <CardTitle className="text-xl">{category.title}</CardTitle>
-              </CardHeader>
-              <CardContent className="flex-grow" />
-              <CardFooter>
+              </CardContent>
+              <CardFooter className="justify-center">
                  <div className="flex items-center text-sm font-medium text-accent group-hover:underline">
                     {t('view_tests')}
                     <ArrowRight className="ml-2 h-4 w-4" />
