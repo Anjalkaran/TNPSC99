@@ -13,6 +13,7 @@ import {
   ArrowRight,
   Download,
   Flame,
+  BookCopy,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SiteHeader } from '@/components/site-header';
@@ -80,6 +81,27 @@ export default function PublicHomePage() {
       },
   ];
 
+  const examCategories = [
+    {
+      title: t('group_1_tests'),
+      description: t('group_1_tests_desc'),
+      href: '/exam-wise/group-1', // Assuming this path
+      icon: <Layers className="h-8 w-8 text-primary" />,
+    },
+    {
+      title: t('group_2_tests'),
+      description: t('group_2_tests_desc'),
+      href: '/exam-wise/group-2',
+      icon: <BookCopy className="h-8 w-8 text-primary" />,
+    },
+    {
+      title: t('group_4_tests'),
+      description: t('group_4_tests_desc'),
+      href: '/exam-wise/group-4',
+      icon: <Archive className="h-8 w-8 text-primary" />,
+    },
+  ];
+
   return (
     <div className="flex min-h-screen flex-col bg-gray-50">
       <SiteHeader />
@@ -92,14 +114,14 @@ export default function PublicHomePage() {
             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-3 text-blue-700">
               Welcome {welcomeName}
             </h1>
-            <p className="max-w-2xl mx-auto text-lg text-gray-600 mb-6">
+            <p className="max-w-2xl mx-auto text-lg text-gray-600 mb-6 hidden md:block">
               Mission Inspector Posts: Start Now. Finish Strong.
             </p>
           </div>
         </section>
 
         {/* Features Section */}
-        <section className="py-12 md:py-16 bg-white">
+        <section className="py-12 md:py-16 bg-white/50">
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
               {features.map((feature, index) => (
@@ -123,6 +145,36 @@ export default function PublicHomePage() {
           </div>
         </section>
 
+        {/* Exam Categories Section */}
+        <section className="py-12 md:py-16">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-10">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-800">Exam Categories</h2>
+              <p className="mt-2 text-gray-500">Focus your preparation on specific exam groups</p>
+            </div>
+            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+              {examCategories.map((category) => (
+                <Link href={category.href} key={category.title} className="block hover:no-underline">
+                  <Card className="flex h-full flex-col overflow-hidden transition-shadow duration-300 hover:shadow-xl group">
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-4 mb-4">
+                        {category.icon}
+                        <h3 className="text-xl font-semibold text-gray-800">{category.title}</h3>
+                      </div>
+                      <p className="text-muted-foreground flex-grow">
+                        {category.description}
+                      </p>
+                      <div className="flex items-center text-sm font-medium text-accent group-hover:underline mt-4">
+                          {t('view_tests')}
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
       </main>
     </div>
   );
