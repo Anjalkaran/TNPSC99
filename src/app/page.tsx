@@ -149,7 +149,7 @@ export default function PublicHomePage() {
                 <Link href={category.href} key={category.title} className="block hover:no-underline group">
                   <Card className="text-center h-full transition-all hover:shadow-lg hover:border-green-300">
                     <CardContent className="p-6 flex flex-col items-center justify-center">
-                        <div className="p-3 bg-green-100 rounded-lg mb-4 text-green-700">
+                        <div className="p-3 bg-gray-100 rounded-lg mb-4">
                             {category.icon}
                         </div>
                         <h3 className="text-md md:text-lg font-semibold mb-1 text-gray-800">
@@ -167,7 +167,10 @@ export default function PublicHomePage() {
         </section>
 
         {/* Features Section */}
-        <section className="pb-8 md:pb-12 bg-[#F6FBF4]">
+        <section
+          className="pb-8 md:pb-12"
+          style={{ background: 'linear-gradient(to bottom, #ffffff, #F6FBF4)' }}
+        >
           <div className="container mx-auto px-4">
             <div className="text-center mb-10">
               <h2 className="text-3xl md:text-4xl font-bold text-gray-800">Our Core Features</h2>
