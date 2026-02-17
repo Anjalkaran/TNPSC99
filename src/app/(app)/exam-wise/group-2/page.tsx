@@ -10,9 +10,8 @@ export default function Group2Page() {
   const categories = [
     {
       title: t('previous_year_papers'),
-      href: '/previous-year',
+      href: '/previous-year/group-2',
       icon: <Archive className="h-8 w-8 text-amber-500" />,
-      description: t('previous_year_papers_desc')
     },
      // ... other categories for Group II can be added here
   ];

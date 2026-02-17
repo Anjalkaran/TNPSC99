@@ -14,7 +14,7 @@ export default function AdminPage() {
         { href: '/admin/upload', label: t('mcq_bank'), icon: <IconMcqBank /> },
         { href: '/admin/syllabus', label: 'Syllabus Upload', icon: <BookOpen /> },
         { href: '/admin/comments', label: 'User Feedback', icon: <FileText /> },
-        { href: '#', label: t('previous_year_papers'), icon: <Archive />, comingSoon: true },
+        { href: '/admin/previous-year-papers', label: t('previous_year_papers'), icon: <Archive /> },
         { href: '#', label: t('live_test'), icon: <Trophy />, comingSoon: true },
         { href: '#', label: t('analytics'), icon: <BarChart />, comingSoon: true },
     ];

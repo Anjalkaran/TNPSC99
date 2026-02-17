@@ -33,6 +33,7 @@ export interface Test {
   unitNumber?: number;
   unitName?: string;
   isPreviousYearPaper?: boolean;
+  year?: number;
   referencePageOffset?: number;
   bookType?: 'samacheer' | 'old';
   medium?: 'tamil' | 'english';
