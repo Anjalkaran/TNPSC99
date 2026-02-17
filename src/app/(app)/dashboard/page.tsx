@@ -5,6 +5,7 @@ import {
   BookCopy,
   Library,
   Archive,
+  Flame,
 } from 'lucide-react';
 import {
   Card,
@@ -40,6 +41,12 @@ export default function DashboardPage() {
       icon: <Library className="h-8 w-8 text-primary" />,
     },
     {
+      title: t('group_1_tests'),
+      description: t('group_1_tests_desc'),
+      href: '/exam-wise/group-1',
+      icon: <Flame className="h-8 w-8 text-primary" />,
+    },
+    {
       title: t('group_2_tests'),
       description: t('group_2_tests_desc'),
       href: '/exam-wise/group-2',
@@ -64,7 +71,7 @@ export default function DashboardPage() {
         </p>
       </section>
 
-      <section className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+      <section className="grid md:grid-cols-4 gap-8 max-w-5xl mx-auto">
         {categories.map((category) => (
            <Link href={category.href} key={category.title} className="block hover:no-underline">
             <Card className="flex h-full flex-col overflow-hidden transition-shadow duration-300 hover:shadow-xl group">
