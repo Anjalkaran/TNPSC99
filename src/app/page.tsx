@@ -118,31 +118,6 @@ export default function PublicHomePage() {
           </div>
         </section>
 
-        {/* Features Section */}
-        <section className="py-12 md:py-16 bg-white/50">
-          <div className="container mx-auto px-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-              {features.map((feature, index) => (
-                <Link href={feature.href} key={index} className="block hover:no-underline">
-                  <Card className="text-center h-full transition-all hover:shadow-lg hover:border-blue-300">
-                    <CardContent className="p-6 flex flex-col items-center justify-center">
-                        <div className="p-3 bg-gray-100 rounded-lg mb-4">
-                            {feature.icon}
-                        </div>
-                        <h3 className="text-md md:text-lg font-semibold mb-1 text-gray-800">
-                          {feature.title}
-                        </h3>
-                        <p className="text-xs text-gray-500">
-                          {feature.description}
-                        </p>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-
         {/* Exam Categories Section */}
         <section className="py-12 md:py-16">
           <div className="container mx-auto px-4">
@@ -166,6 +141,31 @@ export default function PublicHomePage() {
                           {t('view_tests')}
                           <ArrowRight className="ml-2 h-4 w-4" />
                       </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Features Section */}
+        <section className="py-12 md:py-16 bg-white/50">
+          <div className="container mx-auto px-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+              {features.map((feature, index) => (
+                <Link href={feature.href} key={index} className="block hover:no-underline">
+                  <Card className="text-center h-full transition-all hover:shadow-lg hover:border-blue-300">
+                    <CardContent className="p-6 flex flex-col items-center justify-center">
+                        <div className="p-3 bg-gray-100 rounded-lg mb-4">
+                            {feature.icon}
+                        </div>
+                        <h3 className="text-md md:text-lg font-semibold mb-1 text-gray-800">
+                          {feature.title}
+                        </h3>
+                        <p className="text-xs text-gray-500">
+                          {feature.description}
+                        </p>
                     </CardContent>
                   </Card>
                 </Link>
