@@ -90,7 +90,7 @@ export default function PublicHomePage() {
                 </React.Fragment>
               ))}
             </h1>
-            <p className="max-w-2xl text-lg text-primary-foreground/90 mb-8">
+            <p className="hidden md:block max-w-2xl text-lg text-primary-foreground/90 mb-8">
               {homeSubtitleLines.map((line, index) => (
                 <React.Fragment key={index}>
                   {line}
