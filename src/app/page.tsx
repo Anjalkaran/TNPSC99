@@ -107,13 +107,14 @@ export default function PublicHomePage() {
       <main className="flex-1">
         {/* Hero Section */}
         <section
-          className="py-12 md:py-16 text-center bg-[#F1F8E9]"
+          className="py-12 md:py-16 text-center"
+          style={{ background: 'linear-gradient(to bottom, #e8f5e9, #ffffff)' }}
         >
            <div className="container mx-auto px-4">
             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-3 text-green-700">
               Crack TNPSC in Your First Attempt with TNPSC99
             </h1>
-            <p className="max-w-3xl mx-auto text-lg text-gray-700 mb-8 leading-relaxed" style={{lineHeight: 1.6}}>
+            <p className="max-w-3xl mx-auto text-lg text-gray-700 mb-8" style={{lineHeight: 1.6}}>
               Curated MCQs for Group 1, 2, 2A, 4 & VAO • Real-Time Performance Tracking • Previous Year Questions with Explanations • Ace Your Exam with Confidence
             </p>
             <div className="flex flex-wrap justify-center items-center gap-6 md:gap-12 my-8">
