@@ -59,7 +59,7 @@ function UserNav() {
           <Link href="/login">{t('login')}</Link>
         </Button>
         <Button asChild>
-          <Link href="/signup">{t('get_started_free')}</Link>
+          <Link href="/signup">{t('register')}</Link>
         </Button>
       </div>
     );
