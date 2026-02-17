@@ -44,13 +44,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
-
-const loginSchema = z.object({
-  email: z.string().email('தவறான மின்னஞ்சல் முகவரி.'),
-  password: z.string().min(1, 'கடவுச்சொல் தேவை.'),
-});
-
-type LoginFormValues = z.infer<typeof loginSchema>;
+import { useTranslation } from '@/hooks/use-translation';
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
@@ -63,8 +57,16 @@ export default function LoginPage() {
   const router = useRouter();
   const { user, isUserLoading } = useUser();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
+
+  const loginSchema = z.object({
+    email: z.string().email(t('invalid_email')),
+    password: z.string().min(1, t('password_required')),
+  });
+
+  type LoginFormValues = z.infer<typeof loginSchema>;
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -84,23 +86,22 @@ export default function LoginPage() {
     if (!resetEmail) {
       toast({
         variant: 'destructive',
-        title: 'மின்னஞ்சல் தேவை',
-        description: 'கடவுச்சொல்லை மீட்டமைக்க ஒரு மின்னஞ்சல் முகவரியை உள்ளிடவும்.',
+        title: t('email_required'),
+        description: t('enter_email_for_reset'),
       });
       return;
     }
     try {
       await sendPasswordResetEmail(auth, resetEmail);
       toast({
-        title: 'மீட்டமைப்பு மின்னஞ்சல் அனுப்பப்பட்டது',
-        description:
-          'உங்கள் கடவுச்சொல்லை மீட்டமைப்பதற்கான வழிமுறைகளுடன் ஒரு மின்னஞ்சல் அனுப்பப்பட்டுள்ளது.',
+        title: t('reset_email_sent'),
+        description: t('reset_email_sent_desc'),
       });
     } catch (error: any) {
       toast({
         variant: 'destructive',
-        title: 'மின்னஞ்சல் அனுப்புவதில் பிழை',
-        description: 'கடவுச்சொல் மீட்டமைப்பு மின்னஞ்சலை அனுப்புவதில் ஒரு சிக்கல் ஏற்பட்டது. மின்னஞ்சல் சரியானதா என சரிபார்க்கவும்.',
+        title: t('error_sending_email'),
+        description: t('error_sending_email_desc'),
       });
     }
   };
@@ -135,16 +136,16 @@ export default function LoginPage() {
         }
 
         toast({
-            title: 'வெற்றிகரமாக உள்நுழைந்துள்ளீர்கள்',
-            description: 'முகப்பு பக்கத்திற்கு திருப்பிவிடப்படுகிறீர்கள்.',
+            title: t('login_successful'),
+            description: t('redirecting_to_dashboard'),
         });
         router.push('/');
     } catch (error: any) {
         console.error('Google Sign-In error', error);
         toast({
             variant: 'destructive',
-            title: 'Google உடன் உள்நுழைவதில் பிழை',
-            description: error.message || 'ஏதோ தவறு நடந்துவிட்டது. மீண்டும் முயற்சிக்கவும்.',
+            title: t('google_signin_error'),
+            description: error.message || t('something_went_wrong'),
         });
     } finally {
         setIsSubmitting(false);
@@ -156,19 +157,19 @@ export default function LoginPage() {
     try {
       await signInWithEmailAndPassword(auth, values.email, values.password);
       toast({
-        title: 'வெற்றிகரமாக உள்நுழைந்துள்ளீர்கள்',
-        description: 'முகப்பு பக்கத்திற்கு திருப்பிவிடப்படுகிறீர்கள்.',
+        title: t('login_successful'),
+        description: t('redirecting_to_dashboard'),
       });
       router.push('/');
     } catch (error: any) {
       console.error('Login error', error);
-      let description = 'ஏதோ தவறு நடந்துவிட்டது. மீண்டும் முயற்சிக்கவும்.';
+      let description = t('something_went_wrong');
       if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-        description = 'தவறான மின்னஞ்சல் அல்லது கடவுச்சொல். தயவுசெய்து உங்கள் சான்றுகளைச் சரிபார்த்து மீண்டும் முயற்சிக்கவும்.';
+        description = t('invalid_credentials');
       }
       toast({
         variant: 'destructive',
-        title: 'உள்நுழைவதில் பிழை',
+        title: t('login_error'),
         description: description,
       });
     } finally {
@@ -187,9 +188,9 @@ export default function LoginPage() {
   return (
     <Card className="w-full max-w-sm text-white bg-black/40 backdrop-blur-lg border-white/20">
       <CardHeader>
-        <CardTitle>உள்நுழைக</CardTitle>
+        <CardTitle>{t('login')}</CardTitle>
         <CardDescription className="text-gray-300">
-          உங்கள் கணக்கைத் தொடர உள்நுழையவும்.
+          {t('login_to_continue')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -200,7 +201,7 @@ export default function LoginPage() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>மின்னஞ்சல்</FormLabel>
+                  <FormLabel>{t('email')}</FormLabel>
                   <FormControl>
                     <Input className="bg-transparent placeholder:text-gray-400" placeholder="name@example.com" {...field} />
                   </FormControl>
@@ -214,7 +215,7 @@ export default function LoginPage() {
               render={({ field }) => (
                 <FormItem>
                   <div className="flex items-center justify-between">
-                    <FormLabel>கடவுச்சொல்</FormLabel>
+                    <FormLabel>{t('password')}</FormLabel>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button
@@ -222,17 +223,16 @@ export default function LoginPage() {
                           variant="link"
                           className="p-0 h-auto text-xs text-orange-500 hover:text-orange-400 hover:underline"
                         >
-                          கடவுச்சொல்லை மறந்துவிட்டீர்களா?
+                          {t('forgot_password')}
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
                           <AlertDialogTitle>
-                            கடவுச்சொல்லை மீட்டமைக்கவும்
+                            {t('reset_password')}
                           </AlertDialogTitle>
                           <AlertDialogDescription>
-                            உங்கள் கடவுச்சொல்லை மீட்டமைக்க ஒரு இணைப்பைப் பெற
-                            உங்கள் மின்னஞ்சல் முகவரியை உள்ளிடவும்.
+                            {t('reset_password_desc')}
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <Input
@@ -242,9 +242,9 @@ export default function LoginPage() {
                           onChange={(e) => setResetEmail(e.target.value)}
                         />
                         <AlertDialogFooter>
-                          <AlertDialogCancel>ரத்துசெய்</AlertDialogCancel>
+                          <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                           <AlertDialogAction onClick={handlePasswordReset}>
-                            இணைப்பை அனுப்பு
+                            {t('send_link')}
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
@@ -258,7 +258,7 @@ export default function LoginPage() {
               )}
             />
             <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? 'உள்நுழைந்து கொண்டிருக்கிறது...' : 'உள்நுழைக'}
+              {isSubmitting ? t('logging_in') : t('login')}
             </Button>
           </form>
         </Form>
@@ -268,7 +268,7 @@ export default function LoginPage() {
           </div>
           <div className="relative flex justify-center text-xs uppercase">
             <span className="bg-black/30 px-2 text-gray-400">
-              அல்லது தொடரவும்
+              {t('or_continue_with')}
             </span>
           </div>
         </div>
@@ -279,9 +279,9 @@ export default function LoginPage() {
       </CardContent>
       <CardFooter className="flex justify-center">
         <p className="text-sm text-gray-400">
-          கணக்கு இல்லையா?{' '}
+          {t('no_account')}{' '}
           <Link href="/signup" className="text-orange-500 hover:text-orange-400 hover:underline">
-            பதிவு செய்க
+            {t('register')}
           </Link>
         </p>
       </CardFooter>

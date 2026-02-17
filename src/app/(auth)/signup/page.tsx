@@ -35,21 +35,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { UserProfile } from '@/lib/types';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
-
-const signupSchema = z
-  .object({
-    username: z.string().min(3, 'பயனர்பெயர் குறைந்தது 3 எழுத்துகள் இருக்க வேண்டும்.'),
-    email: z.string().email('தவறான மின்னஞ்சல் முகவரி.'),
-    password: z.string().min(6, 'கடவுச்சொல் குறைந்தது 6 எழுத்துகள் இருக்க வேண்டும்.'),
-    confirmPassword: z.string(),
-    referralCode: z.string().optional(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: 'கடவுச்சொற்கள் பொருந்தவில்லை.',
-    path: ['confirmPassword'],
-  });
-
-type SignupFormValues = z.infer<typeof signupSchema>;
+import { useTranslation } from '@/hooks/use-translation';
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" {...props}>
@@ -63,7 +49,24 @@ export default function SignupPage() {
   const router = useRouter();
   const { user, isUserLoading } = useUser();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const signupSchema = z
+  .object({
+    username: z.string().min(3, t('username_min_chars')),
+    email: z.string().email(t('invalid_email')),
+    password: z.string().min(6, t('password_min_chars')),
+    confirmPassword: z.string(),
+    referralCode: z.string().optional(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: t('passwords_dont_match'),
+    path: ['confirmPassword'],
+  });
+
+  type SignupFormValues = z.infer<typeof signupSchema>;
+
 
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
@@ -114,8 +117,8 @@ export default function SignupPage() {
         }
         
         toast({
-            title: 'கணக்கு உருவாக்கப்பட்டது',
-            description: 'உங்கள் கணக்கு வெற்றிகரமாக உருவாக்கப்பட்டது.',
+            title: t('account_created'),
+            description: t('account_created_successfully'),
         });
         router.push('/');
 
@@ -123,8 +126,8 @@ export default function SignupPage() {
         console.error('Google Sign-Up error', error);
         toast({
             variant: 'destructive',
-            title: 'Google உடன் பதிவு செய்வதில் பிழை',
-            description: error.message || 'ஏதோ தவறு நடந்துவிட்டது. மீண்டும் முயற்சிக்கவும்.',
+            title: t('google_signup_error'),
+            description: error.message || t('something_went_wrong'),
         });
     } finally {
         setIsSubmitting(false);
@@ -177,19 +180,19 @@ export default function SignupPage() {
       });
 
       toast({
-        title: 'கணக்கு உருவாக்கப்பட்டது',
-        description: 'உங்கள் கணக்கு வெற்றிகரமாக உருவாக்கப்பட்டது.',
+        title: t('account_created'),
+        description: t('account_created_successfully'),
       });
       router.push('/');
     } catch (error: any) {
       console.error('Signup error', error);
       toast({
         variant: 'destructive',
-        title: 'பதிவு செய்வதில் பிழை',
+        title: t('signup_error'),
         description:
           error.code === 'auth/email-already-in-use'
-            ? 'இந்த மின்னஞ்சல் ஏற்கனவே பயன்பாட்டில் உள்ளது.'
-            : 'ஏதோ தவறு நடந்துவிட்டது. மீண்டும் முயற்சிக்கவும்.',
+            ? t('email_already_in_use')
+            : t('something_went_wrong'),
       });
     } finally {
       setIsSubmitting(false);
@@ -207,9 +210,9 @@ export default function SignupPage() {
   return (
     <Card className="w-full max-w-sm text-white bg-black/40 backdrop-blur-lg border-white/20">
       <CardHeader>
-        <CardTitle>புதிய கணக்கை உருவாக்கவும்</CardTitle>
+        <CardTitle>{t('create_new_account')}</CardTitle>
         <CardDescription className="text-gray-300">
-          தொடங்க உங்கள் விவரங்களை உள்ளிடவும்.
+          {t('enter_details_to_start')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -220,7 +223,7 @@ export default function SignupPage() {
               name="username"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>பயனர்பெயர்</FormLabel>
+                  <FormLabel>{t('username')}</FormLabel>
                   <FormControl>
                     <Input className="bg-transparent placeholder:text-gray-400" placeholder="Your Name" {...field} />
                   </FormControl>
@@ -233,7 +236,7 @@ export default function SignupPage() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>மின்னஞ்சல்</FormLabel>
+                  <FormLabel>{t('email')}</FormLabel>
                   <FormControl>
                     <Input className="bg-transparent placeholder:text-gray-400" placeholder="name@example.com" {...field} />
                   </FormControl>
@@ -246,7 +249,7 @@ export default function SignupPage() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>கடவுச்சொல்</FormLabel>
+                  <FormLabel>{t('password')}</FormLabel>
                   <FormControl>
                     <Input className="bg-transparent placeholder:text-gray-400" type="password" placeholder="••••••••" {...field} />
                   </FormControl>
@@ -259,7 +262,7 @@ export default function SignupPage() {
               name="confirmPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>கடவுச்சொல்லை உறுதிப்படுத்தவும்</FormLabel>
+                  <FormLabel>{t('confirm_password')}</FormLabel>
                   <FormControl>
                     <Input className="bg-transparent placeholder:text-gray-400" type="password" placeholder="••••••••" {...field} />
                   </FormControl>
@@ -272,7 +275,7 @@ export default function SignupPage() {
               name="referralCode"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Referral Code (Optional)</FormLabel>
+                  <FormLabel>{t('referral_code_optional')}</FormLabel>
                   <FormControl>
                     <Input className="bg-transparent placeholder:text-gray-400" placeholder="Enter code from a friend" {...field} />
                   </FormControl>
@@ -281,7 +284,7 @@ export default function SignupPage() {
               )}
             />
             <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? 'உருவாக்கப்படுகிறது...' : 'கணக்கை உருவாக்கவும்'}
+              {isSubmitting ? t('creating_account') : t('create_account')}
             </Button>
           </form>
         </Form>
@@ -291,7 +294,7 @@ export default function SignupPage() {
           </div>
           <div className="relative flex justify-center text-xs uppercase">
             <span className="bg-black/30 px-2 text-gray-400">
-              அல்லது தொடரவும்
+              {t('or_continue_with')}
             </span>
           </div>
         </div>
@@ -302,9 +305,9 @@ export default function SignupPage() {
       </CardContent>
       <CardFooter className="flex justify-center">
         <p className="text-sm text-gray-400">
-          ஏற்கனவே கணக்கு உள்ளதா?{' '}
+          {t('already_have_account')}{' '}
           <Link href="/login" className="text-orange-500 hover:text-orange-400 hover:underline">
-            உள்நுழைக
+            {t('login')}
           </Link>
         </p>
       </CardFooter>

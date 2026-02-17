@@ -236,9 +236,46 @@
     "update_unit": "Update Unit",
     "updating_unit": "Updating Unit...",
     "select_category_to_view_tests": "Select a category to view tests.",
-    "contact_us": "Contact Us"
+    "contact_us": "Contact Us",
+    "password": "Password",
+    "forgot_password": "Forgot password?",
+    "reset_password": "Reset Password",
+    "reset_password_desc": "Enter your email address to receive a link to reset your password.",
+    "send_link": "Send Link",
+    "logging_in": "Logging in...",
+    "or_continue_with": "Or continue with",
+    "no_account": "Don't have an account?",
+    "invalid_email": "Invalid email address.",
+    "password_required": "Password is required.",
+    "login_to_continue": "Login to continue with your account.",
+    "reset_email_sent": "Reset email sent",
+    "reset_email_sent_desc": "An email with instructions to reset your password has been sent.",
+    "error_sending_email": "Error sending email",
+    "error_sending_email_desc": "There was a problem sending the password reset email. Please check if the email is correct.",
+    "login_successful": "Login Successful",
+    "redirecting_to_dashboard": "Redirecting to the dashboard.",
+    "google_signin_error": "Error signing in with Google",
+    "something_went_wrong": "Something went wrong. Please try again.",
+    "login_error": "Login Error",
+    "invalid_credentials": "Invalid email or password. Please check your credentials and try again.",
+    "username_min_chars": "Username must be at least 3 characters.",
+    "password_min_chars": "Password must be at least 6 characters.",
+    "passwords_dont_match": "Passwords do not match.",
+    "create_new_account": "Create a new account",
+    "enter_details_to_start": "Enter your details to get started.",
+    "confirm_password": "Confirm Password",
+    "referral_code_optional": "Referral Code (Optional)",
+    "create_account": "Create Account",
+    "creating_account": "Creating...",
+    "already_have_account": "Already have an account?",
+    "account_created": "Account Created",
+    "account_created_successfully": "Your account has been created successfully.",
+    "google_signup_error": "Error signing up with Google",
+    "signup_error": "Signup Error",
+    "email_already_in_use": "This email is already in use."
 }
     
     
 
     
+
