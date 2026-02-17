@@ -52,19 +52,19 @@ export default function PublicHomePage() {
       icon: <BookOpen className="h-8 w-8 text-orange-500" />,
       title: 'Syllabus',
       description: 'Detailed Course Map',
-      href: '/online-tests' // Placeholder
+      href: '/online-tests'
     },
     {
       icon: <CalendarDays className="h-8 w-8 text-purple-500" />,
       title: 'Study Planner',
       description: 'Organize Learning',
-      href: '/online-tests' // Placeholder
+      href: '/online-tests'
     },
     {
       icon: <FileText className="h-8 w-8 text-red-500" />,
       title: 'PDF Notes',
       description: 'Downloadable Content',
-      href: '/online-tests' // Placeholder
+      href: '/online-tests'
     },
     {
       icon: <ClipboardList className="h-8 w-8 text-green-500" />,
@@ -76,13 +76,13 @@ export default function PublicHomePage() {
       icon: <Layers className="h-8 w-8 text-yellow-500" />,
       title: 'Flash Cards',
       description: 'Quick Revision',
-      href: '/online-tests' // Placeholder
+      href: '/online-tests'
     },
     {
       icon: <Globe className="h-8 w-8 text-blue-500" />,
       title: 'Web Guide',
       description: 'Curated Resources',
-      href: '/online-tests' // Placeholder
+      href: '/online-tests'
     },
     {
       icon: <Archive className="h-8 w-8 text-indigo-500" />,
@@ -94,7 +94,7 @@ export default function PublicHomePage() {
         icon: <Newspaper className="h-8 w-8 text-teal-500" />,
         title: 'Current Affairs',
         description: 'Stay Updated',
-        href: '/online-tests' // Placeholder
+        href: '/online-tests'
       },
   ];
 
