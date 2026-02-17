@@ -77,7 +77,6 @@ export default function PublicHomePage() {
             backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url(${heroImage?.imageUrl})`,
             backgroundSize: 'cover',
             backgroundPosition: '70% 60%',
-            backgroundRepeat: 'no-repeat',
             backgroundAttachment: 'fixed',
           }}
         >
@@ -109,7 +108,7 @@ export default function PublicHomePage() {
         </section>
 
         {/* Exam Categories Section */}
-        <section className="py-16 md:py-24 bg-muted">
+        <section className="py-16 md:py-24 bg-muted/70">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold tracking-tight text-accent">Exam Categories</h2>
