@@ -162,7 +162,7 @@ export default function PublicHomePage() {
         </section>
 
         {/* Features Section */}
-        <section className="py-8 md:py-12 bg-white/50">
+        <section className="pb-8 md:pb-12 bg-white/50">
           <div className="container mx-auto px-4">
             <div className="text-center mb-10">
               <h2 className="text-3xl md:text-4xl font-bold text-gray-800">Our Core Features</h2>
