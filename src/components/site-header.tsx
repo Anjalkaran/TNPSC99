@@ -114,6 +114,9 @@ export function SiteHeader() {
         </Link>
         <div className="flex items-center gap-4">
             <Button asChild variant="ghost">
+              <Link href="/">{t('home')}</Link>
+            </Button>
+            <Button asChild variant="ghost">
               <Link href="/contact">{t('contact_us')}</Link>
             </Button>
             <LanguageSwitcher />

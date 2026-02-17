@@ -68,6 +68,9 @@ export default function AppLayout({
             <h1 className="text-lg font-semibold md:text-xl capitalize">{getPageTitle()}</h1>
           </div>
           <Button asChild variant="ghost">
+            <Link href="/dashboard">{t('dashboard')}</Link>
+          </Button>
+          <Button asChild variant="ghost">
             <Link href="/contact">{t('contact_us')}</Link>
           </Button>
           <LanguageSwitcher />
