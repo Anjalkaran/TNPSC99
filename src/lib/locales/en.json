@@ -33,7 +33,7 @@
     "sign_up": "Sign Up",
     "ready_to_start": "Ready to get started?",
     "start_your_preparation": "Start your preparation today.",
-    "get_started_free": "Register",
+    "get_started_free": "Get Started Free",
     "admin_panel": "Admin Panel",
     "admin_panel_desc": "Manage users, topics, question banks, and view analytics.",
     "user_management": "User Management",
@@ -234,4 +234,6 @@
     "contact_us": "Contact Us"
 }
     
+    
+
     
