@@ -1,9 +1,9 @@
 'use client';
 import { useTranslation } from '@/hooks/use-translation';
-import { IconMcqBank, IconQuestionBank, IconTopicManagement } from '@/components/icons';
+import { IconMcqBank, IconTopicManagement } from '@/components/icons';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
-import { Shield, BookOpen, Trophy, BarChart, FileText } from 'lucide-react';
+import { Shield, BookOpen, Trophy, BarChart, FileText, Archive } from 'lucide-react';
 
 export default function AdminPage() {
     const { t } = useTranslation();
@@ -14,7 +14,7 @@ export default function AdminPage() {
         { href: '/admin/upload', label: t('mcq_bank'), icon: <IconMcqBank /> },
         { href: '/admin/syllabus', label: 'Syllabus Upload', icon: <BookOpen /> },
         { href: '/admin/comments', label: 'User Feedback', icon: <FileText /> },
-        { href: '#', label: t('question_bank'), icon: <IconQuestionBank />, comingSoon: true },
+        { href: '#', label: t('previous_year_papers'), icon: <Archive />, comingSoon: true },
         { href: '#', label: t('live_test'), icon: <Trophy />, comingSoon: true },
         { href: '#', label: t('analytics'), icon: <BarChart />, comingSoon: true },
     ];
