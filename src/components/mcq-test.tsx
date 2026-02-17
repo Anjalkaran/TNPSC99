@@ -53,7 +53,7 @@ export function McqTest({
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [score, setScore] = useState(0);
   const [isAnswered, setIsAnswered] = useState(false);
-  const [totalTimeLeft, setTotalTimeLeft] = useState(questions.length * 45);
+  const [totalTimeLeft, setTotalTimeLeft] = useState(test.isPreviousYearPaper ? 3 * 60 * 60 : questions.length * 45);
   const [bookmarks, setBookmarks] = useState<string[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const [attemptId, setAttemptId] = useState<string | null>(inProgressAttempt?.id || null);
@@ -384,8 +384,12 @@ export function McqTest({
   const scorePercentage = (score / questionsInThisSession) * 100;
 
   const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
     const remainingSeconds = seconds % 60;
+    if (hours > 0) {
+      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
     return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
