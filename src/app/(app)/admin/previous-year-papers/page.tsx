@@ -10,7 +10,7 @@ import {
   query,
   where,
   getDocs,
-  setDoc,
+  runTransaction,
 } from 'firebase/firestore';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -246,7 +246,7 @@ export default function PreviousYearPaperUploadPage() {
 
       const { examGroup, year } = values;
 
-      // 1. Add Questions
+      // 1. Add/update Questions in a batch
       const batch = writeBatch(firestore);
       const questionsCollectionRef = collection(firestore, 'questions');
       const newQuestionIds: string[] = [];
@@ -260,29 +260,53 @@ export default function PreviousYearPaperUploadPage() {
               explanation: q.explanation || '',
               reference: q.reference || `${year} ${examGroup}`,
           };
-          batch.set(questionRef, questionData);
+          batch.set(questionRef, questionData, { merge: true });
           newQuestionIds.push(q.id);
       });
-      
-      // 2. Create Test document
-      const testTitle = `${year} - ${examGroup} Previous Year Paper`;
-      const newTestRef = doc(collection(firestore, 'tests'));
-      const newTest: Partial<Test> = {
-          id: newTestRef.id,
-          title: testTitle,
-          description: `Previous Year Question Paper for ${examGroup} from ${year}.`,
-          questionIds: newQuestionIds,
-          examGroup: examGroup,
-          year: year,
-          isPreviousYearPaper: true,
-      };
-      batch.set(newTestRef, newTest);
-      
       await batch.commit();
+      
+      // 2. Find or create/update Test document in a transaction
+      const testsCollectionRef = collection(firestore, 'tests');
+      const testTitle = `${year} - ${examGroup} Previous Year Paper`;
+      
+      const testQuery = query(
+          testsCollectionRef, 
+          where('examGroup', '==', examGroup),
+          where('year', '==', year),
+          where('isPreviousYearPaper', '==', true)
+      );
+      
+      let testExists = false;
+
+      await runTransaction(firestore, async (transaction) => {
+          const testSnapshot = await getDocs(testQuery);
+          if (testSnapshot.empty) {
+              // Create new test
+              const newTestRef = doc(testsCollectionRef);
+              const newTest: Partial<Test> = {
+                  id: newTestRef.id,
+                  title: testTitle,
+                  description: `Previous Year Question Paper for ${examGroup} from ${year}.`,
+                  questionIds: newQuestionIds,
+                  examGroup: examGroup,
+                  year: year,
+                  isPreviousYearPaper: true,
+              };
+              transaction.set(newTestRef, newTest);
+              testExists = false;
+          } else {
+              // Update existing test
+              const testDoc = testSnapshot.docs[0];
+              const existingQuestionIds = testDoc.data().questionIds || [];
+              const updatedQuestionIds = [...new Set([...existingQuestionIds, ...newQuestionIds])];
+              transaction.update(testDoc.ref, { questionIds: updatedQuestionIds });
+              testExists = true;
+          }
+      });
       
       toast({
         title: t('upload_successful_title'),
-        description: `Successfully uploaded ${questions.length} questions for ${testTitle}.`,
+        description: `${testExists ? 'Appended' : 'Uploaded'} ${questions.length} questions for ${testTitle}.`,
       });
       form.reset();
     } catch (error: any) {
