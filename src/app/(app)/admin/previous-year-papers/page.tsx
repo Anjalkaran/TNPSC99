@@ -201,6 +201,9 @@ export default function PreviousYearPaperUploadPage() {
 
   const form = useForm<UploadFormValues>({
     resolver: zodResolver(paperUploadFormSchema),
+    defaultValues: {
+      jsonInput: '',
+    },
   });
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -341,7 +344,7 @@ export default function PreviousYearPaperUploadPage() {
                         <FormItem>
                             <FormLabel>Year</FormLabel>
                             <FormControl>
-                            <Input type="number" placeholder="e.g., 2023" {...field} />
+                            <Input type="number" placeholder="e.g., 2023" {...field} value={field.value ?? ''} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
