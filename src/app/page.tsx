@@ -14,6 +14,7 @@ import {
   Download,
   Flame,
   BookCopy,
+  BarChart2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SiteHeader } from '@/components/site-header';
@@ -109,12 +110,26 @@ export default function PublicHomePage() {
           className="py-16 md:py-20 text-center"
         >
            <div className="container mx-auto px-4">
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-3 text-blue-700">
+            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-3 text-green-700">
               Crack TNPSC in Your First Attempt with TNPSC99
             </h1>
-            <p className="max-w-3xl mx-auto text-lg text-gray-600 mb-8">
+            <p className="max-w-3xl mx-auto text-lg text-gray-700 mb-8 leading-relaxed">
               Curated MCQs for Group 1, 2, 2A, 4 & VAO • Real-Time Performance Tracking • Previous Year Questions with Explanations • Ace Your Exam with Confidence
             </p>
+            <div className="flex flex-wrap justify-center items-center gap-6 md:gap-12 my-8">
+                <div className="flex items-center gap-2 text-green-600">
+                    <ClipboardList className="h-6 w-6" />
+                    <span className="font-semibold">10,000+ MCQs</span>
+                </div>
+                <div className="flex items-center gap-2 text-green-600">
+                    <FileText className="h-6 w-6" />
+                    <span className="font-semibold">500+ Mock Tests</span>
+                </div>
+                <div className="flex items-center gap-2 text-green-600">
+                    <BarChart2 className="h-6 w-6" />
+                    <span className="font-semibold">Real-Time Analytics</span>
+                </div>
+            </div>
             <Button asChild size="lg">
                 <Link href="/signup">{t('get_started_free')}</Link>
             </Button>
