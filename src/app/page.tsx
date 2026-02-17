@@ -67,18 +67,6 @@ export default function PublicHomePage() {
       href: '/online-tests'
     },
     {
-      icon: <Layers className="h-8 w-8 text-yellow-500" />,
-      title: 'Flash Cards',
-      description: 'Quick Revision',
-      href: '/online-tests'
-    },
-    {
-      icon: <Globe className="h-8 w-8 text-blue-500" />,
-      title: 'Web Guide',
-      description: 'Curated Resources',
-      href: '/online-tests'
-    },
-    {
       icon: <Archive className="h-8 w-8 text-indigo-500" />,
       title: 'Previous Year',
       description: 'Exam Patterns',
