@@ -173,7 +173,7 @@ export default function PublicHomePage() {
         >
           <div className="container mx-auto px-4">
             <div className="text-center mb-10">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-800">Our Core Features</h2>
+              <h2 className="text-3xl md:text-4xl font-bold text-green-700">Our Core Features</h2>
               <p className="mt-2 text-gray-500">Everything you need to succeed in one place</p>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
