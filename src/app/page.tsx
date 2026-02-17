@@ -111,7 +111,7 @@ export default function PublicHomePage() {
           style={{ background: 'linear-gradient(to bottom, #e8f5e9, #ffffff)' }}
         >
            <div className="container mx-auto px-4">
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-3 text-green-700">
+            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-3 text-green-700">
               Crack TNPSC in Your First Attempt with TNPSC99
             </h1>
             <p className="max-w-3xl mx-auto text-lg text-gray-700 mb-8" style={{lineHeight: 1.6}}>
