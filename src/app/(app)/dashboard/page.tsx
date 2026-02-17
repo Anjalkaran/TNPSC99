@@ -36,27 +36,23 @@ export default function DashboardPage() {
   const categories = [
     {
       title: t('class_wise_tests'),
-      description: t('class_wise_tests_desc'),
       href: '/class-wise',
-      icon: <Library className="h-8 w-8 text-primary" />,
+      icon: <Library className="h-8 w-8 text-blue-500" />,
     },
     {
       title: t('group_1_tests'),
-      description: t('group_1_tests_desc'),
       href: '/exam-wise/group-1',
-      icon: <Flame className="h-8 w-8 text-primary" />,
+      icon: <Flame className="h-8 w-8 text-red-500" />,
     },
     {
       title: t('group_2_tests'),
-      description: t('group_2_tests_desc'),
       href: '/exam-wise/group-2',
-      icon: <BookCopy className="h-8 w-8 text-primary" />,
+      icon: <BookCopy className="h-8 w-8 text-green-500" />,
     },
     {
       title: t('group_4_tests'),
-      description: t('group_4_tests_desc'),
       href: '/exam-wise/group-4',
-      icon: <Archive className="h-8 w-8 text-primary" />,
+      icon: <Archive className="h-8 w-8 text-amber-500" />,
     },
   ];
 
