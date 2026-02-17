@@ -12,6 +12,8 @@ import {
 import { AppSidebar } from '@/components/app-sidebar';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { useTranslation } from '@/hooks/use-translation';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 export default function AppLayout({
   children,
@@ -65,6 +67,9 @@ export default function AppLayout({
           <div className="flex-1">
             <h1 className="text-lg font-semibold md:text-xl capitalize">{getPageTitle()}</h1>
           </div>
+          <Button asChild variant="ghost">
+            <Link href="/contact">{t('contact_us')}</Link>
+          </Button>
           <LanguageSwitcher />
         </header>
         <main className="flex-1 p-4 sm:p-6 bg-background">{children}</main>
