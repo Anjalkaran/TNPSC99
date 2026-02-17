@@ -67,18 +67,20 @@ export default function PublicHomePage() {
   ];
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div
+      className="flex min-h-screen flex-col"
+      style={{
+        backgroundImage: `url(${heroImage?.imageUrl})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
+      }}
+    >
       <SiteHeader />
       <main className="flex-1">
         {/* Hero Section */}
         <section
-          className="relative py-20 md:py-32"
-          style={{
-            backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url(${heroImage?.imageUrl})`,
-            backgroundSize: 'cover',
-            backgroundPosition: '70% 60%',
-            backgroundAttachment: 'fixed',
-          }}
+          className="relative py-20 md:py-32 bg-black/30"
         >
            <div className="relative container mx-auto px-4 text-left">
             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-white">
@@ -108,7 +110,7 @@ export default function PublicHomePage() {
         </section>
 
         {/* Exam Categories Section */}
-        <section className="py-16 md:py-24 bg-muted/70">
+        <section className="py-16 md:py-24 bg-muted/90">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold tracking-tight text-accent">Exam Categories</h2>
@@ -118,21 +120,21 @@ export default function PublicHomePage() {
             </div>
             <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
               <Link href="/exam-wise/group-1" className="block hover:no-underline">
-                <Card className="text-center transition-all hover:shadow-lg hover:scale-105">
+                <Card className="text-center transition-all hover:shadow-lg hover:scale-105 bg-card/90">
                   <CardContent className="p-8">
                     <h3 className="text-xl font-semibold text-accent">Group I</h3>
                   </CardContent>
                 </Card>
               </Link>
               <Link href="/exam-wise/group-2" className="block hover:no-underline">
-                <Card className="text-center transition-all hover:shadow-lg hover:scale-105">
+                <Card className="text-center transition-all hover:shadow-lg hover:scale-105 bg-card/90">
                   <CardContent className="p-8">
                     <h3 className="text-xl font-semibold text-accent">Group II/IIA</h3>
                   </CardContent>
                 </Card>
               </Link>
               <Link href="/exam-wise/group-4" className="block hover:no-underline">
-                <Card className="text-center transition-all hover:shadow-lg hover:scale-105">
+                <Card className="text-center transition-all hover:shadow-lg hover:scale-105 bg-card/90">
                   <CardContent className="p-8">
                     <h3 className="text-xl font-semibold text-accent">Group IV</h3>
                   </CardContent>
@@ -144,7 +146,7 @@ export default function PublicHomePage() {
 
 
         {/* Features Section */}
-        <section className="py-16 md:py-24 bg-background">
+        <section className="py-16 md:py-24 bg-background/90">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold tracking-tight text-accent">
@@ -157,7 +159,7 @@ export default function PublicHomePage() {
             </div>
             <div className="grid md:grid-cols-3 gap-8">
               {features.map((feature, index) => (
-                <Card key={index} className="text-center bg-card">
+                <Card key={index} className="text-center bg-card/90">
                   <CardContent className="p-8">
                     {feature.icon}
                     <h3 className="text-xl font-semibold mb-2 text-accent">
@@ -174,7 +176,7 @@ export default function PublicHomePage() {
         </section>
 
         {/* How It Works Section */}
-        <section className="bg-muted py-16 md:py-24">
+        <section className="bg-muted/90 py-16 md:py-24">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold tracking-tight text-accent">How It Works</h2>
@@ -216,7 +218,7 @@ export default function PublicHomePage() {
         </section>
 
         {/* Final CTA Section */}
-        <section className="py-16 md:py-24 bg-background">
+        <section className="py-16 md:py-24 bg-background/90">
           <div className="container mx-auto px-4 text-center">
             <h2 className="text-3xl font-bold mb-4 text-accent">{t('ready_to_start')}</h2>
             <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
