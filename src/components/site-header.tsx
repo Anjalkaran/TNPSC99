@@ -59,7 +59,7 @@ function UserNav() {
           <Link href="/login">{t('login')}</Link>
         </Button>
         <Button asChild>
-          <Link href="/signup">{t('sign_up')}</Link>
+          <Link href="/signup">{t('get_started_free')}</Link>
         </Button>
       </div>
     );
@@ -107,15 +107,12 @@ function UserNav() {
 export function SiteHeader() {
   const { t } = useTranslation();
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-card shadow-sm">
+    <header className="sticky top-0 z-50 w-full border-b bg-background shadow-sm">
       <div className="container flex h-16 items-center justify-between px-4 md:px-6">
         <Link href="/" className="flex items-center gap-2">
           <Image src="https://firebasestorage.googleapis.com/v0/b/studio-5029416251-928dd.firebasestorage.app/o/final%20tnpsc99.png?alt=media&token=45dc292d-a09c-49de-aa14-9ed0ae769c47" alt="TNPSC99 Logo" width={150} height={40} />
         </Link>
         <div className="flex items-center gap-4">
-            <Button asChild variant="ghost">
-              <Link href="/contact">{t('contact_us')}</Link>
-            </Button>
             <LanguageSwitcher />
             <UserNav />
         </div>

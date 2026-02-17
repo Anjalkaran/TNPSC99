@@ -2,17 +2,20 @@
 
 import Link from 'next/link';
 import {
+  BookOpen,
+  CalendarDays,
+  FileText,
+  ClipboardList,
+  Layers,
+  Globe,
+  Archive,
+  Newspaper,
   ArrowRight,
-  BarChart2,
-  FilePenLine,
-  Library,
-  LogIn,
-  Target,
-  UserPlus,
+  Download,
+  Flame,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SiteHeader } from '@/components/site-header';
-import { useRouter } from 'next/navigation';
 import { useUser } from '@/firebase';
 import React, { useEffect } from 'react';
 import { useTranslation } from '@/hooks/use-translation';
@@ -20,16 +23,15 @@ import {
   Card,
   CardContent,
 } from '@/components/ui/card';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { useRouter } from 'next/navigation';
+
 
 export default function PublicHomePage() {
   const { user, isUserLoading } = useUser();
   const router = useRouter();
   const { t } = useTranslation();
-  const heroImage = PlaceHolderImages.find((img) => img.id === 'homepage-hero');
 
-  const homeTitleLines = t('home_title').split('\n');
-  const homeSubtitleLines = t('home_subtitle').split('\n');
+  const welcomeName = 'Aspirant';
 
   useEffect(() => {
     if (!isUserLoading && user) {
@@ -47,191 +49,113 @@ export default function PublicHomePage() {
 
   const features = [
     {
-      icon: <Library className="h-10 w-10 text-primary mb-4" />,
-      title: 'Extensive Test Categories',
-      description:
-        'Practice with a wide range of tests, including class-wise, subject-wise, and previous year question papers.',
+      icon: <BookOpen className="h-8 w-8 text-orange-500" />,
+      title: 'Syllabus',
+      description: 'Detailed Course Map',
+      href: '/online-tests' // Placeholder
     },
     {
-      icon: <Target className="h-10 w-10 text-primary mb-4" />,
-      title: 'Targeted Preparation',
-      description:
-        'Focus on specific subjects or exam groups like Group II and Group IV to streamline your study.',
+      icon: <CalendarDays className="h-8 w-8 text-purple-500" />,
+      title: 'Study Planner',
+      description: 'Organize Learning',
+      href: '/online-tests' // Placeholder
     },
     {
-      icon: <BarChart2 className="h-10 w-10 text-primary mb-4" />,
-      title: 'Performance Analytics',
-      description:
-        'Our AI-powered analysis helps you identify your strengths and weaknesses to improve your scores.',
+      icon: <FileText className="h-8 w-8 text-red-500" />,
+      title: 'PDF Notes',
+      description: 'Downloadable Content',
+      href: '/online-tests' // Placeholder
     },
+    {
+      icon: <ClipboardList className="h-8 w-8 text-green-500" />,
+      title: 'MCQs',
+      description: 'Practice Questions',
+      href: '/online-tests'
+    },
+    {
+      icon: <Layers className="h-8 w-8 text-yellow-500" />,
+      title: 'Flash Cards',
+      description: 'Quick Revision',
+      href: '/online-tests' // Placeholder
+    },
+    {
+      icon: <Globe className="h-8 w-8 text-blue-500" />,
+      title: 'Web Guide',
+      description: 'Curated Resources',
+      href: '/online-tests' // Placeholder
+    },
+    {
+      icon: <Archive className="h-8 w-8 text-indigo-500" />,
+      title: 'Previous Year',
+      description: 'Exam Patterns',
+      href: '/previous-year'
+    },
+    {
+        icon: <Newspaper className="h-8 w-8 text-teal-500" />,
+        title: 'Current Affairs',
+        description: 'Stay Updated',
+        href: '/online-tests' // Placeholder
+      },
   ];
 
   return (
-    <div
-      className="flex min-h-screen flex-col"
-      style={{
-        backgroundImage: `url(${heroImage?.imageUrl})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
-      }}
-    >
+    <div className="flex min-h-screen flex-col bg-gray-50">
       <SiteHeader />
       <main className="flex-1">
         {/* Hero Section */}
         <section
-          className="relative py-20 md:py-32 bg-black/30"
+          className="py-16 md:py-20 text-center"
         >
-           <div className="relative container mx-auto px-4 text-left">
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-white">
-              {homeTitleLines.map((line, index) => (
-                <React.Fragment key={index}>
-                  {line}
-                  {index < homeTitleLines.length - 1 && <br />}
-                </React.Fragment>
-              ))}
+           <div className="container mx-auto px-4">
+            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-3 text-blue-700">
+              Welcome {welcomeName}
             </h1>
-            <p className="hidden md:block max-w-2xl text-lg text-primary-foreground/90 mb-8">
-              {homeSubtitleLines.map((line, index) => (
-                <React.Fragment key={index}>
-                  {line}
-                  {index < homeSubtitleLines.length - 1 && <br />}
-                </React.Fragment>
-              ))}
+            <p className="max-w-2xl mx-auto text-lg text-gray-600 mb-6">
+              Mission Inspector Posts: Start Now. Finish Strong.
             </p>
-            <div className="flex justify-start gap-4">
-              <Button asChild size="lg" className="hover:bg-accent">
-                <Link href="/signup">
-                  {t('get_started_free')} <ArrowRight className="ml-2 h-5 w-5" />
+            <div className="flex flex-col items-center justify-center gap-4">
+              <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto max-w-xs">
+                <Link href="#">
+                  <Download className="mr-2 h-5 w-5" />
+                  Download Our Android App
+                </Link>
+              </Button>
+               <Button asChild size="lg" variant="outline" className="border-0 bg-gradient-to-r from-orange-400 via-pink-500 to-purple-600 text-white w-full sm:w-auto max-w-xs shadow-lg hover:shadow-xl transition-shadow">
+                <Link href="/online-tests">
+                  <Flame className="mr-2 h-5 w-5" />
+                  Live: All India Mock Tests
+                  <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
             </div>
           </div>
         </section>
 
-        {/* Exam Categories Section */}
-        <section className="py-16 md:py-24 bg-muted/90">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold tracking-tight text-accent">Exam Categories</h2>
-              <p className="max-w-xl mx-auto mt-2 text-muted-foreground">
-                Choose your exam group and start preparing.
-              </p>
-            </div>
-            <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-              <Link href="/exam-wise/group-1" className="block hover:no-underline">
-                <Card className="text-center transition-all hover:shadow-lg hover:scale-105 bg-card/90">
-                  <CardContent className="p-8">
-                    <h3 className="text-xl font-semibold text-accent">Group I</h3>
-                  </CardContent>
-                </Card>
-              </Link>
-              <Link href="/exam-wise/group-2" className="block hover:no-underline">
-                <Card className="text-center transition-all hover:shadow-lg hover:scale-105 bg-card/90">
-                  <CardContent className="p-8">
-                    <h3 className="text-xl font-semibold text-accent">Group II/IIA</h3>
-                  </CardContent>
-                </Card>
-              </Link>
-              <Link href="/exam-wise/group-4" className="block hover:no-underline">
-                <Card className="text-center transition-all hover:shadow-lg hover:scale-105 bg-card/90">
-                  <CardContent className="p-8">
-                    <h3 className="text-xl font-semibold text-accent">Group IV</h3>
-                  </CardContent>
-                </Card>
-              </Link>
-            </div>
-          </div>
-        </section>
-
-
         {/* Features Section */}
-        <section className="py-16 md:py-24 bg-background/90">
+        <section className="py-12 md:py-16 bg-white">
           <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold tracking-tight text-accent">
-                Everything You Need to Succeed
-              </h2>
-              <p className="max-w-2xl mx-auto mt-2 text-muted-foreground">
-                Our platform is designed to provide a complete preparation
-                experience.
-              </p>
-            </div>
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
               {features.map((feature, index) => (
-                <Card key={index} className="text-center bg-card/90">
-                  <CardContent className="p-8">
-                    {feature.icon}
-                    <h3 className="text-xl font-semibold mb-2 text-accent">
-                      {feature.title}
-                    </h3>
-                    <p className="text-muted-foreground">
-                      {feature.description}
-                    </p>
-                  </CardContent>
-                </Card>
+                <Link href={feature.href} key={index} className="block hover:no-underline">
+                  <Card className="text-center h-full transition-all hover:shadow-lg hover:border-blue-300">
+                    <CardContent className="p-6 flex flex-col items-center justify-center">
+                        <div className="p-3 bg-gray-100 rounded-lg mb-4">
+                            {feature.icon}
+                        </div>
+                        <h3 className="text-md md:text-lg font-semibold mb-1 text-gray-800">
+                          {feature.title}
+                        </h3>
+                        <p className="text-xs text-gray-500">
+                          {feature.description}
+                        </p>
+                    </CardContent>
+                  </Card>
+                </Link>
               ))}
             </div>
           </div>
         </section>
 
-        {/* How It Works Section */}
-        <section className="bg-muted/90 py-16 md:py-24">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold tracking-tight text-accent">How It Works</h2>
-              <p className="max-w-xl mx-auto mt-2 text-muted-foreground">
-                Get started in just a few simple steps.
-              </p>
-            </div>
-            <div className="grid md:grid-cols-3 gap-8 text-center max-w-4xl mx-auto">
-              <div className="flex flex-col items-center">
-                <div className="flex items-center justify-center h-16 w-16 rounded-full bg-primary text-primary-foreground mb-4">
-                  <UserPlus className="h-8 w-8" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2 text-accent">1. Create Account</h3>
-                <p className="text-muted-foreground">
-                  Sign up for free and get immediate access to our platform.
-                </p>
-              </div>
-              <div className="flex flex-col items-center">
-                <div className="flex items-center justify-center h-16 w-16 rounded-full bg-primary text-primary-foreground mb-4">
-                  <FilePenLine className="h-8 w-8" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2 text-accent">2. Take Tests</h3>
-                <p className="text-muted-foreground">
-                  Choose from a wide variety of tests to practice and improve.
-                </p>
-              </div>
-              <div className="flex flex-col items-center">
-                <div className="flex items-center justify-center h-16 w-16 rounded-full bg-primary text-primary-foreground mb-4">
-                  <BarChart2 className="h-8 w-8" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2 text-accent">3. Track Progress</h3>
-                <p className="text-muted-foreground">
-                  Use our analytics to monitor your performance and focus on weak
-                  areas.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Final CTA Section */}
-        <section className="py-16 md:py-24 bg-background/90">
-          <div className="container mx-auto px-4 text-center">
-            <h2 className="text-3xl font-bold mb-4 text-accent">{t('ready_to_start')}</h2>
-            <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
-              {t('start_your_preparation')}
-            </p>
-            <Button asChild size="lg">
-              <Link href="/signup">
-                {t('get_started_free')}{' '}
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
-          </div>
-        </section>
       </main>
     </div>
   );
