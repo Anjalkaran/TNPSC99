@@ -163,6 +163,7 @@ export default function EditTestPage() {
             <Table>
                 <TableHeader>
                     <TableRow>
+                        <TableHead>Question ID</TableHead>
                         <TableHead>{t('question_text')}</TableHead>
                         <TableHead>{t('unit_id')}</TableHead>
                         <TableHead className="text-right">{t('actions')}</TableHead>
@@ -171,6 +172,7 @@ export default function EditTestPage() {
                 <TableBody>
                     {filteredQuestions.map(q => (
                         <TableRow key={q.id}>
+                            <TableCell className="font-mono text-xs">{q.id}</TableCell>
                             <TableCell className="max-w-prose">{q.text}</TableCell>
                             <TableCell>{q.unitId}</TableCell>
                             <TableCell className="text-right space-x-1">
