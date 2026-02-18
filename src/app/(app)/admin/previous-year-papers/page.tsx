@@ -58,6 +58,12 @@ import { Edit, Trash, View, Download, Archive } from 'lucide-react';
 import Link from 'next/link';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 
 const jsonStructureExample = `[
   {
@@ -90,17 +96,37 @@ function ExistingPapersList() {
 
     const filteredPapers = useMemo(() => {
         if (!papers) return [];
-        const sorted = [...papers].sort((a, b) => (b.year || 0) - (a.year || 0));
-        if (!searchTerm) return sorted;
+        if (!searchTerm) return papers;
 
         const lowerCaseSearch = searchTerm.toLowerCase();
 
-        return sorted.filter(paper => {
+        return papers.filter(paper => {
             return (paper.examGroup?.toLowerCase().includes(lowerCaseSearch) ||
                    String(paper.year || '').includes(lowerCaseSearch) ||
                    paper.title.toLowerCase().includes(lowerCaseSearch));
         });
     }, [papers, searchTerm]);
+
+    const groupedByExamGroup = useMemo(() => {
+        if (!filteredPapers) return {};
+        
+        const grouped = filteredPapers.reduce((acc, paper) => {
+            const groupKey = paper.examGroup || 'Uncategorized';
+            if (!acc[groupKey]) {
+                acc[groupKey] = [];
+            }
+            acc[groupKey].push(paper);
+            return acc;
+        }, {} as Record<string, Test[]>);
+
+        for (const group in grouped) {
+            grouped[group].sort((a, b) => (b.year || 0) - (a.year || 0));
+        }
+
+        return grouped;
+
+    }, [filteredPapers]);
+
 
     const handleDelete = async (testId: string) => {
         if (!firestore) return;
@@ -120,8 +146,6 @@ function ExistingPapersList() {
             });
         }
     };
-
-    if (isLoading) return <p>{t('Loading tests...')}...</p>
     
     return (
         <Card>
@@ -137,56 +161,67 @@ function ExistingPapersList() {
                 </div>
             </CardHeader>
             <CardContent>
-                {(!filteredPapers || filteredPapers.length === 0) ? (
+                {isLoading ? (
+                    <p>{t('Loading tests...')}...</p>
+                ) : (!filteredPapers || filteredPapers.length === 0) ? (
                     <p className="text-muted-foreground text-center p-8">
                         {searchTerm ? `No results for "${searchTerm}"` : "No previous year papers uploaded yet."}
                     </p>
                 ) : (
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Paper Title</TableHead>
-                                <TableHead># of Qs</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                        {filteredPapers.map(paper => (
-                            <TableRow key={paper.id}>
-                                <TableCell className="font-medium">
-                                    {paper.title}
-                                </TableCell>
-                                <TableCell>{paper.questionIds.length}</TableCell>
-                                <TableCell className="text-right space-x-1">
-                                    <Button asChild variant="outline" size="icon">
-                                        <Link href={`/admin/upload/${encodeURIComponent(paper.id)}/edit`}>
-                                            <Edit className="h-4 w-4" />
-                                        </Link>
-                                    </Button>
-                                    <AlertDialog>
-                                        <AlertDialogTrigger asChild>
-                                            <Button variant="destructive" size="icon">
-                                                <Trash className="h-4 w-4" />
-                                            </Button>
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent>
-                                            <AlertDialogHeader>
-                                                <AlertDialogTitle>{t('confirm_deletion_title')}</AlertDialogTitle>
-                                                <AlertDialogDescription>
-                                                    {'This will permanently delete the paper, but not the questions themselves.'}
-                                                </AlertDialogDescription>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                                <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                                                <AlertDialogAction onClick={() => handleDelete(paper.id)}>{t('delete')}</AlertDialogAction>
-                                            </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                    </AlertDialog>
-                                </TableCell>
-                            </TableRow>
+                    <Accordion type="multiple" className="w-full" defaultValue={Object.keys(groupedByExamGroup)}>
+                        {Object.keys(groupedByExamGroup).sort().map(groupName => (
+                            <AccordionItem value={groupName} key={groupName}>
+                                <AccordionTrigger>{groupName} ({groupedByExamGroup[groupName].length})</AccordionTrigger>
+                                <AccordionContent>
+                                    <Table>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Paper Title</TableHead>
+                                                <TableHead># of Qs</TableHead>
+                                                <TableHead className="text-right">Actions</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                        {groupedByExamGroup[groupName].map(paper => (
+                                            <TableRow key={paper.id}>
+                                                <TableCell className="font-medium">
+                                                    {paper.title}
+                                                </TableCell>
+                                                <TableCell>{paper.questionIds.length}</TableCell>
+                                                <TableCell className="text-right space-x-1">
+                                                    <Button asChild variant="outline" size="icon">
+                                                        <Link href={`/admin/upload/${encodeURIComponent(paper.id)}/edit`}>
+                                                            <Edit className="h-4 w-4" />
+                                                        </Link>
+                                                    </Button>
+                                                    <AlertDialog>
+                                                        <AlertDialogTrigger asChild>
+                                                            <Button variant="destructive" size="icon">
+                                                                <Trash className="h-4 w-4" />
+                                                            </Button>
+                                                        </AlertDialogTrigger>
+                                                        <AlertDialogContent>
+                                                            <AlertDialogHeader>
+                                                                <AlertDialogTitle>{t('confirm_deletion_title')}</AlertDialogTitle>
+                                                                <AlertDialogDescription>
+                                                                    {'This will permanently delete the paper, but not the questions themselves.'}
+                                                                </AlertDialogDescription>
+                                                            </AlertDialogHeader>
+                                                            <AlertDialogFooter>
+                                                                <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                                                                <AlertDialogAction onClick={() => handleDelete(paper.id)}>{t('delete')}</AlertDialogAction>
+                                                            </AlertDialogFooter>
+                                                        </AlertDialogContent>
+                                                    </AlertDialog>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                        </TableBody>
+                                    </Table>
+                                </AccordionContent>
+                            </AccordionItem>
                         ))}
-                        </TableBody>
-                    </Table>
+                    </Accordion>
                 )}
             </CardContent>
         </Card>
