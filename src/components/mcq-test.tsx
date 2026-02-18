@@ -32,6 +32,15 @@ import { useTranslation } from '@/hooks/use-translation';
 import { CommentDialog } from './comment-dialog';
 
 
+const formatQuestionText = (text: string) => {
+    if (!text) {
+        return '';
+    }
+    // Automatically add line breaks before list items like a), b), c), d)
+    // to fix formatting for questions where options were pasted into the text body.
+    return text.replace(/\s+([a-d]\))/g, '\n$1');
+};
+
 export function McqTest({ 
     test, 
     totalQuestions, 
@@ -416,7 +425,7 @@ export function McqTest({
               <div key={q.id} className="text-left p-2 rounded-md bg-muted/50">
                 <p className="font-semibold flex items-center gap-2 whitespace-pre-line">
                   {answers[index] === q.correctAnswerIndex ? <CheckCircle2 className="text-green-500"/> : <XCircle className="text-red-500"/>}
-                  {q.text}
+                  {formatQuestionText(q.text)}
                 </p>
                 <p className="text-sm pl-8">உங்கள் பதில்: <span className={answers[index] === q.correctAnswerIndex ? 'text-green-600' : 'text-red-600'}>{answers[index] !== undefined ? q.answerOptions[answers[index]!] : 'பதிலளிக்கப்படவில்லை'}</span></p>
                 <p className="text-sm pl-8">சரியான பதில்: <span className="text-green-600">{q.answerOptions[q.correctAnswerIndex]}</span></p>
@@ -488,7 +497,7 @@ export function McqTest({
         </CardHeader>
         <CardContent className="py-6">
           <div className="flex justify-between items-start">
-              <p className="font-semibold text-lg mb-6 flex-1 whitespace-pre-line">{currentQuestion.text}</p>
+              <p className="font-semibold text-lg mb-6 flex-1 whitespace-pre-line">{formatQuestionText(currentQuestion.text)}</p>
               <div className="flex items-center">
                 <Button variant="ghost" size="icon" onClick={() => toggleBookmark(currentQuestion.id)}>
                     <Bookmark className={cn("h-6 w-6", bookmarks.includes(currentQuestion.id) ? "fill-primary text-primary" : "text-muted-foreground")} />
