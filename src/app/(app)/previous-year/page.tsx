@@ -22,7 +22,7 @@ export default function PreviousYearPapersPage() {
         </p>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
         {examGroups.map((group) => (
           <Link href={group.href} key={group.name} className="block hover:no-underline">
             <Card className="flex h-full flex-col overflow-hidden transition-shadow duration-300 hover:shadow-xl group">

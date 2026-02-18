@@ -109,14 +109,14 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background shadow-sm">
       <div className="container flex h-16 items-center justify-between px-4 md:px-6">
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/">
           <Image src="https://firebasestorage.googleapis.com/v0/b/studio-5029416251-928dd.firebasestorage.app/o/final%20tnpsc99.png?alt=media&token=45dc292d-a09c-49de-aa14-9ed0ae769c47" alt="TNPSC99 Logo" width={150} height={40} />
         </Link>
-        <div className="flex items-center gap-4">
-            <Button asChild variant="ghost">
+        <div className="flex items-center gap-2 md:gap-4">
+            <Button asChild variant="ghost" className="hidden md:inline-flex">
               <Link href="/">{t('home')}</Link>
             </Button>
-            <Button asChild variant="ghost">
+            <Button asChild variant="ghost" className="hidden md:inline-flex">
               <Link href="/contact">{t('contact_us')}</Link>
             </Button>
             <LanguageSwitcher />

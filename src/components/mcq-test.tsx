@@ -447,24 +447,24 @@ export function McqTest({
     <>
       <Card className="w-full max-w-2xl">
         <CardHeader>
-          <div className='flex justify-between items-start'>
-              <div>
+          <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+              <div className="w-full sm:w-auto">
                   <CardTitle>{decodedTitle}</CardTitle>
-                  <div className="flex items-center text-sm text-muted-foreground mt-2 gap-4">
+                  <div className="flex flex-wrap items-center text-sm text-muted-foreground mt-2 gap-4">
                       <span>கேள்வி {currentQuestionIndex + 1} / {questions.length}</span>
                       <Badge variant="outline">
                           முன்னேற்றம்: {answeredQuestions} / {totalQuestions}
                       </Badge>
                   </div>
               </div>
-              <div className="flex items-center gap-4">
-                   <div className={cn("flex items-center gap-2 font-mono text-2xl p-2 rounded-md", totalTimeLeft < 60 ? "text-destructive-foreground bg-destructive" : "bg-muted")}>
-                      <Timer className="h-6 w-6" />
+              <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                   <div className={cn("flex items-center gap-2 font-mono text-xl sm:text-2xl p-2 rounded-md", totalTimeLeft < 60 ? "text-destructive-foreground bg-destructive" : "bg-muted")}>
+                      <Timer className="h-5 w-5 sm:h-6 sm:w-6" />
                       <span>{formatTime(totalTimeLeft)}</span>
                   </div>
                    <AlertDialog>
                       <AlertDialogTrigger asChild>
-                         <Button variant="outline">
+                         <Button variant="outline" className="w-full flex-1 sm:w-auto sm:flex-none">
                              <Save className="mr-2 h-4 w-4" />
                              {t('save_and_exit')}
                          </Button>
@@ -553,22 +553,23 @@ export function McqTest({
               </div>
           )}
         </CardContent>
-        <CardFooter className="flex justify-between">
+        <CardFooter className="flex-col sm:flex-row gap-2 justify-between">
           <Button
             variant="outline"
             onClick={handlePrevious}
             disabled={currentQuestionIndex === 0}
+            className="w-full sm:w-auto"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             முந்தைய
           </Button>
           {currentQuestionIndex < questions.length - 1 ? (
-            <Button onClick={handleNext}>
+            <Button onClick={handleNext} className="w-full sm:w-auto">
               அடுத்தது
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           ) : (
-            <Button onClick={handleFinalSubmit} style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
+            <Button onClick={handleFinalSubmit} className="w-full sm:w-auto" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
               சமர்ப்பிக்கவும்
             </Button>
           )}

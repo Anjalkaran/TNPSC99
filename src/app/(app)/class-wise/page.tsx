@@ -15,7 +15,7 @@ export default function ClassWiseTestsPage() {
         <p className="text-muted-foreground mt-2">கல்வி வகுப்பு தரங்களின்படி ஒழுங்கமைக்கப்பட்ட தேர்வுகள்.</p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
         {/* Samacheer Kalvi Books Card */}
         <Link href="/online-tests" className="block hover:no-underline">
           <Card className="flex flex-col overflow-hidden hover:shadow-xl hover:shadow-accent/20 transition-all duration-300 h-full">

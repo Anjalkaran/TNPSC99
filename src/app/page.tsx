@@ -145,7 +145,7 @@ export default function PublicHomePage() {
               <h2 className="text-3xl md:text-4xl font-bold text-green-700">Exam Categories</h2>
               <p className="mt-2 text-gray-500">Focus your preparation on specific exam groups</p>
             </div>
-            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
               {examCategories.map((category) => (
                 <Link href={category.href} key={category.title} className="block hover:no-underline group">
                   <Card className="text-center h-full transition-all hover:shadow-lg hover:border-green-300">
@@ -177,7 +177,7 @@ export default function PublicHomePage() {
               <h2 className="text-3xl md:text-4xl font-bold text-green-700">Our Core Features</h2>
               <p className="mt-2 text-gray-500">Everything you need to succeed in one place</p>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
               {features.map((feature, index) => (
                 <Link href={feature.href} key={index} className="block hover:no-underline">
                   <Card className="text-center h-full transition-all hover:shadow-lg hover:border-blue-300">
