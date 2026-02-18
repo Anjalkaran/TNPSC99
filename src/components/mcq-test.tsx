@@ -526,6 +526,29 @@ export function McqTest({
               )})}
             </div>
           </RadioGroup>
+
+          <div className="flex flex-col sm:flex-row gap-2 justify-between pt-6">
+            <Button
+                variant="outline"
+                onClick={handlePrevious}
+                disabled={currentQuestionIndex === 0}
+                className="w-full sm:w-auto"
+            >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                முந்தைய
+            </Button>
+            {currentQuestionIndex < questions.length - 1 ? (
+                <Button onClick={handleNext} className="w-full sm:w-auto">
+                அடுத்தது
+                <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+            ) : (
+                <Button onClick={handleFinalSubmit} className="w-full sm:w-auto" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
+                சமர்ப்பிக்கவும்
+                </Button>
+            )}
+          </div>
+
           {(isAnswered && (currentQuestion.reference || currentQuestion.explanation)) && (
               <div className="mt-4 p-4 bg-muted/50 rounded-lg">
                   {currentQuestion.reference && pdfReferenceUrl && (
@@ -553,27 +576,6 @@ export function McqTest({
               </div>
           )}
         </CardContent>
-        <CardFooter className="flex-col sm:flex-row gap-2 justify-between">
-          <Button
-            variant="outline"
-            onClick={handlePrevious}
-            disabled={currentQuestionIndex === 0}
-            className="w-full sm:w-auto"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            முந்தைய
-          </Button>
-          {currentQuestionIndex < questions.length - 1 ? (
-            <Button onClick={handleNext} className="w-full sm:w-auto">
-              அடுத்தது
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          ) : (
-            <Button onClick={handleFinalSubmit} className="w-full sm:w-auto" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
-              சமர்ப்பிக்கவும்
-            </Button>
-          )}
-        </CardFooter>
       </Card>
       <CommentDialog
         isOpen={isCommentDialogOpen}
