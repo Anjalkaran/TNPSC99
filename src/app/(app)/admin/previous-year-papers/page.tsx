@@ -203,6 +203,7 @@ export default function PreviousYearPaperUploadPage() {
     resolver: zodResolver(paperUploadFormSchema),
     defaultValues: {
       jsonInput: '',
+      year: undefined,
     },
   });
 
@@ -255,7 +256,7 @@ export default function PreviousYearPaperUploadPage() {
           const questionData: Partial<Question> = {
               id: q.id,
               text: q.text,
-              answerOptions: q.answerOptions,
+              answerOptions: Array.isArray(q.answerOptions) ? q.answerOptions.flat() : q.answerOptions,
               correctAnswerIndex: q.correctAnswerIndex,
               explanation: q.explanation || '',
               reference: q.reference || `${year} ${examGroup}`,

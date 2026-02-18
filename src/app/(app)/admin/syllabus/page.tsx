@@ -430,7 +430,7 @@ export default function SyllabusUploadPage() {
           const questionData: { [key: string]: any } = {
               id: q.id,
               text: q.text,
-              answerOptions: q.answerOptions,
+              answerOptions: Array.isArray(q.answerOptions) ? q.answerOptions.flat() : q.answerOptions,
               correctAnswerIndex: q.correctAnswerIndex,
               explanation: q.explanation || '',
               reference: q.reference || '',
