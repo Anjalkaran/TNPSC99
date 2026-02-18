@@ -127,6 +127,53 @@ function ExistingPapersList() {
 
     }, [filteredPapers]);
 
+    const handleDownload = async (test: Test) => {
+        if (!firestore) return;
+        
+        try {
+            const fetchedQuestions: Question[] = [];
+            if (test.questionIds && test.questionIds.length > 0) {
+              const questionIdsChunks = [];
+              for (let i = 0; i < test.questionIds.length; i += 30) {
+                questionIdsChunks.push(test.questionIds.slice(i, i + 30));
+              }
+
+              for (const chunk of questionIdsChunks) {
+                 const questionsQuery = query(collection(firestore, 'questions'), where('__name__', 'in', chunk));
+                 const questionsSnap = await getDocs(questionsQuery);
+                 questionsSnap.forEach(docSnap => {
+                    const { classId, subjectId, ...questionData } = docSnap.data() as any;
+                    fetchedQuestions.push({ id: docSnap.id, ...questionData } as Question);
+                 });
+              }
+            }
+
+            const jsonString = JSON.stringify(fetchedQuestions, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${test.title.replace(/ /g, '_')}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            toast({
+                title: "Download Started",
+                description: `Downloading ${test.title} questions.`,
+            });
+
+        } catch (error) {
+            console.error("Error downloading test data:", error);
+            toast({
+                variant: 'destructive',
+                title: "Download Failed",
+                description: "There was a problem downloading the question bank.",
+            });
+        }
+    };
+
 
     const handleDelete = async (testId: string) => {
         if (!firestore) return;
@@ -189,6 +236,10 @@ function ExistingPapersList() {
                                                 </TableCell>
                                                 <TableCell>{paper.questionIds.length}</TableCell>
                                                 <TableCell className="text-right space-x-1">
+                                                    <Button variant="outline" size="icon" onClick={() => handleDownload(paper)}>
+                                                        <Download className="h-4 w-4" />
+                                                        <span className="sr-only">Download</span>
+                                                    </Button>
                                                     <Button asChild variant="outline" size="icon">
                                                         <Link href={`/admin/upload/${encodeURIComponent(paper.id)}/edit`}>
                                                             <Edit className="h-4 w-4" />
