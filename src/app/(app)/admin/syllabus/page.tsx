@@ -456,7 +456,8 @@ function SyllabusMcqUpload() {
     "answerOptions": ["Right to Property", "Right to Equality", "Right to Work", "Right to Vote"],
     "correctAnswerIndex": 1,
     "explanation": "Right to Equality is a fundamental right under Article 14 of the Indian Constitution.",
-    "reference": "Indian Polity - Laxmikanth"
+    "reference": "Indian Polity - Laxmikanth",
+    "referenceUrl": "https://your-pdf-host.com/book.pdf#page=42 (optional)"
   }
 ]`;
     
