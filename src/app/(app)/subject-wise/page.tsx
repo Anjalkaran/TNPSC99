@@ -174,7 +174,15 @@ export default function SubjectWiseTestsPage() {
                     <AccordionContent>
                         <div className="px-6 pb-6">
                             <Accordion type="multiple" className="w-full space-y-4" defaultValue={Object.keys(parts)}>
-                                {Object.entries(parts).sort((a, b) => a[0].localeCompare(b[0], 'ta')).map(([part, unitNames]) => (
+                                {Object.entries(parts).sort((a, b) => {
+                                    const order = ['பகுதி அ', 'பகுதி ஆ', 'பகுதி இ'];
+                                    const indexA = order.indexOf(a[0]);
+                                    const indexB = order.indexOf(b[0]);
+                                    if (indexA === -1 && indexB === -1) return a[0].localeCompare(b[0]);
+                                    if (indexA === -1) return 1;
+                                    if (indexB === -1) return -1;
+                                    return indexA - indexB;
+                                }).map(([part, unitNames]) => (
                                     <AccordionItem value={part} key={part} className="border-b-0">
                                       <Card className="bg-muted/50">
                                           <CardHeader className="p-4">

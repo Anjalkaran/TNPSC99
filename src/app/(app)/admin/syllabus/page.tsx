@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -13,6 +14,7 @@ import {
   where,
   getDocs,
   addDoc,
+  setDoc,
 } from 'firebase/firestore';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -301,7 +303,15 @@ function ManageSyllabusStructure() {
                                 <AccordionTrigger>{examGroup}</AccordionTrigger>
                                 <AccordionContent>
                                     <Accordion type="multiple" className="w-full pl-4">
-                                        {Object.entries(parts).map(([part, units]) => (
+                                        {Object.entries(parts).sort((a, b) => {
+                                            const order = ['பகுதி அ', 'பகுதி ஆ', 'பகுதி இ'];
+                                            const indexA = order.indexOf(a[0]);
+                                            const indexB = order.indexOf(b[0]);
+                                            if (indexA === -1 && indexB === -1) return a[0].localeCompare(b[0]);
+                                            if (indexA === -1) return 1;
+                                            if (indexB === -1) return -1;
+                                            return indexA - indexB;
+                                        }).map(([part, units]) => (
                                             <AccordionItem value={part} key={part}>
                                                 <AccordionTrigger>{part}</AccordionTrigger>
                                                 <AccordionContent>
@@ -374,9 +384,25 @@ function SyllabusMcqUpload() {
     });
 
     const uniqueExamGroups = useMemo(() => syllabusTopics ? [...new Set(syllabusTopics.map(t => t.examGroup))] : [], [syllabusTopics]);
-    const uniqueParts = useMemo(() => syllabusTopics ? [...new Set(syllabusTopics.filter(t => t.examGroup === selectedExamGroup).map(t => t.part))] : [], [syllabusTopics, selectedExamGroup]);
+    
+    const uniqueParts = useMemo(() => {
+        if (!syllabusTopics || !selectedExamGroup) return [];
+        const parts = syllabusTopics
+            .filter(t => t.examGroup === selectedExamGroup)
+            .map(t => t.part);
+        const unique = [...new Set(parts)];
+        return unique.sort((a, b) => {
+            const order = ['பகுதி அ', 'பகுதி ஆ', 'பகுதி இ'];
+            const indexA = order.indexOf(a);
+            const indexB = order.indexOf(b);
+            if (indexA === -1) return 1;
+            if (indexB === -1) return -1;
+            return indexA - indexB;
+        });
+    }, [syllabusTopics, selectedExamGroup]);
+
     const uniqueUnits = useMemo(() => {
-        if (!syllabusTopics) return [];
+        if (!syllabusTopics || !selectedPart) return [];
         const units = syllabusTopics
             .filter(t => t.examGroup === selectedExamGroup && t.part === selectedPart)
             .map(t => `${t.unit}: ${t.unitName}`);
@@ -437,7 +463,7 @@ function SyllabusMcqUpload() {
 
           const testTitle = `${selectedTopic.examGroup} - ${selectedTopic.unitName} - ${selectedTopic.topic}`;
           const testsCollectionRef = collection(firestore, 'tests');
-          const testQuery = query(testsCollectionRef, where('title', '==', testTitle), where('medium', '==', values.medium));
+          const testQuery = query(testsCollectionRef, where('syllabusTopic', '==', selectedTopic.topic), where('medium', '==', values.medium));
           
           await runTransaction(firestore, async (transaction) => {
               const testSnapshot = await getDocs(testQuery);
