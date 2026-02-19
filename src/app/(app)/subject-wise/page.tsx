@@ -126,11 +126,11 @@ export default function SubjectWiseTestsPage() {
         acc[examGroup][part] = {};
       }
 
-      const unitName = test.syllabusUnitName || 'Uncategorized Unit';
-      if (!acc[examGroup][part][unitName]) {
-        acc[examGroup][part][unitName] = [];
+      const unitKey = test.syllabusUnit && test.syllabusUnitName ? `${test.syllabusUnit}: ${test.syllabusUnitName}` : (test.syllabusUnitName || 'Uncategorized Unit');
+      if (!acc[examGroup][part][unitKey]) {
+        acc[examGroup][part][unitKey] = [];
       }
-      acc[examGroup][part][unitName].push(test);
+      acc[examGroup][part][unitKey].push(test);
       return acc;
     }, {} as Record<string, Record<string, Record<string, Test[]>>>);
 
@@ -192,11 +192,30 @@ export default function SubjectWiseTestsPage() {
                                           </CardHeader>
                                           <AccordionContent className="pt-0 p-4">
                                               <Accordion type="multiple" className="w-full space-y-2" defaultValue={Object.keys(unitNames)}>
-                                                  {Object.entries(unitNames).map(([unitName, testList]) => (
-                                                      <AccordionItem value={unitName} key={unitName} className="border-b-0">
+                                                  {Object.entries(unitNames).sort(([unitKeyA], [unitKeyB]) => {
+                                                        const romanMap: { [key: string]: number } = { 'I': 1, 'V': 5, 'X': 10 };
+                                                        const getUnitNumber = (unitKey: string): number => {
+                                                            const match = unitKey.match(/அலகு\s+([IVXLCDM]+)/);
+                                                            if (!match || !match[1]) return 99;
+                                                            const roman = match[1];
+                                                            let result = 0;
+                                                            for (let i = 0; i < roman.length; i++) {
+                                                                const current = romanMap[roman[i]];
+                                                                const next = i + 1 < roman.length ? romanMap[roman[i + 1]] : undefined;
+                                                                if (next && current < next) {
+                                                                    result -= current;
+                                                                } else {
+                                                                    result += current;
+                                                                }
+                                                            }
+                                                            return result;
+                                                        };
+                                                        return getUnitNumber(unitKeyA) - getUnitNumber(unitKeyB);
+                                                    }).map(([unitKey, testList]) => (
+                                                      <AccordionItem value={unitKey} key={unitKey} className="border-b-0">
                                                           <Card>
                                                               <CardHeader className="p-4">
-                                                                  <AccordionTrigger className="p-0 font-semibold text-lg hover:no-underline">{unitName}</AccordionTrigger>
+                                                                  <AccordionTrigger className="p-0 font-semibold text-lg hover:no-underline">{unitKey}</AccordionTrigger>
                                                               </CardHeader>
                                                               <AccordionContent className="pt-0 p-4">
                                                                   <div className="space-y-4">

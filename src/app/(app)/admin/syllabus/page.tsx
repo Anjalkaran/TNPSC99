@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -316,7 +314,26 @@ function ManageSyllabusStructure() {
                                                 <AccordionTrigger>{part}</AccordionTrigger>
                                                 <AccordionContent>
                                                     <Accordion type="multiple" className="w-full pl-4">
-                                                        {Object.entries(units).map(([unitKey, topics]) => (
+                                                        {Object.entries(units).sort(([unitKeyA], [unitKeyB]) => {
+                                                            const romanMap: { [key: string]: number } = { 'I': 1, 'V': 5, 'X': 10 };
+                                                            const getUnitNumber = (unitKey: string): number => {
+                                                                const match = unitKey.match(/அலகு\s+([IVXLCDM]+)/);
+                                                                if (!match || !match[1]) return 99;
+                                                                const roman = match[1];
+                                                                let result = 0;
+                                                                for (let i = 0; i < roman.length; i++) {
+                                                                    const current = romanMap[roman[i]];
+                                                                    const next = i + 1 < roman.length ? romanMap[roman[i + 1]] : undefined;
+                                                                    if (next && current < next) {
+                                                                        result -= current;
+                                                                    } else {
+                                                                        result += current;
+                                                                    }
+                                                                }
+                                                                return result;
+                                                            };
+                                                            return getUnitNumber(unitKeyA) - getUnitNumber(unitKeyB);
+                                                        }).map(([unitKey, topics]) => (
                                                             <AccordionItem value={unitKey} key={unitKey}>
                                                                 <AccordionTrigger>{unitKey}</AccordionTrigger>
                                                                 <AccordionContent>
