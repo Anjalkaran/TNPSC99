@@ -91,7 +91,7 @@ function ExistingSyllabusTestsList() {
     const { toast } = useToast();
     const [searchTerm, setSearchTerm] = useState('');
 
-    const testsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'tests'), where('examGroup', '!=', null)) : null, [firestore]);
+    const testsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'tests'), where('syllabusSubject', '!=', null)) : null, [firestore]);
     const { data: tests, isLoading } = useCollection<Test>(testsQuery);
 
     const filteredTests = useMemo(() => {
