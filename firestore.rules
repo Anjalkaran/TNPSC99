@@ -61,7 +61,7 @@ service cloud.firestore {
     }
     
     match /syllabus/{syllabusId} {
-      allow read, write: if isSignedIn();
+      allow read, write: if true;
     }
 
     match /questions/{questionId} {
