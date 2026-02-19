@@ -61,7 +61,7 @@ service cloud.firestore {
     }
     
     match /syllabus/{syllabusId} {
-      allow read, write: if true;
+      allow get, list, create, update, delete: if true;
     }
 
     match /questions/{questionId} {
