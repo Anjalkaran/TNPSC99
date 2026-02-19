@@ -174,7 +174,7 @@ export default function SubjectWiseTestsPage() {
                     <AccordionContent>
                         <div className="px-6 pb-6">
                             <Accordion type="multiple" className="w-full space-y-4" defaultValue={Object.keys(parts)}>
-                                {Object.entries(parts).map(([part, unitNames]) => (
+                                {Object.entries(parts).sort((a, b) => a[0].localeCompare(b[0], 'ta')).map(([part, unitNames]) => (
                                     <AccordionItem value={part} key={part} className="border-b-0">
                                       <Card className="bg-muted/50">
                                           <CardHeader className="p-4">
