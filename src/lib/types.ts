@@ -39,7 +39,8 @@ export interface Test {
   medium?: 'tamil' | 'english';
   examGroup?: 'Group I' | 'Group II' | 'Group IV';
   syllabusPart?: string;
-  syllabusSubject?: string;
+  syllabusUnit?: string;
+  syllabusUnitName?: string;
   syllabusTopic?: string;
 }
 
@@ -85,7 +86,8 @@ export interface Syllabus {
   id: string;
   examGroup: 'Group I' | 'Group II' | 'Group IV';
   part: string;
-  subject: string;
+  unit: string;
+  unitName: string;
   topic: string;
 }
 

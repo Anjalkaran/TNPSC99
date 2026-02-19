@@ -233,27 +233,38 @@
       "description": "Represents a specific topic within the TNPSC syllabus structure.",
       "properties": {
         "id": {
-            "type": "string",
-            "description": "Unique identifier for the syllabus entry."
+          "type": "string",
+          "description": "Unique identifier for the syllabus entry."
         },
         "examGroup": {
-            "type": "string",
-            "description": "The exam group (e.g., Group IV)."
+          "type": "string",
+          "description": "The exam group (e.g., Group IV)."
         },
         "part": {
-            "type": "string",
-            "description": "The part of the syllabus (e.g., பகுதி அ: பொது அறிவு)."
+          "type": "string",
+          "description": "The part of the syllabus (e.g., பகுதி அ, ஆ, இ)."
         },
-        "subject": {
-            "type": "string",
-            "description": "The subject within the part (e.g., பொது அறிவியல்)."
+        "unit": {
+          "type": "string",
+          "description": "The unit number (e.g., அலகு I)."
+        },
+        "unitName": {
+          "type": "string",
+          "description": "The name of the unit (e.g., பொது அறிவியல்)."
         },
         "topic": {
-            "type": "string",
-            "description": "The specific topic within the subject."
+          "type": "string",
+          "description": "The specific topic within the unit."
         }
       },
-      "required": ["id", "examGroup", "part", "subject", "topic"]
+      "required": [
+        "id",
+        "examGroup",
+        "part",
+        "unit",
+        "unitName",
+        "topic"
+      ]
     },
     "QuestionComment": {
       "$schema": "http://json-schema.org/draft-07/schema#",

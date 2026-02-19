@@ -64,7 +64,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 const syllabusSchema = z.object({
   examGroup: z.enum(['Group I', 'Group II', 'Group IV'], { required_error: "Please select an exam group." }),
   part: z.string().min(1, { message: "Syllabus part is required." }),
-  subject: z.string().min(1, { message: "Syllabus subject is required." }),
+  unit: z.string().min(1, { message: "Syllabus unit is required." }),
+  unitName: z.string().min(1, { message: "Unit name is required." }),
   topic: z.string().min(1, { message: "Syllabus topic is required." }),
 });
 type SyllabusFormValues = z.infer<typeof syllabusSchema>;
@@ -80,7 +81,7 @@ function ManageSyllabusStructure() {
 
     const form = useForm<SyllabusFormValues>({
         resolver: zodResolver(syllabusSchema),
-        defaultValues: { examGroup: undefined, part: '', subject: '', topic: '' },
+        defaultValues: { examGroup: undefined, part: '', unit: '', unitName: '', topic: '' },
     });
 
     const onSubmit: SubmitHandler<SyllabusFormValues> = async (values) => {
@@ -113,11 +114,12 @@ function ManageSyllabusStructure() {
     const groupedSyllabus = useMemo(() => {
         if (!syllabusTopics) return {};
         return syllabusTopics.reduce((acc, topic) => {
-            const { examGroup, part, subject } = topic;
+            const { examGroup, part, unit, unitName } = topic;
+            const unitKey = `${unit}: ${unitName}`;
             if (!acc[examGroup]) acc[examGroup] = {};
             if (!acc[examGroup][part]) acc[examGroup][part] = {};
-            if (!acc[examGroup][part][subject]) acc[examGroup][part][subject] = [];
-            acc[examGroup][part][subject].push(topic);
+            if (!acc[examGroup][part][unitKey]) acc[examGroup][part][unitKey] = [];
+            acc[examGroup][part][unitKey].push(topic);
             return acc;
         }, {} as Record<string, Record<string, Record<string, Syllabus[]>>>);
     }, [syllabusTopics]);
@@ -158,17 +160,44 @@ function ManageSyllabusStructure() {
                                 render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Syllabus Part</FormLabel>
-                                    <FormControl><Input placeholder="e.g., பகுதி அ: பொது அறிவு" {...field} /></FormControl>
+                                     <Select onValueChange={field.onChange} value={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger><SelectValue placeholder="e.g., பகுதி அ" /></SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="பகுதி அ">பகுதி அ</SelectItem>
+                                            <SelectItem value="பகுதி ஆ">பகுதி ஆ</SelectItem>
+                                            <SelectItem value="பகுதி இ">பகுதி இ</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                     <FormMessage />
                                 </FormItem>
                                 )}
                             />
                             <FormField
                                 control={form.control}
-                                name="subject"
+                                name="unit"
                                 render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Syllabus Subject</FormLabel>
+                                    <FormLabel>Syllabus Unit</FormLabel>
+                                    <Select onValueChange={field.onChange} value={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger><SelectValue placeholder="e.g., அலகு I" /></SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {Array.from({ length: 10 }, (_, i) => `அலகு ${i + 1}`).map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="unitName"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Unit Name</FormLabel>
                                     <FormControl><Input placeholder="e.g., பொது அறிவியல்" {...field} /></FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -202,14 +231,14 @@ function ManageSyllabusStructure() {
                                 <AccordionTrigger>{examGroup}</AccordionTrigger>
                                 <AccordionContent>
                                     <Accordion type="multiple" className="w-full pl-4">
-                                        {Object.entries(parts).map(([part, subjects]) => (
+                                        {Object.entries(parts).map(([part, units]) => (
                                             <AccordionItem value={part} key={part}>
                                                 <AccordionTrigger>{part}</AccordionTrigger>
                                                 <AccordionContent>
                                                     <Accordion type="multiple" className="w-full pl-4">
-                                                        {Object.entries(subjects).map(([subject, topics]) => (
-                                                            <AccordionItem value={subject} key={subject}>
-                                                                <AccordionTrigger>{subject}</AccordionTrigger>
+                                                        {Object.entries(units).map(([unitKey, topics]) => (
+                                                            <AccordionItem value={unitKey} key={unitKey}>
+                                                                <AccordionTrigger>{unitKey}</AccordionTrigger>
                                                                 <AccordionContent>
                                                                     <ul className="space-y-2 pl-4">
                                                                         {topics.map(topic => (
@@ -267,7 +296,7 @@ function SyllabusMcqUpload() {
     
     const [selectedExamGroup, setSelectedExamGroup] = useState<string>('');
     const [selectedPart, setSelectedPart] = useState<string>('');
-    const [selectedSubject, setSelectedSubject] = useState<string>('');
+    const [selectedUnit, setSelectedUnit] = useState<string>('');
 
     const form = useForm<SyllabusMcqUploadValues>({
         resolver: zodResolver(syllabusMcqUploadSchema),
@@ -276,8 +305,24 @@ function SyllabusMcqUpload() {
 
     const uniqueExamGroups = useMemo(() => syllabusTopics ? [...new Set(syllabusTopics.map(t => t.examGroup))] : [], [syllabusTopics]);
     const uniqueParts = useMemo(() => syllabusTopics ? [...new Set(syllabusTopics.filter(t => t.examGroup === selectedExamGroup).map(t => t.part))] : [], [syllabusTopics, selectedExamGroup]);
-    const uniqueSubjects = useMemo(() => syllabusTopics ? [...new Set(syllabusTopics.filter(t => t.examGroup === selectedExamGroup && t.part === selectedPart).map(t => t.subject))] : [], [syllabusTopics, selectedExamGroup, selectedPart]);
-    const filteredTopics = useMemo(() => syllabusTopics ? syllabusTopics.filter(t => t.examGroup === selectedExamGroup && t.part === selectedPart && t.subject === selectedSubject) : [], [syllabusTopics, selectedExamGroup, selectedPart, selectedSubject]);
+    const uniqueUnits = useMemo(() => {
+        if (!syllabusTopics) return [];
+        const units = syllabusTopics
+            .filter(t => t.examGroup === selectedExamGroup && t.part === selectedPart)
+            .map(t => `${t.unit}: ${t.unitName}`);
+        return [...new Set(units)];
+    }, [syllabusTopics, selectedExamGroup, selectedPart]);
+
+    const filteredTopics = useMemo(() => {
+        if (!syllabusTopics || !selectedUnit) return [];
+        const [unit, unitName] = selectedUnit.split(': ');
+        return syllabusTopics.filter(t => 
+            t.examGroup === selectedExamGroup && 
+            t.part === selectedPart && 
+            t.unit === unit &&
+            t.unitName === unitName
+        );
+    }, [syllabusTopics, selectedExamGroup, selectedPart, selectedUnit]);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -320,7 +365,7 @@ function SyllabusMcqUpload() {
           });
           await batch.commit();
 
-          const testTitle = `${selectedTopic.examGroup} - ${selectedTopic.subject} - ${selectedTopic.topic}`;
+          const testTitle = `${selectedTopic.examGroup} - ${selectedTopic.unitName} - ${selectedTopic.topic}`;
           const testsCollectionRef = collection(firestore, 'tests');
           const testQuery = query(testsCollectionRef, where('title', '==', testTitle), where('medium', '==', values.medium));
           
@@ -335,7 +380,8 @@ function SyllabusMcqUpload() {
                       examGroup: selectedTopic.examGroup,
                       medium: values.medium,
                       syllabusPart: selectedTopic.part,
-                      syllabusSubject: selectedTopic.subject,
+                      syllabusUnit: selectedTopic.unit,
+                      syllabusUnitName: selectedTopic.unitName,
                       syllabusTopic: selectedTopic.topic,
                   };
                   transaction.set(newTestRef, newTest);
@@ -374,16 +420,16 @@ function SyllabusMcqUpload() {
                                 <SelectTrigger><SelectValue placeholder="Select Part" /></SelectTrigger>
                                 <SelectContent>{uniqueParts.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
                             </Select>
-                            <Select onValueChange={setSelectedSubject} value={selectedSubject} disabled={!selectedPart}>
-                                <SelectTrigger><SelectValue placeholder="Select Subject" /></SelectTrigger>
-                                <SelectContent>{uniqueSubjects.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                            <Select onValueChange={setSelectedUnit} value={selectedUnit} disabled={!selectedPart}>
+                                <SelectTrigger><SelectValue placeholder="Select Unit" /></SelectTrigger>
+                                <SelectContent>{uniqueUnits.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                             </Select>
                             <FormField
                                 control={form.control}
                                 name="syllabusTopicId"
                                 render={({ field }) => (
                                 <FormItem>
-                                    <Select onValueChange={field.onChange} value={field.value} disabled={!selectedSubject}>
+                                    <Select onValueChange={field.onChange} value={field.value} disabled={!selectedUnit}>
                                         <FormControl><SelectTrigger><SelectValue placeholder="Select Topic" /></SelectTrigger></FormControl>
                                         <SelectContent>{filteredTopics.map(t => <SelectItem key={t.id} value={t.id}>{t.topic}</SelectItem>)}</SelectContent>
                                     </Select>

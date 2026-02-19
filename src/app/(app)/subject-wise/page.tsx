@@ -108,7 +108,7 @@ export default function SubjectWiseTestsPage() {
   const firestore = useFirestore();
 
   const testsQuery = useMemoFirebase(() => 
-    firestore ? query(collection(firestore, 'tests'), where('syllabusSubject', '!=', null)) : null,
+    firestore ? query(collection(firestore, 'tests'), where('syllabusUnitName', '!=', null)) : null,
     [firestore]
   );
   const { data: tests, isLoading } = useCollection<Test>(testsQuery);
@@ -126,19 +126,19 @@ export default function SubjectWiseTestsPage() {
         acc[examGroup][part] = {};
       }
 
-      const subject = test.syllabusSubject || 'Uncategorized Subject';
-      if (!acc[examGroup][part][subject]) {
-        acc[examGroup][part][subject] = [];
+      const unitName = test.syllabusUnitName || 'Uncategorized Unit';
+      if (!acc[examGroup][part][unitName]) {
+        acc[examGroup][part][unitName] = [];
       }
-      acc[examGroup][part][subject].push(test);
+      acc[examGroup][part][unitName].push(test);
       return acc;
     }, {} as Record<string, Record<string, Record<string, Test[]>>>);
 
-    // Sort tests within each subject by topic name
+    // Sort tests within each unitName by topic name
     for (const examGroup in grouped) {
         for (const part in grouped[examGroup]) {
-            for (const subject in grouped[examGroup][part]) {
-                grouped[examGroup][part][subject].sort((a, b) => (a.syllabusTopic || '').localeCompare(b.syllabusTopic || ''));
+            for (const unitName in grouped[examGroup][part]) {
+                grouped[examGroup][part][unitName].sort((a, b) => (a.syllabusTopic || '').localeCompare(b.syllabusTopic || ''));
             }
         }
     }
@@ -174,7 +174,7 @@ export default function SubjectWiseTestsPage() {
                     <AccordionContent>
                         <div className="px-6 pb-6">
                             <Accordion type="multiple" className="w-full space-y-4" defaultValue={Object.keys(parts)}>
-                                {Object.entries(parts).map(([part, subjects]) => (
+                                {Object.entries(parts).map(([part, unitNames]) => (
                                     <AccordionItem value={part} key={part} className="border-b-0">
                                       <Card className="bg-muted/50">
                                           <CardHeader className="p-4">
@@ -183,12 +183,12 @@ export default function SubjectWiseTestsPage() {
                                               </AccordionTrigger>
                                           </CardHeader>
                                           <AccordionContent className="pt-0 p-4">
-                                              <Accordion type="multiple" className="w-full space-y-2" defaultValue={Object.keys(subjects)}>
-                                                  {Object.entries(subjects).map(([subject, testList]) => (
-                                                      <AccordionItem value={subject} key={subject} className="border-b-0">
+                                              <Accordion type="multiple" className="w-full space-y-2" defaultValue={Object.keys(unitNames)}>
+                                                  {Object.entries(unitNames).map(([unitName, testList]) => (
+                                                      <AccordionItem value={unitName} key={unitName} className="border-b-0">
                                                           <Card>
                                                               <CardHeader className="p-4">
-                                                                  <AccordionTrigger className="p-0 font-semibold text-lg hover:no-underline">{subject}</AccordionTrigger>
+                                                                  <AccordionTrigger className="p-0 font-semibold text-lg hover:no-underline">{unitName}</AccordionTrigger>
                                                               </CardHeader>
                                                               <AccordionContent className="pt-0 p-4">
                                                                   <div className="space-y-4">
