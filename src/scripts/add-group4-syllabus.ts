@@ -1,7 +1,7 @@
 'use server';
 
 import { initializeFirebaseServer } from '@/firebase/server-init';
-import { collection, writeBatch, doc } from 'firebase/firestore';
+import { collection, writeBatch, doc, query, where, getDocs } from 'firebase/firestore';
 import type { Syllabus } from '@/lib/types';
 
 const syllabusData = {
@@ -161,8 +161,25 @@ const syllabusData = {
 async function addGroup4SyllabusTopics() {
     console.log('Adding Group IV syllabus topics...');
     const { firestore } = initializeFirebaseServer();
-    const batch = writeBatch(firestore);
     const syllabusCollection = collection(firestore, 'syllabus');
+
+    // Delete existing Group IV topics to prevent duplicates
+    console.log('First, deleting all existing Group IV syllabus topics to prevent duplicates...');
+    const deleteBatch = writeBatch(firestore);
+    const q = query(syllabusCollection, where('examGroup', '==', 'Group IV'));
+    try {
+        const querySnapshot = await getDocs(q);
+        querySnapshot.forEach((doc) => {
+            deleteBatch.delete(doc.ref);
+        });
+        await deleteBatch.commit();
+        console.log(`Deleted ${querySnapshot.size} existing Group IV topics.`);
+    } catch (error) {
+        console.error('Error deleting existing syllabus topics:', error);
+        return; // Stop if deletion fails
+    }
+
+    const addBatch = writeBatch(firestore);
 
     for (const [examGroup, parts] of Object.entries(syllabusData)) {
         for (const [part, units] of Object.entries(parts)) {
@@ -177,14 +194,14 @@ async function addGroup4SyllabusTopics() {
                         unitName: unitName.trim(),
                         topic,
                     };
-                    batch.set(newDocRef, {id: newDocRef.id, ...syllabusEntry});
+                    addBatch.set(newDocRef, {id: newDocRef.id, ...syllabusEntry});
                 }
             }
         }
     }
 
     try {
-        await batch.commit();
+        await addBatch.commit();
         console.log(`Successfully added Group IV syllabus topics.`);
     } catch (error) {
         console.error('Error adding syllabus topics:', error);
