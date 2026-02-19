@@ -158,7 +158,7 @@ function ManageSyllabusStructure() {
                                 render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Syllabus Part</FormLabel>
-                                    <FormControl><Input placeholder="e.g., பகுதி அ: தபொது அறிவு" {...field} /></FormControl>
+                                    <FormControl><Input placeholder="e.g., பகுதி அ: பொது அறிவு" {...field} /></FormControl>
                                     <FormMessage />
                                 </FormItem>
                                 )}
@@ -169,7 +169,7 @@ function ManageSyllabusStructure() {
                                 render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Syllabus Subject</FormLabel>
-                                    <FormControl><Input placeholder="e.g., தபொது அறிவியல்" {...field} /></FormControl>
+                                    <FormControl><Input placeholder="e.g., பொது அறிவியல்" {...field} /></FormControl>
                                     <FormMessage />
                                 </FormItem>
                                 )}

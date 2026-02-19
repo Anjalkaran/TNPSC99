@@ -242,11 +242,11 @@
         },
         "part": {
             "type": "string",
-            "description": "The part of the syllabus (e.g., பகுதி அ: தபொது அறிவு)."
+            "description": "The part of the syllabus (e.g., பகுதி அ: பொது அறிவு)."
         },
         "subject": {
             "type": "string",
-            "description": "The subject within the part (e.g., தபொது அறிவியல்)."
+            "description": "The subject within the part (e.g., பொது அறிவியல்)."
         },
         "topic": {
             "type": "string",
