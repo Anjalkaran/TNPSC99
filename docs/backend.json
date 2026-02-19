@@ -227,6 +227,34 @@
         "name"
       ]
     },
+    "Syllabus": {
+      "title": "Syllabus",
+      "type": "object",
+      "description": "Represents a specific topic within the TNPSC syllabus structure.",
+      "properties": {
+        "id": {
+            "type": "string",
+            "description": "Unique identifier for the syllabus entry."
+        },
+        "examGroup": {
+            "type": "string",
+            "description": "The exam group (e.g., Group IV)."
+        },
+        "part": {
+            "type": "string",
+            "description": "The part of the syllabus (e.g., பகுதி அ: தபொது அறிவு)."
+        },
+        "subject": {
+            "type": "string",
+            "description": "The subject within the part (e.g., தபொது அறிவியல்)."
+        },
+        "topic": {
+            "type": "string",
+            "description": "The specific topic within the subject."
+        }
+      },
+      "required": ["id", "examGroup", "part", "subject", "topic"]
+    },
     "QuestionComment": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "QuestionComment",
@@ -397,6 +425,22 @@
             {
               "name": "subjectId",
               "description": "The unique identifier of the subject."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/syllabus/{syllabusId}",
+        "definition": {
+          "entityName": "Syllabus",
+          "schema": {
+            "$ref": "#/backend/entities/Syllabus"
+          },
+          "description": "Stores the hierarchical structure of the exam syllabus.",
+          "params": [
+            {
+              "name": "syllabusId",
+              "description": "The unique identifier of the syllabus topic."
             }
           ]
         }

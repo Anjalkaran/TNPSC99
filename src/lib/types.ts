@@ -81,6 +81,13 @@ export interface Unit {
   medium?: 'tamil' | 'english';
 }
 
+export interface Syllabus {
+  id: string;
+  examGroup: 'Group I' | 'Group II' | 'Group IV';
+  part: string;
+  subject: string;
+  topic: string;
+}
 
 export interface UserProfile {
   id: string;

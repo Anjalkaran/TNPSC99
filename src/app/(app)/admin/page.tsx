@@ -3,7 +3,7 @@ import { useTranslation } from '@/hooks/use-translation';
 import { IconMcqBank, IconTopicManagement } from '@/components/icons';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
-import { Shield, BookOpen, Trophy, BarChart, FileText, Archive } from 'lucide-react';
+import { Shield, BookOpen, Trophy, BarChart, FileText, Archive, BookOpenCheck } from 'lucide-react';
 
 export default function AdminPage() {
     const { t } = useTranslation();
@@ -12,7 +12,7 @@ export default function AdminPage() {
         { href: '/admin/users', label: t('user_management'), icon: <Shield /> },
         { href: '/admin/topics', label: t('topic_management'), icon: <IconTopicManagement />},
         { href: '/admin/upload', label: t('mcq_bank'), icon: <IconMcqBank /> },
-        { href: '/admin/syllabus', label: 'Syllabus Upload', icon: <BookOpen /> },
+        { href: '/admin/syllabus', label: 'Syllabus Management', icon: <BookOpenCheck /> },
         { href: '/admin/comments', label: 'User Feedback', icon: <FileText /> },
         { href: '/admin/previous-year-papers', label: t('previous_year_papers'), icon: <Archive /> },
         { href: '#', label: t('live_test'), icon: <Trophy />, comingSoon: true },

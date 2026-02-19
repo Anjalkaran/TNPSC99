@@ -59,6 +59,11 @@ service cloud.firestore {
     match /units/{unitId} {
       allow read, write: if true;
     }
+    
+    match /syllabus/{syllabusId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
 
     match /questions/{questionId} {
       allow read, write: if true;
