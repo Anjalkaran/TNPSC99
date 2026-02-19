@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import {
   writeBatch,
@@ -70,6 +71,32 @@ const syllabusSchema = z.object({
 });
 type SyllabusFormValues = z.infer<typeof syllabusSchema>;
 
+const syllabusStructure = {
+    'Group IV': {
+      'பகுதி அ': {
+        'அலகு I': 'பொது அறிவியல்',
+        'அலகு II': 'புவியியல்',
+        'அலகு III': 'இந்தியாவின் வரலாறு, பண்பாடு மற்றும் இந்திய தேசிய இயக்கம்',
+        'அலகு IV': 'இந்திய ஆட்சியியல்',
+        'அலகு V': 'இந்தியப் பொருளாதாரம் மற்றும் தமிழ்நாட்டில் வளர்ச்சி நிர்வாகம்',
+        'அலகு VI': 'தமிழ்நாட்டின் வரலாறு, பண்பாடு, மரபு மற்றும் சமூக - அரசியல் இயக்கங்கள்'
+      },
+      'பகுதி ஆ': {
+          'அலகு I': 'திறனறிவு',
+          'அலகு II': 'காரணவியல்'
+      },
+      'பகுதி இ': {
+          'அலகு I': 'இலக்கணம்',
+          'அலகு II': 'சொல்லகராதி',
+          'அலகு III': 'எழுதும் திறன்',
+          'அலகு IV': 'கலைச் சொற்கள்',
+          'அலகு V': 'வாசித்தல் – புரிந்து கொள்ளும் திறன்',
+          'அலகு VI': 'எளிய மொழி பெயர்ப்பு',
+          'அலகு VII': 'இலக்கியம், தமிழ் அறிஞர்களும், தமிழ்த்தொண்டும்'
+      }
+    }
+  };
+
 function ManageSyllabusStructure() {
     const { t } = useTranslation();
     const firestore = useFirestore();
@@ -84,16 +111,61 @@ function ManageSyllabusStructure() {
         defaultValues: { examGroup: undefined, part: '', unit: '', unitName: '', topic: '' },
     });
 
+    const examGroupValue = form.watch('examGroup');
+    const partValue = form.watch('part');
+    const unitValue = form.watch('unit');
+
+    const availableParts = useMemo(() => {
+        if (examGroupValue && syllabusStructure[examGroupValue]) {
+            return Object.keys(syllabusStructure[examGroupValue]);
+        }
+        return ['பகுதி அ', 'பகுதி ஆ', 'பகுதி இ'];
+    }, [examGroupValue]);
+
+    const availableUnits = useMemo(() => {
+        if (examGroupValue && partValue && syllabusStructure[examGroupValue]?.[partValue]) {
+            return Object.keys(syllabusStructure[examGroupValue][partValue]);
+        }
+        return [];
+    }, [examGroupValue, partValue]);
+
+    const isUnitNamePrefilled = availableUnits.length > 0;
+
+     useEffect(() => {
+        if (examGroupValue && partValue && unitValue && syllabusStructure[examGroupValue]?.[partValue]?.[unitValue]) {
+            form.setValue('unitName', syllabusStructure[examGroupValue][partValue][unitValue]);
+        } else {
+             form.setValue('unitName', '');
+        }
+    }, [examGroupValue, partValue, unitValue, form]);
+
+    useEffect(() => {
+        form.setValue('unit', '');
+        form.setValue('unitName', '');
+    }, [partValue, form]);
+
+    useEffect(() => {
+        form.setValue('part', '');
+        form.setValue('unit', '');
+        form.setValue('unitName', '');
+    }, [examGroupValue, form]);
+
+
     const onSubmit: SubmitHandler<SyllabusFormValues> = async (values) => {
         setIsSubmitting(true);
         try {
             if (!firestore) throw new Error("Firestore not available");
-            await addDoc(collection(firestore, 'syllabus'), {
+            const newDocRef = doc(collection(firestore, 'syllabus'));
+            await setDoc(newDocRef, {
                 ...values,
-                id: doc(collection(firestore, 'syllabus')).id,
+                id: newDocRef.id,
             });
             toast({ title: "Syllabus Topic Added" });
             form.reset();
+             form.setValue('examGroup', examGroupValue);
+             form.setValue('part', partValue);
+             form.setValue('unit', unitValue);
+             form.setValue('unitName', form.getValues('unitName'));
         } catch (error: any) {
             toast({ variant: 'destructive', title: "Error", description: error.message });
         } finally {
@@ -160,14 +232,12 @@ function ManageSyllabusStructure() {
                                 render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Syllabus Part</FormLabel>
-                                     <Select onValueChange={field.onChange} value={field.value}>
+                                     <Select onValueChange={field.onChange} value={field.value} disabled={!examGroupValue}>
                                         <FormControl>
                                             <SelectTrigger><SelectValue placeholder="e.g., பகுதி அ" /></SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            <SelectItem value="பகுதி அ">பகுதி அ</SelectItem>
-                                            <SelectItem value="பகுதி ஆ">பகுதி ஆ</SelectItem>
-                                            <SelectItem value="பகுதி இ">பகுதி இ</SelectItem>
+                                            {availableParts.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                                         </SelectContent>
                                     </Select>
                                     <FormMessage />
@@ -180,12 +250,12 @@ function ManageSyllabusStructure() {
                                 render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Syllabus Unit</FormLabel>
-                                    <Select onValueChange={field.onChange} value={field.value}>
+                                    <Select onValueChange={field.onChange} value={field.value} disabled={availableUnits.length === 0}>
                                         <FormControl>
                                             <SelectTrigger><SelectValue placeholder="e.g., அலகு I" /></SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            {Array.from({ length: 10 }, (_, i) => `அலகு ${i + 1}`).map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
+                                            {availableUnits.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
                                         </SelectContent>
                                     </Select>
                                     <FormMessage />
@@ -198,7 +268,7 @@ function ManageSyllabusStructure() {
                                 render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Unit Name</FormLabel>
-                                    <FormControl><Input placeholder="e.g., பொது அறிவியல்" {...field} /></FormControl>
+                                    <FormControl><Input placeholder="e.g., பொது அறிவியல்" {...field} readOnly={isUnitNamePrefilled} /></FormControl>
                                     <FormMessage />
                                 </FormItem>
                                 )}
