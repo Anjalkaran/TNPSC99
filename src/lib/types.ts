@@ -38,6 +38,7 @@ export interface Test {
   bookType?: 'samacheer' | 'old';
   medium?: 'tamil' | 'english';
   examGroup?: 'Group I' | 'Group II' | 'Group IV';
+  syllabusPart?: string;
   syllabusSubject?: string;
   syllabusTopic?: string;
 }

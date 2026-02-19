@@ -120,19 +120,27 @@ export default function SubjectWiseTestsPage() {
       if (!acc[examGroup]) {
         acc[examGroup] = {};
       }
-      const subject = test.syllabusSubject || 'Uncategorized';
-      if (!acc[examGroup][subject]) {
-        acc[examGroup][subject] = [];
+      
+      const part = test.syllabusPart || 'Uncategorized Part';
+      if (!acc[examGroup][part]) {
+        acc[examGroup][part] = {};
       }
-      acc[examGroup][subject].push(test);
+
+      const subject = test.syllabusSubject || 'Uncategorized Subject';
+      if (!acc[examGroup][part][subject]) {
+        acc[examGroup][part][subject] = [];
+      }
+      acc[examGroup][part][subject].push(test);
       return acc;
-    }, {} as Record<string, Record<string, Test[]>>);
+    }, {} as Record<string, Record<string, Record<string, Test[]>>>);
 
     // Sort tests within each subject by topic name
     for (const examGroup in grouped) {
-      for (const subject in grouped[examGroup]) {
-        grouped[examGroup][subject].sort((a, b) => (a.syllabusTopic || '').localeCompare(b.syllabusTopic || ''));
-      }
+        for (const part in grouped[examGroup]) {
+            for (const subject in grouped[examGroup][part]) {
+                grouped[examGroup][part][subject].sort((a, b) => (a.syllabusTopic || '').localeCompare(b.syllabusTopic || ''));
+            }
+        }
     }
 
     return grouped;
@@ -155,7 +163,7 @@ export default function SubjectWiseTestsPage() {
         <p>Loading tests...</p>
       ) : Object.keys(groupedByExamGroup).length > 0 ? (
         <Accordion type="multiple" className="w-full" defaultValue={Object.keys(groupedByExamGroup)}>
-          {Object.entries(groupedByExamGroup).map(([examGroup, subjects]) => (
+          {Object.entries(groupedByExamGroup).map(([examGroup, parts]) => (
             <AccordionItem value={examGroup} key={examGroup} className="border-b-0 mb-4">
                 <Card>
                     <CardHeader>
@@ -165,36 +173,51 @@ export default function SubjectWiseTestsPage() {
                     </CardHeader>
                     <AccordionContent>
                         <div className="px-6 pb-6">
-                            <Accordion type="multiple" className="w-full space-y-2">
-                                {Object.entries(subjects).map(([subject, testList]) => (
-                                    <AccordionItem value={subject} key={subject} className="border-b-0">
-                                        <Card>
-                                            <CardHeader className="p-4">
-                                                <AccordionTrigger className="p-0 font-semibold text-lg hover:no-underline">{subject}</AccordionTrigger>
-                                            </CardHeader>
-                                            <AccordionContent className="pt-0 p-4">
-                                                <div className="space-y-4">
-                                                    {testList.map((test) => (
-                                                        <Card key={test.id}>
-                                                            <CardContent className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                                                <div className="flex-grow">
-                                                                <p className="font-medium">{test.syllabusTopic}</p>
-                                                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                                                    <span>{test.questionIds.length} {t('questions')}</span>
-                                                                    <Badge variant="outline">{test.medium}</Badge>
-                                                                    <TestProgressBadge testId={test.id} />
-                                                                </div>
-                                                                </div>
-                                                                <div className="w-full md:w-auto shrink-0 md:min-w-[300px]">
-                                                                    <TestStartControl test={test} />
-                                                                </div>
-                                                            </CardContent>
-                                                        </Card>
-                                                    ))}
-                                                </div>
-                                            </AccordionContent>
-                                        </Card>
-                                    </AccordionItem>
+                            <Accordion type="multiple" className="w-full space-y-4" defaultValue={Object.keys(parts)}>
+                                {Object.entries(parts).map(([part, subjects]) => (
+                                    <AccordionItem value={part} key={part} className="border-b-0">
+                                      <Card className="bg-muted/50">
+                                          <CardHeader className="p-4">
+                                              <AccordionTrigger className="p-0 text-xl font-semibold hover:no-underline">
+                                                  {part}
+                                              </AccordionTrigger>
+                                          </CardHeader>
+                                          <AccordionContent className="pt-0 p-4">
+                                              <Accordion type="multiple" className="w-full space-y-2" defaultValue={Object.keys(subjects)}>
+                                                  {Object.entries(subjects).map(([subject, testList]) => (
+                                                      <AccordionItem value={subject} key={subject} className="border-b-0">
+                                                          <Card>
+                                                              <CardHeader className="p-4">
+                                                                  <AccordionTrigger className="p-0 font-semibold text-lg hover:no-underline">{subject}</AccordionTrigger>
+                                                              </CardHeader>
+                                                              <AccordionContent className="pt-0 p-4">
+                                                                  <div className="space-y-4">
+                                                                      {testList.map((test) => (
+                                                                          <Card key={test.id}>
+                                                                              <CardContent className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                                                                  <div className="flex-grow">
+                                                                                  <p className="font-medium">{test.syllabusTopic}</p>
+                                                                                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                                                      <span>{test.questionIds.length} {t('questions')}</span>
+                                                                                      <Badge variant="outline">{test.medium}</Badge>
+                                                                                      <TestProgressBadge testId={test.id} />
+                                                                                  </div>
+                                                                                  </div>
+                                                                                  <div className="w-full md:w-auto shrink-0 md:min-w-[300px]">
+                                                                                      <TestStartControl test={test} />
+                                                                                  </div>
+                                                                              </CardContent>
+                                                                          </Card>
+                                                                      ))}
+                                                                  </div>
+                                                              </AccordionContent>
+                                                          </Card>
+                                                      </AccordionItem>
+                                                  ))}
+                                              </Accordion>
+                                          </AccordionContent>
+                                      </Card>
+                                  </AccordionItem>
                                 ))}
                             </Accordion>
                         </div>

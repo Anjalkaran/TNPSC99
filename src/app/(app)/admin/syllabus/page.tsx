@@ -77,6 +77,7 @@ const jsonStructureExample = `[
 const syllabusUploadFormSchema = z.object({
   examGroup: z.enum(['Group I', 'Group II', 'Group IV'], { required_error: "Please select an exam group." }),
   medium: z.enum(['tamil', 'english'], { required_error: "Please select a medium." }),
+  syllabusPart: z.string().min(1, { message: "Syllabus part is required." }),
   syllabusSubject: z.string().min(1, { message: "Syllabus subject is required." }),
   syllabusTopic: z.string().min(1, { message: "Syllabus topic is required." }),
   jsonInput: z.string().min(1, { message: 'JSON data is required.' }),
@@ -366,6 +367,7 @@ export default function SyllabusUploadPage() {
     defaultValues: {
       examGroup: undefined,
       medium: undefined,
+      syllabusPart: '',
       syllabusSubject: '',
       syllabusTopic: '',
       jsonInput: '',
@@ -419,7 +421,7 @@ export default function SyllabusUploadPage() {
     try {
       if (!firestore) throw new Error('Firestore is not initialized');
 
-      const { examGroup, medium, syllabusSubject, syllabusTopic } = values;
+      const { examGroup, medium, syllabusPart, syllabusSubject, syllabusTopic } = values;
 
       // 1. Add Questions
       const batch = writeBatch(firestore);
@@ -458,6 +460,7 @@ export default function SyllabusUploadPage() {
                   questionIds: newQuestionIds,
                   examGroup: examGroup,
                   medium: medium,
+                  syllabusPart: syllabusPart,
                   syllabusSubject: syllabusSubject,
                   syllabusTopic: syllabusTopic,
               };
@@ -466,7 +469,7 @@ export default function SyllabusUploadPage() {
               const testDoc = testSnapshot.docs[0];
               const existingQuestionIds = testDoc.data().questionIds || [];
               const updatedQuestionIds = [...new Set([...existingQuestionIds, ...newQuestionIds])];
-              const updateData: any = { questionIds: updatedQuestionIds, medium: medium };
+              const updateData: any = { questionIds: updatedQuestionIds, medium: medium, syllabusPart: syllabusPart };
               transaction.update(testDoc.ref, updateData);
           }
       });
@@ -545,6 +548,19 @@ export default function SyllabusUploadPage() {
                                 <SelectItem value="english">English</SelectItem>
                             </SelectContent>
                             </Select>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="syllabusPart"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Syllabus Part</FormLabel>
+                            <FormControl>
+                            <Input placeholder="e.g., பகுதி அ: தபொது அறிவு" {...field} />
+                            </FormControl>
                             <FormMessage />
                         </FormItem>
                         )}
