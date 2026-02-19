@@ -272,10 +272,12 @@
     "account_created_successfully": "Your account has been created successfully.",
     "google_signup_error": "Error signing up with Google",
     "signup_error": "Signup Error",
-    "email_already_in_use": "This email is already in use."
+    "email_already_in_use": "This email is already in use.",
+    "syllabus_wise_tests": "Syllabus Wise Tests"
 }
     
     
 
     
+
 
