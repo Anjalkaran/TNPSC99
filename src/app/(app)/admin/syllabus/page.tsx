@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -61,6 +62,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDes
 import { Label } from '@/components/ui/label';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import Link from 'next/link';
+import { Badge } from '@/components/ui/badge';
+
 
 const syllabusSchema = z.object({
   examGroup: z.enum(['Group I', 'Group II', 'Group IV'], { required_error: "Please select an exam group." }),
@@ -383,6 +387,194 @@ const syllabusMcqUploadSchema = z.object({
 
 type SyllabusMcqUploadValues = z.infer<typeof syllabusMcqUploadSchema>;
 
+function ExistingSyllabusMcqBanks() {
+    const { t } = useTranslation();
+    const firestore = useFirestore();
+    const { toast } = useToast();
+
+    const testsQuery = useMemoFirebase(() => 
+        firestore ? query(collection(firestore, 'tests'), where('syllabusTopic', '!=', null)) : null,
+        [firestore]
+    );
+    const { data: tests, isLoading } = useCollection<Test>(testsQuery);
+
+    const groupedByExamGroup = useMemo(() => {
+        if (!tests) return {};
+        const grouped = tests.reduce((acc, test) => {
+          const examGroup = test.examGroup || 'Uncategorized';
+          if (!acc[examGroup]) {
+            acc[examGroup] = {};
+          }
+          
+          const part = test.syllabusPart || 'Uncategorized Part';
+          if (!acc[examGroup][part]) {
+            acc[examGroup][part] = {};
+          }
+
+          const unitKey = test.syllabusUnit && test.syllabusUnitName ? `${test.syllabusUnit}: ${test.syllabusUnitName}` : (test.syllabusUnitName || 'Uncategorized Unit');
+          if (!acc[examGroup][part][unitKey]) {
+            acc[examGroup][part][unitKey] = [];
+          }
+          acc[examGroup][part][unitKey].push(test);
+          return acc;
+        }, {} as Record<string, Record<string, Record<string, Test[]>>>);
+
+        for (const examGroup in grouped) {
+            for (const part in grouped[examGroup]) {
+                for (const unitName in grouped[examGroup][part]) {
+                    grouped[examGroup][part][unitName].sort((a, b) => (a.syllabusTopic || '').localeCompare(b.syllabusTopic || ''));
+                }
+            }
+        }
+        return grouped;
+    }, [tests]);
+
+    const handleDownload = async (test: Test) => {
+        if (!firestore) return;
+        try {
+            const fetchedQuestions: Question[] = [];
+            if (test.questionIds && test.questionIds.length > 0) {
+              const questionIdsChunks = [];
+              for (let i = 0; i < test.questionIds.length; i += 30) {
+                questionIdsChunks.push(test.questionIds.slice(i, i + 30));
+              }
+              for (const chunk of questionIdsChunks) {
+                 const questionsQuery = query(collection(firestore, 'questions'), where('__name__', 'in', chunk));
+                 const questionsSnap = await getDocs(questionsQuery);
+                 questionsSnap.forEach(docSnap => {
+                    const { classId, subjectId, ...questionData } = docSnap.data() as any;
+                    fetchedQuestions.push({ id: docSnap.id, ...questionData } as Question);
+                 });
+              }
+            }
+            const jsonString = JSON.stringify(fetchedQuestions, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${test.title.replace(/ /g, '_')}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            toast({ title: "Download Started", description: `Downloading ${test.title} questions.` });
+        } catch (error) {
+            console.error("Error downloading test data:", error);
+            toast({ variant: 'destructive', title: "Download Failed", description: "There was a problem downloading the question bank." });
+        }
+    };
+
+    const handleDelete = async (testId: string) => {
+        if (!firestore) return;
+        const testDocRef = doc(firestore, 'tests', testId);
+        try {
+            await deleteDoc(testDocRef);
+            toast({ title: 'Test Bank Deleted', description: 'The syllabus test bank has been successfully deleted.' });
+        } catch (error) {
+            console.error("Error deleting test bank: ", error);
+            toast({ variant: 'destructive', title: 'Error Deleting Test Bank', description: 'There was a problem deleting the test bank.' });
+        }
+    };
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Existing Syllabus MCQ Banks</CardTitle>
+                <CardDescription>View, edit, or delete existing syllabus-based test banks.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {isLoading ? (
+                    <p>Loading test banks...</p>
+                ) : Object.keys(groupedByExamGroup).length > 0 ? (
+                    <Accordion type="multiple" className="w-full" defaultValue={Object.keys(groupedByExamGroup)}>
+                        {Object.entries(groupedByExamGroup).map(([examGroup, parts]) => (
+                            <AccordionItem value={examGroup} key={examGroup}>
+                                <AccordionTrigger className="text-xl font-bold">{examGroup}</AccordionTrigger>
+                                <AccordionContent>
+                                    <Accordion type="multiple" className="w-full pl-4 space-y-2" defaultValue={Object.keys(parts)}>
+                                        {Object.entries(parts).sort((a, b) => a[0].localeCompare(b[0])).map(([part, units]) => (
+                                            <AccordionItem value={part} key={part} className="border-b-0">
+                                                <Card className="bg-muted/50">
+                                                    <CardHeader className="p-3">
+                                                        <AccordionTrigger className="text-lg p-0 hover:no-underline">{part}</AccordionTrigger>
+                                                    </CardHeader>
+                                                    <AccordionContent className="p-3">
+                                                        <Accordion type="multiple" className="w-full space-y-2" defaultValue={Object.keys(units)}>
+                                                            {Object.entries(units).sort(([unitA], [unitB]) => unitA.localeCompare(unitB)).map(([unitKey, testList]) => (
+                                                                <AccordionItem value={unitKey} key={unitKey} className="border-b-0">
+                                                                    <Card>
+                                                                        <CardHeader className="p-3">
+                                                                            <AccordionTrigger className="font-semibold p-0 hover:no-underline">{unitKey}</AccordionTrigger>
+                                                                        </CardHeader>
+                                                                        <AccordionContent className="p-3">
+                                                                            <Table>
+                                                                                <TableHeader>
+                                                                                    <TableRow>
+                                                                                        <TableHead>Topic</TableHead>
+                                                                                        <TableHead>Details</TableHead>
+                                                                                        <TableHead className="text-right">Actions</TableHead>
+                                                                                    </TableRow>
+                                                                                </TableHeader>
+                                                                                <TableBody>
+                                                                                    {testList.map(test => (
+                                                                                        <TableRow key={test.id}>
+                                                                                            <TableCell className="font-medium">{test.syllabusTopic}</TableCell>
+                                                                                            <TableCell>
+                                                                                                <Badge variant="outline">{test.medium}</Badge>
+                                                                                                <span className="text-sm text-muted-foreground ml-2">({test.questionIds.length} Qs)</span>
+                                                                                            </TableCell>
+                                                                                            <TableCell className="text-right space-x-1">
+                                                                                                <Button variant="outline" size="icon" onClick={() => handleDownload(test)}>
+                                                                                                    <Download className="h-4 w-4" />
+                                                                                                </Button>
+                                                                                                <Button asChild variant="outline" size="icon">
+                                                                                                    <Link href={`/admin/upload/${encodeURIComponent(test.id)}/edit`}>
+                                                                                                        <Edit className="h-4 w-4" />
+                                                                                                    </Link>
+                                                                                                </Button>
+                                                                                                <AlertDialog>
+                                                                                                    <AlertDialogTrigger asChild>
+                                                                                                        <Button variant="destructive" size="icon"><Trash className="h-4 w-4" /></Button>
+                                                                                                    </AlertDialogTrigger>
+                                                                                                    <AlertDialogContent>
+                                                                                                        <AlertDialogHeader>
+                                                                                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                                                                            <AlertDialogDescription>This will permanently delete the test bank, but not the questions themselves.</AlertDialogDescription>
+                                                                                                        </AlertDialogHeader>
+                                                                                                        <AlertDialogFooter>
+                                                                                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                                                            <AlertDialogAction onClick={() => handleDelete(test.id)}>Delete</AlertDialogAction>
+                                                                                                        </AlertDialogFooter>
+                                                                                                    </AlertDialogContent>
+                                                                                                </AlertDialog>
+                                                                                            </TableCell>
+                                                                                        </TableRow>
+                                                                                    ))}
+                                                                                </TableBody>
+                                                                            </Table>
+                                                                        </AccordionContent>
+                                                                    </Card>
+                                                                </AccordionItem>
+                                                            ))}
+                                                        </Accordion>
+                                                    </AccordionContent>
+                                                </Card>
+                                            </AccordionItem>
+                                        ))}
+                                    </Accordion>
+                                </AccordionContent>
+                            </AccordionItem>
+                        ))}
+                    </Accordion>
+                ) : (
+                    <p className="text-center text-muted-foreground p-8">No syllabus-based MCQ banks uploaded yet.</p>
+                )}
+            </CardContent>
+        </Card>
+    );
+}
+
+
 function SyllabusMcqUpload() {
     const { t } = useTranslation();
     const firestore = useFirestore();
@@ -542,109 +734,112 @@ function SyllabusMcqUpload() {
     };
 
     return (
-        <div className="grid md:grid-cols-2 gap-8">
-            <Card>
-                <CardHeader>
-                    <CardTitle>Upload Syllabus MCQs</CardTitle>
-                    <CardDescription>Upload questions for a predefined syllabus topic.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                     <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                <Select onValueChange={setSelectedExamGroup} value={selectedExamGroup}>
-                                    <SelectTrigger><SelectValue placeholder="Select Exam Group" /></SelectTrigger>
-                                    <SelectContent>{uniqueExamGroups.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}</SelectContent>
-                                </Select>
-                                 <Select onValueChange={setSelectedPart} value={selectedPart} disabled={!selectedExamGroup}>
-                                    <SelectTrigger><SelectValue placeholder="Select Part" /></SelectTrigger>
-                                    <SelectContent>{uniqueParts.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
-                                </Select>
-                                <Select onValueChange={setSelectedUnit} value={selectedUnit} disabled={!selectedPart}>
-                                    <SelectTrigger><SelectValue placeholder="Select Unit" /></SelectTrigger>
-                                    <SelectContent>{uniqueUnits.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-                                </Select>
+        <div className="space-y-8">
+            <div className="grid md:grid-cols-2 gap-8">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Upload Syllabus MCQs</CardTitle>
+                        <CardDescription>Upload questions for a predefined syllabus topic.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Form {...form}>
+                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    <Select onValueChange={setSelectedExamGroup} value={selectedExamGroup}>
+                                        <SelectTrigger><SelectValue placeholder="Select Exam Group" /></SelectTrigger>
+                                        <SelectContent>{uniqueExamGroups.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}</SelectContent>
+                                    </Select>
+                                    <Select onValueChange={setSelectedPart} value={selectedPart} disabled={!selectedExamGroup}>
+                                        <SelectTrigger><SelectValue placeholder="Select Part" /></SelectTrigger>
+                                        <SelectContent>{uniqueParts.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+                                    </Select>
+                                    <Select onValueChange={setSelectedUnit} value={selectedUnit} disabled={!selectedPart}>
+                                        <SelectTrigger><SelectValue placeholder="Select Unit" /></SelectTrigger>
+                                        <SelectContent>{uniqueUnits.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                                    </Select>
+                                    <FormField
+                                        control={form.control}
+                                        name="syllabusTopicId"
+                                        render={({ field }) => (
+                                        <FormItem>
+                                            <Select onValueChange={field.onChange} value={field.value} disabled={!selectedUnit}>
+                                                <FormControl><SelectTrigger><SelectValue placeholder="Select Topic" /></SelectTrigger></FormControl>
+                                                <SelectContent>{filteredTopics.map(t => <SelectItem key={t.id} value={t.id}>{t.topic}</SelectItem>)}</SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                        )}
+                                    />
+                                </div>
                                 <FormField
                                     control={form.control}
-                                    name="syllabusTopicId"
+                                    name="medium"
                                     render={({ field }) => (
                                     <FormItem>
-                                        <Select onValueChange={field.onChange} value={field.value} disabled={!selectedUnit}>
-                                            <FormControl><SelectTrigger><SelectValue placeholder="Select Topic" /></SelectTrigger></FormControl>
-                                            <SelectContent>{filteredTopics.map(t => <SelectItem key={t.id} value={t.id}>{t.topic}</SelectItem>)}</SelectContent>
+                                        <FormLabel>Medium</FormLabel>
+                                        <Select onValueChange={field.onChange} value={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger><SelectValue placeholder="Select a Medium" /></SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="tamil">தமிழ்</SelectItem>
+                                            <SelectItem value="english">English</SelectItem>
+                                        </SelectContent>
                                         </Select>
                                         <FormMessage />
                                     </FormItem>
                                     )}
                                 />
-                            </div>
-                            <FormField
-                                control={form.control}
-                                name="medium"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Medium</FormLabel>
-                                    <Select onValueChange={field.onChange} value={field.value}>
-                                    <FormControl>
-                                        <SelectTrigger><SelectValue placeholder="Select a Medium" /></SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        <SelectItem value="tamil">தமிழ்</SelectItem>
-                                        <SelectItem value="english">English</SelectItem>
-                                    </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="questionCategory"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Question Category (Optional)</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="e.g., kootru kaarani" {...field} />
-                                    </FormControl>
-                                    <FormDescription>
-                                        Assign a category to all questions in this upload.
-                                    </FormDescription>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="jsonInput"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel htmlFor="json-input">{t('json_data')}</FormLabel>
-                                    <FormControl><Textarea id="json-input" placeholder='[{"id": "q1", ...}]' className="h-48 font-mono text-sm" {...field}/></FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-                             <div className="space-y-2">
-                                <Label htmlFor="json-file">{t('or_upload_file')}</Label>
-                                <Input id="json-file" type="file" accept=".json" onChange={handleFileChange} />
-                            </div>
-                            <Button type="submit" disabled={isSubmitting}>Submit Questions</Button>
-                        </form>
-                    </Form>
-                </CardContent>
-            </Card>
-            <div className="space-y-8">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>{t('expected_json_structure')}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-4 bg-muted rounded-md">
-                        <pre className="text-xs font-mono overflow-auto max-h-80">
-                            <code>{syllabusJsonStructureExample}</code>
-                        </pre>
+                                <FormField
+                                    control={form.control}
+                                    name="questionCategory"
+                                    render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Question Category (Optional)</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="e.g., kootru kaarani" {...field} />
+                                        </FormControl>
+                                        <FormDescription>
+                                            Assign a category to all questions in this upload.
+                                        </FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="jsonInput"
+                                    render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel htmlFor="json-input">{t('json_data')}</FormLabel>
+                                        <FormControl><Textarea id="json-input" placeholder='[{"id": "q1", ...}]' className="h-48 font-mono text-sm" {...field}/></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                    )}
+                                />
+                                <div className="space-y-2">
+                                    <Label htmlFor="json-file">{t('or_upload_file')}</Label>
+                                    <Input id="json-file" type="file" accept=".json" onChange={handleFileChange} />
+                                </div>
+                                <Button type="submit" disabled={isSubmitting}>Submit Questions</Button>
+                            </form>
+                        </Form>
                     </CardContent>
                 </Card>
+                <div className="space-y-8">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>{t('expected_json_structure')}</CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-4 bg-muted rounded-md">
+                            <pre className="text-xs font-mono overflow-auto max-h-80">
+                                <code>{syllabusJsonStructureExample}</code>
+                            </pre>
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
+            <ExistingSyllabusMcqBanks />
         </div>
     )
 }
