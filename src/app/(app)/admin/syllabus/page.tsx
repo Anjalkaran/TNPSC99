@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -681,58 +682,67 @@ function SyllabusMcqUpload() {
             return;
         }
         
-        try {
-          const batch = writeBatch(firestore);
-          const questionsCollectionRef = collection(firestore, 'questions');
-          const newQuestionIds: string[] = [];
-          questions.forEach(q => {
-              const questionRef = doc(questionsCollectionRef, q.id);
-              const payload: any = { ...q, syllabusTopicId: selectedTopic.id };
-              if (values.syllabusCategory) {
-                  payload.category = values.syllabusCategory;
-              }
-              batch.set(questionRef, payload);
-              newQuestionIds.push(q.id);
-          });
-          await batch.commit();
+        const questionsByCategory: Record<string, any[]> = questions.reduce((acc, q) => {
+            const category = q.category || values.syllabusCategory || 'General';
+            if (!acc[category]) {
+                acc[category] = [];
+            }
+            acc[category].push(q);
+            return acc;
+        }, {} as Record<string, any[]>);
 
-          const testTitle = `${selectedTopic.examGroup} - ${selectedTopic.unitName} - ${selectedTopic.topic}` + (values.syllabusCategory ? ` - ${values.syllabusCategory}` : '');
-          const testsCollectionRef = collection(firestore, 'tests');
-          
-          const categoryToQuery = values.syllabusCategory || "";
-          const testQuery = query(testsCollectionRef, 
-            where('syllabusTopic', '==', selectedTopic.topic), 
-            where('medium', '==', values.medium),
-            where('syllabusCategory', '==', categoryToQuery)
-          );
-          
-          await runTransaction(firestore, async (transaction) => {
-              const testSnapshot = await getDocs(testQuery);
-              if (testSnapshot.empty) {
-                  const newTestRef = doc(testsCollectionRef);
-                  const newTest: Partial<Test> = {
-                      id: newTestRef.id,
-                      title: testTitle,
-                      questionIds: newQuestionIds,
-                      examGroup: selectedTopic.examGroup,
-                      medium: values.medium,
-                      syllabusPart: selectedTopic.part,
-                      syllabusUnit: selectedTopic.unit,
-                      syllabusUnitName: selectedTopic.unitName,
-                      syllabusTopic: selectedTopic.topic,
-                      syllabusCategory: values.syllabusCategory || "",
-                  };
-                  transaction.set(newTestRef, newTest);
-              } else {
-                  const testDoc = testSnapshot.docs[0];
-                  const existingQuestionIds = testDoc.data().questionIds || [];
-                  const updatedQuestionIds = [...new Set([...existingQuestionIds, ...newQuestionIds])];
-                  transaction.update(testDoc.ref, { questionIds: updatedQuestionIds });
-              }
-          });
-          
-          toast({ title: "Upload Successful", description: `${questions.length} questions uploaded.` });
-          form.reset();
+        try {
+            for (const [categoryName, categoryQuestions] of Object.entries(questionsByCategory)) {
+                const questionsBatch = writeBatch(firestore);
+                const questionsCollectionRef = collection(firestore, 'questions');
+                const newQuestionIds: string[] = [];
+                categoryQuestions.forEach(q => {
+                    const questionRef = doc(questionsCollectionRef, q.id);
+                    const payload: any = { ...q, syllabusTopicId: selectedTopic.id, category: categoryName };
+                    questionsBatch.set(questionRef, payload, { merge: true });
+                    newQuestionIds.push(q.id);
+                });
+                await questionsBatch.commit();
+                
+                const testTitle = `${selectedTopic.examGroup} - ${selectedTopic.unitName} - ${selectedTopic.topic}` + (categoryName !== 'General' ? ` - ${categoryName}` : '');
+                const testsCollectionRef = collection(firestore, 'tests');
+                
+                const testQuery = query(testsCollectionRef, 
+                    where('syllabusTopic', '==', selectedTopic.topic),
+                    where('syllabusUnitName', '==', selectedTopic.unitName),
+                    where('medium', '==', values.medium),
+                    where('syllabusCategory', '==', categoryName)
+                );
+                
+                await runTransaction(firestore, async (transaction) => {
+                    const testSnapshot = await getDocs(testQuery);
+                    if (testSnapshot.empty) {
+                        const newTestRef = doc(testsCollectionRef);
+                        const newTest: Partial<Test> = {
+                            id: newTestRef.id,
+                            title: testTitle,
+                            questionIds: newQuestionIds,
+                            examGroup: selectedTopic.examGroup,
+                            medium: values.medium,
+                            syllabusPart: selectedTopic.part,
+                            syllabusUnit: selectedTopic.unit,
+                            syllabusUnitName: selectedTopic.unitName,
+                            syllabusTopic: selectedTopic.topic,
+                            syllabusCategory: categoryName,
+                        };
+                        transaction.set(newTestRef, newTest);
+                    } else {
+                        const testDoc = testSnapshot.docs[0];
+                        const existingQuestionIds = testDoc.data().questionIds || [];
+                        const updatedQuestionIds = [...new Set([...existingQuestionIds, ...newQuestionIds])];
+                        transaction.update(testDoc.ref, { questionIds: updatedQuestionIds });
+                    }
+                });
+            }
+            
+            toast({ title: "Upload Successful", description: `${questions.length} questions uploaded across ${Object.keys(questionsByCategory).length} categories.` });
+            form.reset();
+
         } catch (error: any) {
           toast({ variant: 'destructive', title: 'Upload Error', description: error.message });
         } finally {
@@ -807,7 +817,7 @@ function SyllabusMcqUpload() {
                                             <Input placeholder="e.g., kootru kaarani" {...field} />
                                         </FormControl>
                                         <FormDescription>
-                                            Assign a category to all questions in this upload.
+                                            Assign a category to all questions in this upload. Will be overridden by 'category' in JSON.
                                         </FormDescription>
                                         <FormMessage />
                                     </FormItem>
@@ -819,7 +829,7 @@ function SyllabusMcqUpload() {
                                     render={({ field }) => (
                                     <FormItem>
                                         <FormLabel htmlFor="json-input">{t('json_data')}</FormLabel>
-                                        <FormControl><Textarea id="json-input" placeholder='[{"id": "q1", ...}]' className="h-48 font-mono text-sm" {...field}/></FormControl>
+                                        <FormControl><Textarea id="json-input" placeholder='[{"id": "q1", "category": "kootru kaarani", ...}]' className="h-48 font-mono text-sm" {...field}/></FormControl>
                                         <FormMessage />
                                     </FormItem>
                                     )}
