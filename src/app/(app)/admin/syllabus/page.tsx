@@ -508,68 +508,75 @@ function ExistingSyllabusMcqBanks() {
                                                                             <AccordionTrigger className="font-semibold p-0 hover:no-underline">{unitKey}</AccordionTrigger>
                                                                         </CardHeader>
                                                                         <AccordionContent className="p-3">
-                                                                            <Table>
-                                                                                <TableHeader>
-                                                                                    <TableRow>
-                                                                                        <TableHead>Topic</TableHead>
-                                                                                        <TableHead>Category</TableHead>
-                                                                                        <TableHead>Details</TableHead>
-                                                                                        <TableHead className="text-right">Actions</TableHead>
-                                                                                    </TableRow>
-                                                                                </TableHeader>
-                                                                                <TableBody>
-                                                                                    {(() => {
-                                                                                        const testsByTopic = testList.reduce((acc, test) => {
-                                                                                            const topic = test.syllabusTopic || 'Uncategorized';
-                                                                                            if (!acc[topic]) {
-                                                                                                acc[topic] = [];
-                                                                                            }
-                                                                                            acc[topic].push(test);
-                                                                                            return acc;
-                                                                                        }, {} as Record<string, Test[]>);
+                                                                            <Accordion type="multiple" className="w-full space-y-2">
+                                                                                {(() => {
+                                                                                    const testsByTopic = testList.reduce((acc, test) => {
+                                                                                        const topic = test.syllabusTopic || 'Uncategorized';
+                                                                                        if (!acc[topic]) {
+                                                                                            acc[topic] = [];
+                                                                                        }
+                                                                                        acc[topic].push(test);
+                                                                                        return acc;
+                                                                                    }, {} as Record<string, Test[]>);
 
-                                                                                        return Object.entries(testsByTopic).flatMap(([topicName, topicTests]) => 
-                                                                                            topicTests.map((test, index) => (
-                                                                                                <TableRow key={test.id}>
-                                                                                                    <TableCell className="font-medium align-top">
-                                                                                                        {index === 0 ? topicName : ''}
-                                                                                                    </TableCell>
-                                                                                                    <TableCell>{test.syllabusCategory || 'General'}</TableCell>
-                                                                                                    <TableCell>
-                                                                                                        <Badge variant="outline">{test.medium}</Badge>
-                                                                                                        <span className="text-sm text-muted-foreground ml-2">({test.questionIds.length} Qs)</span>
-                                                                                                    </TableCell>
-                                                                                                    <TableCell className="text-right space-x-1">
-                                                                                                        <Button variant="outline" size="icon" onClick={() => handleDownload(test)}>
-                                                                                                            <Download className="h-4 w-4" />
-                                                                                                        </Button>
-                                                                                                        <Button asChild variant="outline" size="icon">
-                                                                                                            <Link href={`/admin/upload/${encodeURIComponent(test.id)}/edit`}>
-                                                                                                                <Edit className="h-4 w-4" />
-                                                                                                            </Link>
-                                                                                                        </Button>
-                                                                                                        <AlertDialog>
-                                                                                                            <AlertDialogTrigger asChild>
-                                                                                                                <Button variant="destructive" size="icon"><Trash className="h-4 w-4" /></Button>
-                                                                                                            </AlertDialogTrigger>
-                                                                                                            <AlertDialogContent>
-                                                                                                                <AlertDialogHeader>
-                                                                                                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                                                                                                    <AlertDialogDescription>This will permanently delete the test bank, but not the questions themselves.</AlertDialogDescription>
-                                                                                                                </AlertDialogHeader>
-                                                                                                                <AlertDialogFooter>
-                                                                                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                                                                                    <AlertDialogAction onClick={() => handleDelete(test.id)}>Delete</AlertDialogAction>
-                                                                                                                </AlertDialogFooter>
-                                                                                                            </AlertDialogContent>
-                                                                                                        </AlertDialog>
-                                                                                                    </TableCell>
-                                                                                                </TableRow>
-                                                                                            ))
-                                                                                        );
-                                                                                    })()}
-                                                                                </TableBody>
-                                                                            </Table>
+                                                                                    return Object.entries(testsByTopic).map(([topicName, topicTests]) => (
+                                                                                        <AccordionItem value={topicName} key={topicName} className="border-b-0">
+                                                                                             <Card>
+                                                                                                <CardHeader className="p-3">
+                                                                                                    <AccordionTrigger className="p-0 hover:no-underline text-base font-medium">{topicName}</AccordionTrigger>
+                                                                                                </CardHeader>
+                                                                                                <AccordionContent className="pt-0 p-3">
+                                                                                                    <Table>
+                                                                                                        <TableHeader>
+                                                                                                            <TableRow>
+                                                                                                                <TableHead>Category</TableHead>
+                                                                                                                <TableHead>Details</TableHead>
+                                                                                                                <TableHead className="text-right">Actions</TableHead>
+                                                                                                            </TableRow>
+                                                                                                        </TableHeader>
+                                                                                                        <TableBody>
+                                                                                                            {topicTests.map((test) => (
+                                                                                                                <TableRow key={test.id}>
+                                                                                                                    <TableCell>{test.syllabusCategory || 'General'}</TableCell>
+                                                                                                                    <TableCell>
+                                                                                                                        <Badge variant="outline">{test.medium}</Badge>
+                                                                                                                        <span className="text-sm text-muted-foreground ml-2">({test.questionIds.length} Qs)</span>
+                                                                                                                    </TableCell>
+                                                                                                                    <TableCell className="text-right space-x-1">
+                                                                                                                        <Button variant="outline" size="icon" onClick={() => handleDownload(test)}>
+                                                                                                                            <Download className="h-4 w-4" />
+                                                                                                                        </Button>
+                                                                                                                        <Button asChild variant="outline" size="icon">
+                                                                                                                            <Link href={`/admin/upload/${encodeURIComponent(test.id)}/edit`}>
+                                                                                                                                <Edit className="h-4 w-4" />
+                                                                                                                            </Link>
+                                                                                                                        </Button>
+                                                                                                                        <AlertDialog>
+                                                                                                                            <AlertDialogTrigger asChild>
+                                                                                                                                <Button variant="destructive" size="icon"><Trash className="h-4 w-4" /></Button>
+                                                                                                                            </AlertDialogTrigger>
+                                                                                                                            <AlertDialogContent>
+                                                                                                                                <AlertDialogHeader>
+                                                                                                                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                                                                                                    <AlertDialogDescription>This will permanently delete the test bank, but not the questions themselves.</AlertDialogDescription>
+                                                                                                                                </AlertDialogHeader>
+                                                                                                                                <AlertDialogFooter>
+                                                                                                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                                                                                    <AlertDialogAction onClick={() => handleDelete(test.id)}>Delete</AlertDialogAction>
+                                                                                                                                </AlertDialogFooter>
+                                                                                                                            </AlertDialogContent>
+                                                                                                                        </AlertDialog>
+                                                                                                                    </TableCell>
+                                                                                                                </TableRow>
+                                                                                                            ))}
+                                                                                                        </TableBody>
+                                                                                                    </Table>
+                                                                                                </AccordionContent>
+                                                                                            </Card>
+                                                                                        </AccordionItem>
+                                                                                    ));
+                                                                                })()}
+                                                                            </Accordion>
                                                                         </AccordionContent>
                                                                     </Card>
                                                                 </AccordionItem>
@@ -617,6 +624,8 @@ function SyllabusMcqUploadForm() {
 
 
     useEffect(() => {
+        if (!isSubmitting) return;
+
         const lastSelected = {
             examGroup: form.getValues('examGroup'),
             part: form.getValues('part'),
@@ -633,7 +642,7 @@ function SyllabusMcqUploadForm() {
         setSelectedUnit(lastSelected.unit)
         form.setValue('syllabusTopicId', lastSelected.topic);
         form.setValue('medium', lastSelected.medium);
-    }, [isSubmitting]);
+    }, [isSubmitting, form]);
 
     const uniqueExamGroups = useMemo(() => syllabusTopics ? [...new Set(syllabusTopics.map(t => t.examGroup))] : [], [syllabusTopics]);
     
