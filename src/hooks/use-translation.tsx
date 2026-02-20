@@ -23,16 +23,12 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     const storedLanguage = localStorage.getItem('language') as Language;
     if (storedLanguage && (storedLanguage === 'en' || storedLanguage === 'ta')) {
       setLanguageState(storedLanguage);
-      document.documentElement.lang = storedLanguage;
-    } else {
-        document.documentElement.lang = 'en';
     }
   }, []);
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
     localStorage.setItem('language', lang);
-    document.documentElement.lang = lang;
   };
 
   const t = useCallback((key: keyof typeof en, options?: { [key: string]: string | number }) => {
