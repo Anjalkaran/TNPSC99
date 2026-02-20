@@ -381,7 +381,7 @@ function ManageSyllabusStructure() {
 const syllabusMcqUploadSchema = z.object({
   syllabusTopicId: z.string().min(1, "Please select a syllabus topic."),
   medium: z.enum(['tamil', 'english'], { required_error: "Please select a medium." }),
-  questionCategory: z.string().optional(),
+  syllabusCategory: z.string().optional(),
   jsonInput: z.string().min(1, { message: 'JSON data is required.' }),
 });
 
@@ -590,7 +590,7 @@ function SyllabusMcqUpload() {
 
     const form = useForm<SyllabusMcqUploadValues>({
         resolver: zodResolver(syllabusMcqUploadSchema),
-        defaultValues: { syllabusTopicId: '', medium: undefined, jsonInput: '', questionCategory: '' }
+        defaultValues: { syllabusTopicId: '', medium: undefined, jsonInput: '', syllabusCategory: '' }
     });
 
     const uniqueExamGroups = useMemo(() => syllabusTopics ? [...new Set(syllabusTopics.map(t => t.examGroup))] : [], [syllabusTopics]);
@@ -687,18 +687,24 @@ function SyllabusMcqUpload() {
           const newQuestionIds: string[] = [];
           questions.forEach(q => {
               const questionRef = doc(questionsCollectionRef, q.id);
-              const payload = { ...q, syllabusTopicId: selectedTopic.id };
-              if (values.questionCategory) {
-                  payload.category = values.questionCategory;
+              const payload: any = { ...q, syllabusTopicId: selectedTopic.id };
+              if (values.syllabusCategory) {
+                  payload.category = values.syllabusCategory;
               }
               batch.set(questionRef, payload);
               newQuestionIds.push(q.id);
           });
           await batch.commit();
 
-          const testTitle = `${selectedTopic.examGroup} - ${selectedTopic.unitName} - ${selectedTopic.topic}`;
+          const testTitle = `${selectedTopic.examGroup} - ${selectedTopic.unitName} - ${selectedTopic.topic}` + (values.syllabusCategory ? ` - ${values.syllabusCategory}` : '');
           const testsCollectionRef = collection(firestore, 'tests');
-          const testQuery = query(testsCollectionRef, where('syllabusTopic', '==', selectedTopic.topic), where('medium', '==', values.medium));
+          
+          const categoryToQuery = values.syllabusCategory || "";
+          const testQuery = query(testsCollectionRef, 
+            where('syllabusTopic', '==', selectedTopic.topic), 
+            where('medium', '==', values.medium),
+            where('syllabusCategory', '==', categoryToQuery)
+          );
           
           await runTransaction(firestore, async (transaction) => {
               const testSnapshot = await getDocs(testQuery);
@@ -714,6 +720,7 @@ function SyllabusMcqUpload() {
                       syllabusUnit: selectedTopic.unit,
                       syllabusUnitName: selectedTopic.unitName,
                       syllabusTopic: selectedTopic.topic,
+                      syllabusCategory: values.syllabusCategory || "",
                   };
                   transaction.set(newTestRef, newTest);
               } else {
@@ -792,7 +799,7 @@ function SyllabusMcqUpload() {
                                 />
                                 <FormField
                                     control={form.control}
-                                    name="questionCategory"
+                                    name="syllabusCategory"
                                     render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Question Category (Optional)</FormLabel>

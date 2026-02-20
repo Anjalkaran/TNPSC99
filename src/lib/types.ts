@@ -43,6 +43,7 @@ export interface Test {
   syllabusUnit?: string;
   syllabusUnitName?: string;
   syllabusTopic?: string;
+  syllabusCategory?: string;
 }
 
 export interface Subject {
