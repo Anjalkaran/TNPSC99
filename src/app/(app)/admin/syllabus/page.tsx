@@ -512,45 +512,62 @@ function ExistingSyllabusMcqBanks() {
                                                                                 <TableHeader>
                                                                                     <TableRow>
                                                                                         <TableHead>Topic</TableHead>
+                                                                                        <TableHead>Category</TableHead>
                                                                                         <TableHead>Details</TableHead>
                                                                                         <TableHead className="text-right">Actions</TableHead>
                                                                                     </TableRow>
                                                                                 </TableHeader>
                                                                                 <TableBody>
-                                                                                    {testList.map(test => (
-                                                                                        <TableRow key={test.id}>
-                                                                                            <TableCell className="font-medium">{test.syllabusTopic}</TableCell>
-                                                                                            <TableCell>
-                                                                                                <Badge variant="outline">{test.medium}</Badge>
-                                                                                                <span className="text-sm text-muted-foreground ml-2">({test.questionIds.length} Qs)</span>
-                                                                                            </TableCell>
-                                                                                            <TableCell className="text-right space-x-1">
-                                                                                                <Button variant="outline" size="icon" onClick={() => handleDownload(test)}>
-                                                                                                    <Download className="h-4 w-4" />
-                                                                                                </Button>
-                                                                                                <Button asChild variant="outline" size="icon">
-                                                                                                    <Link href={`/admin/upload/${encodeURIComponent(test.id)}/edit`}>
-                                                                                                        <Edit className="h-4 w-4" />
-                                                                                                    </Link>
-                                                                                                </Button>
-                                                                                                <AlertDialog>
-                                                                                                    <AlertDialogTrigger asChild>
-                                                                                                        <Button variant="destructive" size="icon"><Trash className="h-4 w-4" /></Button>
-                                                                                                    </AlertDialogTrigger>
-                                                                                                    <AlertDialogContent>
-                                                                                                        <AlertDialogHeader>
-                                                                                                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                                                                                            <AlertDialogDescription>This will permanently delete the test bank, but not the questions themselves.</AlertDialogDescription>
-                                                                                                        </AlertDialogHeader>
-                                                                                                        <AlertDialogFooter>
-                                                                                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                                                                            <AlertDialogAction onClick={() => handleDelete(test.id)}>Delete</AlertDialogAction>
-                                                                                                        </AlertDialogFooter>
-                                                                                                    </AlertDialogContent>
-                                                                                                </AlertDialog>
-                                                                                            </TableCell>
-                                                                                        </TableRow>
-                                                                                    ))}
+                                                                                    {(() => {
+                                                                                        const testsByTopic = testList.reduce((acc, test) => {
+                                                                                            const topic = test.syllabusTopic || 'Uncategorized';
+                                                                                            if (!acc[topic]) {
+                                                                                                acc[topic] = [];
+                                                                                            }
+                                                                                            acc[topic].push(test);
+                                                                                            return acc;
+                                                                                        }, {} as Record<string, Test[]>);
+
+                                                                                        return Object.entries(testsByTopic).flatMap(([topicName, topicTests]) => 
+                                                                                            topicTests.map((test, index) => (
+                                                                                                <TableRow key={test.id}>
+                                                                                                    <TableCell className="font-medium align-top">
+                                                                                                        {index === 0 ? topicName : ''}
+                                                                                                    </TableCell>
+                                                                                                    <TableCell>{test.syllabusCategory || 'General'}</TableCell>
+                                                                                                    <TableCell>
+                                                                                                        <Badge variant="outline">{test.medium}</Badge>
+                                                                                                        <span className="text-sm text-muted-foreground ml-2">({test.questionIds.length} Qs)</span>
+                                                                                                    </TableCell>
+                                                                                                    <TableCell className="text-right space-x-1">
+                                                                                                        <Button variant="outline" size="icon" onClick={() => handleDownload(test)}>
+                                                                                                            <Download className="h-4 w-4" />
+                                                                                                        </Button>
+                                                                                                        <Button asChild variant="outline" size="icon">
+                                                                                                            <Link href={`/admin/upload/${encodeURIComponent(test.id)}/edit`}>
+                                                                                                                <Edit className="h-4 w-4" />
+                                                                                                            </Link>
+                                                                                                        </Button>
+                                                                                                        <AlertDialog>
+                                                                                                            <AlertDialogTrigger asChild>
+                                                                                                                <Button variant="destructive" size="icon"><Trash className="h-4 w-4" /></Button>
+                                                                                                            </AlertDialogTrigger>
+                                                                                                            <AlertDialogContent>
+                                                                                                                <AlertDialogHeader>
+                                                                                                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                                                                                    <AlertDialogDescription>This will permanently delete the test bank, but not the questions themselves.</AlertDialogDescription>
+                                                                                                                </AlertDialogHeader>
+                                                                                                                <AlertDialogFooter>
+                                                                                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                                                                    <AlertDialogAction onClick={() => handleDelete(test.id)}>Delete</AlertDialogAction>
+                                                                                                                </AlertDialogFooter>
+                                                                                                            </AlertDialogContent>
+                                                                                                        </AlertDialog>
+                                                                                                    </TableCell>
+                                                                                                </TableRow>
+                                                                                            ))
+                                                                                        );
+                                                                                    })()}
                                                                                 </TableBody>
                                                                             </Table>
                                                                         </AccordionContent>
