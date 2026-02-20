@@ -593,7 +593,7 @@ function ExistingSyllabusMcqBanks() {
 }
 
 
-function SyllabusMcqUpload() {
+function SyllabusMcqUploadForm() {
     const { t } = useTranslation();
     const firestore = useFirestore();
     const { toast } = useToast();
@@ -610,6 +610,30 @@ function SyllabusMcqUpload() {
         resolver: zodResolver(syllabusMcqUploadSchema),
         defaultValues: { syllabusTopicId: '', medium: undefined, jsonInput: '', syllabusCategory: '' }
     });
+    
+    useEffect(() => {
+        form.setValue('syllabusTopicId', '');
+    }, [selectedUnit, form]);
+
+
+    useEffect(() => {
+        const lastSelected = {
+            examGroup: form.getValues('examGroup'),
+            part: form.getValues('part'),
+            unit: selectedUnit,
+            topic: form.getValues('syllabusTopicId'),
+            medium: form.getValues('medium'),
+        }
+        form.reset();
+        form.setValue('examGroup', lastSelected.examGroup);
+        setSelectedExamGroup(lastSelected.examGroup)
+        form.setValue('part', lastSelected.part);
+        setSelectedPart(lastSelected.part)
+        form.setValue('unit', lastSelected.unit);
+        setSelectedUnit(lastSelected.unit)
+        form.setValue('syllabusTopicId', lastSelected.topic);
+        form.setValue('medium', lastSelected.medium);
+    }, [isSubmitting]);
 
     const uniqueExamGroups = useMemo(() => syllabusTopics ? [...new Set(syllabusTopics.map(t => t.examGroup))] : [], [syllabusTopics]);
     
@@ -769,112 +793,109 @@ function SyllabusMcqUpload() {
     };
 
     return (
-        <div className="space-y-8">
-            <div className="grid md:grid-cols-2 gap-8">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Upload Syllabus MCQs</CardTitle>
-                        <CardDescription>Upload questions for a predefined syllabus topic.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <Form {...form}>
-                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                    <Select onValueChange={setSelectedExamGroup} value={selectedExamGroup}>
-                                        <SelectTrigger><SelectValue placeholder="Select Exam Group" /></SelectTrigger>
-                                        <SelectContent>{uniqueExamGroups.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}</SelectContent>
-                                    </Select>
-                                    <Select onValueChange={setSelectedPart} value={selectedPart} disabled={!selectedExamGroup}>
-                                        <SelectTrigger><SelectValue placeholder="Select Part" /></SelectTrigger>
-                                        <SelectContent>{uniqueParts.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
-                                    </Select>
-                                    <Select onValueChange={setSelectedUnit} value={selectedUnit} disabled={!selectedPart}>
-                                        <SelectTrigger><SelectValue placeholder="Select Unit" /></SelectTrigger>
-                                        <SelectContent>{uniqueUnits.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-                                    </Select>
-                                    <FormField
-                                        control={form.control}
-                                        name="syllabusTopicId"
-                                        render={({ field }) => (
-                                        <FormItem>
-                                            <Select onValueChange={field.onChange} value={field.value} disabled={!selectedUnit}>
-                                                <FormControl><SelectTrigger><SelectValue placeholder="Select Topic" /></SelectTrigger></FormControl>
-                                                <SelectContent>{filteredTopics.map(t => <SelectItem key={t.id} value={t.id}>{t.topic}</SelectItem>)}</SelectContent>
-                                            </Select>
-                                            <FormMessage />
-                                        </FormItem>
-                                        )}
-                                    />
-                                </div>
+        <div className="grid md:grid-cols-2 gap-8">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Upload Syllabus MCQs</CardTitle>
+                    <CardDescription>Upload questions for a predefined syllabus topic.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <Select onValueChange={(v) => {setSelectedExamGroup(v); form.setValue('examGroup', v as any)}} value={selectedExamGroup}>
+                                    <SelectTrigger><SelectValue placeholder="Select Exam Group" /></SelectTrigger>
+                                    <SelectContent>{uniqueExamGroups.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}</SelectContent>
+                                </Select>
+                                <Select onValueChange={(v) => {setSelectedPart(v); form.setValue('part', v)}} value={selectedPart} disabled={!selectedExamGroup}>
+                                    <SelectTrigger><SelectValue placeholder="Select Part" /></SelectTrigger>
+                                    <SelectContent>{uniqueParts.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+                                </Select>
+                                <Select onValueChange={setSelectedUnit} value={selectedUnit} disabled={!selectedPart}>
+                                    <SelectTrigger><SelectValue placeholder="Select Unit" /></SelectTrigger>
+                                    <SelectContent>{uniqueUnits.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+                                </Select>
                                 <FormField
                                     control={form.control}
-                                    name="medium"
+                                    name="syllabusTopicId"
                                     render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Medium</FormLabel>
-                                        <Select onValueChange={field.onChange} value={field.value}>
-                                        <FormControl>
-                                            <SelectTrigger><SelectValue placeholder="Select a Medium" /></SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            <SelectItem value="tamil">தமிழ்</SelectItem>
-                                            <SelectItem value="english">English</SelectItem>
-                                        </SelectContent>
+                                        <Select onValueChange={field.onChange} value={field.value} disabled={!selectedUnit}>
+                                            <FormControl><SelectTrigger><SelectValue placeholder="Select Topic" /></SelectTrigger></FormControl>
+                                            <SelectContent>{filteredTopics.map(t => <SelectItem key={t.id} value={t.id}>{t.topic}</SelectItem>)}</SelectContent>
                                         </Select>
                                         <FormMessage />
                                     </FormItem>
                                     )}
                                 />
-                                <FormField
-                                    control={form.control}
-                                    name="syllabusCategory"
-                                    render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Question Category (Optional)</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="e.g., kootru kaarani" {...field} />
-                                        </FormControl>
-                                        <FormDescription>
-                                            Assign a category to all questions in this upload. Will be overridden by 'category' in JSON.
-                                        </FormDescription>
-                                        <FormMessage />
-                                    </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="jsonInput"
-                                    render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel htmlFor="json-input">{t('json_data')}</FormLabel>
-                                        <FormControl><Textarea id="json-input" placeholder='[{"id": "q1", "category": "kootru kaarani", ...}]' className="h-48 font-mono text-sm" {...field}/></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                    )}
-                                />
-                                <div className="space-y-2">
-                                    <Label htmlFor="json-file">{t('or_upload_file')}</Label>
-                                    <Input id="json-file" type="file" accept=".json" onChange={handleFileChange} />
-                                </div>
-                                <Button type="submit" disabled={isSubmitting}>Submit Questions</Button>
-                            </form>
-                        </Form>
+                            </div>
+                            <FormField
+                                control={form.control}
+                                name="medium"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Medium</FormLabel>
+                                    <Select onValueChange={field.onChange} value={field.value}>
+                                    <FormControl>
+                                        <SelectTrigger><SelectValue placeholder="Select a Medium" /></SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="tamil">தமிழ்</SelectItem>
+                                        <SelectItem value="english">English</SelectItem>
+                                    </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="syllabusCategory"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Question Category (Optional)</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="e.g., kootru kaarani" {...field} />
+                                    </FormControl>
+                                    <FormDescription>
+                                        Assign a category to all questions in this upload. Will be overridden by 'category' in JSON.
+                                    </FormDescription>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="jsonInput"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel htmlFor="json-input">{t('json_data')}</FormLabel>
+                                    <FormControl><Textarea id="json-input" placeholder='[{"id": "q1", "category": "kootru kaarani", ...}]' className="h-48 font-mono text-sm" {...field}/></FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                            <div className="space-y-2">
+                                <Label htmlFor="json-file">{t('or_upload_file')}</Label>
+                                <Input id="json-file" type="file" accept=".json" onChange={handleFileChange} />
+                            </div>
+                            <Button type="submit" disabled={isSubmitting}>Submit Questions</Button>
+                        </form>
+                    </Form>
+                </CardContent>
+            </Card>
+            <div className="space-y-8">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>{t('expected_json_structure')}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4 bg-muted rounded-md">
+                        <pre className="text-xs font-mono overflow-auto max-h-80">
+                            <code>{syllabusJsonStructureExample}</code>
+                        </pre>
                     </CardContent>
                 </Card>
-                <div className="space-y-8">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>{t('expected_json_structure')}</CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-4 bg-muted rounded-md">
-                            <pre className="text-xs font-mono overflow-auto max-h-80">
-                                <code>{syllabusJsonStructureExample}</code>
-                            </pre>
-                        </CardContent>
-                    </Card>
-                </div>
             </div>
-            <ExistingSyllabusMcqBanks />
         </div>
     )
 }
@@ -888,17 +909,22 @@ export default function SyllabusManagementPage() {
             <p className="text-muted-foreground">Define the exam syllabus structure and upload corresponding MCQs.</p>
         </div>
         <Tabs defaultValue="manage" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="manage">Manage Syllabus</TabsTrigger>
                 <TabsTrigger value="upload">Upload MCQs</TabsTrigger>
+                <TabsTrigger value="existing">Existing Banks</TabsTrigger>
             </TabsList>
             <TabsContent value="manage" className="mt-6">
                 <ManageSyllabusStructure />
             </TabsContent>
             <TabsContent value="upload" className="mt-6">
-                <SyllabusMcqUpload />
+                <SyllabusMcqUploadForm />
+            </TabsContent>
+            <TabsContent value="existing" className="mt-6">
+                <ExistingSyllabusMcqBanks />
             </TabsContent>
         </Tabs>
     </div>
   );
 }
+
