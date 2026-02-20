@@ -57,7 +57,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Edit, Trash, Download } from 'lucide-react';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -377,6 +377,7 @@ function ManageSyllabusStructure() {
 const syllabusMcqUploadSchema = z.object({
   syllabusTopicId: z.string().min(1, "Please select a syllabus topic."),
   medium: z.enum(['tamil', 'english'], { required_error: "Please select a medium." }),
+  questionCategory: z.string().optional(),
   jsonInput: z.string().min(1, { message: 'JSON data is required.' }),
 });
 
@@ -397,7 +398,7 @@ function SyllabusMcqUpload() {
 
     const form = useForm<SyllabusMcqUploadValues>({
         resolver: zodResolver(syllabusMcqUploadSchema),
-        defaultValues: { syllabusTopicId: '', medium: undefined, jsonInput: '' }
+        defaultValues: { syllabusTopicId: '', medium: undefined, jsonInput: '', questionCategory: '' }
     });
 
     const uniqueExamGroups = useMemo(() => syllabusTopics ? [...new Set(syllabusTopics.map(t => t.examGroup))] : [], [syllabusTopics]);
@@ -455,6 +456,7 @@ function SyllabusMcqUpload() {
     "text": "Which one of the following is a fundamental right?",
     "answerOptions": ["Right to Property", "Right to Equality", "Right to Work", "Right to Vote"],
     "correctAnswerIndex": 1,
+    "category": "kootru kaarani",
     "explanation": "Right to Equality is a fundamental right under Article 14 of the Indian Constitution.",
     "reference": "Indian Polity - Laxmikanth",
     "referenceUrl": "https://your-pdf-host.com/book.pdf#page=42 (optional)"
@@ -493,7 +495,11 @@ function SyllabusMcqUpload() {
           const newQuestionIds: string[] = [];
           questions.forEach(q => {
               const questionRef = doc(questionsCollectionRef, q.id);
-              batch.set(questionRef, { ...q, syllabusTopicId: selectedTopic.id });
+              const payload = { ...q, syllabusTopicId: selectedTopic.id };
+              if (values.questionCategory) {
+                  payload.category = values.questionCategory;
+              }
+              batch.set(questionRef, payload);
               newQuestionIds.push(q.id);
           });
           await batch.commit();
@@ -593,6 +599,22 @@ function SyllabusMcqUpload() {
                             />
                             <FormField
                                 control={form.control}
+                                name="questionCategory"
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Question Category (Optional)</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="e.g., kootru kaarani" {...field} />
+                                    </FormControl>
+                                    <FormDescription>
+                                        Assign a category to all questions in this upload.
+                                    </FormDescription>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
                                 name="jsonInput"
                                 render={({ field }) => (
                                 <FormItem>
@@ -628,6 +650,7 @@ function SyllabusMcqUpload() {
 }
 
 export default function SyllabusManagementPage() {
+  const { t } = useTranslation();
   return (
     <div className="container mx-auto p-4 sm:p-6 md:p-8 space-y-8">
         <div className="mb-8">

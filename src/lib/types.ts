@@ -8,6 +8,7 @@ export interface Question {
   subjectId?: string;
   classId?: string;
   unitId?: string;
+  category?: string;
   correctAnswerIndex: number;
   answerOptions: string[];
   reference?: string;
