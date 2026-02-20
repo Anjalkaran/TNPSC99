@@ -758,7 +758,8 @@ function SyllabusMcqUpload() {
             }
             
             toast({ title: "Upload Successful", description: `${questions.length} questions uploaded across ${Object.keys(questionsByCategory).length} categories.` });
-            form.reset();
+            form.setValue('jsonInput', '');
+            form.setValue('syllabusCategory', '');
 
         } catch (error: any) {
           toast({ variant: 'destructive', title: 'Upload Error', description: error.message });
