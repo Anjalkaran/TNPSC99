@@ -23,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 
 
 function TestStartControl({ test }: { test: Test }) {
@@ -121,18 +122,21 @@ function TopicTestGroup({ topicName, tests }: { topicName: string; tests: Test[]
       <CardContent className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex-grow space-y-2">
           {tests.length > 1 && (
-            <Select onValueChange={handleCategoryChange} value={selectedTestId}>
-              <SelectTrigger className="w-full md:w-[200px]">
-                <SelectValue placeholder="Select Category" />
-              </SelectTrigger>
-              <SelectContent>
-                {tests.map(test => (
-                  <SelectItem key={test.id} value={test.id}>
-                    {test.syllabusCategory || 'General'}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="space-y-1.5">
+              <Label>வினா வகை</Label>
+              <Select onValueChange={handleCategoryChange} value={selectedTestId}>
+                <SelectTrigger className="w-full md:w-[200px]">
+                  <SelectValue placeholder="Select Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {tests.map(test => (
+                    <SelectItem key={test.id} value={test.id}>
+                      {test.syllabusCategory || 'General'}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           )}
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span>{selectedTest.questionIds.length} {t('questions')}</span>
