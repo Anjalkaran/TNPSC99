@@ -1,26 +1,16 @@
 {
-  "name": "tnpsc99.com - TNPSC Online Tests",
-  "short_name": "tnpsc99",
-  "description": "Your ultimate partner for TNPSC exam preparation. Practice with thousands of MCQs for Group II, Group IV, and class-wise tests on tnpsc99.com.",
+  "name": "TNPSC99",
+  "short_name": "TNPSC99",
+  "description": "Your ultimate partner for TNPSC exam preparation. Practice with thousands of MCQs for Group II, Group IV, and class-wise tests. Track your performance and succeed in the TNPSC exams.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#2563eb",
+  "theme_color": "#ffffff",
   "icons": [
     {
       "src": "/favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
+      "sizes": "48x48",
       "type": "image/x-icon"
-    },
-    {
-      "src": "/icon-192.png",
-      "type": "image/png",
-      "sizes": "192x192"
-    },
-    {
-      "src": "/icon-512.png",
-      "type": "image/png",
-      "sizes": "512x512"
     }
   ]
 }

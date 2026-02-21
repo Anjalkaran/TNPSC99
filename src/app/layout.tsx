@@ -12,8 +12,8 @@ export const metadata: Metadata = {
     default: 'tnpsc99.com: TNPSC Online Exam Preparation',
     template: '%s | tnpsc99.com',
   },
-  description: 'tnpsc99.com is your ultimate partner for TNPSC exam preparation. Practice with thousands of MCQs for Group II, Group IV, and class-wise tests. Track your performance and ace the TNPSC exams.',
-  keywords: ['tnpsc', 'tnpsc99', 'tnpsc99.com', 'tnpsc exams', 'tnpsc online test', 'tnpsc preparation', 'tnpsc mcq', 'group 2', 'group 4', 'tnpsc ace'],
+  description: 'tnpsc99.com is your ultimate partner for TNPSC exam preparation. Practice with thousands of MCQs for Group II, Group IV, and class-wise tests. Track your performance and succeed in your TNPSC exams.',
+  keywords: ['tnpsc', 'tnpsc99', 'tnpsc99.com', 'tnpsc exams', 'tnpsc online test', 'tnpsc preparation', 'tnpsc mcq', 'group 2', 'group 4'],
   manifest: '/manifest.json',
   icons: {
     icon: '/favicon.ico',
