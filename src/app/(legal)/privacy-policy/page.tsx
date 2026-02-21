@@ -44,10 +44,10 @@ export default function PrivacyPolicyPage() {
             </ul>
 
             <h3 className="text-xl font-semibold text-foreground pt-4">5. Your Choices</h3>
-            <p>You may update, correct or delete information about you at any time by logging into your online account or emailing us at contact@tnpsc99.com. Please note that we may retain certain information as required by law or for legitimate business purposes.</p>
+            <p>You may update, correct or delete information about you at any time by logging into your online account or emailing us at support@tnpsc99.com.</p>
 
             <h3 className="text-xl font-semibold text-foreground pt-4">6. Contact Us</h3>
-            <p>If you have any questions about this Privacy Policy, please contact us at: <a href="mailto:contact@tnpsc99.com" className="text-primary hover:underline">contact@tnpsc99.com</a>.</p>
+            <p>If you have any questions about this Privacy Policy, please contact us at: <a href="mailto:support@tnpsc99.com" className="text-primary hover:underline">support@tnpsc99.com</a>.</p>
 
         </CardContent>
       </Card>

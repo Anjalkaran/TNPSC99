@@ -45,7 +45,7 @@ export default function TermsAndConditionsPage() {
             <p>We reserve the right, at our sole discretion, to modify or replace these Terms at any time. If a revision is material we will try to provide at least 30 days' notice prior to any new terms taking effect. What constitutes a material change will be determined at our sole discretion.</p>
 
             <h3 className="text-xl font-semibold text-foreground pt-4">9. Contact Us</h3>
-            <p>If you have any questions about these Terms, please contact us at: <a href="mailto:contact@tnpsc99.com" className="text-primary hover:underline">contact@tnpsc99.com</a>.</p>
+            <p>If you have any questions about these Terms, please contact us at: <a href="mailto:support@tnpsc99.com" className="text-primary hover:underline">support@tnpsc99.com</a>.</p>
 
         </CardContent>
       </Card>

@@ -13,7 +13,7 @@ export default function RefundPolicyPage() {
         </CardHeader>
         <CardContent className="space-y-6 text-muted-foreground">
           <p className="font-semibold text-foreground">All payments made for our subscription plans (monthly, quarterly, or yearly) are final and non-refundable. Once a subscription is purchased, you will have access to the premium features for the duration of the billing cycle.</p>
-          <p>We encourage users to make an informed decision before subscribing. If you have any questions about our services or subscription plans, please contact us at <a href="mailto:contact@tnpsc99.com" className="text-primary hover:underline">contact@tnpsc99.com</a> before making a purchase.</p>
+          <p>We encourage users to make an informed decision before subscribing. If you have any questions about our services or subscription plans, please contact us at <a href="mailto:support@tnpsc99.com" className="text-primary hover:underline">support@tnpsc99.com</a> before making a purchase.</p>
           <p>In the event of a technical issue or billing error from our side, please contact our support team immediately. We will investigate the issue and may provide a refund or credit at our sole discretion.</p>
 
           <div className="pt-6">
@@ -40,7 +40,7 @@ export default function RefundPolicyPage() {
               <AccordionItem value="item-4">
                 <AccordionTrigger>What if I have a billing issue?</AccordionTrigger>
                 <AccordionContent>
-                   If you believe there has been a billing error, please contact our support team at <a href="mailto:contact@tnpsc99.com" className="text-primary hover:underline">contact@tnpsc99.com</a> with the details of the transaction. We will investigate the matter promptly.
+                   If you believe there has been a billing error, please contact our support team at <a href="mailto:support@tnpsc99.com" className="text-primary hover:underline">support@tnpsc99.com</a> with the details of the transaction. We will investigate the matter promptly.
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
