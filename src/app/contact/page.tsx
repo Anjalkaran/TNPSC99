@@ -25,7 +25,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
 import { useTranslation } from '@/hooks/use-translation';
 import { useUser } from '@/firebase';
-import { Mail, Send, Twitter, Facebook, Instagram } from 'lucide-react';
+import { Mail, Send, Twitter, Facebook, Instagram, Phone, MapPin } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
 const feedbackSchema = z.object({
@@ -143,6 +143,14 @@ export default function ContactPage() {
             <div className="flex items-center justify-center gap-2 text-muted-foreground">
                 <Mail className="h-4 w-4" />
                 <a href="mailto:support@tnpsc99.com" className="hover:underline">support@tnpsc99.com</a>
+            </div>
+            <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                <Phone className="h-4 w-4" />
+                <a href="tel:+919790910008" className="hover:underline">+91 97909 10008</a>
+            </div>
+            <div className="flex items-center justify-center gap-2 text-muted-foreground text-center">
+                <MapPin className="h-4 w-4 flex-shrink-0" />
+                <span>3/503, Subash Street, Muneeswarar Nagar, Tiruppalai, Madurai - 625014</span>
             </div>
             <p className="text-sm text-muted-foreground pt-2">Follow us on social media:</p>
             <div className="flex items-center justify-center gap-6">
