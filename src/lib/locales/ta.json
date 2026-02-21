@@ -274,12 +274,14 @@
     "google_signup_error": "Google உடன் பதிவு செய்வதில் பிழை",
     "signup_error": "பதிவு செய்வதில் பிழை",
     "email_already_in_use": "இந்த மின்னஞ்சல் ஏற்கனவே பயன்பாட்டில் உள்ளது.",
-    "syllabus_wise_tests": "பாடத்திட்ட வாரியான தேர்வுகள்"
+    "syllabus_wise_tests": "பாடத்திட்ட வாரியான தேர்வுகள்",
+    "select_category_placeholder": "ஒரு வகையைத் தேர்ந்தெடுக்கவும்"
 }
     
     
 
     
+
 
 
 

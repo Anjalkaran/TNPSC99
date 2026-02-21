@@ -106,13 +106,20 @@ function TestProgressBadge({ testId }: { testId: string }) {
 
 function TopicTestGroup({ topicName, tests }: { topicName: string; tests: Test[] }) {
   const { t } = useTranslation();
-  const [selectedTestId, setSelectedTestId] = useState(tests[0].id);
+  const [selectedTestId, setSelectedTestId] = useState('');
+
+  // If there's only one test for this topic, select it by default.
+  useEffect(() => {
+    if (tests.length === 1) {
+      setSelectedTestId(tests[0].id);
+    }
+  }, [tests]);
 
   const handleCategoryChange = (testId: string) => {
     setSelectedTestId(testId);
   };
 
-  const selectedTest = tests.find(t => t.id === selectedTestId) || tests[0];
+  const selectedTest = tests.find(t => t.id === selectedTestId);
 
   return (
     <Card>
@@ -126,7 +133,7 @@ function TopicTestGroup({ topicName, tests }: { topicName: string; tests: Test[]
               <Label>வினா வகை</Label>
               <Select onValueChange={handleCategoryChange} value={selectedTestId}>
                 <SelectTrigger className="w-full md:w-[200px]">
-                  <SelectValue placeholder="Select Category" />
+                  <SelectValue placeholder={t('select_category_placeholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {tests.map(test => (
@@ -138,14 +145,29 @@ function TopicTestGroup({ topicName, tests }: { topicName: string; tests: Test[]
               </Select>
             </div>
           )}
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>{selectedTest.questionIds.length} {t('questions')}</span>
-            <Badge variant="outline">{selectedTest.medium}</Badge>
-            <TestProgressBadge testId={selectedTest.id} />
-          </div>
+          {selectedTest ? (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span>{selectedTest.questionIds.length} {t('questions')}</span>
+              <Badge variant="outline">{selectedTest.medium}</Badge>
+              <TestProgressBadge testId={selectedTest.id} />
+            </div>
+          ) : <div className="h-6" /> }
         </div>
         <div className="w-full md:w-auto shrink-0 md:min-w-[300px]">
-          <TestStartControl test={selectedTest} />
+            {selectedTest ? (
+                <TestStartControl test={selectedTest} />
+            ) : (
+                <div className="flex flex-col sm:flex-row gap-2 w-full justify-end">
+                    <Select disabled>
+                        <SelectTrigger className="w-full sm:w-[180px]">
+                            <SelectValue placeholder={t('select_questions')} />
+                        </SelectTrigger>
+                    </Select>
+                    <Button disabled className="w-full sm:w-auto">
+                        {t('start_test')} <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                </div>
+            )}
         </div>
       </CardContent>
     </Card>
