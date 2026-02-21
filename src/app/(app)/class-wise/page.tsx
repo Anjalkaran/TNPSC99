@@ -11,8 +11,8 @@ export default function ClassWiseTestsPage() {
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
       <div className="mb-8 text-center">
-        <h1 className="text-3xl md:text-4xl font-bold">வகுப்பு வாரியான தேர்வுகள்</h1>
-        <p className="text-muted-foreground mt-2">கல்வி வகுப்பு தரங்களின்படி ஒழுங்கமைக்கப்பட்ட தேர்வுகள்.</p>
+        <h1 className="text-3xl md:text-4xl font-bold">{t('class_wise_tests')}</h1>
+        <p className="text-muted-foreground mt-2">{t('class_wise_tests_desc')}</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">

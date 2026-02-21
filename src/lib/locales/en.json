@@ -16,8 +16,8 @@
     "logout": "Logout",
     "welcome_message": "Welcome, {{name}}!",
     "welcome_subtitle": "Your ultimate destination for TNPSC exam preparation. Access a vast library of MCQs and track your progress to ace the exam.",
-    "class_wise_tests": "Class-wise Tests",
-    "class_wise_tests_desc": "Practice tests organized by academic class standards.",
+    "class_wise_tests": "6-12 School Book Tests",
+    "class_wise_tests_desc": "Tests from 6th to 12th standard school books.",
     "subject_wise_tests": "Subject-wise Tests",
     "subject_wise_tests_desc": "Focus your preparation on specific subjects.",
     "previous_year_papers": "Previous Year Papers",
@@ -281,6 +281,7 @@
     
 
     
+
 
 
 
