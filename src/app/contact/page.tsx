@@ -146,7 +146,7 @@ export default function ContactPage() {
             </div>
             <div className="flex items-center justify-center gap-2 text-muted-foreground">
                 <Phone className="h-4 w-4" />
-                <a href="tel:+919790910008" className="hover:underline">+91 97909 10008</a>
+                <a href="tel:+919597091008" className="hover:underline">+91 95970 91008</a>
             </div>
             <div className="flex items-center justify-center gap-2 text-muted-foreground text-center">
                 <MapPin className="h-4 w-4 flex-shrink-0" />
