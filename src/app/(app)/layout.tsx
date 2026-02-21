@@ -14,6 +14,7 @@ import { LanguageSwitcher } from '@/components/language-switcher';
 import { useTranslation } from '@/hooks/use-translation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { SiteFooter } from '@/components/site-footer';
 
 export default function AppLayout({
   children,
@@ -75,7 +76,8 @@ export default function AppLayout({
           </Button>
           <LanguageSwitcher />
         </header>
-        <main className="flex-1 p-4 sm:p-6 bg-background">{children}</main>
+        <div className="flex-1 p-4 sm:p-6 bg-background">{children}</div>
+        <SiteFooter />
       </SidebarInset>
     </SidebarProvider>
   );

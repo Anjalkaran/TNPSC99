@@ -1,4 +1,5 @@
 import { SiteHeader } from '@/components/site-header';
+import { SiteFooter } from '@/components/site-footer';
 
 export default function FeedbackLayout({
   children,
@@ -9,6 +10,7 @@ export default function FeedbackLayout({
     <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader />
       <main className="flex-1">{children}</main>
+      <SiteFooter />
     </div>
   );
 }

@@ -27,6 +27,7 @@ import {
   CardContent,
 } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
+import { SiteFooter } from '@/components/site-footer';
 
 
 export default function PublicHomePage() {
@@ -199,6 +200,7 @@ export default function PublicHomePage() {
           </div>
         </section>
       </main>
+      <SiteFooter />
     </div>
   );
 }
