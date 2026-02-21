@@ -11,7 +11,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes = [
     '/', '/dashboard', '/login', '/signup', '/profile', '/class-wise',
     '/online-tests', '/exam-history', '/performance', '/leaderboard',
-    '/bookmarks', '/feedback', '/admin',
+    '/bookmarks', '/feedback', '/admin', '/about-us', '/privacy-policy',
+    '/terms-and-conditions', '/refund-policy', '/contact',
   ].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date().toISOString(),
