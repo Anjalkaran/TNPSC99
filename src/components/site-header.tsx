@@ -117,6 +117,9 @@ export function SiteHeader() {
               <Link href="/">{t('home')}</Link>
             </Button>
             <Button asChild variant="ghost" className="hidden md:inline-flex">
+              <Link href="/about-us">{t('about_us')}</Link>
+            </Button>
+            <Button asChild variant="ghost" className="hidden md:inline-flex">
               <Link href="/contact">{t('contact_us')}</Link>
             </Button>
             <LanguageSwitcher />

@@ -71,6 +71,9 @@ export default function AppLayout({
           <Button asChild variant="ghost">
             <Link href="/dashboard">{t('dashboard')}</Link>
           </Button>
+           <Button asChild variant="ghost">
+            <Link href="/about-us">{t('about_us')}</Link>
+          </Button>
           <Button asChild variant="ghost">
             <Link href="/contact">{t('contact_us')}</Link>
           </Button>

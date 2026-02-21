@@ -1,6 +1,7 @@
 {
     "app_title": "TNPSC Ace",
     "home": "Home",
+    "about_us": "About Us",
     "dashboard": "Dashboard",
     "online_tests": "Online Tests",
     "ask_your_doubt": "Ask Your Doubt",
@@ -279,5 +280,6 @@
     
 
     
+
 
 
