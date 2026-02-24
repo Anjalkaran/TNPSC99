@@ -725,7 +725,22 @@ function SyllabusMcqUploadForm() {
     const onSubmit: SubmitHandler<SyllabusMcqUploadValues> = async (values) => {
         setIsSubmitting(true);
         try {
-             if (!firestore) throw new Error("Firestore not initialized");
+            if (!firestore) throw new Error("Firestore not initialized");
+
+            let parsedJson: any;
+            try {
+                parsedJson = JSON.parse(values.jsonInput);
+            } catch (error) {
+                toast({ variant: 'destructive', title: "Invalid JSON", description: "The provided JSON is malformed and could not be parsed." });
+                setIsSubmitting(false);
+                return;
+            }
+            
+            let effectiveUploadFormat = values.uploadFormat;
+            if (effectiveUploadFormat === 'normal' && Array.isArray(parsedJson) && parsedJson.length > 0 && parsedJson[0]?.passage && Array.isArray(parsedJson[0]?.questions)) {
+                effectiveUploadFormat = 'passage';
+            }
+            
             const selectedTopic = syllabusTopics?.find(t => t.id === values.syllabusTopicId);
             if (!selectedTopic) {
                 toast({ variant: 'destructive', title: "Syllabus topic not found" });
@@ -733,27 +748,20 @@ function SyllabusMcqUploadForm() {
                 return;
             }
 
-            if (values.uploadFormat === 'passage') {
-                let passageDataArray: { id: string; passage: string; questions: any[] }[];
-                try {
-                    passageDataArray = JSON.parse(values.jsonInput);
-                    if (!Array.isArray(passageDataArray)) {
-                        throw new Error("Passage JSON must be an array of passage objects.");
+            if (effectiveUploadFormat === 'passage') {
+                const passageDataArray = parsedJson as { id: string; passage: string; questions: any[] }[];
+                if (!Array.isArray(passageDataArray)) {
+                    throw new Error("Passage JSON must be an array of passage objects.");
+                }
+                for (const passageData of passageDataArray) {
+                    if (!passageData.id || !passageData.passage || !Array.isArray(passageData.questions)) {
+                         throw new Error("Each passage object in the array must have 'id', 'passage', and a 'questions' array.");
                     }
-                    for (const passageData of passageDataArray) {
-                        if (!passageData.id || !passageData.passage || !Array.isArray(passageData.questions)) {
-                             throw new Error("Each passage object in the array must have 'id', 'passage', and a 'questions' array.");
-                        }
-                         for (const q of passageData.questions) {
-                            if (!q.id || !q.text || !q.answerOptions || !Array.isArray(q.answerOptions) || q.correctAnswerIndex === undefined) {
-                                throw new Error(`Invalid question object in passage '${passageData.id}'. Each question must have id, text, answerOptions (array), and correctAnswerIndex.`);
-                            }
+                     for (const q of passageData.questions) {
+                        if (!q.id || !q.text || !q.answerOptions || !Array.isArray(q.answerOptions) || q.correctAnswerIndex === undefined) {
+                            throw new Error(`Invalid question object in passage '${passageData.id}'. Each question must have id, text, answerOptions (array), and correctAnswerIndex.`);
                         }
                     }
-                } catch (error: any) {
-                    toast({ variant: 'destructive', title: "Invalid JSON", description: error.message });
-                    setIsSubmitting(false);
-                    return;
                 }
 
                 let totalQuestionsUploaded = 0;
@@ -795,25 +803,15 @@ function SyllabusMcqUploadForm() {
 
                 toast({ title: "Upload Successful", description: `${passageDataArray.length} passages and ${totalQuestionsUploaded} total questions uploaded.` });
 
-            } else {
-                 let questions: any[];
-                try {
-                  questions = JSON.parse(values.jsonInput);
-                  if (!Array.isArray(questions) || questions.length === 0) {
-                    throw new Error('JSON must be a non-empty array of questions.');
+            } else { // Normal format
+                 const questions = parsedJson as any[];
+                if (!Array.isArray(questions) || questions.length === 0) {
+                  throw new Error('JSON must be a non-empty array of questions.');
+                }
+                for (const q of questions) {
+                  if (!q.id || !q.text || !q.answerOptions || !Array.isArray(q.answerOptions) || q.correctAnswerIndex === undefined) {
+                    throw new Error('Each question object must have id, text, answerOptions (array), and correctAnswerIndex.');
                   }
-                  for (const q of questions) {
-                    if (q.passage && q.questions) {
-                        throw new Error("This looks like a 'Passage' format JSON. Please select the 'Passage' upload format option above.");
-                    }
-                    if (!q.id || !q.text || !q.answerOptions || !Array.isArray(q.answerOptions) || q.correctAnswerIndex === undefined) {
-                      throw new Error('Each question object must have id, text, answerOptions (array), and correctAnswerIndex.');
-                    }
-                  }
-                } catch (error: any) {
-                  toast({ variant: 'destructive', title: "Invalid JSON", description: error.message || "The provided JSON is not valid." });
-                  setIsSubmitting(false);
-                  return;
                 }
                 
                 const questionsByCategory: Record<string, any[]> = questions.reduce((acc, q) => {
