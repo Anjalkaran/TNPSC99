@@ -65,6 +65,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 
 const syllabusSchema = z.object({
@@ -380,6 +381,7 @@ function ManageSyllabusStructure() {
 }
 
 const syllabusMcqUploadSchema = z.object({
+  uploadFormat: z.enum(['normal', 'passage']).default('normal'),
   syllabusTopicId: z.string().min(1, "Please select a syllabus topic."),
   medium: z.enum(['tamil', 'english'], { required_error: "Please select a medium." }),
   syllabusCategory: z.string().optional(),
@@ -615,9 +617,11 @@ function SyllabusMcqUploadForm() {
 
     const form = useForm<SyllabusMcqUploadValues>({
         resolver: zodResolver(syllabusMcqUploadSchema),
-        defaultValues: { syllabusTopicId: '', medium: undefined, jsonInput: '', syllabusCategory: '' }
+        defaultValues: { uploadFormat: 'normal', syllabusTopicId: '', medium: undefined, jsonInput: '', syllabusCategory: '' }
     });
     
+    const uploadFormat = form.watch('uploadFormat');
+
     useEffect(() => {
         form.setValue('syllabusTopicId', '');
     }, [selectedUnit, form]);
@@ -705,95 +709,156 @@ function SyllabusMcqUploadForm() {
     "referenceUrl": "https://your-pdf-host.com/book.pdf#page=42 (optional)"
   }
 ]`;
+   const passageJsonStructureExample = `{
+    "id": "GP4-TAM-RC-SET10",
+    "passage": "பத்தி 10: தமிழ் இசை மற்றும் கூத்து...",
+    "questions": [
+      {
+        "id": "GP4-TAM-RC-046",
+        "text": "சங்க காலத்தில் முதன்மையானதாக இருந்த இசைக்கருவி எது?",
+        "answerOptions": ["மத்தளம்", "யாழ்", "வீணை", "புல்லாங்குழல்"],
+        "correctAnswerIndex": 1,
+        "category": "பத்தி வினா"
+      }
+    ]
+}`;
     
     const onSubmit: SubmitHandler<SyllabusMcqUploadValues> = async (values) => {
         setIsSubmitting(true);
-        let questions: any[];
         try {
-          questions = JSON.parse(values.jsonInput);
-          if (!Array.isArray(questions) || questions.length === 0) {
-            throw new Error('JSON must be a non-empty array of questions.');
-          }
-          for (const q of questions) {
-            if (!q.id || !q.text || !q.answerOptions || !Array.isArray(q.answerOptions) || q.correctAnswerIndex === undefined) {
-              throw new Error('Each question object must have id, text, answerOptions (array), and correctAnswerIndex.');
+             if (!firestore) throw new Error("Firestore not initialized");
+            const selectedTopic = syllabusTopics?.find(t => t.id === values.syllabusTopicId);
+            if (!selectedTopic) {
+                toast({ variant: 'destructive', title: "Syllabus topic not found" });
+                return;
             }
-          }
-        } catch (error: any) {
-          toast({ variant: 'destructive', title: "Invalid JSON", description: error.message || "The provided JSON is not valid." });
-          setIsSubmitting(false);
-          return;
-        }
 
-        const selectedTopic = syllabusTopics?.find(t => t.id === values.syllabusTopicId);
-        if (!firestore || !selectedTopic) {
-            toast({ variant: 'destructive', title: "Syllabus topic not found" });
-            setIsSubmitting(false);
-            return;
-        }
-        
-        const questionsByCategory: Record<string, any[]> = questions.reduce((acc, q) => {
-            const category = q.category || values.syllabusCategory || 'General';
-            if (!acc[category]) {
-                acc[category] = [];
-            }
-            acc[category].push(q);
-            return acc;
-        }, {} as Record<string, any[]>);
+            if (values.uploadFormat === 'passage') {
+                let passageData: { id: string; passage: string; questions: any[] };
+                try {
+                    passageData = JSON.parse(values.jsonInput);
+                    if (!passageData.id || !passageData.passage || !Array.isArray(passageData.questions)) {
+                        throw new Error("Passage JSON must have 'id', 'passage', and a 'questions' array.");
+                    }
+                } catch (error: any) {
+                    toast({ variant: 'destructive', title: "Invalid JSON", description: error.message });
+                    return;
+                }
 
-        try {
-            for (const [categoryName, categoryQuestions] of Object.entries(questionsByCategory)) {
+                const { id: testId, passage, questions } = passageData;
                 const questionsBatch = writeBatch(firestore);
                 const questionsCollectionRef = collection(firestore, 'questions');
                 const newQuestionIds: string[] = [];
-                categoryQuestions.forEach(q => {
+
+                for (const q of questions) {
+                    if (!q.id || !q.text || !q.answerOptions || !Array.isArray(q.answerOptions) || q.correctAnswerIndex === undefined) {
+                        throw new Error(`Invalid question object in JSON: ${JSON.stringify(q)}`);
+                    }
                     const questionRef = doc(questionsCollectionRef, q.id);
-                    const payload: any = { ...q, syllabusTopicId: selectedTopic.id, category: categoryName };
+                    const payload: any = { ...q, syllabusTopicId: selectedTopic.id };
                     questionsBatch.set(questionRef, payload, { merge: true });
                     newQuestionIds.push(q.id);
-                });
+                }
                 await questionsBatch.commit();
                 
-                const testTitle = `${selectedTopic.examGroup} - ${selectedTopic.unitName} - ${selectedTopic.topic}` + (categoryName !== 'General' ? ` - ${categoryName}` : '');
+                const testTitle = `${selectedTopic.examGroup} - ${selectedTopic.unitName} - ${selectedTopic.topic} - Passage`;
                 const testsCollectionRef = collection(firestore, 'tests');
+                const testRef = doc(testsCollectionRef, testId);
+
+                const newTest: Partial<Test> = {
+                    id: testId,
+                    title: testTitle,
+                    passage: passage,
+                    questionIds: newQuestionIds,
+                    examGroup: selectedTopic.examGroup,
+                    medium: values.medium,
+                    syllabusPart: selectedTopic.part,
+                    syllabusUnit: selectedTopic.unit,
+                    syllabusUnitName: selectedTopic.unitName,
+                    syllabusTopic: selectedTopic.topic,
+                    syllabusCategory: values.syllabusCategory || 'Passage Comprehension',
+                };
                 
-                const testQuery = query(testsCollectionRef, 
-                    where('syllabusTopic', '==', selectedTopic.topic),
-                    where('syllabusUnitName', '==', selectedTopic.unitName),
-                    where('medium', '==', values.medium),
-                    where('syllabusCategory', '==', categoryName)
-                );
-                
-                await runTransaction(firestore, async (transaction) => {
-                    const testSnapshot = await getDocs(testQuery);
-                    if (testSnapshot.empty) {
-                        const newTestRef = doc(testsCollectionRef);
-                        const newTest: Partial<Test> = {
-                            id: newTestRef.id,
-                            title: testTitle,
-                            questionIds: newQuestionIds,
-                            examGroup: selectedTopic.examGroup,
-                            medium: values.medium,
-                            syllabusPart: selectedTopic.part,
-                            syllabusUnit: selectedTopic.unit,
-                            syllabusUnitName: selectedTopic.unitName,
-                            syllabusTopic: selectedTopic.topic,
-                            syllabusCategory: categoryName,
-                        };
-                        transaction.set(newTestRef, newTest);
-                    } else {
-                        const testDoc = testSnapshot.docs[0];
-                        const existingQuestionIds = testDoc.data().questionIds || [];
-                        const updatedQuestionIds = [...new Set([...existingQuestionIds, ...newQuestionIds])];
-                        transaction.update(testDoc.ref, { questionIds: updatedQuestionIds });
+                await setDoc(testRef, newTest, { merge: true });
+
+                toast({ title: "Upload Successful", description: `Passage and ${questions.length} questions uploaded.` });
+            } else {
+                 let questions: any[];
+                try {
+                  questions = JSON.parse(values.jsonInput);
+                  if (!Array.isArray(questions) || questions.length === 0) {
+                    throw new Error('JSON must be a non-empty array of questions.');
+                  }
+                  for (const q of questions) {
+                    if (!q.id || !q.text || !q.answerOptions || !Array.isArray(q.answerOptions) || q.correctAnswerIndex === undefined) {
+                      throw new Error('Each question object must have id, text, answerOptions (array), and correctAnswerIndex.');
                     }
-                });
+                  }
+                } catch (error: any) {
+                  toast({ variant: 'destructive', title: "Invalid JSON", description: error.message || "The provided JSON is not valid." });
+                  return;
+                }
+                
+                const questionsByCategory: Record<string, any[]> = questions.reduce((acc, q) => {
+                    const category = q.category || values.syllabusCategory || 'General';
+                    if (!acc[category]) acc[category] = [];
+                    acc[category].push(q);
+                    return acc;
+                }, {} as Record<string, any[]>);
+
+                for (const [categoryName, categoryQuestions] of Object.entries(questionsByCategory)) {
+                    const questionsBatch = writeBatch(firestore);
+                    const questionsCollectionRef = collection(firestore, 'questions');
+                    const newQuestionIds: string[] = [];
+                    categoryQuestions.forEach(q => {
+                        const questionRef = doc(questionsCollectionRef, q.id);
+                        const payload: any = { ...q, syllabusTopicId: selectedTopic.id, category: categoryName };
+                        questionsBatch.set(questionRef, payload, { merge: true });
+                        newQuestionIds.push(q.id);
+                    });
+                    await questionsBatch.commit();
+                    
+                    const testTitle = `${selectedTopic.examGroup} - ${selectedTopic.unitName} - ${selectedTopic.topic}` + (categoryName !== 'General' ? ` - ${categoryName}` : '');
+                    const testsCollectionRef = collection(firestore, 'tests');
+                    
+                    const testQuery = query(testsCollectionRef, 
+                        where('syllabusTopic', '==', selectedTopic.topic),
+                        where('syllabusUnitName', '==', selectedTopic.unitName),
+                        where('medium', '==', values.medium),
+                        where('syllabusCategory', '==', categoryName)
+                    );
+                    
+                    await runTransaction(firestore, async (transaction) => {
+                        const testSnapshot = await getDocs(testQuery);
+                        if (testSnapshot.empty) {
+                            const newTestRef = doc(testsCollectionRef);
+                            const newTest: Partial<Test> = {
+                                id: newTestRef.id,
+                                title: testTitle,
+                                questionIds: newQuestionIds,
+                                examGroup: selectedTopic.examGroup,
+                                medium: values.medium,
+                                syllabusPart: selectedTopic.part,
+                                syllabusUnit: selectedTopic.unit,
+                                syllabusUnitName: selectedTopic.unitName,
+                                syllabusTopic: selectedTopic.topic,
+                                syllabusCategory: categoryName,
+                            };
+                            transaction.set(newTestRef, newTest);
+                        } else {
+                            const testDoc = testSnapshot.docs[0];
+                            const existingQuestionIds = testDoc.data().questionIds || [];
+                            const updatedQuestionIds = [...new Set([...existingQuestionIds, ...newQuestionIds])];
+                            transaction.update(testDoc.ref, { questionIds: updatedQuestionIds });
+                        }
+                    });
+                }
+                
+                toast({ title: "Upload Successful", description: `${questions.length} questions uploaded across ${Object.keys(questionsByCategory).length} categories.` });
             }
-            
-            toast({ title: "Upload Successful", description: `${questions.length} questions uploaded across ${Object.keys(questionsByCategory).length} categories.` });
+
             form.setValue('jsonInput', '');
             form.setValue('syllabusCategory', '');
-
         } catch (error: any) {
           toast({ variant: 'destructive', title: 'Upload Error', description: error.message });
         } finally {
@@ -811,6 +876,32 @@ function SyllabusMcqUploadForm() {
                 <CardContent>
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                             <FormField
+                                control={form.control}
+                                name="uploadFormat"
+                                render={({ field }) => (
+                                    <FormItem className="space-y-3">
+                                    <FormLabel>Upload Format</FormLabel>
+                                    <FormControl>
+                                        <RadioGroup
+                                        onValueChange={field.onChange}
+                                        defaultValue={field.value}
+                                        className="flex items-center gap-4"
+                                        >
+                                        <FormItem className="flex items-center space-x-2 space-y-0">
+                                            <FormControl><RadioGroupItem value="normal" /></FormControl>
+                                            <FormLabel className="font-normal">Normal</FormLabel>
+                                        </FormItem>
+                                        <FormItem className="flex items-center space-x-2 space-y-0">
+                                            <FormControl><RadioGroupItem value="passage" /></FormControl>
+                                            <FormLabel className="font-normal">Passage</FormLabel>
+                                        </FormItem>
+                                        </RadioGroup>
+                                    </FormControl>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
                             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                 <Select onValueChange={(v) => {setSelectedExamGroup(v); form.setValue('examGroup', v as any)}} value={selectedExamGroup}>
                                     <SelectTrigger><SelectValue placeholder="Select Exam Group" /></SelectTrigger>
@@ -894,13 +985,13 @@ function SyllabusMcqUploadForm() {
                 </CardContent>
             </Card>
             <div className="space-y-8">
-                <Card>
+                 <Card>
                     <CardHeader>
-                        <CardTitle>{t('expected_json_structure')}</CardTitle>
+                        <CardTitle>{uploadFormat === 'normal' ? 'Normal JSON Structure' : 'Passage JSON Structure'}</CardTitle>
                     </CardHeader>
                     <CardContent className="p-4 bg-muted rounded-md">
                         <pre className="text-xs font-mono overflow-auto max-h-80">
-                            <code>{syllabusJsonStructureExample}</code>
+                            <code>{uploadFormat === 'normal' ? syllabusJsonStructureExample : passageJsonStructureExample}</code>
                         </pre>
                     </CardContent>
                 </Card>

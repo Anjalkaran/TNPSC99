@@ -24,6 +24,7 @@ export interface Test {
   id: string;
   title: string;
   description: string;
+  passage?: string;
   questionIds: string[];
   questions?: Question[];
   classId?: string;

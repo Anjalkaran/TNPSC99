@@ -496,6 +496,12 @@ export function McqTest({
           <Progress value={progress} className="mt-4" />
         </CardHeader>
         <CardContent className="py-6">
+           {test.passage && (
+                <div className="mb-6 p-4 bg-muted/50 border rounded-lg">
+                    <h3 className="font-semibold mb-2">Passage</h3>
+                    <p className="whitespace-pre-line text-muted-foreground">{test.passage}</p>
+                </div>
+            )}
           <div className="flex justify-between items-start">
               <p className="font-semibold text-lg mb-6 flex-1 whitespace-pre-line">{formatQuestionText(currentQuestion.text)}</p>
               <div className="flex items-center">
