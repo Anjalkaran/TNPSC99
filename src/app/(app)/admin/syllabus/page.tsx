@@ -787,7 +787,7 @@ function SyllabusMcqUploadForm() {
                         syllabusUnit: selectedTopic.unit,
                         syllabusUnitName: selectedTopic.unitName,
                         syllabusTopic: selectedTopic.topic,
-                        syllabusCategory: values.syllabusCategory || 'Passage Comprehension',
+                        syllabusCategory: 'Passage Comprehension',
                     };
                     
                     await setDoc(testRef, newTest, { merge: true });
@@ -965,22 +965,24 @@ function SyllabusMcqUploadForm() {
                                 </FormItem>
                                 )}
                             />
-                            <FormField
-                                control={form.control}
-                                name="syllabusCategory"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Question Category (Optional)</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="e.g., kootru kaarani" {...field} />
-                                    </FormControl>
-                                    <FormDescription>
-                                        Assign a category to all questions in this upload. Will be overridden by 'category' in JSON.
-                                    </FormDescription>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
+                            {uploadFormat === 'normal' && (
+                                <FormField
+                                    control={form.control}
+                                    name="syllabusCategory"
+                                    render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Question Category (Optional)</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="e.g., kootru kaarani" {...field} />
+                                        </FormControl>
+                                        <FormDescription>
+                                            Assign a category to all questions in this upload. Will be overridden by 'category' in JSON.
+                                        </FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                    )}
+                                />
+                            )}
                             <FormField
                                 control={form.control}
                                 name="jsonInput"
