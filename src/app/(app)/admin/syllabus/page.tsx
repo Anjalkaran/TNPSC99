@@ -744,6 +744,11 @@ function SyllabusMcqUploadForm() {
                         if (!passageData.id || !passageData.passage || !Array.isArray(passageData.questions)) {
                              throw new Error("Each passage object in the array must have 'id', 'passage', and a 'questions' array.");
                         }
+                         for (const q of passageData.questions) {
+                            if (!q.id || !q.text || !q.answerOptions || !Array.isArray(q.answerOptions) || q.correctAnswerIndex === undefined) {
+                                throw new Error(`Invalid question object in passage '${passageData.id}'. Each question must have id, text, answerOptions (array), and correctAnswerIndex.`);
+                            }
+                        }
                     }
                 } catch (error: any) {
                     toast({ variant: 'destructive', title: "Invalid JSON", description: error.message });
@@ -759,10 +764,6 @@ function SyllabusMcqUploadForm() {
                     const newQuestionIds: string[] = [];
 
                     for (const q of questions) {
-                        if (!q.id || !q.text || !q.answerOptions || !Array.isArray(q.answerOptions) || q.correctAnswerIndex === undefined) {
-                            toast({ variant: 'destructive', title: `Invalid Question in Passage ${testId}`, description: `Question with text "${q.text}" is missing required fields. It will be skipped.`});
-                            continue;
-                        }
                         const questionRef = doc(questionsCollectionRef, q.id);
                         const payload: any = { ...q, syllabusTopicId: selectedTopic.id };
                         questionsBatch.set(questionRef, payload, { merge: true });
@@ -802,6 +803,9 @@ function SyllabusMcqUploadForm() {
                     throw new Error('JSON must be a non-empty array of questions.');
                   }
                   for (const q of questions) {
+                    if (q.passage && q.questions) {
+                        throw new Error("This looks like a 'Passage' format JSON. Please select the 'Passage' upload format option above.");
+                    }
                     if (!q.id || !q.text || !q.answerOptions || !Array.isArray(q.answerOptions) || q.correctAnswerIndex === undefined) {
                       throw new Error('Each question object must have id, text, answerOptions (array), and correctAnswerIndex.');
                     }
@@ -1040,5 +1044,3 @@ export default function SyllabusManagementPage() {
     </div>
   );
 }
-
-
