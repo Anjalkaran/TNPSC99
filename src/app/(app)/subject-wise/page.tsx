@@ -19,7 +19,9 @@ import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
@@ -108,7 +110,17 @@ function TopicTestGroup({ topicName, tests }: { topicName: string; tests: Test[]
   const { t } = useTranslation();
   const [selectedTestId, setSelectedTestId] = useState('');
 
-  // If there's only one test for this topic, select it by default.
+  const testsByCategory = useMemo(() => {
+    return tests.reduce((acc, test) => {
+      const category = test.syllabusCategory || 'General';
+      if (!acc[category]) {
+        acc[category] = [];
+      }
+      acc[category].push(test);
+      return acc;
+    }, {} as Record<string, Test[]>);
+  }, [tests]);
+
   useEffect(() => {
     if (tests.length === 1) {
       setSelectedTestId(tests[0].id);
@@ -117,11 +129,24 @@ function TopicTestGroup({ topicName, tests }: { topicName: string; tests: Test[]
     }
   }, [tests]);
 
-  const handleCategoryChange = (testId: string) => {
+  const handleTestSelectionChange = (testId: string) => {
     setSelectedTestId(testId);
   };
 
   const selectedTest = tests.find(t => t.id === selectedTestId);
+
+  const getTestLabel = (test: Test) => {
+    // For passage tests, use the set ID for uniqueness
+    if (test.syllabusCategory === 'Passage Comprehension' && test.id.includes('-')) {
+        const setId = test.id.split('-').pop()
+        return `Passage ${setId}`;
+    }
+    // For other tests with a category, the category name itself is the label.
+    // Since normal uploads merge tests of the same category, this should be unique per topic.
+    return test.syllabusCategory || 'General';
+  };
+  
+  const hasMultipleOptions = tests.length > 1;
 
   return (
     <Card>
@@ -130,30 +155,37 @@ function TopicTestGroup({ topicName, tests }: { topicName: string; tests: Test[]
       </CardHeader>
       <CardContent className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex-grow space-y-2">
-          {tests.length > 1 && (
+          {hasMultipleOptions ? (
             <div className="space-y-1.5">
               <Label>வினா வகை</Label>
-              <Select onValueChange={handleCategoryChange} value={selectedTestId}>
-                <SelectTrigger className="w-full md:w-[200px]">
+              <Select onValueChange={handleTestSelectionChange} value={selectedTestId}>
+                <SelectTrigger className="w-full md:w-[250px]">
                   <SelectValue placeholder={t('select_category_placeholder')} />
                 </SelectTrigger>
                 <SelectContent>
-                  {tests.map(test => (
-                    <SelectItem key={test.id} value={test.id}>
-                      {test.syllabusCategory || 'General'}
-                    </SelectItem>
+                  {Object.entries(testsByCategory).map(([category, testsInCategory]) => (
+                    <SelectGroup key={category}>
+                      <SelectLabel>{category}</SelectLabel>
+                      {testsInCategory.map(test => (
+                        <SelectItem key={test.id} value={test.id}>
+                          {/* If a category has multiple tests, use the specific label, otherwise just use the category name */}
+                          {testsInCategory.length > 1 ? getTestLabel(test) : category}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-          )}
+          ) : null}
+          
           {selectedTest ? (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2">
               <span>{selectedTest.questionIds.length} {t('questions')}</span>
               <Badge variant="outline">{selectedTest.medium}</Badge>
               <TestProgressBadge testId={selectedTest.id} />
             </div>
-          ) : <div className="h-6" /> }
+          ) : hasMultipleOptions ? <div className="h-6" /> : null }
         </div>
         <div className="w-full md:w-auto shrink-0 md:min-w-[300px]">
             {selectedTest ? (
@@ -175,6 +207,7 @@ function TopicTestGroup({ topicName, tests }: { topicName: string; tests: Test[]
     </Card>
   );
 }
+
 
 export default function SubjectWiseTestsPage() {
   const { t } = useTranslation();
