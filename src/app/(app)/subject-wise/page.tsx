@@ -112,6 +112,8 @@ function TopicTestGroup({ topicName, tests }: { topicName: string; tests: Test[]
   useEffect(() => {
     if (tests.length === 1) {
       setSelectedTestId(tests[0].id);
+    } else {
+      setSelectedTestId('');
     }
   }, [tests]);
 
@@ -255,15 +257,16 @@ export default function SubjectWiseTestsPage() {
                                           <AccordionContent className="pt-0 p-4">
                                               <Accordion type="multiple" className="w-full space-y-2" defaultValue={Object.keys(unitNames)}>
                                                   {Object.entries(unitNames).sort(([unitKeyA], [unitKeyB]) => {
-                                                        const romanMap: { [key: string]: number } = { 'I': 1, 'V': 5, 'X': 10 };
+                                                        const romanMap: { [key: string]: number } = { 'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000 };
                                                         const getUnitNumber = (unitKey: string): number => {
                                                             const match = unitKey.match(/அலகு\s+([IVXLCDM]+)/);
-                                                            if (!match || !match[1]) return 99;
+                                                            if (!match || !match[1]) return 999;
                                                             const roman = match[1];
                                                             let result = 0;
                                                             for (let i = 0; i < roman.length; i++) {
                                                                 const current = romanMap[roman[i]];
-                                                                const next = i + 1 < roman.length ? romanMap[roman[i + 1]] : undefined;
+                                                                if (current === undefined) return 999;
+                                                                const next = i + 1 < roman.length ? romanMap[roman[i + 1]] : 0;
                                                                 if (next && current < next) {
                                                                     result -= current;
                                                                 } else {
