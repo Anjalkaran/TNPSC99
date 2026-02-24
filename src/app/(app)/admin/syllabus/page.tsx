@@ -510,7 +510,7 @@ function ExistingSyllabusMcqBanks() {
                                                                             <AccordionTrigger className="font-semibold p-0 hover:no-underline">{unitKey}</AccordionTrigger>
                                                                         </CardHeader>
                                                                         <AccordionContent className="p-3">
-                                                                            <Accordion type="multiple" className="w-full space-y-2">
+                                                                            <Accordion type="multiple" className="w-full space-y-2" defaultValue={testList.map(t => t.syllabusTopic || 'uncategorized')}>
                                                                                 {(() => {
                                                                                     const testsByTopic = testList.reduce((acc, test) => {
                                                                                         const topic = test.syllabusTopic || 'Uncategorized';
@@ -631,22 +631,19 @@ function SyllabusMcqUploadForm() {
         if (!isSubmitting) return;
 
         const lastSelected = {
-            examGroup: form.getValues('examGroup'),
-            part: form.getValues('part'),
+            examGroup: selectedExamGroup,
+            part: selectedPart,
             unit: selectedUnit,
             topic: form.getValues('syllabusTopicId'),
             medium: form.getValues('medium'),
         }
         form.reset();
-        form.setValue('examGroup', lastSelected.examGroup);
         setSelectedExamGroup(lastSelected.examGroup)
-        form.setValue('part', lastSelected.part);
         setSelectedPart(lastSelected.part)
-        form.setValue('unit', lastSelected.unit);
         setSelectedUnit(lastSelected.unit)
         form.setValue('syllabusTopicId', lastSelected.topic);
         form.setValue('medium', lastSelected.medium);
-    }, [isSubmitting, form]);
+    }, [isSubmitting, form, selectedExamGroup, selectedPart, selectedUnit]);
 
     const uniqueExamGroups = useMemo(() => syllabusTopics ? [...new Set(syllabusTopics.map(t => t.examGroup))] : [], [syllabusTopics]);
     
@@ -709,7 +706,8 @@ function SyllabusMcqUploadForm() {
     "referenceUrl": "https://your-pdf-host.com/book.pdf#page=42 (optional)"
   }
 ]`;
-   const passageJsonStructureExample = `{
+   const passageJsonStructureExample = `[
+  {
     "id": "GP4-TAM-RC-SET10",
     "passage": "பத்தி 10: தமிழ் இசை மற்றும் கூத்து...",
     "questions": [
@@ -721,7 +719,8 @@ function SyllabusMcqUploadForm() {
         "category": "பத்தி வினா"
       }
     ]
-}`;
+  }
+]`;
     
     const onSubmit: SubmitHandler<SyllabusMcqUploadValues> = async (values) => {
         setIsSubmitting(true);
@@ -730,58 +729,71 @@ function SyllabusMcqUploadForm() {
             const selectedTopic = syllabusTopics?.find(t => t.id === values.syllabusTopicId);
             if (!selectedTopic) {
                 toast({ variant: 'destructive', title: "Syllabus topic not found" });
+                setIsSubmitting(false);
                 return;
             }
 
             if (values.uploadFormat === 'passage') {
-                let passageData: { id: string; passage: string; questions: any[] };
+                let passageDataArray: { id: string; passage: string; questions: any[] }[];
                 try {
-                    passageData = JSON.parse(values.jsonInput);
-                    if (!passageData.id || !passageData.passage || !Array.isArray(passageData.questions)) {
-                        throw new Error("Passage JSON must have 'id', 'passage', and a 'questions' array.");
+                    passageDataArray = JSON.parse(values.jsonInput);
+                    if (!Array.isArray(passageDataArray)) {
+                        throw new Error("Passage JSON must be an array of passage objects.");
+                    }
+                    for (const passageData of passageDataArray) {
+                        if (!passageData.id || !passageData.passage || !Array.isArray(passageData.questions)) {
+                             throw new Error("Each passage object in the array must have 'id', 'passage', and a 'questions' array.");
+                        }
                     }
                 } catch (error: any) {
                     toast({ variant: 'destructive', title: "Invalid JSON", description: error.message });
+                    setIsSubmitting(false);
                     return;
                 }
 
-                const { id: testId, passage, questions } = passageData;
-                const questionsBatch = writeBatch(firestore);
-                const questionsCollectionRef = collection(firestore, 'questions');
-                const newQuestionIds: string[] = [];
+                let totalQuestionsUploaded = 0;
+                for (const passageData of passageDataArray) {
+                    const { id: testId, passage, questions } = passageData;
+                    const questionsBatch = writeBatch(firestore);
+                    const questionsCollectionRef = collection(firestore, 'questions');
+                    const newQuestionIds: string[] = [];
 
-                for (const q of questions) {
-                    if (!q.id || !q.text || !q.answerOptions || !Array.isArray(q.answerOptions) || q.correctAnswerIndex === undefined) {
-                        throw new Error(`Invalid question object in JSON: ${JSON.stringify(q)}`);
+                    for (const q of questions) {
+                        if (!q.id || !q.text || !q.answerOptions || !Array.isArray(q.answerOptions) || q.correctAnswerIndex === undefined) {
+                            toast({ variant: 'destructive', title: `Invalid Question in Passage ${testId}`, description: `Question with text "${q.text}" is missing required fields. It will be skipped.`});
+                            continue;
+                        }
+                        const questionRef = doc(questionsCollectionRef, q.id);
+                        const payload: any = { ...q, syllabusTopicId: selectedTopic.id };
+                        questionsBatch.set(questionRef, payload, { merge: true });
+                        newQuestionIds.push(q.id);
                     }
-                    const questionRef = doc(questionsCollectionRef, q.id);
-                    const payload: any = { ...q, syllabusTopicId: selectedTopic.id };
-                    questionsBatch.set(questionRef, payload, { merge: true });
-                    newQuestionIds.push(q.id);
+                    await questionsBatch.commit();
+                    totalQuestionsUploaded += newQuestionIds.length;
+                    
+                    const testTitle = `${selectedTopic.examGroup} - ${selectedTopic.unitName} - ${selectedTopic.topic} - Passage - ${passageData.id}`;
+                    const testsCollectionRef = collection(firestore, 'tests');
+                    const testRef = doc(testsCollectionRef, testId);
+
+                    const newTest: Partial<Test> = {
+                        id: testId,
+                        title: testTitle,
+                        passage: passage,
+                        questionIds: newQuestionIds,
+                        examGroup: selectedTopic.examGroup,
+                        medium: values.medium,
+                        syllabusPart: selectedTopic.part,
+                        syllabusUnit: selectedTopic.unit,
+                        syllabusUnitName: selectedTopic.unitName,
+                        syllabusTopic: selectedTopic.topic,
+                        syllabusCategory: values.syllabusCategory || 'Passage Comprehension',
+                    };
+                    
+                    await setDoc(testRef, newTest, { merge: true });
                 }
-                await questionsBatch.commit();
-                
-                const testTitle = `${selectedTopic.examGroup} - ${selectedTopic.unitName} - ${selectedTopic.topic} - Passage`;
-                const testsCollectionRef = collection(firestore, 'tests');
-                const testRef = doc(testsCollectionRef, testId);
 
-                const newTest: Partial<Test> = {
-                    id: testId,
-                    title: testTitle,
-                    passage: passage,
-                    questionIds: newQuestionIds,
-                    examGroup: selectedTopic.examGroup,
-                    medium: values.medium,
-                    syllabusPart: selectedTopic.part,
-                    syllabusUnit: selectedTopic.unit,
-                    syllabusUnitName: selectedTopic.unitName,
-                    syllabusTopic: selectedTopic.topic,
-                    syllabusCategory: values.syllabusCategory || 'Passage Comprehension',
-                };
-                
-                await setDoc(testRef, newTest, { merge: true });
+                toast({ title: "Upload Successful", description: `${passageDataArray.length} passages and ${totalQuestionsUploaded} total questions uploaded.` });
 
-                toast({ title: "Upload Successful", description: `Passage and ${questions.length} questions uploaded.` });
             } else {
                  let questions: any[];
                 try {
@@ -796,6 +808,7 @@ function SyllabusMcqUploadForm() {
                   }
                 } catch (error: any) {
                   toast({ variant: 'destructive', title: "Invalid JSON", description: error.message || "The provided JSON is not valid." });
+                  setIsSubmitting(false);
                   return;
                 }
                 
@@ -903,11 +916,11 @@ function SyllabusMcqUploadForm() {
                                 )}
                             />
                             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                <Select onValueChange={(v) => {setSelectedExamGroup(v); form.setValue('examGroup', v as any)}} value={selectedExamGroup}>
+                                <Select onValueChange={(v) => {setSelectedExamGroup(v)}} value={selectedExamGroup}>
                                     <SelectTrigger><SelectValue placeholder="Select Exam Group" /></SelectTrigger>
                                     <SelectContent>{uniqueExamGroups.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}</SelectContent>
                                 </Select>
-                                <Select onValueChange={(v) => {setSelectedPart(v); form.setValue('part', v)}} value={selectedPart} disabled={!selectedExamGroup}>
+                                <Select onValueChange={(v) => {setSelectedPart(v)}} value={selectedPart} disabled={!selectedExamGroup}>
                                     <SelectTrigger><SelectValue placeholder="Select Part" /></SelectTrigger>
                                     <SelectContent>{uniqueParts.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
                                 </Select>
@@ -1027,4 +1040,5 @@ export default function SyllabusManagementPage() {
     </div>
   );
 }
+
 
