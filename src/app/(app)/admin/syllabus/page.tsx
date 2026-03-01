@@ -79,13 +79,13 @@ type SyllabusFormValues = z.infer<typeof syllabusSchema>;
 
 const syllabusStructure = {
     'Group IV': {
-      'பகுதி அ': {
+      'பகுதி அ: பொது அறிவு': {
         'அலகு I': 'பொது அறிவியல்',
         'அலகு II': 'புவியியல்',
         'அலகு III': 'இந்தியாவின் வரலாறு, பண்பாடு மற்றும் இந்திய தேசிய இயக்கம்',
         'அலகு IV': 'இந்திய ஆட்சியியல்',
         'அலகு V': 'இந்தியப் பொருளாதாரம் மற்றும் தமிழ்நாட்டில் வளர்ச்சி நிர்வாகம்',
-        'அலகு VI': 'தமிழ்நாட்டின் வரலாறு, பண்பாடு, மரபு மற்றும் சமூக - அரசியல் இயக்கங்கள்'
+        'அலகு VI': 'தமிழ்நாட்டின் வரலாறு, பண்பாடு, மரபு மற்றும் சமூக - அரசியல் இயக்கங்கள்',
       },
       'பகுதி ஆ': {
           'அலகு I': 'திறனறிவு',
@@ -125,7 +125,7 @@ function ManageSyllabusStructure() {
         if (examGroupValue && syllabusStructure[examGroupValue]) {
             return Object.keys(syllabusStructure[examGroupValue]);
         }
-        return ['பகுதி அ', 'பகுதி ஆ', 'பகுதி இ'];
+        return ['பகுதி அ: பொது அறிவு', 'பகுதி ஆ', 'பகுதி இ'];
     }, [examGroupValue]);
 
     const availableUnits = useMemo(() => {
@@ -240,7 +240,7 @@ function ManageSyllabusStructure() {
                                     <FormLabel>Syllabus Part</FormLabel>
                                      <Select onValueChange={field.onChange} value={field.value} disabled={!examGroupValue}>
                                         <FormControl>
-                                            <SelectTrigger><SelectValue placeholder="e.g., பகுதி அ" /></SelectTrigger>
+                                            <SelectTrigger><SelectValue placeholder="e.g., பகுதி அ: பொது அறிவு" /></SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
                                             {availableParts.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
@@ -308,7 +308,7 @@ function ManageSyllabusStructure() {
                                 <AccordionContent>
                                     <Accordion type="multiple" className="w-full pl-4">
                                         {Object.entries(parts).sort((a, b) => {
-                                            const order = ['பகுதி அ', 'பகுதி ஆ', 'பகுதி இ'];
+                                            const order = ['பகுதி அ: பொது அறிவு', 'பகுதி ஆ', 'பகுதி இ'];
                                             const indexA = order.indexOf(a[0]);
                                             const indexB = order.indexOf(b[0]);
                                             if (indexA === -1 && indexB === -1) return a[0].localeCompare(b[0]);
@@ -489,12 +489,12 @@ function ExistingSyllabusMcqBanks() {
                 {isLoading ? (
                     <p>Loading test banks...</p>
                 ) : Object.keys(groupedByExamGroup).length > 0 ? (
-                    <Accordion type="multiple" className="w-full" defaultValue={Object.keys(groupedByExamGroup)}>
+                    <Accordion type="multiple" className="w-full">
                         {Object.entries(groupedByExamGroup).map(([examGroup, parts]) => (
                             <AccordionItem value={examGroup} key={examGroup}>
                                 <AccordionTrigger className="text-xl font-bold">{examGroup}</AccordionTrigger>
                                 <AccordionContent>
-                                    <Accordion type="multiple" className="w-full pl-4 space-y-2" defaultValue={Object.keys(parts)}>
+                                    <Accordion type="multiple" className="w-full pl-4 space-y-2">
                                         {Object.entries(parts).sort((a, b) => a[0].localeCompare(b[0])).map(([part, units]) => (
                                             <AccordionItem value={part} key={part} className="border-b-0">
                                                 <Card className="bg-muted/50">
@@ -502,7 +502,7 @@ function ExistingSyllabusMcqBanks() {
                                                         <AccordionTrigger className="text-lg p-0 hover:no-underline">{part}</AccordionTrigger>
                                                     </CardHeader>
                                                     <AccordionContent className="p-3">
-                                                        <Accordion type="multiple" className="w-full space-y-2" defaultValue={Object.keys(units)}>
+                                                        <Accordion type="multiple" className="w-full space-y-2">
                                                             {Object.entries(units).sort(([unitA], [unitB]) => unitA.localeCompare(unitB)).map(([unitKey, testList]) => (
                                                                 <AccordionItem value={unitKey} key={unitKey} className="border-b-0">
                                                                     <Card>
@@ -510,7 +510,7 @@ function ExistingSyllabusMcqBanks() {
                                                                             <AccordionTrigger className="font-semibold p-0 hover:no-underline">{unitKey}</AccordionTrigger>
                                                                         </CardHeader>
                                                                         <AccordionContent className="p-3">
-                                                                            <Accordion type="multiple" className="w-full space-y-2" defaultValue={testList.map(t => t.syllabusTopic || 'uncategorized')}>
+                                                                            <Accordion type="multiple" className="w-full space-y-2">
                                                                                 {(() => {
                                                                                     const testsByTopic = testList.reduce((acc, test) => {
                                                                                         const topic = test.syllabusTopic || 'Uncategorized';
@@ -654,7 +654,7 @@ function SyllabusMcqUploadForm() {
             .map(t => t.part);
         const unique = [...new Set(parts)];
         return unique.sort((a, b) => {
-            const order = ['பகுதி அ', 'பகுதி ஆ', 'பகுதி இ'];
+            const order = ['பகுதி அ: பொது அறிவு', 'பகுதி ஆ', 'பகுதி இ'];
             const indexA = order.indexOf(a);
             const indexB = order.indexOf(b);
             if (indexA === -1) return 1;
@@ -737,7 +737,17 @@ function SyllabusMcqUploadForm() {
             }
             
             let effectiveUploadFormat = values.uploadFormat;
-            if (effectiveUploadFormat === 'normal' && Array.isArray(parsedJson) && parsedJson.length > 0 && parsedJson[0]?.passage && Array.isArray(parsedJson[0]?.questions)) {
+             // Auto-detect format
+            if (Array.isArray(parsedJson) && parsedJson.length > 0 && parsedJson[0]?.passage && Array.isArray(parsedJson[0]?.questions)) {
+                if (values.uploadFormat === 'normal') {
+                    toast({
+                        variant: 'destructive',
+                        title: "Format Mismatch",
+                        description: "You've pasted Passage format JSON but have 'Normal' format selected. Please select the 'Passage' format.",
+                    });
+                    setIsSubmitting(false);
+                    return;
+                }
                 effectiveUploadFormat = 'passage';
             }
             
