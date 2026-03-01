@@ -7,7 +7,7 @@ import type { Syllabus } from '@/lib/types';
 
 const syllabusData = {
     'Group IV': {
-        'பகுதி அ': {
+        'பகுதி அ: பொது அறிவு': {
             'அலகு I: பொது அறிவியல்': [
                 'பேரண்டத்தின் இயல்பு',
                 'இயற்பியல் அளவுகளின் அளவீடுகள்',
@@ -270,5 +270,7 @@ async function addGroup4SyllabusTopics() {
 }
 
 addGroup4SyllabusTopics();
+
+    
 
     

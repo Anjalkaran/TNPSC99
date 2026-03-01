@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
@@ -272,7 +273,7 @@ export default function SubjectWiseTestsPage() {
                         <div className="px-6 pb-6">
                             <Accordion type="multiple" className="w-full space-y-4" defaultValue={Object.keys(parts)}>
                                 {Object.entries(parts).sort((a, b) => {
-                                    const order = ['பகுதி அ', 'பகுதி ஆ', 'பகுதி இ'];
+                                    const order = ['பகுதி அ: பொது அறிவு', 'பகுதி ஆ', 'பகுதி இ'];
                                     const indexA = order.indexOf(a[0]);
                                     const indexB = order.indexOf(b[0]);
                                     if (indexA === -1 && indexB === -1) return a[0].localeCompare(b[0]);
@@ -296,15 +297,18 @@ export default function SubjectWiseTestsPage() {
                                                             if (!match || !match[1]) return 999;
                                                             const roman = match[1];
                                                             let result = 0;
-                                                            for (let i = 0; i < roman.length; i++) {
-                                                                const current = romanMap[roman[i]];
-                                                                if (current === undefined) return 999;
-                                                                const next = i + 1 < roman.length ? romanMap[roman[i + 1]] : 0;
-                                                                if (next && current < next) {
-                                                                    result -= current;
-                                                                } else {
-                                                                    result += current;
-                                                                }
+                                                            let i = 0;
+                                                            while (i < roman.length) {
+                                                              const currentVal = romanMap[roman[i]];
+                                                              if (currentVal === undefined) return 999;
+                                                              const nextVal = (i + 1 < roman.length) ? romanMap[roman[i+1]] : 0;
+                                                              if(nextVal && currentVal < nextVal) {
+                                                                result += nextVal - currentVal;
+                                                                i += 2;
+                                                              } else {
+                                                                result += currentVal;
+                                                                i += 1;
+                                                              }
                                                             }
                                                             return result;
                                                         };
@@ -359,3 +363,6 @@ export default function SubjectWiseTestsPage() {
     </div>
   );
 }
+
+
+    
