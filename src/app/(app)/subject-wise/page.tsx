@@ -273,7 +273,7 @@ export default function SubjectWiseTestsPage() {
                         <div className="px-6 pb-6">
                             <Accordion type="multiple" className="w-full space-y-4" defaultValue={Object.keys(parts)}>
                                 {Object.entries(parts).sort((a, b) => {
-                                    const order = ['பகுதி அ: பொது அறிவு', 'பகுதி ஆ', 'பகுதி இ'];
+                                    const order = ['பகுதி அ', 'பகுதி ஆ', 'பகுதி இ'];
                                     const indexA = order.indexOf(a[0]);
                                     const indexB = order.indexOf(b[0]);
                                     if (indexA === -1 && indexB === -1) return a[0].localeCompare(b[0]);

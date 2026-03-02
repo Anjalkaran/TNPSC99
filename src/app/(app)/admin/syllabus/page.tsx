@@ -79,7 +79,7 @@ type SyllabusFormValues = z.infer<typeof syllabusSchema>;
 
 const syllabusStructure = {
     'Group IV': {
-      'பகுதி அ: பொது அறிவு': {
+      'பகுதி அ': {
         'அலகு I': 'பொது அறிவியல்',
         'அலகு II': 'புவியியல்',
         'அலகு III': 'இந்தியாவின் வரலாறு, பண்பாடு மற்றும் இந்திய தேசிய இயக்கம்',
@@ -125,7 +125,7 @@ function ManageSyllabusStructure() {
         if (examGroupValue && syllabusStructure[examGroupValue]) {
             return Object.keys(syllabusStructure[examGroupValue]);
         }
-        return ['பகுதி அ: பொது அறிவு', 'பகுதி ஆ', 'பகுதி இ'];
+        return ['பகுதி அ', 'பகுதி ஆ', 'பகுதி இ'];
     }, [examGroupValue]);
 
     const availableUnits = useMemo(() => {
@@ -240,7 +240,7 @@ function ManageSyllabusStructure() {
                                     <FormLabel>Syllabus Part</FormLabel>
                                      <Select onValueChange={field.onChange} value={field.value} disabled={!examGroupValue}>
                                         <FormControl>
-                                            <SelectTrigger><SelectValue placeholder="e.g., பகுதி அ: பொது அறிவு" /></SelectTrigger>
+                                            <SelectTrigger><SelectValue placeholder="e.g., பகுதி அ" /></SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
                                             {availableParts.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
@@ -308,7 +308,7 @@ function ManageSyllabusStructure() {
                                 <AccordionContent>
                                     <Accordion type="multiple" className="w-full pl-4">
                                         {Object.entries(parts).sort((a, b) => {
-                                            const order = ['பகுதி அ: பொது அறிவு', 'பகுதி ஆ', 'பகுதி இ'];
+                                            const order = ['பகுதி அ', 'பகுதி ஆ', 'பகுதி இ'];
                                             const indexA = order.indexOf(a[0]);
                                             const indexB = order.indexOf(b[0]);
                                             if (indexA === -1 && indexB === -1) return a[0].localeCompare(b[0]);
@@ -654,7 +654,7 @@ function SyllabusMcqUploadForm() {
             .map(t => t.part);
         const unique = [...new Set(parts)];
         return unique.sort((a, b) => {
-            const order = ['பகுதி அ: பொது அறிவு', 'பகுதி ஆ', 'பகுதி இ'];
+            const order = ['பகுதி அ', 'பகுதி ஆ', 'பகுதி இ'];
             const indexA = order.indexOf(a);
             const indexB = order.indexOf(b);
             if (indexA === -1) return 1;
