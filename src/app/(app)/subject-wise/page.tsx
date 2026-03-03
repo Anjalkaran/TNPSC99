@@ -136,15 +136,24 @@ function TopicTestGroup({ topicName, tests }: { topicName: string; tests: Test[]
 
   const selectedTest = tests.find(t => t.id === selectedTestId);
 
-  const getTestLabel = (test: Test) => {
-    // For passage tests, use the set ID for uniqueness
-    if (test.syllabusCategory === 'Passage Comprehension' && test.id.includes('-')) {
-        const setId = test.id.split('-').pop()
-        return `Passage ${setId}`;
+  const getTestLabel = (test: Test, testsInSameCategory: Test[]) => {
+    const categoryLabel = test.syllabusCategory || 'General';
+
+    // For Passage Comprehension, use the ID to be specific as there can be many sets.
+    if (categoryLabel === 'Passage Comprehension' && test.id.includes('-')) {
+        const setId = test.id.split('-').pop();
+        return `Passage ${setId || test.id}`;
     }
-    // For other tests with a category, the category name itself is the label.
-    // Since normal uploads merge tests of the same category, this should be unique per topic.
-    return test.syllabusCategory || 'General';
+    
+    // If there's more than one test under this category group, it's likely due to different mediums.
+    // Differentiate them by adding the medium to the label.
+    if (testsInSameCategory.length > 1) {
+      const mediumLabel = test.medium === 'tamil' ? 'தமிழ்' : 'English';
+      return `${categoryLabel} (${mediumLabel})`;
+    }
+    
+    // Otherwise, just the category name is sufficient.
+    return categoryLabel;
   };
   
   const hasMultipleOptions = tests.length > 1;
@@ -169,8 +178,7 @@ function TopicTestGroup({ topicName, tests }: { topicName: string; tests: Test[]
                       <SelectLabel>{category}</SelectLabel>
                       {testsInCategory.map(test => (
                         <SelectItem key={test.id} value={test.id}>
-                          {/* If a category has multiple tests, use the specific label, otherwise just use the category name */}
-                          {testsInCategory.length > 1 ? getTestLabel(test) : category}
+                          {getTestLabel(test, testsInCategory)}
                         </SelectItem>
                       ))}
                     </SelectGroup>
@@ -366,3 +374,4 @@ export default function SubjectWiseTestsPage() {
 
 
     
+
