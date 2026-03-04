@@ -20,7 +20,7 @@ export default function Group4Page() {
     },
     {
       title: t('mock_tests'),
-      href: '#',
+      href: '/mock-test/group-4',
       icon: <ClipboardList className="h-8 w-8 text-purple-500" />,
     }
   ];
