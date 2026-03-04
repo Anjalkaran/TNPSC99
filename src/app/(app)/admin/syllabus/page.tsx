@@ -16,7 +16,7 @@ import {
   addDoc,
   setDoc,
 } from 'firebase/firestore';
-import { useForm, type SubmitHandler } from 'react-hook-form';
+import { useForm, type SubmitHandler, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
@@ -384,8 +384,47 @@ const syllabusMcqUploadSchema = z.object({
   uploadFormat: z.enum(['normal', 'passage', 'image']).default('normal'),
   syllabusTopicId: z.string().min(1, "Please select a syllabus topic."),
   medium: z.enum(['tamil', 'english'], { required_error: "Please select a medium." }),
+  
+  // Bulk fields
   syllabusCategory: z.string().optional(),
-  jsonInput: z.string().min(1, { message: 'JSON data is required.' }),
+  jsonInput: z.string().optional(),
+
+  // Single Image Question fields
+  questionId: z.string().optional(),
+  questionText: z.string().optional(),
+  imageUrl: z.string().optional(),
+  answerOptions: z.array(z.object({ text: z.string() })).optional(),
+  correctAnswerIndex: z.coerce.number().optional(),
+  explanation: z.string().optional(),
+  reference: z.string().optional(),
+
+}).superRefine((data, ctx) => {
+    if (data.uploadFormat === 'normal' || data.uploadFormat === 'passage') {
+        if (!data.jsonInput || data.jsonInput.length < 1) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                path: ['jsonInput'],
+                message: 'JSON data is required for these formats.',
+            });
+        }
+    }
+    if (data.uploadFormat === 'image') {
+        if (!data.questionId?.trim()) {
+            ctx.addIssue({ code: 'custom', path: ['questionId'], message: 'Question ID is required.' });
+        }
+        if (!data.questionText?.trim()) {
+            ctx.addIssue({ code: 'custom', path: ['questionText'], message: 'Question text is required.' });
+        }
+        if (!data.imageUrl?.trim()) {
+            ctx.addIssue({ code: 'custom', path: ['imageUrl'], message: 'Image URL is required.' });
+        }
+        if (!data.answerOptions || data.answerOptions.length < 2 || data.answerOptions.some(opt => !opt.text.trim())) {
+            ctx.addIssue({ code: 'custom', path: ['answerOptions'], message: 'At least two non-empty answer options are required.' });
+        }
+        if (data.correctAnswerIndex === undefined || isNaN(data.correctAnswerIndex)) {
+            ctx.addIssue({ code: 'custom', path: ['correctAnswerIndex'], message: 'Please select a correct answer.' });
+        }
+    }
 });
 
 type SyllabusMcqUploadValues = z.infer<typeof syllabusMcqUploadSchema>;
@@ -617,9 +656,27 @@ function SyllabusMcqUploadForm() {
 
     const form = useForm<SyllabusMcqUploadValues>({
         resolver: zodResolver(syllabusMcqUploadSchema),
-        defaultValues: { uploadFormat: 'normal', syllabusTopicId: '', medium: undefined, jsonInput: '', syllabusCategory: '' }
+        defaultValues: { 
+            uploadFormat: 'normal', 
+            syllabusTopicId: '', 
+            medium: undefined, 
+            jsonInput: '', 
+            syllabusCategory: '',
+            questionId: '',
+            questionText: '',
+            imageUrl: '',
+            answerOptions: [{ text: '' }, { text: '' }],
+            correctAnswerIndex: undefined,
+            explanation: '',
+            reference: '',
+        }
     });
     
+    const { fields, append, remove } = useFieldArray({
+        control: form.control,
+        name: "answerOptions",
+    });
+
     const uploadFormat = form.watch('uploadFormat');
 
     useEffect(() => {
@@ -739,163 +796,229 @@ function SyllabusMcqUploadForm() {
         try {
             if (!firestore) throw new Error("Firestore not initialized");
 
-            let parsedJson: any;
-            try {
-                parsedJson = JSON.parse(values.jsonInput);
-            } catch (error) {
-                toast({ variant: 'destructive', title: "Invalid JSON", description: "The provided JSON is malformed and could not be parsed." });
-                setIsSubmitting(false);
-                return;
-            }
-            
-            let effectiveUploadFormat = values.uploadFormat;
-             // Auto-detect format
-            if (Array.isArray(parsedJson) && parsedJson.length > 0 && parsedJson[0]?.passage && Array.isArray(parsedJson[0]?.questions)) {
-                if (values.uploadFormat !== 'passage') {
-                    toast({
-                        variant: 'destructive',
-                        title: "Format Mismatch",
-                        description: "You seem to have provided Passage format JSON. Please select the 'Passage' format.",
-                    });
-                    setIsSubmitting(false);
-                    return;
-                }
-                effectiveUploadFormat = 'passage';
-            }
-            
             const selectedTopic = syllabusTopics?.find(t => t.id === values.syllabusTopicId);
             if (!selectedTopic) {
                 toast({ variant: 'destructive', title: "Syllabus topic not found" });
                 setIsSubmitting(false);
                 return;
             }
+            
+            if (values.uploadFormat === 'image') {
+                const { questionId, questionText, imageUrl, answerOptions, correctAnswerIndex, explanation, reference } = values;
 
-            if (effectiveUploadFormat === 'passage') {
-                const passageDataArray = parsedJson as { id: string; passage: string; questions: any[] }[];
-                if (!Array.isArray(passageDataArray)) {
-                    throw new Error("Passage JSON must be an array of passage objects.");
+                // This check is redundant due to zod schema but good for type safety
+                if (!questionId || !questionText || !imageUrl || !answerOptions || correctAnswerIndex === undefined) {
+                    toast({ variant: 'destructive', title: "Missing Fields", description: "Please fill all required fields for the image question." });
+                    setIsSubmitting(false);
+                    return;
                 }
-                for (const passageData of passageDataArray) {
-                    if (!passageData.id || !passageData.passage || !Array.isArray(passageData.questions)) {
-                         throw new Error("Each passage object in the array must have 'id', 'passage', and a 'questions' array.");
+                
+                const batch = writeBatch(firestore);
+                const questionsCollectionRef = collection(firestore, 'questions');
+                const questionRef = doc(questionsCollectionRef, questionId);
+
+                const newQuestionData: Partial<Question> = {
+                    id: questionId,
+                    text: questionText,
+                    imageUrl,
+                    answerOptions: answerOptions.map(opt => opt.text),
+                    correctAnswerIndex,
+                    explanation: explanation || '',
+                    reference: reference || '',
+                    category: 'Image Question', // Hardcoded for this form type
+                };
+                
+                batch.set(questionRef, newQuestionData, { merge: true });
+
+                const testTitle = `${selectedTopic.examGroup} - ${selectedTopic.unitName} - ${selectedTopic.topic} - Image MCQs`;
+                const testsCollectionRef = collection(firestore, 'tests');
+                
+                const testQuery = query(testsCollectionRef, 
+                    where('syllabusTopic', '==', selectedTopic.topic),
+                    where('syllabusUnitName', '==', selectedTopic.unitName),
+                    where('medium', '==', values.medium),
+                    where('syllabusCategory', '==', 'Image MCQs')
+                );
+                
+                await runTransaction(firestore, async (transaction) => {
+                    const testSnapshot = await getDocs(testQuery);
+                    if (testSnapshot.empty) {
+                        const newTestRef = doc(testsCollectionRef);
+                        const newTest: Partial<Test> = {
+                            id: newTestRef.id,
+                            title: testTitle,
+                            questionIds: [questionId],
+                            examGroup: selectedTopic.examGroup,
+                            medium: values.medium,
+                            syllabusPart: selectedTopic.part,
+                            syllabusUnit: selectedTopic.unit,
+                            syllabusUnitName: selectedTopic.unitName,
+                            syllabusTopic: selectedTopic.topic,
+                            syllabusCategory: 'Image MCQs',
+                        };
+                        transaction.set(newTestRef, newTest);
+                    } else {
+                        const testDoc = testSnapshot.docs[0];
+                        const existingQuestionIds = testDoc.data().questionIds || [];
+                        const updatedQuestionIds = [...new Set([...existingQuestionIds, questionId])];
+                        transaction.update(testDoc.ref, { questionIds: updatedQuestionIds });
                     }
-                     for (const q of passageData.questions) {
-                        if (!q.id || !q.text || !q.answerOptions || !Array.isArray(q.answerOptions) || q.correctAnswerIndex === undefined) {
-                            throw new Error(`Invalid question object in passage '${passageData.id}'. Each question must have id, text, answerOptions (array), and correctAnswerIndex.`);
-                        }
-                    }
+                });
+
+                await batch.commit();
+                toast({ title: "Upload Successful", description: `Image question '${questionId}' was added.` });
+
+                // Reset only image-specific form fields
+                form.reset({
+                    ...form.getValues(),
+                    questionId: '',
+                    questionText: '',
+                    imageUrl: '',
+                    answerOptions: [{ text: '' }, { text: '' }],
+                    correctAnswerIndex: undefined,
+                    explanation: '',
+                    reference: '',
+                });
+
+            } else { // 'normal' or 'passage'
+                let parsedJson: any;
+                try {
+                    parsedJson = JSON.parse(values.jsonInput || '[]');
+                } catch (error) {
+                    toast({ variant: 'destructive', title: "Invalid JSON", description: "The provided JSON is malformed." });
+                    setIsSubmitting(false);
+                    return;
                 }
-
-                let totalQuestionsUploaded = 0;
-                for (const passageData of passageDataArray) {
-                    const { id: testId, passage, questions } = passageData;
-                    const questionsBatch = writeBatch(firestore);
-                    const questionsCollectionRef = collection(firestore, 'questions');
-                    const newQuestionIds: string[] = [];
-
-                    for (const q of questions) {
-                        const questionRef = doc(questionsCollectionRef, q.id);
-                        const payload: any = { ...q, syllabusTopicId: selectedTopic.id };
-                        questionsBatch.set(questionRef, payload, { merge: true });
-                        newQuestionIds.push(q.id);
-                    }
-                    await questionsBatch.commit();
-                    totalQuestionsUploaded += newQuestionIds.length;
-                    
-                    const testTitle = `${selectedTopic.examGroup} - ${selectedTopic.unitName} - ${selectedTopic.topic} - Passage - ${passageData.id}`;
-                    const testsCollectionRef = collection(firestore, 'tests');
-                    const testRef = doc(testsCollectionRef, testId);
-
-                    const newTest: Partial<Test> = {
-                        id: testId,
-                        title: testTitle,
-                        passage: passage,
-                        questionIds: newQuestionIds,
-                        examGroup: selectedTopic.examGroup,
-                        medium: values.medium,
-                        syllabusPart: selectedTopic.part,
-                        syllabusUnit: selectedTopic.unit,
-                        syllabusUnitName: selectedTopic.unitName,
-                        syllabusTopic: selectedTopic.topic,
-                        syllabusCategory: 'Passage Comprehension',
-                    };
-                    
-                    await setDoc(testRef, newTest, { merge: true });
-                }
-
-                toast({ title: "Upload Successful", description: `${passageDataArray.length} passages and ${totalQuestionsUploaded} total questions uploaded.` });
-
-            } else { // Normal or Image format
-                 const questions = parsedJson as any[];
-                if (!Array.isArray(questions) || questions.length === 0) {
-                  throw new Error('JSON must be a non-empty array of questions.');
-                }
-                for (const q of questions) {
-                  if (!q.id || !q.text || !q.answerOptions || !Array.isArray(q.answerOptions) || q.correctAnswerIndex === undefined) {
-                    throw new Error('Each question object must have id, text, answerOptions (array), and correctAnswerIndex.');
+                
+                let effectiveUploadFormat = values.uploadFormat;
+                // Auto-detect format to be more user-friendly
+                if (Array.isArray(parsedJson) && parsedJson.length > 0) {
+                  if (parsedJson[0]?.passage && Array.isArray(parsedJson[0]?.questions)) {
+                    effectiveUploadFormat = 'passage';
+                  } else if(parsedJson[0]?.imageUrl) {
+                    effectiveUploadFormat = 'image';
                   }
                 }
-                
-                const questionsByCategory: Record<string, any[]> = questions.reduce((acc, q) => {
-                    const category = q.category || values.syllabusCategory || 'General';
-                    if (!acc[category]) acc[category] = [];
-                    acc[category].push(q);
-                    return acc;
-                }, {} as Record<string, any[]>);
 
-                for (const [categoryName, categoryQuestions] of Object.entries(questionsByCategory)) {
-                    const questionsBatch = writeBatch(firestore);
-                    const questionsCollectionRef = collection(firestore, 'questions');
-                    const newQuestionIds: string[] = [];
-                    categoryQuestions.forEach(q => {
-                        const questionRef = doc(questionsCollectionRef, q.id);
-                        const payload: any = { ...q, syllabusTopicId: selectedTopic.id, category: categoryName };
-                        questionsBatch.set(questionRef, payload, { merge: true });
-                        newQuestionIds.push(q.id);
+                if (effectiveUploadFormat !== values.uploadFormat) {
+                    toast({
+                      variant: 'destructive',
+                      title: "Format Mismatch",
+                      description: `You seem to have provided ${effectiveUploadFormat} format JSON. Please select the '${effectiveUploadFormat}' format.`,
                     });
-                    await questionsBatch.commit();
-                    
-                    const testTitle = `${selectedTopic.examGroup} - ${selectedTopic.unitName} - ${selectedTopic.topic}` + (categoryName !== 'General' ? ` - ${categoryName}` : '');
-                    const testsCollectionRef = collection(firestore, 'tests');
-                    
-                    const testQuery = query(testsCollectionRef, 
-                        where('syllabusTopic', '==', selectedTopic.topic),
-                        where('syllabusUnitName', '==', selectedTopic.unitName),
-                        where('medium', '==', values.medium),
-                        where('syllabusCategory', '==', categoryName)
-                    );
-                    
-                    await runTransaction(firestore, async (transaction) => {
-                        const testSnapshot = await getDocs(testQuery);
-                        if (testSnapshot.empty) {
-                            const newTestRef = doc(testsCollectionRef);
-                            const newTest: Partial<Test> = {
-                                id: newTestRef.id,
-                                title: testTitle,
-                                questionIds: newQuestionIds,
-                                examGroup: selectedTopic.examGroup,
-                                medium: values.medium,
-                                syllabusPart: selectedTopic.part,
-                                syllabusUnit: selectedTopic.unit,
-                                syllabusUnitName: selectedTopic.unitName,
-                                syllabusTopic: selectedTopic.topic,
-                                syllabusCategory: categoryName,
-                            };
-                            transaction.set(newTestRef, newTest);
-                        } else {
-                            const testDoc = testSnapshot.docs[0];
-                            const existingQuestionIds = testDoc.data().questionIds || [];
-                            const updatedQuestionIds = [...new Set([...existingQuestionIds, ...newQuestionIds])];
-                            transaction.update(testDoc.ref, { questionIds: updatedQuestionIds });
-                        }
-                    });
+                    setIsSubmitting(false);
+                    return;
                 }
                 
-                toast({ title: "Upload Successful", description: `${questions.length} questions uploaded across ${Object.keys(questionsByCategory).length} categories.` });
-            }
+                if (effectiveUploadFormat === 'passage') {
+                    const passageDataArray = parsedJson as { id: string; passage: string; questions: any[] }[];
+                    if (!Array.isArray(passageDataArray)) throw new Error("Passage JSON must be an array of passage objects.");
+                    
+                    let totalQuestionsUploaded = 0;
+                    for (const passageData of passageDataArray) {
+                        if (!passageData.id || !passageData.passage || !Array.isArray(passageData.questions)) throw new Error("Each passage object must have 'id', 'passage', and a 'questions' array.");
+                        for (const q of passageData.questions) {
+                            if (!q.id || !q.text || !q.answerOptions || !Array.isArray(q.answerOptions) || q.correctAnswerIndex === undefined) throw new Error(`Invalid question object in passage '${passageData.id}'.`);
+                        }
 
-            form.setValue('jsonInput', '');
-            form.setValue('syllabusCategory', '');
+                        const questionsBatch = writeBatch(firestore);
+                        const questionsCollectionRef = collection(firestore, 'questions');
+                        const newQuestionIds: string[] = [];
+
+                        for (const q of passageData.questions) {
+                            const questionRef = doc(questionsCollectionRef, q.id);
+                            questionsBatch.set(questionRef, { ...q, category: 'Passage Comprehension' }, { merge: true });
+                            newQuestionIds.push(q.id);
+                        }
+                        await questionsBatch.commit();
+                        totalQuestionsUploaded += newQuestionIds.length;
+                        
+                        const testTitle = `${selectedTopic.examGroup} - ${selectedTopic.unitName} - ${selectedTopic.topic} - Passage - ${passageData.id}`;
+                        const testsCollectionRef = collection(firestore, 'tests');
+                        const testRef = doc(testsCollectionRef, passageData.id);
+
+                        const newTest: Partial<Test> = {
+                            id: passageData.id,
+                            title: testTitle,
+                            passage: passageData.passage,
+                            questionIds: newQuestionIds,
+                            examGroup: selectedTopic.examGroup,
+                            medium: values.medium,
+                            syllabusPart: selectedTopic.part,
+                            syllabusUnit: selectedTopic.unit,
+                            syllabusUnitName: selectedTopic.unitName,
+                            syllabusTopic: selectedTopic.topic,
+                            syllabusCategory: 'Passage Comprehension',
+                        };
+                        
+                        await setDoc(testRef, newTest, { merge: true });
+                    }
+                    toast({ title: "Upload Successful", description: `${passageDataArray.length} passages and ${totalQuestionsUploaded} questions uploaded.` });
+                } else { // 'normal' or 'image' via JSON
+                    const questions = parsedJson as any[];
+                    if (!Array.isArray(questions) || questions.length === 0) throw new Error('JSON must be a non-empty array.');
+                    for (const q of questions) {
+                        if (!q.id || !q.text || !q.answerOptions || !Array.isArray(q.answerOptions) || q.correctAnswerIndex === undefined) throw new Error('Each question in JSON needs id, text, answerOptions (array), and correctAnswerIndex.');
+                    }
+                    
+                    const questionsByCategory: Record<string, any[]> = questions.reduce((acc, q) => {
+                        const category = q.category || values.syllabusCategory || 'General';
+                        if (!acc[category]) acc[category] = [];
+                        acc[category].push(q);
+                        return acc;
+                    }, {} as Record<string, any[]>);
+
+                    for (const [categoryName, categoryQuestions] of Object.entries(questionsByCategory)) {
+                        const questionsBatch = writeBatch(firestore);
+                        const questionsCollectionRef = collection(firestore, 'questions');
+                        const newQuestionIds: string[] = [];
+                        categoryQuestions.forEach(q => {
+                            const questionRef = doc(questionsCollectionRef, q.id);
+                            questionsBatch.set(questionRef, { ...q, category: categoryName }, { merge: true });
+                            newQuestionIds.push(q.id);
+                        });
+                        await questionsBatch.commit();
+                        
+                        const testTitle = `${selectedTopic.examGroup} - ${selectedTopic.unitName} - ${selectedTopic.topic}` + (categoryName !== 'General' ? ` - ${categoryName}` : '');
+                        const testsCollectionRef = collection(firestore, 'tests');
+                        
+                        const testQuery = query(testsCollectionRef, 
+                            where('syllabusTopic', '==', selectedTopic.topic),
+                            where('syllabusUnitName', '==', selectedTopic.unitName),
+                            where('medium', '==', values.medium),
+                            where('syllabusCategory', '==', categoryName)
+                        );
+                        
+                        await runTransaction(firestore, async (transaction) => {
+                            const testSnapshot = await getDocs(testQuery);
+                            if (testSnapshot.empty) {
+                                const newTestRef = doc(testsCollectionRef);
+                                const newTest: Partial<Test> = {
+                                    id: newTestRef.id,
+                                    title: testTitle,
+                                    questionIds: newQuestionIds,
+                                    examGroup: selectedTopic.examGroup,
+                                    medium: values.medium,
+                                    syllabusPart: selectedTopic.part,
+                                    syllabusUnit: selectedTopic.unit,
+                                    syllabusUnitName: selectedTopic.unitName,
+                                    syllabusTopic: selectedTopic.topic,
+                                    syllabusCategory: categoryName,
+                                };
+                                transaction.set(newTestRef, newTest);
+                            } else {
+                                const testDoc = testSnapshot.docs[0];
+                                const existingQuestionIds = testDoc.data().questionIds || [];
+                                const updatedQuestionIds = [...new Set([...existingQuestionIds, ...newQuestionIds])];
+                                transaction.update(testDoc.ref, { questionIds: updatedQuestionIds });
+                            }
+                        });
+                    }
+                    toast({ title: "Upload Successful", description: `${questions.length} questions uploaded across ${Object.keys(questionsByCategory).length} categories.` });
+                }
+                form.setValue('jsonInput', '');
+                form.setValue('syllabusCategory', '');
+            }
         } catch (error: any) {
           toast({ variant: 'destructive', title: 'Upload Error', description: error.message });
         } finally {
@@ -989,40 +1112,117 @@ function SyllabusMcqUploadForm() {
                                 </FormItem>
                                 )}
                             />
-                            {uploadFormat === 'normal' && (
-                                <FormField
-                                    control={form.control}
-                                    name="syllabusCategory"
-                                    render={({ field }) => (
+                            {uploadFormat === 'image' ? (
+                                <div className="p-4 border rounded-md space-y-4">
+                                    <h3 className="font-medium">Single Image Question</h3>
+                                     <FormField
+                                        control={form.control} name="questionId"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Unique Question ID</FormLabel>
+                                                <FormControl><Input placeholder="e.g., VENN-DIAGRAM-01" {...field} /></FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control} name="imageUrl"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Image URL</FormLabel>
+                                                <FormControl><Input placeholder="https://example.com/image.png" {...field} /></FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control} name="questionText"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Question Text</FormLabel>
+                                                <FormControl><Textarea placeholder="What does this diagram represent?" {...field} /></FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
                                     <FormItem>
-                                        <FormLabel>Question Category (Optional)</FormLabel>
-                                        <FormControl>
-                                            <Input placeholder="e.g., kootru kaarani" {...field} />
-                                        </FormControl>
-                                        <FormDescription>
-                                            Assign a category to all questions in this upload. Will be overridden by 'category' in JSON.
-                                        </FormDescription>
-                                        <FormMessage />
+                                        <FormLabel>Answer Options</FormLabel>
+                                        <RadioGroup onValueChange={(val) => form.setValue('correctAnswerIndex', parseInt(val))} value={String(form.watch('correctAnswerIndex'))} >
+                                            <div className="space-y-2">
+                                            {fields.map((field, index) => (
+                                                <div key={field.id} className="flex items-center gap-2">
+                                                    <FormControl>
+                                                        <RadioGroupItem value={String(index)} id={`correct-option-${index}`} />
+                                                    </FormControl>
+                                                    <Label htmlFor={`correct-option-${index}`} className="sr-only">Set option {index + 1} as correct</Label>
+                                                    <FormField
+                                                        control={form.control} name={`answerOptions.${index}.text`}
+                                                        render={({ field }) => (<Input {...field} placeholder={`Option ${index + 1}`} />)}
+                                                    />
+                                                    <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} disabled={fields.length <= 2}>
+                                                        <Trash className="h-4 w-4 text-destructive" />
+                                                    </Button>
+                                                </div>
+                                            ))}
+                                            </div>
+                                        </RadioGroup>
+                                        <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => append({ text: '' })}>Add Option</Button>
+                                        <FormMessage>{form.formState.errors.answerOptions?.message}</FormMessage>
                                     </FormItem>
+                                    <FormField
+                                        control={form.control} name="explanation"
+                                        render={({ field }) => (
+                                            <FormItem><FormLabel>Explanation (Optional)</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control} name="reference"
+                                        render={({ field }) => (
+                                            <FormItem><FormLabel>Reference (Optional)</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                        )}
+                                    />
+                                </div>
+                            ) : (
+                                <>
+                                    {uploadFormat === 'normal' && (
+                                        <FormField
+                                            control={form.control}
+                                            name="syllabusCategory"
+                                            render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Question Category (Optional)</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="e.g., kootru kaarani" {...field} />
+                                                </FormControl>
+                                                <FormDescription>
+                                                    Assign a category to all questions in this upload. Will be overridden by 'category' in JSON.
+                                                </FormDescription>
+                                                <FormMessage />
+                                            </FormItem>
+                                            )}
+                                        />
                                     )}
-                                />
+                                    <FormField
+                                        control={form.control}
+                                        name="jsonInput"
+                                        render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel htmlFor="json-input">{t('json_data')}</FormLabel>
+                                            <FormControl><Textarea id="json-input" placeholder='[{"id": "q1", "category": "kootru kaarani", ...}]' className="h-48 font-mono text-sm" {...field}/></FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                        )}
+                                    />
+                                    <div className="space-y-2">
+                                        <Label htmlFor="json-file">{t('or_upload_file')}</Label>
+                                        <Input id="json-file" type="file" accept=".json" onChange={handleFileChange} />
+                                    </div>
+                                </>
                             )}
-                            <FormField
-                                control={form.control}
-                                name="jsonInput"
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel htmlFor="json-input">{t('json_data')}</FormLabel>
-                                    <FormControl><Textarea id="json-input" placeholder='[{"id": "q1", "category": "kootru kaarani", ...}]' className="h-48 font-mono text-sm" {...field}/></FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-                            <div className="space-y-2">
-                                <Label htmlFor="json-file">{t('or_upload_file')}</Label>
-                                <Input id="json-file" type="file" accept=".json" onChange={handleFileChange} />
-                            </div>
-                            <Button type="submit" disabled={isSubmitting}>Submit Questions</Button>
+                           
+                            <Button type="submit" disabled={isSubmitting}>
+                                {uploadFormat === 'image' ? 'Submit Question' : 'Submit Questions'}
+                            </Button>
                         </form>
                     </Form>
                 </CardContent>
