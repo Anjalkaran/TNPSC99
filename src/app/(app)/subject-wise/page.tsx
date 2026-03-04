@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
@@ -107,7 +108,7 @@ function TestProgressBadge({ testId }: { testId: string }) {
     )
 }
 
-function TopicTestGroup({ topicName, tests }: { topicName: string; tests: Test[] }) {
+function TopicTestGroup({ topicName, tests, part }: { topicName: string; tests: Test[]; part: string }) {
   const { t } = useTranslation();
   const [selectedTestId, setSelectedTestId] = useState('');
 
@@ -175,7 +176,7 @@ function TopicTestGroup({ topicName, tests }: { topicName: string; tests: Test[]
                 <SelectContent>
                   {Object.entries(testsByCategory).map(([category, testsInCategory]) => (
                     <SelectGroup key={category}>
-                      <SelectLabel>{category}</SelectLabel>
+                      {part !== 'பகுதி ஆ' && <SelectLabel>{category}</SelectLabel>}
                       {testsInCategory.map(test => (
                         <SelectItem key={test.id} value={test.id}>
                           {getTestLabel(test, testsInCategory)}
@@ -343,7 +344,7 @@ export default function SubjectWiseTestsPage() {
                                                                   <AccordionContent className="pt-0 p-4">
                                                                     <div className="space-y-4">
                                                                       {Object.entries(testsByTopic).map(([topicName, testsForTopic]) => (
-                                                                        <TopicTestGroup key={topicName} topicName={topicName} tests={testsForTopic} />
+                                                                        <TopicTestGroup key={topicName} topicName={topicName} tests={testsForTopic} part={part} />
                                                                       ))}
                                                                     </div>
                                                                   </AccordionContent>
@@ -374,4 +375,5 @@ export default function SubjectWiseTestsPage() {
 
 
     
+
 
