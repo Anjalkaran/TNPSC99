@@ -381,7 +381,7 @@ function ManageSyllabusStructure() {
 }
 
 const syllabusMcqUploadSchema = z.object({
-  uploadFormat: z.enum(['normal', 'passage']).default('normal'),
+  uploadFormat: z.enum(['normal', 'passage', 'image']).default('normal'),
   syllabusTopicId: z.string().min(1, "Please select a syllabus topic."),
   medium: z.enum(['tamil', 'english'], { required_error: "Please select a medium." }),
   syllabusCategory: z.string().optional(),
@@ -721,6 +721,18 @@ function SyllabusMcqUploadForm() {
     ]
   }
 ]`;
+    const imageJsonStructureExample = `[
+  {
+    "id": "your-unique-question-id-1",
+    "text": "What does this Venn diagram represent?",
+    "imageUrl": "https://your-host.com/venn-diagram.png",
+    "answerOptions": ["Option A", "Option B", "Option C", "Option D"],
+    "correctAnswerIndex": 1,
+    "category": "Venn Diagram",
+    "explanation": "The diagram shows the intersection of two sets.",
+    "reference": "Aptitude Book, Page 50"
+  }
+]`;
     
     const onSubmit: SubmitHandler<SyllabusMcqUploadValues> = async (values) => {
         setIsSubmitting(true);
@@ -739,11 +751,11 @@ function SyllabusMcqUploadForm() {
             let effectiveUploadFormat = values.uploadFormat;
              // Auto-detect format
             if (Array.isArray(parsedJson) && parsedJson.length > 0 && parsedJson[0]?.passage && Array.isArray(parsedJson[0]?.questions)) {
-                if (values.uploadFormat === 'normal') {
+                if (values.uploadFormat !== 'passage') {
                     toast({
                         variant: 'destructive',
                         title: "Format Mismatch",
-                        description: "You've pasted Passage format JSON but have 'Normal' format selected. Please select the 'Passage' format.",
+                        description: "You seem to have provided Passage format JSON. Please select the 'Passage' format.",
                     });
                     setIsSubmitting(false);
                     return;
@@ -813,7 +825,7 @@ function SyllabusMcqUploadForm() {
 
                 toast({ title: "Upload Successful", description: `${passageDataArray.length} passages and ${totalQuestionsUploaded} total questions uploaded.` });
 
-            } else { // Normal format
+            } else { // Normal or Image format
                  const questions = parsedJson as any[];
                 if (!Array.isArray(questions) || questions.length === 0) {
                   throw new Error('JSON must be a non-empty array of questions.');
@@ -921,6 +933,10 @@ function SyllabusMcqUploadForm() {
                                             <FormControl><RadioGroupItem value="passage" /></FormControl>
                                             <FormLabel className="font-normal">Passage</FormLabel>
                                         </FormItem>
+                                        <FormItem className="flex items-center space-x-2 space-y-0">
+                                            <FormControl><RadioGroupItem value="image" /></FormControl>
+                                            <FormLabel className="font-normal">Image</FormLabel>
+                                        </FormItem>
                                         </RadioGroup>
                                     </FormControl>
                                     <FormMessage />
@@ -1014,11 +1030,19 @@ function SyllabusMcqUploadForm() {
             <div className="space-y-8">
                  <Card>
                     <CardHeader>
-                        <CardTitle>{uploadFormat === 'normal' ? 'Normal JSON Structure' : 'Passage JSON Structure'}</CardTitle>
+                        <CardTitle>{
+                            uploadFormat === 'normal' ? 'Normal JSON Structure' : 
+                            uploadFormat === 'passage' ? 'Passage JSON Structure' : 
+                            'Image MCQ JSON Structure'
+                        }</CardTitle>
                     </CardHeader>
                     <CardContent className="p-4 bg-muted rounded-md">
                         <pre className="text-xs font-mono overflow-auto max-h-80">
-                            <code>{uploadFormat === 'normal' ? syllabusJsonStructureExample : passageJsonStructureExample}</code>
+                            <code>{
+                                uploadFormat === 'normal' ? syllabusJsonStructureExample : 
+                                uploadFormat === 'passage' ? passageJsonStructureExample :
+                                imageJsonStructureExample
+                            }</code>
                         </pre>
                     </CardContent>
                 </Card>

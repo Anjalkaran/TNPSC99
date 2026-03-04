@@ -2,7 +2,7 @@
 
 import { useRouter, notFound, useParams } from 'next/navigation';
 import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc, updateDoc, collection, query, where, getDocs, writeBatch, arrayRemove } from 'firebase/firestore';
+import { doc, updateDoc, collection, query, where, getDocs, writeBatch, arrayRemove, deleteField } from 'firebase/firestore';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -32,6 +32,7 @@ import {
 
 const questionEditSchema = z.object({
   text: z.string().min(1, 'Question text is required.'),
+  imageUrl: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
   answerOptions: z.array(z.object({ text: z.string().min(1, 'Option text cannot be empty.') })).min(2, 'Must have at least two options.'),
   correctAnswerIndex: z.coerce.number().min(0, 'Please select a correct answer.'),
   explanation: z.string().optional(),
@@ -54,6 +55,7 @@ export default function EditQuestionPage() {
     resolver: zodResolver(questionEditSchema),
     defaultValues: {
       text: '',
+      imageUrl: '',
       answerOptions: [],
       correctAnswerIndex: 0,
       explanation: '',
@@ -70,6 +72,7 @@ export default function EditQuestionPage() {
     if (question) {
       form.reset({
         text: question.text,
+        imageUrl: question.imageUrl || '',
         answerOptions: question.answerOptions.map(opt => ({ text: opt })),
         correctAnswerIndex: question.correctAnswerIndex,
         explanation: question.explanation || '',
@@ -82,10 +85,18 @@ export default function EditQuestionPage() {
   const onSubmit = async (values: QuestionEditFormValues) => {
     if (!questionRef) return;
     
-    const valuesToSubmit = {
-        ...values,
-        answerOptions: values.answerOptions.map(opt => opt.text),
+    const { answerOptions, ...rest } = values;
+
+    const valuesToSubmit: { [key: string]: any } = {
+        ...rest,
+        answerOptions: answerOptions.map(opt => opt.text),
     };
+    
+    if (values.imageUrl) {
+        valuesToSubmit.imageUrl = values.imageUrl;
+    } else {
+        valuesToSubmit.imageUrl = deleteField();
+    }
 
     try {
       await updateDoc(questionRef, valuesToSubmit);
@@ -194,6 +205,20 @@ export default function EditQuestionPage() {
                     <FormLabel>Question Text</FormLabel>
                     <FormControl>
                       <Textarea {...field} rows={4} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="imageUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Image URL (Optional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://example.com/image.png" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

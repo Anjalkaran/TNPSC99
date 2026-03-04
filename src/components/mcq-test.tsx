@@ -502,6 +502,15 @@ export function McqTest({
                     <p className="whitespace-pre-line text-muted-foreground">{test.passage}</p>
                 </div>
             )}
+            {currentQuestion.imageUrl && (
+              <div className="mb-4 flex justify-center">
+                <img
+                  src={currentQuestion.imageUrl}
+                  alt="Question illustration"
+                  className="max-w-full h-auto max-h-[300px] rounded-md object-contain border"
+                />
+              </div>
+            )}
           <div className="flex justify-between items-start">
               <p className="font-semibold text-lg mb-6 flex-1 whitespace-pre-line">{formatQuestionText(currentQuestion.text)}</p>
               <div className="flex items-center">

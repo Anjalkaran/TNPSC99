@@ -5,6 +5,7 @@ import { DocumentData, DocumentReference } from 'firebase/firestore';
 export interface Question {
   id: string;
   text: string;
+  imageUrl?: string;
   subjectId?: string;
   classId?: string;
   unitId?: string;
