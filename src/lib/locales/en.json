@@ -275,12 +275,14 @@
     "signup_error": "Signup Error",
     "email_already_in_use": "This email is already in use.",
     "syllabus_wise_tests": "Syllabus Wise Tests",
-    "select_category_placeholder": "Select a category"
+    "select_category_placeholder": "Select a category",
+    "mock_tests": "Mock Tests"
 }
     
     
 
     
+
 
 
 

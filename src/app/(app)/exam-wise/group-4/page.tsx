@@ -2,7 +2,7 @@
 import { useTranslation } from '@/hooks/use-translation';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Archive, ArrowRight, BookOpenCheck } from 'lucide-react';
+import { Archive, ArrowRight, BookOpenCheck, ClipboardList } from 'lucide-react';
 
 export default function Group4Page() {
     const { t } = useTranslation();
@@ -17,6 +17,11 @@ export default function Group4Page() {
       title: t('syllabus_wise_tests'),
       href: '/subject-wise',
       icon: <BookOpenCheck className="h-8 w-8 text-blue-500" />,
+    },
+    {
+      title: t('mock_tests'),
+      href: '#',
+      icon: <ClipboardList className="h-8 w-8 text-purple-500" />,
     }
   ];
 
