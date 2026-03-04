@@ -99,6 +99,7 @@ export async function generateGroup4MockTest(userId: string, correctlyAnsweredId
             description: "A dynamically generated mock test for Group IV.",
             questionIds: allMockQuestionIds,
             examGroup: 'Group IV',
+            isMockTest: true,
         };
         
         await setDoc(newTestRef, newMockTest);

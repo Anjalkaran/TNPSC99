@@ -52,7 +52,10 @@ export default function UserExamHistoryPage() {
             <TableBody>
               {testAttempts.map((attempt) => (
                 <TableRow key={attempt.id}>
-                  <TableCell className="font-medium">{attempt.testTitle ?? 'Unknown Test'}</TableCell>
+                  <TableCell className="font-medium">
+                    {attempt.testTitle ?? 'Unknown Test'}
+                    {attempt.isMockTest && <Badge variant="secondary" className="ml-2">Mock Test</Badge>}
+                  </TableCell>
                   <TableCell>{format(new Date(attempt.lastUpdatedDate), 'PPp')}</TableCell>
                    <TableCell>
                       <Badge variant={attempt.status === 'completed' ? 'default' : 'secondary'}>

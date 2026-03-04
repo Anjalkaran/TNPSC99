@@ -25,7 +25,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/hooks/use-translation';
@@ -151,6 +150,7 @@ export function McqTest({
       sessionQuestionIds,
       status,
       currentQuestionIndex,
+      isMockTest: test.isMockTest || false,
       ...(status === 'completed' && { correctlyAnsweredQuestionIds, incorrectlyAnsweredQuestionIds })
     };
 

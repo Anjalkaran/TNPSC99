@@ -36,6 +36,7 @@ export interface Test {
   unitNumber?: number;
   unitName?: string;
   isPreviousYearPaper?: boolean;
+  isMockTest?: boolean;
   year?: number;
   referencePageOffset?: number;
   bookType?: 'samacheer' | 'old';
@@ -122,6 +123,7 @@ export interface UserTestAttempt {
   sessionQuestionIds?: string[];
   status: 'in-progress' | 'completed';
   currentQuestionIndex: number;
+  isMockTest?: boolean;
 }
 
 export interface BookmarkedQuestion {
