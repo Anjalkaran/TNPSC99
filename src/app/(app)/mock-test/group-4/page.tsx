@@ -2,9 +2,11 @@
     
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useUser } from '@/firebase';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, where } from 'firebase/firestore';
+import type { UserTestAttempt } from '@/lib/types';
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useTransition } from 'react';
 import { generateGroup4MockTest } from './actions';
 import { Loader2, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -12,9 +14,19 @@ import Link from 'next/link';
 
 export default function Group4MockTestPage() {
     const { user } = useUser();
+    const firestore = useFirestore();
     const router = useRouter();
     const { toast } = useToast();
     const [isPending, startTransition] = useTransition();
+
+    const completedAttemptsQuery = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return query(
+            collection(firestore, `users/${user.uid}/testAttempts`),
+            where('status', '==', 'completed')
+        );
+    }, [user, firestore]);
+    const { data: completedAttempts, isLoading: isLoadingAttempts } = useCollection<UserTestAttempt>(completedAttemptsQuery);
 
     const handleGenerateTest = async () => {
         if (!user) {
@@ -22,8 +34,17 @@ export default function Group4MockTestPage() {
             return;
         }
 
+        const correctlyAnsweredIds = new Set<string>();
+        if (completedAttempts) {
+            completedAttempts.forEach(attempt => {
+                if (attempt.correctlyAnsweredQuestionIds) {
+                    attempt.correctlyAnsweredQuestionIds.forEach((id: string) => correctlyAnsweredIds.add(id));
+                }
+            });
+        }
+
         startTransition(async () => {
-            const result = await generateGroup4MockTest(user.uid);
+            const result = await generateGroup4MockTest(user.uid, Array.from(correctlyAnsweredIds));
             if (result.error) {
                 toast({ variant: 'destructive', title: 'Error Generating Test', description: result.error });
             } else if (result.testId) {
@@ -32,6 +53,8 @@ export default function Group4MockTestPage() {
             }
         });
     };
+
+    const isGenerating = isPending || isLoadingAttempts;
 
     return (
         <div className="container mx-auto px-4 py-8 md:py-12">
@@ -53,8 +76,8 @@ export default function Group4MockTestPage() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="text-center">
-                    <Button onClick={handleGenerateTest} disabled={isPending} size="lg">
-                        {isPending ? (
+                    <Button onClick={handleGenerateTest} disabled={isGenerating} size="lg">
+                        {isGenerating ? (
                             <>
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                 Generating Test...

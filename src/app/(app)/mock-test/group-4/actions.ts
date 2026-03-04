@@ -36,7 +36,7 @@ function shuffleArray<T>(array: T[]): T[] {
   return newArray;
 }
 
-export async function generateGroup4MockTest(userId: string): Promise<{ testId?: string; error?: string; }> {
+export async function generateGroup4MockTest(userId: string, correctlyAnsweredIds: string[]): Promise<{ testId?: string; error?: string; }> {
     if (!userId) {
         return { error: "Authentication required." };
     }
@@ -44,17 +44,8 @@ export async function generateGroup4MockTest(userId: string): Promise<{ testId?:
     const { firestore } = initializeFirebaseServer();
 
     try {
-        // 1. Get user's previously correctly answered questions
-        const correctlyAnsweredIds = new Set<string>();
-        const attemptsRef = collection(firestore, `users/${userId}/testAttempts`);
-        const completedAttemptsQuery = query(attemptsRef, where('status', '==', 'completed'));
-        const completedAttemptsSnap = await getDocs(completedAttemptsQuery);
-        completedAttemptsSnap.forEach(doc => {
-            const attempt = doc.data() as UserTestAttempt;
-            if (attempt.correctlyAnsweredQuestionIds) {
-                attempt.correctlyAnsweredQuestionIds.forEach((id: string) => correctlyAnsweredIds.add(id));
-            }
-        });
+        // 1. Use the passed-in list of correctly answered questions
+        const correctlyAnsweredSet = new Set<string>(correctlyAnsweredIds);
 
         // 2. Fetch all Group IV syllabus tests once
         const testsRef = collection(firestore, 'tests');
@@ -79,11 +70,11 @@ export async function generateGroup4MockTest(userId: string): Promise<{ testId?:
             let questionPool = Array.from(sourceQuestionIds);
             
             // Filter out already correctly answered questions
-            let availableQuestions = questionPool.filter(id => !correctlyAnsweredIds.has(id));
+            let availableQuestions = questionPool.filter(id => !correctlyAnsweredSet.has(id));
 
             // If not enough new questions, add back the answered ones to meet the count
             if (availableQuestions.length < config.count) {
-                const answeredInThisUnit = questionPool.filter(id => correctlyAnsweredIds.has(id));
+                const answeredInThisUnit = questionPool.filter(id => correctlyAnsweredSet.has(id));
                 availableQuestions.push(...shuffleArray(answeredInThisUnit));
             }
 
