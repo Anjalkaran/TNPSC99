@@ -6,9 +6,9 @@ import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebas
 import { collection, query, where } from 'firebase/firestore';
 import type { UserTestAttempt } from '@/lib/types';
 import { useRouter } from 'next/navigation';
-import { useTransition } from 'react';
+import { useTransition, useMemo } from 'react';
 import { generateGroup4MockTest } from './actions';
-import { Loader2, ArrowLeft } from 'lucide-react';
+import { Loader2, ArrowLeft, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 
@@ -19,6 +19,7 @@ export default function Group4MockTestPage() {
     const { toast } = useToast();
     const [isPending, startTransition] = useTransition();
 
+    // Query for completed tests to exclude questions
     const completedAttemptsQuery = useMemoFirebase(() => {
         if (!user || !firestore) return null;
         return query(
@@ -26,7 +27,20 @@ export default function Group4MockTestPage() {
             where('status', '==', 'completed')
         );
     }, [user, firestore]);
-    const { data: completedAttempts, isLoading: isLoadingAttempts } = useCollection<UserTestAttempt>(completedAttemptsQuery);
+    const { data: completedAttempts, isLoading: isLoadingCompleted } = useCollection<UserTestAttempt>(completedAttemptsQuery);
+    
+    // Query for in-progress mock tests
+    const inProgressMockTestQuery = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return query(
+            collection(firestore, `users/${user.uid}/testAttempts`),
+            where('isMockTest', '==', true),
+            where('status', '==', 'in-progress')
+        );
+    }, [user, firestore]);
+    const { data: inProgressMockTests, isLoading: isLoadingInProgress } = useCollection<UserTestAttempt>(inProgressMockTestQuery);
+
+    const inProgressTest = useMemo(() => inProgressMockTests?.[0], [inProgressMockTests]);
 
     const handleGenerateTest = async () => {
         if (!user) {
@@ -54,7 +68,7 @@ export default function Group4MockTestPage() {
         });
     };
 
-    const isGenerating = isPending || isLoadingAttempts;
+    const isLoading = isPending || isLoadingCompleted || isLoadingInProgress;
 
     return (
         <div className="container mx-auto px-4 py-8 md:py-12">
@@ -71,21 +85,40 @@ export default function Group4MockTestPage() {
             <Card className="max-w-2xl mx-auto">
                 <CardHeader>
                     <CardTitle>Generate New Mock Test</CardTitle>
-                    <CardDescription>
-                        Click the button below to create a new 200-question mock test. Questions are pulled from all available syllabus units. Previously answered questions will not be repeated until you have attempted all available questions in a unit.
-                    </CardDescription>
+                    {inProgressTest ? (
+                         <CardDescription>
+                            You already have a mock test in progress. Please complete it before generating a new one.
+                        </CardDescription>
+                    ) : (
+                        <CardDescription>
+                            Click the button below to create a new 200-question mock test. Questions are pulled from all available syllabus units. Previously answered questions will not be repeated until you have attempted all available questions in a unit.
+                        </CardDescription>
+                    )}
                 </CardHeader>
                 <CardContent className="text-center">
-                    <Button onClick={handleGenerateTest} disabled={isGenerating} size="lg">
-                        {isGenerating ? (
-                            <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Generating Test...
-                            </>
-                        ) : (
-                            "Generate Group IV Mock Test"
-                        )}
-                    </Button>
+                    {isLoading ? (
+                        <Button disabled size="lg">
+                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Checking for existing tests...
+                        </Button>
+                    ) : inProgressTest ? (
+                        <Button asChild size="lg">
+                            <Link href={`/test/${inProgressTest.testId}`}>
+                                Resume Mock Test <ArrowRight className="ml-2 h-4 w-4" />
+                            </Link>
+                        </Button>
+                    ) : (
+                        <Button onClick={handleGenerateTest} disabled={isPending} size="lg">
+                            {isPending ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Generating Test...
+                                </>
+                            ) : (
+                                "Generate Group IV Mock Test"
+                            )}
+                        </Button>
+                    )}
                 </CardContent>
             </Card>
         </div>
