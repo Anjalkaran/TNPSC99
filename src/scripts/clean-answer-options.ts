@@ -7,33 +7,49 @@ import type { Question } from '@/lib/types';
 async function cleanAnswerOptions() {
   console.log('Starting to clean answer options...');
   const { firestore } = initializeFirebaseServer();
-  const batch = writeBatch(firestore);
+  let batch = writeBatch(firestore);
   let questionsToUpdate = 0;
+  let operationsInCurrentBatch = 0;
+  const BATCH_LIMIT = 400; // Firestore limit is 500, using a safe number
 
   try {
     const questionsRef = collection(firestore, 'questions');
     const questionsSnapshot = await getDocs(questionsRef);
     console.log(`Found ${questionsSnapshot.size} total questions to inspect.`);
 
-    questionsSnapshot.forEach((doc) => {
+    for (const doc of questionsSnapshot.docs) {
       const question = doc.data() as Question;
       const originalOptions = question.answerOptions;
       
-      // The regex /\s*\([^)]*\)/g matches optional whitespace followed by text in parentheses.
       const cleanedOptions = originalOptions.map(option => option.replace(/\s*\([^)]*\)/g, '').trim());
 
-      // Check if any option was actually changed to avoid unnecessary writes
       const hasChanged = originalOptions.some((original, index) => original !== cleanedOptions[index]);
 
       if (hasChanged) {
-        console.log(`- Updating options for question ID: ${doc.id}`);
+        // console.log(`- Queuing update for question ID: ${doc.id}`); // Logging every line can be slow
         batch.update(doc.ref, { answerOptions: cleanedOptions });
         questionsToUpdate++;
+        operationsInCurrentBatch++;
       }
-    });
+      
+      // If the batch is full, commit it and start a new one
+      if (operationsInCurrentBatch >= BATCH_LIMIT) {
+        console.log(`Committing batch of ${operationsInCurrentBatch} updates...`);
+        await batch.commit();
+        batch = writeBatch(firestore);
+        operationsInCurrentBatch = 0;
+        console.log('Batch committed. Starting new batch.');
+      }
+    }
+
+    // Commit any remaining operations in the final batch
+    if (operationsInCurrentBatch > 0) {
+      console.log(`Committing final batch of ${operationsInCurrentBatch} updates...`);
+      await batch.commit();
+      console.log('Final batch committed.');
+    }
 
     if (questionsToUpdate > 0) {
-      await batch.commit();
       console.log(`\nSuccessfully cleaned and updated answer options for ${questionsToUpdate} questions.`);
       console.log('The bulk edit is complete.');
     } else {
