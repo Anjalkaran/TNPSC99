@@ -53,7 +53,8 @@ export async function generateGroup4MockTest(userId: string, correctlyAnsweredId
         const testsSnapshot = await getDocs(testsQuery);
         const allGroupIVTests = testsSnapshot.docs.map(doc => doc.data() as Test);
         
-        const allMockQuestionIds: string[] = [];
+        const partCQuestionIds: string[] = [];
+        const partABQuestionIds: string[] = [];
 
         // 3. Assemble questions based on config
         for (const config of MOCK_TEST_CONFIG) {
@@ -84,8 +85,19 @@ export async function generateGroup4MockTest(userId: string, correctlyAnsweredId
             
             // Shuffle and pick the required number of questions
             const selectedIds = shuffleArray(availableQuestions).slice(0, config.count);
-            allMockQuestionIds.push(...selectedIds);
+            
+            if (config.part === 'பகுதி இ') {
+                partCQuestionIds.push(...selectedIds);
+            } else {
+                partABQuestionIds.push(...selectedIds);
+            }
         }
+        
+        const allMockQuestionIds = [
+            ...shuffleArray(partCQuestionIds),
+            ...shuffleArray(partABQuestionIds)
+        ];
+
 
         if (allMockQuestionIds.length !== 200) {
             return { error: `Generated test has ${allMockQuestionIds.length} questions, but expected 200. Please check question availability.` };
