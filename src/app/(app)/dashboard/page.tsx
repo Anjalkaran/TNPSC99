@@ -14,24 +14,11 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
-import type { UserProfile } from '@/lib/types';
 import { useTranslation } from '@/hooks/use-translation';
 
 
 export default function DashboardPage() {
-  const { user } = useUser();
-  const firestore = useFirestore();
   const { t } = useTranslation();
-
-  const userProfileRef = useMemoFirebase(
-    () => (user && firestore ? doc(firestore, 'users', user.uid) : null),
-    [user, firestore]
-  );
-  const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
-
-  const welcomeName = isProfileLoading ? '...' : userProfile?.username || t('user');
 
   const categories = [
     {
@@ -58,15 +45,6 @@ export default function DashboardPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
-      <section className="text-center mb-12 md:mb-16">
-        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
-          {t('welcome_message', { name: welcomeName })}
-        </h1>
-        <p className="max-w-2xl mx-auto text-lg text-muted-foreground">
-          {t('welcome_subtitle')}
-        </p>
-      </section>
-
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 max-w-5xl mx-auto">
         {categories.map((category) => (
            <Link href={category.href} key={category.title} className="block hover:no-underline">

@@ -37,6 +37,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { useTranslation } from '@/hooks/use-translation';
 import Image from 'next/image';
 import { useEffect, useRef, type ElementType } from 'react';
+import { Skeleton } from './ui/skeleton';
 
 interface SidebarLink {
   href: string;
@@ -67,7 +68,9 @@ export function AppSidebar() {
     () => (user && firestore ? doc(firestore, 'users', user.uid) : null),
     [user, firestore]
   );
-  const { data: userProfile } = useDoc<UserProfile>(userProfileRef);
+  const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
+
+  const welcomeName = isUserLoading || isProfileLoading ? '...' : userProfile?.username || t('user');
 
   const allSidebarLinks: SidebarLink[] = [
       { href: '/dashboard', label: t('dashboard'), icon: LayoutDashboard },
@@ -98,6 +101,16 @@ export function AppSidebar() {
             <Image src="https://firebasestorage.googleapis.com/v0/b/studio-5029416251-928dd.firebasestorage.app/o/final%20tnpsc99.png?alt=media&token=45dc292d-a09c-49de-aa14-9ed0ae769c47" alt="TNPSC99 Logo" width={150} height={40} />
         </Link>
       </SidebarHeader>
+      
+      <div className="p-4 text-center group-data-[collapsible=icon]:hidden">
+        {isUserLoading || isProfileLoading ? (
+            <Skeleton className="h-7 w-3/4 mx-auto" />
+        ) : (
+            <h2 className="text-xl font-bold text-sidebar-foreground truncate">
+                {t('welcome_message', { name: welcomeName })}
+            </h2>
+        )}
+      </div>
 
       <SidebarContent>
         <SidebarMenu>
