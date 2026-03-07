@@ -993,8 +993,11 @@ function SyllabusMcqUploadForm() {
                         const testsCollectionRef = collection(firestore, 'tests');
                         
                         const testQuery = query(testsCollectionRef, 
-                            where('syllabusTopic', '==', selectedTopic.topic),
+                            where('examGroup', '==', selectedTopic.examGroup),
+                            where('syllabusPart', '==', selectedTopic.part),
+                            where('syllabusUnit', '==', selectedTopic.unit),
                             where('syllabusUnitName', '==', selectedTopic.unitName),
+                            where('syllabusTopic', '==', selectedTopic.topic),
                             where('medium', '==', values.medium),
                             where('syllabusCategory', '==', categoryName)
                         );
