@@ -106,65 +106,25 @@ function TestProgressBadge({ testId }: { testId: string }) {
     )
 }
 
-function TopicTestGroup({ topicName, tests }: { topicName: string; tests: Test[] }) {
-  const { t } = useTranslation();
-
-  if (!tests || tests.length === 0) {
-    return null;
-  }
-
-  // If there's only one test for this topic, display it directly.
-  if (tests.length === 1) {
-    const test = tests[0];
+function TestCard({ test }: { test: Test }) {
+    const { t } = useTranslation();
     return (
-      <Card>
-        <CardHeader className="pb-4 pt-4">
-          <CardTitle className="text-base font-semibold">{topicName}</CardTitle>
-          {test.syllabusCategory && <CardDescription>{test.syllabusCategory}</CardDescription>}
-        </CardHeader>
-        <CardContent className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex-grow">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>{test.questionIds.length} {t('questions')}</span>
-              <Badge variant="outline">{test.medium}</Badge>
-              <TestProgressBadge testId={test.id} />
-            </div>
-          </div>
-          <div className="w-full md:w-auto shrink-0 md:min-w-[300px]">
-            <TestStartControl test={test} />
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // If there are multiple tests (e.g., different categories or mediums)
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base font-semibold">{topicName}</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {tests.map(test => (
-          <Card key={test.id} className="bg-background">
+        <Card className="bg-background">
             <CardContent className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="flex-grow">
-                <p className="font-medium">{test.syllabusCategory || 'General'}</p>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <span>{test.questionIds.length} {t('questions')}</span>
-                  <Badge variant="outline">{test.medium}</Badge>
-                  <TestProgressBadge testId={test.id} />
+                <div className="flex-grow">
+                    <p className="font-medium">{test.syllabusCategory || 'General'}</p>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <span>{test.questionIds.length} {t('questions')}</span>
+                        <Badge variant="outline">{test.medium}</Badge>
+                        <TestProgressBadge testId={test.id} />
+                    </div>
                 </div>
-              </div>
-              <div className="w-full md:w-auto shrink-0 md:min-w-[300px]">
-                <TestStartControl test={test} />
-              </div>
+                <div className="w-full md:w-auto shrink-0 md:min-w-[300px]">
+                    <TestStartControl test={test} />
+                </div>
             </CardContent>
-          </Card>
-        ))}
-      </CardContent>
-    </Card>
-  );
+        </Card>
+    );
 }
 
 
@@ -178,27 +138,33 @@ export default function SubjectWiseTestsPage() {
   );
   const { data: tests, isLoading } = useCollection<Test>(testsQuery);
 
-  const groupedByExamGroup = useMemo(() => {
+  const groupedSyllabusTests = useMemo(() => {
     if (!tests) return {};
     const grouped = tests.reduce((acc, test) => {
-      const examGroup = test.examGroup || 'Uncategorized';
-      if (!acc[examGroup]) {
-        acc[examGroup] = {};
-      }
-      
-      const part = test.syllabusPart || 'Uncategorized Part';
-      if (!acc[examGroup][part]) {
-        acc[examGroup][part] = {};
-      }
+        const examGroup = test.examGroup || 'Uncategorized';
+        const part = test.syllabusPart || 'Uncategorized Part';
+        const unitKey = (test.syllabusUnit && test.syllabusUnitName) ? `${test.syllabusUnit}: ${test.syllabusUnitName}` : 'Uncategorized Unit';
+        const topicKey = test.syllabusTopic || 'Uncategorized Topic';
 
-      const unitKey = test.syllabusUnit && test.syllabusUnitName ? `${test.syllabusUnit}: ${test.syllabusUnitName}` : (test.syllabusUnitName || 'Uncategorized Unit');
-      if (!acc[examGroup][part][unitKey]) {
-        acc[examGroup][part][unitKey] = [];
-      }
-      acc[examGroup][part][unitKey].push(test);
-      return acc;
-    }, {} as Record<string, Record<string, Record<string, Test[]>>>);
+        if (!acc[examGroup]) acc[examGroup] = {};
+        if (!acc[examGroup][part]) acc[examGroup][part] = {};
+        if (!acc[examGroup][part][unitKey]) acc[examGroup][part][unitKey] = {};
+        if (!acc[examGroup][part][unitKey][topicKey]) acc[examGroup][part][unitKey][topicKey] = [];
+        
+        acc[examGroup][part][unitKey][topicKey].push(test);
+        return acc;
+    }, {} as Record<string, Record<string, Record<string, Record<string, Test[]>>>>);
 
+    // Sorting
+    for (const eg in grouped) {
+        for (const p in grouped[eg]) {
+            for (const uk in grouped[eg][p]) {
+                for (const tk in grouped[eg][p][uk]) {
+                    grouped[eg][p][uk][tk].sort((a,b) => (a.syllabusCategory || '').localeCompare(b.syllabusCategory || ''));
+                }
+            }
+        }
+    }
     return grouped;
   }, [tests]);
 
@@ -217,97 +183,76 @@ export default function SubjectWiseTestsPage() {
 
       {isLoading ? (
         <p>Loading tests...</p>
-      ) : Object.keys(groupedByExamGroup).length > 0 ? (
-        <Accordion type="multiple" className="w-full" defaultValue={Object.keys(groupedByExamGroup)}>
-          {Object.entries(groupedByExamGroup).map(([examGroup, parts]) => (
-            <AccordionItem value={examGroup} key={examGroup} className="border-b-0 mb-4">
+      ) : Object.keys(groupedSyllabusTests).length > 0 ? (
+        <Accordion type="multiple" className="w-full space-y-4" defaultValue={Object.keys(groupedSyllabusTests)}>
+          {Object.entries(groupedSyllabusTests).map(([examGroup, parts]) => (
+            <AccordionItem value={examGroup} key={examGroup} className="border-b-0">
                 <Card>
-                    <CardHeader>
-                        <AccordionTrigger className="p-0 text-2xl font-bold hover:no-underline">
-                            {examGroup}
-                        </AccordionTrigger>
-                    </CardHeader>
-                    <AccordionContent>
-                        <div className="px-6 pb-6">
-                            <Accordion type="multiple" className="w-full space-y-4" defaultValue={Object.keys(parts)}>
-                                {Object.entries(parts).sort((a, b) => {
-                                    const order = ['பகுதி அ', 'பகுதி ஆ', 'பகுதி இ'];
-                                    const indexA = order.indexOf(a[0]);
-                                    const indexB = order.indexOf(b[0]);
-                                    if (indexA === -1 && indexB === -1) return a[0].localeCompare(b[0]);
-                                    if (indexA === -1) return 1;
-                                    if (indexB === -1) return -1;
-                                    return indexA - indexB;
-                                }).map(([part, unitNames]) => (
-                                    <AccordionItem value={part} key={part} className="border-b-0">
-                                      <Card className="bg-muted/50">
-                                          <CardHeader className="p-4">
-                                              <AccordionTrigger className="p-0 text-xl font-semibold hover:no-underline">
-                                                  {part}
-                                              </AccordionTrigger>
-                                          </CardHeader>
-                                          <AccordionContent className="pt-0 p-4">
-                                              <Accordion type="multiple" className="w-full space-y-2" defaultValue={Object.keys(unitNames)}>
-                                                  {Object.entries(unitNames).sort(([unitKeyA], [unitKeyB]) => {
-                                                        const romanMap: { [key: string]: number } = { 'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000 };
-                                                        const getUnitNumber = (unitKey: string): number => {
-                                                            const match = unitKey.match(/அலகு\s+([IVXLCDM]+)/);
-                                                            if (!match || !match[1]) return 999;
-                                                            const roman = match[1];
-                                                            let result = 0;
-                                                            let i = 0;
-                                                            while (i < roman.length) {
-                                                              const currentVal = romanMap[roman[i]];
-                                                              if (currentVal === undefined) return 999;
-                                                              const nextVal = (i + 1 < roman.length) ? romanMap[roman[i+1]] : 0;
-                                                              if(nextVal && currentVal < nextVal) {
-                                                                result += nextVal - currentVal;
-                                                                i += 2;
-                                                              } else {
-                                                                result += currentVal;
-                                                                i += 1;
-                                                              }
+                    <AccordionTrigger className="p-4 text-2xl font-bold hover:no-underline">{examGroup}</AccordionTrigger>
+                    <AccordionContent className="px-6 pb-6">
+                        <Accordion type="multiple" className="w-full space-y-4" defaultValue={Object.keys(parts)}>
+                            {Object.entries(parts).sort((a, b) => {
+                                const order = ['பகுதி அ', 'பகுதி ஆ', 'பகுதி இ'];
+                                const indexA = order.indexOf(a[0]);
+                                const indexB = order.indexOf(b[0]);
+                                if (indexA === -1 && indexB === -1) return a[0].localeCompare(b[0]);
+                                if (indexA === -1) return 1;
+                                if (indexB === -1) return -1;
+                                return indexA - indexB;
+                            }).map(([part, units]) => (
+                                <AccordionItem value={part} key={part} className="border-b-0">
+                                    <Card className="bg-muted/50">
+                                        <AccordionTrigger className="p-4 text-xl font-semibold hover:no-underline">{part}</AccordionTrigger>
+                                        <AccordionContent className="pt-0 p-4 space-y-4">
+                                            {Object.entries(units).sort(([unitKeyA], [unitKeyB]) => {
+                                                    const romanMap: { [key: string]: number } = { 'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000 };
+                                                    const getUnitNumber = (unitKey: string): number => {
+                                                        const match = unitKey.match(/அலகு\s+([IVXLCDM]+)/);
+                                                        if (!match || !match[1]) return 999;
+                                                        const roman = match[1];
+                                                        let result = 0;
+                                                        let i = 0;
+                                                        while (i < roman.length) {
+                                                            const currentVal = romanMap[roman[i]];
+                                                            if (currentVal === undefined) return 999;
+                                                            const nextVal = (i + 1 < roman.length) ? romanMap[roman[i+1]] : 0;
+                                                            if(nextVal && currentVal < nextVal) {
+                                                            result += nextVal - currentVal;
+                                                            i += 2;
+                                                            } else {
+                                                            result += currentVal;
+                                                            i += 1;
                                                             }
-                                                            return result;
-                                                        };
-                                                        return getUnitNumber(unitKeyA) - getUnitNumber(unitKeyB);
-                                                    }).map(([unitKey, testList]) => {
-                                                        
-                                                        const testsByTopic = testList.reduce((acc, test) => {
-                                                            const topic = test.syllabusTopic || 'Uncategorized';
-                                                            if (!acc[topic]) acc[topic] = [];
-                                                            acc[topic].push(test);
-                                                            return acc;
-                                                        }, {} as Record<string, Test[]>);
-                                                        
-                                                        for(const topic in testsByTopic) {
-                                                            testsByTopic[topic].sort((a,b) => (a.syllabusCategory || 'zzzz').localeCompare(b.syllabusCategory || 'zzzz'));
                                                         }
-
-                                                        return (
-                                                          <AccordionItem value={unitKey} key={unitKey} className="border-b-0">
-                                                              <Card>
-                                                                  <CardHeader className="p-4">
-                                                                      <AccordionTrigger className="p-0 font-semibold text-lg hover:no-underline">{unitKey}</AccordionTrigger>
-                                                                  </CardHeader>
-                                                                  <AccordionContent className="pt-0 p-4">
-                                                                    <div className="space-y-4">
-                                                                      {Object.entries(testsByTopic).map(([topicName, testsForTopic]) => (
-                                                                        <TopicTestGroup key={topicName} topicName={topicName} tests={testsForTopic} />
-                                                                      ))}
-                                                                    </div>
-                                                                  </AccordionContent>
-                                                              </Card>
-                                                          </AccordionItem>
-                                                        )
-                                                    })}
-                                              </Accordion>
-                                          </AccordionContent>
-                                      </Card>
-                                  </AccordionItem>
-                                ))}
-                            </Accordion>
-                        </div>
+                                                        return result;
+                                                    };
+                                                    return getUnitNumber(unitKeyA) - getUnitNumber(unitKeyB);
+                                                }).map(([unitKey, topics]) => (
+                                                <Card key={unitKey} className="bg-background">
+                                                    <CardHeader>
+                                                        <CardTitle className="text-lg">{unitKey}</CardTitle>
+                                                    </CardHeader>
+                                                    <CardContent className="space-y-4">
+                                                        {Object.entries(topics).map(([topicName, testList]) => (
+                                                            <Card key={topicName}>
+                                                                <CardHeader className="pb-4">
+                                                                    <CardTitle className="text-base font-semibold">{topicName}</CardTitle>
+                                                                </CardHeader>
+                                                                <CardContent className="space-y-3">
+                                                                    {testList.map(test => (
+                                                                        <TestCard key={test.id} test={test} />
+                                                                    ))}
+                                                                </CardContent>
+                                                            </Card>
+                                                        ))}
+                                                    </CardContent>
+                                                </Card>
+                                            ))}
+                                        </AccordionContent>
+                                    </Card>
+                                </AccordionItem>
+                            ))}
+                        </Accordion>
                     </AccordionContent>
                 </Card>
             </AccordionItem>
