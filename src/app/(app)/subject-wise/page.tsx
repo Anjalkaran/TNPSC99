@@ -233,18 +233,22 @@ export default function SubjectWiseTestsPage() {
                                                         <CardTitle className="text-lg">{unitKey}</CardTitle>
                                                     </CardHeader>
                                                     <CardContent className="space-y-4">
-                                                        {Object.entries(topics).map(([topicName, testList]) => (
-                                                            <Card key={topicName}>
-                                                                <CardHeader className="pb-4">
-                                                                    <CardTitle className="text-base font-semibold">{topicName}</CardTitle>
-                                                                </CardHeader>
-                                                                <CardContent className="space-y-3">
-                                                                    {testList.map(test => (
-                                                                        <TestCard key={test.id} test={test} />
-                                                                    ))}
-                                                                </CardContent>
-                                                            </Card>
-                                                        ))}
+                                                        <Accordion type="multiple" className="w-full space-y-2">
+                                                            {Object.entries(topics).map(([topicName, testList]) => (
+                                                                <AccordionItem value={topicName} key={topicName} className="border-b-0">
+                                                                    <Card className="bg-muted/20">
+                                                                        <AccordionTrigger className="p-4 text-base font-semibold hover:no-underline text-left">
+                                                                            {topicName}
+                                                                        </AccordionTrigger>
+                                                                        <AccordionContent className="pt-0 p-4 space-y-3">
+                                                                            {testList.map(test => (
+                                                                                <TestCard key={test.id} test={test} />
+                                                                            ))}
+                                                                        </AccordionContent>
+                                                                    </Card>
+                                                                </AccordionItem>
+                                                            ))}
+                                                        </Accordion>
                                                     </CardContent>
                                                 </Card>
                                             ))}
