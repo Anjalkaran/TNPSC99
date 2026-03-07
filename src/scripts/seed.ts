@@ -57,41 +57,49 @@ const categories = [
 ]
 
 const questions = [
-    { id: 'q1', text: 'நீரின் வேதியியல் சூத்திரம் என்ன?', subjectId: 'science', classId: '10', answerOptions: ['H2O', 'CO2', 'O2', 'NaCl'], correctAnswerIndex: 0 },
-    { id: 'q2', text: 'எந்த கிரகம் சிவப்பு கிரகம் என்று அழைக்கப்படுகிறது?', subjectId: 'science', classId: '10', answerOptions: ['பூமி', 'செவ்வாய்', 'வியாழன்', 'சனி'], correctAnswerIndex: 1 },
-    { id: 'q3', text: 'செல்லின் ஆற்றல் மையம் எது?', subjectId: 'science', classId: '10', answerOptions: ['கரு', 'ரைபோசோம்', 'மைட்டோகாண்ட்ரியா', 'குளோரோபிளாஸ்ட்'], correctAnswerIndex: 2 },
-    { id: 'q4', text: 'x^2 இன் வகைக்கெழு என்ன?', subjectId: 'maths', classId: '12', answerOptions: ['2x', 'x', 'x^3/3', '2'], correctAnswerIndex: 0 },
-    { id: 'q5', text: '1/x dx இன் தொகையீடு என்ன?', subjectId: 'maths', classId: '12', answerOptions: ['ln|x| + C', '1', 'x^2', '-1/x^2 + C'], correctAnswerIndex: 0 },
-    { id: 'q6', text: 'இந்தியாவின் முதல் பிரதமர் யார்?', subjectId: 'history', classId: '12', answerOptions: ['மகாத்மா காந்தி', 'ஜவஹர்லால் நேரு', 'சர்தார் படேல்', 'சுபாஷ் சந்திர போஸ்'], correctAnswerIndex: 1 },
-    { id: 'q7', text: 'பிளாசி போர் எந்த ஆண்டு நடந்தது?', subjectId: 'history', classId: '12', answerOptions: ['1757', '1764', '1857', '1947'], correctAnswerIndex: 0 },
-    { id: 'q8', text: 'உலகின் மிக நீளமான நதி எது?', subjectId: 'geography', classId: '10', answerOptions: ['அமேசான்', 'நைல்', 'யாங்சே', 'மிசிசிப்பி'], correctAnswerIndex: 1 },
-    { id: 'q9', text: 'உலகின் மிகப்பெரிய பாலைவனம் எது?', subjectId: 'geography', classId: '10', answerOptions: ['சஹாரா', 'அரேபியன்', 'கோபி', 'அண்டார்க்டிக் துருவம்'], correctAnswerIndex: 3 },
-    { id: 'q10', text: 'இந்திய அரசியலமைப்பின் எந்தப் பிரிவின் கீழ் "கல்வி உரிமை" ஒரு அடிப்படை உரிமையாகும்?', subjectId: 'polity', classId: '12', answerOptions: ['பிரிவு 21A', 'பிரிவு 19', 'பிரிவு 14', 'பிரிவு 32'], correctAnswerIndex: 0 },
-    { id: 'q11', text: 'பின்வருவனவற்றில் எது தமிழ்நாட்டின் பாரம்பரிய நடன வடிவம்?', subjectId: 'history', classId: '12', answerOptions: ['கதக்', 'குச்சிப்புடி', 'பரதநாட்டியம்', 'மோகினியாட்டம்'], correctAnswerIndex: 2 },
-    { id: 'q12', text: 'சங்க இலக்கியம் எந்த மொழியில் எழுதப்பட்டது?', subjectId: 'tamil', classId: '12', answerOptions: ['சமஸ்கிருதம்', 'பாளி', 'தமிழ்', 'தெலுங்கு'], correctAnswerIndex: 2 },
-    { id: 'q13', text: 'இந்திய அரசியலமைப்பின் தந்தை என்று யார் அழைக்கப்படுகிறார்?', subjectId: 'polity', classId: '12', answerOptions: ['மகாத்மா காந்தி', 'ஜவஹர்லால் நேரு', 'டாக்டர். பி. ஆர். அம்பேத்கர்', 'சர்தார் வல்லபாய் படேல்'], correctAnswerIndex: 2 },
-    { id: 'q14', text: 'கீழடியில் நடத்தப்பட்ட தொல்பொருள் ஆய்வுகள் எந்த நாகரிகத்துடன் தொடர்புடையவை?', subjectId: 'history', classId: '10', answerOptions: ['சிந்து சமவெளி நாகரிகம்', 'சங்க கால நாகரிகம்', 'மௌரியப் பேரரசு', 'குப்தப் பேரரசு'], correctAnswerIndex: 1 },
-    { id: 'q15', text: 'திருக்குறளை எழுதியவர் யார்?', subjectId: 'tamil', classId: '10', answerOptions: ['கம்பர்', 'திருவள்ளுவர்', 'ஔவையார்', 'பாரதியார்'], correctAnswerIndex: 1 },
+    // Class 10 Science
+    { id: 'sci-10-01', text: 'நீரின் வேதியியல் சூத்திரம் என்ன?', subjectId: 'science', classId: '10', answerOptions: ['H2O', 'CO2', 'O2', 'NaCl'], correctAnswerIndex: 0 },
+    { id: 'sci-10-02', text: 'எந்த கிரகம் சிவப்பு கிரகம் என்று அழைக்கப்படுகிறது?', subjectId: 'science', classId: '10', answerOptions: ['பூமி', 'செவ்வாய்', 'வியாழன்', 'சனி'], correctAnswerIndex: 1 },
+    { id: 'sci-10-03', text: 'செல்லின் ஆற்றல் மையம் எது?', subjectId: 'science', classId: '10', answerOptions: ['கரு', 'ரைபோசோம்', 'மைட்டோகாண்ட்ரியா', 'குளோரோபிளாஸ்ட்'], correctAnswerIndex: 2 },
+    // Class 12 Maths
+    { id: 'mat-12-01', text: 'x^2 இன் வகைக்கெழு என்ன?', subjectId: 'maths', classId: '12', answerOptions: ['2x', 'x', 'x^3/3', '2'], correctAnswerIndex: 0 },
+    { id: 'mat-12-02', text: '1/x dx இன் தொகையீடு என்ன?', subjectId: 'maths', classId: '12', answerOptions: ['ln|x| + C', '1', 'x^2', '-1/x^2 + C'], correctAnswerIndex: 0 },
+    // Class 12 History
+    { id: 'his-12-01', text: 'இந்தியாவின் முதல் பிரதமர் யார்?', subjectId: 'history', classId: '12', answerOptions: ['மகாத்மா காந்தி', 'ஜவஹர்லால் நேரு', 'சர்தார் படேல்', 'சுபாஷ் சந்திர போஸ்'], correctAnswerIndex: 1 },
+    { id: 'his-12-02', text: 'பிளாசி போர் எந்த ஆண்டு நடந்தது?', subjectId: 'history', classId: '12', answerOptions: ['1757', '1764', '1857', '1947'], correctAnswerIndex: 0 },
+    { id: 'his-12-03', text: 'பின்வருவனவற்றில் எது தமிழ்நாட்டின் பாரம்பரிய நடன வடிவம்?', subjectId: 'history', classId: '12', answerOptions: ['கதக்', 'குச்சிப்புடி', 'பரதநாட்டியம்', 'மோகினியாட்டம்'], correctAnswerIndex: 2 },
+    // Class 10 Geography
+    { id: 'geo-10-01', text: 'உலகின் மிக நீளமான நதி எது?', subjectId: 'geography', classId: '10', answerOptions: ['அமேசான்', 'நைல்', 'யாங்சே', 'மிசிசிப்பி'], correctAnswerIndex: 1 },
+    { id: 'geo-10-02', text: 'உலகின் மிகப்பெரிய பாலைவனம் எது?', subjectId: 'geography', classId: '10', answerOptions: ['சஹாரா', 'அரேபியன்', 'கோபி', 'அண்டார்க்டிக் துருவம்'], correctAnswerIndex: 3 },
+    // Class 12 Polity
+    { id: 'pol-12-01', text: 'இந்திய அரசியலமைப்பின் எந்தப் பிரிவின் கீழ் "கல்வி உரிமை" ஒரு அடிப்படை உரிமையாகும்?', subjectId: 'polity', classId: '12', answerOptions: ['பிரிவு 21A', 'பிரிவு 19', 'பிரிவு 14', 'பிரிவு 32'], correctAnswerIndex: 0 },
+    { id: 'pol-12-02', text: 'இந்திய அரசியலமைப்பின் தந்தை என்று யார் அழைக்கப்படுகிறார்?', subjectId: 'polity', classId: '12', answerOptions: ['மகாத்மா காந்தி', 'ஜவஹர்லால் நேரு', 'டாக்டர். பி. ஆர். அம்பேத்கர்', 'சர்தார் வல்லபாய் படேல்'], correctAnswerIndex: 2 },
+    // Class 12 Tamil
+    { id: 'tam-12-01', text: 'சங்க இலக்கியம் எந்த மொழியில் எழுதப்பட்டது?', subjectId: 'tamil', classId: '12', answerOptions: ['சமஸ்கிருதம்', 'பாளி', 'தமிழ்', 'தெலுங்கு'], correctAnswerIndex: 2 },
+    // Class 10 History
+    { id: 'his-10-01', text: 'கீழடியில் நடத்தப்பட்ட தொல்பொருள் ஆய்வுகள் எந்த நாகரிகத்துடன் தொடர்புடையவை?', subjectId: 'history', classId: '10', answerOptions: ['சிந்து சமவெளி நாகரிகம்', 'சங்க கால நாகரிகம்', 'மௌரியப் பேரரசு', 'குப்தப் பேரரசு'], correctAnswerIndex: 1 },
+    // Class 10 Tamil
+    { id: 'tam-10-01', text: 'திருக்குறளை எழுதியவர் யார்?', subjectId: 'tamil', classId: '10', answerOptions: ['கம்பர்', 'திருவள்ளுவர்', 'ஔவையார்', 'பாரதியார்'], correctAnswerIndex: 1 },
     // Class 6
-    { id: 'q16', text: 'ஆத்திசூடியை எழுதியவர் யார்?', subjectId: 'tamil', classId: '6', answerOptions: ['ஔவையார்', 'கம்பர்', 'திருவள்ளுவர்', 'பாரதியார்'], correctAnswerIndex: 0 },
-    { id: 'q17', text: 'ஒளிச்சேர்க்கைக்கு தேவைப்படுவது எது?', subjectId: 'science', classId: '6', answerOptions: ['ஆக்ஸிஜன்', 'கார்பன் டை ஆக்சைடு', 'நைட்ரஜன்', 'ஹைட்ரஜன்'], correctAnswerIndex: 1 },
-    { id: 'q18', text: 'சிந்து சமவெளி நாகரிகத்தின் முக்கிய அம்சம் எது?', subjectId: 'social-science', classId: '6', answerOptions: ['திட்டமிடப்பட்ட நகரங்கள்', 'பெரிய கோவில்கள்', 'இரும்பு கருவிகள்', 'குதிரைகள்'], correctAnswerIndex: 0 },
+    { id: 'tam-06-01', text: 'ஆத்திசூடியை எழுதியவர் யார்?', subjectId: 'tamil', classId: '6', answerOptions: ['ஔவையார்', 'கம்பர்', 'திருவள்ளுவர்', 'பாரதியார்'], correctAnswerIndex: 0 },
+    { id: 'sci-06-01', text: 'ஒளிச்சேர்க்கைக்கு தேவைப்படுவது எது?', subjectId: 'science', classId: '6', answerOptions: ['ஆக்ஸிஜன்', 'கார்பன் டை ஆக்சைடு', 'நைட்ரஜன்', 'ஹைட்ரஜன்'], correctAnswerIndex: 1 },
+    { id: 'soc-06-01', text: 'சிந்து சமவெளி நாகரிகத்தின் முக்கிய அம்சம் எது?', subjectId: 'social-science', classId: '6', answerOptions: ['திட்டமிடப்பட்ட நகரங்கள்', 'பெரிய கோவில்கள்', 'இரும்பு கருவிகள்', 'குதிரைகள்'], correctAnswerIndex: 0 },
     // Class 7
-    { id: 'q19', text: 'சிலப்பதிகாரத்தின் ஆசிரியர் யார்?', subjectId: 'tamil', classId: '7', answerOptions: ['திருத்தக்கதேவர்', 'இளங்கோவடிகள்', 'சீத்தலைச்சாத்தனார்', 'கம்பர்'], correctAnswerIndex: 1 },
-    { id: 'q20', text: 'மனித உடலில் உள்ள மிகப்பெரிய உறுப்பு எது?', subjectId: 'science', classId: '7', answerOptions: ['கல்லீரல்', 'மூளை', 'இதயம்', 'தோல்'], correctAnswerIndex: 3 },
-    { id: 'q21', text: 'டெல்லியை ஆண்ட முதல் பெண் ஆட்சியாளர் யார்?', subjectId: 'social-science', classId: '7', answerOptions: ['ரசியா சுல்தான்', 'சாந்த் बीबी', 'ராணி மங்கம்மாள்', 'ராணி சென்னம்மா'], correctAnswerIndex: 0 },
+    { id: 'tam-07-01', text: 'சிலப்பதிகாரத்தின் ஆசிரியர் யார்?', subjectId: 'tamil', classId: '7', answerOptions: ['திருத்தக்கதேவர்', 'இளங்கோவடிகள்', 'சீத்தலைச்சாத்தனார்', 'கம்பர்'], correctAnswerIndex: 1 },
+    { id: 'sci-07-01', text: 'மனித உடலில் உள்ள மிகப்பெரிய உறுப்பு எது?', subjectId: 'science', classId: '7', answerOptions: ['கல்லீரல்', 'மூளை', 'இதயம்', 'தோல்'], correctAnswerIndex: 3 },
+    { id: 'soc-07-01', text: 'டெல்லியை ஆண்ட முதல் பெண் ஆட்சியாளர் யார்?', subjectId: 'social-science', classId: '7', answerOptions: ['ரசியா சுல்தான்', 'சாந்த் बीबी', 'ராணி மங்கம்மாள்', 'ராணி சென்னம்மா'], correctAnswerIndex: 0 },
     // Class 8
-    { id: 'q22', text: 'மணிமேகலையின் ஆசிரியர் யார்?', subjectId: 'tamil', classId: '8', answerOptions: ['இளங்கோவடிகள்', 'கம்பர்', 'சீத்தலைச்சாத்தனார்', 'திருவள்ளுவர்'], correctAnswerIndex: 2 },
-    { id: 'q23', text: 'அணுவின் அடிப்படைத் துகள்கள் யாவை?', subjectId: 'science', classId: '8', answerOptions: ['புரோட்டான், நியூட்ரான், எலக்ட்ரான்', 'போட்டான், குளுவான், கிராவிட்டான்', 'மீசோன், லெப்டான், குவார்க்', 'மேற்கூறிய எதுவும் இல்லை'], correctAnswerIndex: 0 },
-    { id: 'q24', text: 'ஐரோப்பாவிலிருந்து இந்தியாவிற்கு கடல் வழியைக் கண்டுபிடித்த முதல் ஐரோப்பியர் யார்?', subjectId: 'social-science', classId: '8', answerOptions: ['கிறிஸ்டோபர் கொலம்பஸ்', 'வாஸ்கோ ட காமா', 'மார்க்கோ போலோ', 'பார்த்தலோமியோ டயஸ்'], correctAnswerIndex: 1 },
+    { id: 'tam-08-01', text: 'மணிமேகலையின் ஆசிரியர் யார்?', subjectId: 'tamil', classId: '8', answerOptions: ['இளங்கோவடிகள்', 'கம்பர்', 'சீத்தலைச்சாத்தனார்', 'திருவள்ளுவர்'], correctAnswerIndex: 2 },
+    { id: 'sci-08-01', text: 'அணுவின் அடிப்படைத் துகள்கள் யாவை?', subjectId: 'science', classId: '8', answerOptions: ['புரோட்டான், நியூட்ரான், எலக்ட்ரான்', 'போட்டான், குளுவான், கிராவிட்டான்', 'மீசோன், லெப்டான், குவார்க்', 'மேற்கூறிய எதுவும் இல்லை'], correctAnswerIndex: 0 },
+    { id: 'soc-08-01', text: 'ஐரோப்பாவிலிருந்து இந்தியாவிற்கு கடல் வழியைக் கண்டுபிடித்த முதல் ஐரோப்பியர் யார்?', subjectId: 'social-science', classId: '8', answerOptions: ['கிறிஸ்டோபர் கொலம்பஸ்', 'வாஸ்கோ ட காமா', 'மார்க்கோ போலோ', 'பார்த்தலோமியோ டயஸ்'], correctAnswerIndex: 1 },
     // Class 9
-    { id: 'q25', text: 'யாப்பு இலக்கணத்தில் உள்ள உறுப்புகள் எத்தனை?', subjectId: 'tamil', classId: '9', answerOptions: ['நான்கு', 'ஐந்து', 'ஆறு', 'ஏழு'], correctAnswerIndex: 2, reference: '9th Std Tamil Book', referenceUrl: 'https://drive.google.com/file/d/1OuWKjJA3BIQ5BW2dfZUDhr25pVUIIdTl/view' },
-    { id: 'q26', text: 'மரபியலின் தந்தை என்று அழைக்கப்படுபவர் யார்?', subjectId: 'science', classId: '9', answerOptions: ['சார்லஸ் டார்வின்', 'கிரிகோர் மெண்டல்', 'ஆல்பர்ட் ஐன்ஸ்டீன்', 'ஐசக் நியூட்டன்'], correctAnswerIndex: 1 },
-    { id: 'q27', text: 'பிரெஞ்சுப் புரட்சி எந்த ஆண்டு தொடங்கியது?', subjectId: 'social-science', classId: '9', answerOptions: ['1776', '1789', '1804', '1815'], correctAnswerIndex: 1 },
+    { id: 'tam-09-01', text: 'யாப்பு இலக்கணத்தில் உள்ள உறுப்புகள் எத்தனை?', subjectId: 'tamil', classId: '9', answerOptions: ['நான்கு', 'ஐந்து', 'ஆறு', 'ஏழு'], correctAnswerIndex: 2, reference: '9th Std Tamil Book', referenceUrl: 'https://drive.google.com/file/d/1OuWKjJA3BIQ5BW2dfZUDhr25pVUIIdTl/view' },
+    { id: 'sci-09-01', text: 'மரபியலின் தந்தை என்று அழைக்கப்படுபவர் யார்?', subjectId: 'science', classId: '9', answerOptions: ['சார்லஸ் டார்வின்', 'கிரிகோர் மெண்டல்', 'ஆல்பர்ட் ஐன்ஸ்டீன்', 'ஐசக் நியூட்டன்'], correctAnswerIndex: 1 },
+    { id: 'soc-09-01', text: 'பிரெஞ்சுப் புரட்சி எந்த ஆண்டு தொடங்கியது?', subjectId: 'social-science', classId: '9', answerOptions: ['1776', '1789', '1804', '1815'], correctAnswerIndex: 1 },
     // Group IV questions
-    { id: 'q28', text: 'Nature of Universe relates to which subject?', subjectId: 'general-science', classId: '10', answerOptions: ['Physics', 'Chemistry', 'Biology', 'Geology'], correctAnswerIndex: 0 },
-    { id: 'q29', text: 'What is the highest common factor (HCF) of 12 and 18?', subjectId: 'aptitude', classId: '10', answerOptions: ['2', '3', '6', '12'], correctAnswerIndex: 2 },
-    { id: 'q30', text: "எதிர்ச்செயலைக் கண்டறிக: 'உயர்வு'", subjectId: "tamil-vocabulary", classId: "10", answerOptions: ["தாழ்வு", "மேன்மை", "சிறப்பு", "மிகுதி"], correctAnswerIndex: 0 },
+    { id: 'g4-sci-01', text: 'Nature of Universe relates to which subject?', subjectId: 'general-science', classId: '10', answerOptions: ['Physics', 'Chemistry', 'Biology', 'Geology'], correctAnswerIndex: 0 },
+    { id: 'g4-apt-01', text: 'What is the highest common factor (HCF) of 12 and 18?', subjectId: 'aptitude', classId: '10', answerOptions: ['2', '3', '6', '12'], correctAnswerIndex: 2 },
+    { id: 'g4-tam-01', text: "எதிர்ச்செயலைக் கண்டறிக: 'உயர்வு'", subjectId: "tamil-vocabulary", classId: "10", answerOptions: ["தாழ்வு", "மேன்மை", "சிறப்பு", "மிகுதி"], correctAnswerIndex: 0 },
 
 ];
 
@@ -102,7 +110,7 @@ const tests = [
     title: 'Class VI - Tamil Chapters',
     category: 'class',
     description: 'Questions from the 6th Standard Tamil textbook chapters.',
-    questionIds: ['q16'],
+    questionIds: ['tam-06-01'],
     classId: '6',
     subjectId: 'tamil',
   },
@@ -122,7 +130,7 @@ const tests = [
     title: 'வகுப்பு 6 - அறிவியல்',
     category: 'class',
     description: '6 ஆம் வகுப்பு அறிவியல் பாடத்திட்டத்திலிருந்து கேள்விகள்.',
-    questionIds: ['q17'],
+    questionIds: ['sci-06-01'],
     classId: '6',
     subjectId: 'science',
   },
@@ -132,7 +140,7 @@ const tests = [
     title: 'வகுப்பு 6 - சமூக அறிவியல்',
     category: 'class',
     description: '6 ஆம் வகுப்பு சமூக அறிவியல் பாடத்திட்டத்திலிருந்து கேள்விகள்.',
-    questionIds: ['q18'],
+    questionIds: ['soc-06-01'],
     classId: '6',
     subjectId: 'social-science',
   },
@@ -142,7 +150,7 @@ const tests = [
     title: 'Class VII - Tamil Chapters',
     category: 'class',
     description: 'Questions from the 7th Standard Tamil textbook chapters.',
-    questionIds: ['q19'],
+    questionIds: ['tam-07-01'],
     classId: '7',
     subjectId: 'tamil',
   },
@@ -162,7 +170,7 @@ const tests = [
     title: 'வகுப்பு 7 - அறிவியல்',
     category: 'class',
     description: '7 ஆம் வகுப்பு அறிவியல் பாடத்திட்டத்திலிருந்து கேள்விகள்.',
-    questionIds: ['q20'],
+    questionIds: ['sci-07-01'],
     classId: '7',
     subjectId: 'science',
   },
@@ -172,7 +180,7 @@ const tests = [
     title: 'வகுப்பு 7 - சமூக அறிவியல்',
     category: 'class',
     description: '7 ஆம் வகுப்பு சமூக அறிவியல் பாடத்திட்டத்திலிருந்து கேள்விகள்.',
-    questionIds: ['q21'],
+    questionIds: ['soc-07-01'],
     classId: '7',
     subjectId: 'social-science',
   },
@@ -182,7 +190,7 @@ const tests = [
     title: 'Class VIII - Tamil Chapters',
     category: 'class',
     description: 'Questions from the 8th Standard Tamil textbook chapters.',
-    questionIds: ['q22'],
+    questionIds: ['tam-08-01'],
     classId: '8',
     subjectId: 'tamil',
   },
@@ -202,7 +210,7 @@ const tests = [
     title: 'வகுப்பு 8 - அறிவியல்',
     category: 'class',
     description: '8 ஆம் வகுப்பு அறிவியல் பாடத்திட்டத்திலிருந்து கேள்விகள்.',
-    questionIds: ['q23'],
+    questionIds: ['sci-08-01'],
     classId: '8',
     subjectId: 'science',
   },
@@ -212,7 +220,7 @@ const tests = [
     title: 'வகுப்பு 8 - சமூக அறிவியல்',
     category: 'class',
     description: '8 ஆம் வகுப்பு சமூக அறிவியல் பாடத்திட்டத்திலிருந்து கேள்விகள்.',
-    questionIds: ['q24'],
+    questionIds: ['soc-08-01'],
     classId: '8',
     subjectId: 'social-science',
   },
@@ -222,7 +230,7 @@ const tests = [
     title: 'வகுப்பு 9 - தமிழ்',
     category: 'class',
     description: '9 ஆம் வகுப்பு தமிழ் பாடத்திட்டத்திலிருந்து கேள்விகள்.',
-    questionIds: ['q25'],
+    questionIds: ['tam-09-01'],
     classId: '9',
     subjectId: 'tamil',
   },
@@ -232,7 +240,7 @@ const tests = [
     title: 'வகுப்பு 9 - அறிவியல்',
     category: 'class',
     description: '9 ஆம் வகுப்பு அறிவியல் பாடத்திட்டத்திலிருந்து கேள்விகள்.',
-    questionIds: ['q26'],
+    questionIds: ['sci-09-01'],
     classId: '9',
     subjectId: 'science',
   },
@@ -242,7 +250,7 @@ const tests = [
     title: 'வகுப்பு 9 - சமூக அறிவியல்',
     category: 'class',
     description: '9 ஆம் வகுப்பு சமூக அறிவியல் பாடத்திட்டத்திலிருந்து கேள்விகள்.',
-    questionIds: ['q27'],
+    questionIds: ['soc-09-01'],
     classId: '9',
     subjectId: 'social-science',
   },
@@ -252,7 +260,7 @@ const tests = [
     title: 'வகுப்பு 10 - அறிவியல்',
     category: 'class',
     description: '10 ஆம் வகுப்பு அறிவியல் பாடத்திட்டத்தின் முக்கிய संकल्पனைகள் குறித்த உங்கள் அறிவை சோதிக்கவும்.',
-    questionIds: ['q1', 'q2', 'q3'],
+    questionIds: ['sci-10-01', 'sci-10-02', 'sci-10-03'],
     classId: '10',
     subjectId: 'science',
   },
@@ -262,7 +270,7 @@ const tests = [
     title: 'வகுப்பு 10 - தமிழ்',
     category: 'class',
     description: '10 ஆம் வகுப்பு தமிழ் பாடத்திட்டத்திலிருந்து கேள்விகள்.',
-    questionIds: ['q15'],
+    questionIds: ['tam-10-01'],
     classId: '10',
     subjectId: 'tamil',
   },
@@ -272,7 +280,7 @@ const tests = [
     title: 'வகுப்பு 10 - சமூக அறிவியல்',
     category: 'class',
     description: '10 ஆம் வகுப்பு சமூக அறிவியல் பாடத்திட்டத்திலிருந்து கேள்விகள்.',
-    questionIds: ['q14'],
+    questionIds: ['his-10-01'],
     classId: '10',
     subjectId: 'social-science',
   },
@@ -282,7 +290,7 @@ const tests = [
     title: 'வகுப்பு 12 - கணிதம்',
     category: 'class',
     description: '12 ஆம் வகுப்பு கணித பாடத்திட்டத்தில் இருந்து கேள்விகளுடன் உங்களை நீங்களே சோதித்துக் கொள்ளுங்கள்.',
-    questionIds: ['q4', 'q5'],
+    questionIds: ['mat-12-01', 'mat-12-02'],
     classId: '12',
     subjectId: 'maths',
   },
@@ -292,7 +300,7 @@ const tests = [
     title: 'இந்திய வரலாறு',
     category: 'subject',
     description: 'இந்த சவாலான கேள்விகளுடன் இந்தியாவின் வளமான வரலாற்றை ஆராயுங்கள்.',
-    questionIds: ['q6', 'q7'],
+    questionIds: ['his-12-01', 'his-12-02'],
     subjectId: 'history',
   },
   {
@@ -301,7 +309,7 @@ const tests = [
     title: 'புவியியல்',
     category: 'subject',
     description: 'உலகம் முழுவதிலுமிருந்து உங்கள் புவியியல் அறிவை சோதிக்கவும்.',
-    questionIds: ['q8', 'q9'],
+    questionIds: ['geo-10-01', 'geo-10-02'],
     subjectId: 'geography',
   },
   {
@@ -310,7 +318,7 @@ const tests = [
     title: '2023 TNPSC குரூப் I',
     category: 'previous',
     description: '2023 TNPSC குரூப் I முதல்நிலைத் தேர்வின் உண்மையான கேள்விகளுடன் பயிற்சி செய்யுங்கள்.',
-    questionIds: ['q10', 'q11'],
+    questionIds: ['pol-12-01', 'his-12-03'],
   },
   {
     id: 'tnpsc-2022-group-2',
@@ -318,7 +326,7 @@ const tests = [
     title: '2022 TNPSC குரூப் II',
     category: 'previous',
     description: '2022 TNPSC குரூப் II தேர்வின் முறையைப் பற்றி அறிந்து கொள்ளுங்கள்.',
-    questionIds: ['q12', 'q13'],
+    questionIds: ['tam-12-01', 'pol-12-02'],
   },
   {
     id: 'tnpsc-2021-group-4',
@@ -326,7 +334,7 @@ const tests = [
     title: '2021 TNPSC குரூப் IV',
     category: 'previous',
     description: '2021 TNPSC குரூப் IV தேர்வில் இருந்து கேள்விகளுடன் உங்கள் அறிவை சோதிக்கவும்.',
-    questionIds: ['q14', 'q15', 'q28', 'q29', 'q30'],
+    questionIds: ['his-10-01', 'tam-10-01', 'g4-sci-01', 'g4-apt-01', 'g4-tam-01'],
   },
   {
     id: 'group4-general-science',
@@ -334,7 +342,7 @@ const tests = [
     title: 'குரூப் IV - பொது அறிவியல்',
     category: 'subject',
     description: 'TNPSC குரூப் IV பொது அறிவியல் பாடத்திட்டத்தின் அடிப்படையில் கேள்விகள்.',
-    questionIds: ['q28'],
+    questionIds: ['g4-sci-01'],
     subjectId: 'general-science',
   },
   {
@@ -343,7 +351,7 @@ const tests = [
     title: 'குரூப் IV - திறனறிவு',
     category: 'subject',
     description: 'TNPSC குரூப் IV திறனறிவு பாடத்திட்டத்தின் அடிப்படையில் கேள்விகள்.',
-    questionIds: ['q29'],
+    questionIds: ['g4-apt-01'],
     subjectId: 'aptitude',
   },
   {
@@ -352,7 +360,7 @@ const tests = [
     title: 'குரூப் IV - தமிழ் தகுதி',
     category: 'subject',
     description: 'TNPSC குரூப் IV தமிழ் தகுதி மற்றும் மதிப்பீட்டுத் தேர்வு பாடத்திட்டத்தின் அடிப்படையில் கேள்விகள்.',
-    questionIds: ['q30'],
+    questionIds: ['g4-tam-01'],
     subjectId: 'tamil',
   },
 ];
@@ -415,6 +423,7 @@ export async function seedDatabase() {
     
 
     
+
 
 
 
