@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
@@ -108,111 +106,62 @@ function TestProgressBadge({ testId }: { testId: string }) {
     )
 }
 
-function TopicTestGroup({ topicName, tests, part }: { topicName: string; tests: Test[]; part: string }) {
+function TopicTestGroup({ topicName, tests }: { topicName: string; tests: Test[] }) {
   const { t } = useTranslation();
-  const [selectedTestId, setSelectedTestId] = useState('');
 
-  const testsByCategory = useMemo(() => {
-    return tests.reduce((acc, test) => {
-      const category = test.syllabusCategory || 'General';
-      if (!acc[category]) {
-        acc[category] = [];
-      }
-      acc[category].push(test);
-      return acc;
-    }, {} as Record<string, Test[]>);
-  }, [tests]);
+  if (!tests || tests.length === 0) {
+    return null;
+  }
 
-  useEffect(() => {
-    if (tests.length === 1) {
-      setSelectedTestId(tests[0].id);
-    } else {
-      setSelectedTestId('');
-    }
-  }, [tests]);
+  // If there's only one test for this topic, display it directly.
+  if (tests.length === 1) {
+    const test = tests[0];
+    return (
+      <Card>
+        <CardHeader className="pb-4 pt-4">
+          <CardTitle className="text-base font-semibold">{topicName}</CardTitle>
+          {test.syllabusCategory && <CardDescription>{test.syllabusCategory}</CardDescription>}
+        </CardHeader>
+        <CardContent className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex-grow">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span>{test.questionIds.length} {t('questions')}</span>
+              <Badge variant="outline">{test.medium}</Badge>
+              <TestProgressBadge testId={test.id} />
+            </div>
+          </div>
+          <div className="w-full md:w-auto shrink-0 md:min-w-[300px]">
+            <TestStartControl test={test} />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
-  const handleTestSelectionChange = (testId: string) => {
-    setSelectedTestId(testId);
-  };
-
-  const selectedTest = tests.find(t => t.id === selectedTestId);
-
-  const getTestLabel = (test: Test, testsInSameCategory: Test[]) => {
-    const categoryLabel = test.syllabusCategory || 'General';
-
-    // For Passage Comprehension, use the ID to be specific as there can be many sets.
-    if (categoryLabel === 'Passage Comprehension' && test.id.includes('-')) {
-        const setId = test.id.split('-').pop();
-        return `Passage ${setId || test.id}`;
-    }
-    
-    // If there's more than one test under this category group, it's likely due to different mediums.
-    // Differentiate them by adding the medium to the label.
-    if (testsInSameCategory.length > 1) {
-      const mediumLabel = test.medium === 'tamil' ? 'தமிழ்' : 'English';
-      return `${categoryLabel} (${mediumLabel})`;
-    }
-    
-    // Otherwise, just the category name is sufficient.
-    return categoryLabel;
-  };
-  
-  const hasMultipleOptions = tests.length > 1;
-
+  // If there are multiple tests (e.g., different categories or mediums)
   return (
     <Card>
-      <CardHeader className="pb-4 pt-4">
+      <CardHeader>
         <CardTitle className="text-base font-semibold">{topicName}</CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex-grow space-y-2">
-          {hasMultipleOptions ? (
-            <div className="space-y-1.5">
-              <Label>வினா வகை</Label>
-              <Select onValueChange={handleTestSelectionChange} value={selectedTestId}>
-                <SelectTrigger className="w-full md:w-[250px]">
-                  <SelectValue placeholder={t('select_category_placeholder')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(testsByCategory).map(([category, testsInCategory]) => (
-                    <SelectGroup key={category}>
-                      {part !== 'பகுதி ஆ' && <SelectLabel>{category}</SelectLabel>}
-                      {testsInCategory.map(test => (
-                        <SelectItem key={test.id} value={test.id}>
-                          {getTestLabel(test, testsInCategory)}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          ) : null}
-          
-          {selectedTest ? (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2">
-              <span>{selectedTest.questionIds.length} {t('questions')}</span>
-              <Badge variant="outline">{selectedTest.medium}</Badge>
-              <TestProgressBadge testId={selectedTest.id} />
-            </div>
-          ) : hasMultipleOptions ? <div className="h-6" /> : null }
-        </div>
-        <div className="w-full md:w-auto shrink-0 md:min-w-[300px]">
-            {selectedTest ? (
-                <TestStartControl test={selectedTest} />
-            ) : (
-                <div className="flex flex-col sm:flex-row gap-2 w-full justify-end">
-                    <Select disabled>
-                        <SelectTrigger className="w-full sm:w-[180px]">
-                            <SelectValue placeholder={t('select_questions')} />
-                        </SelectTrigger>
-                    </Select>
-                    <Button disabled className="w-full sm:w-auto">
-                        {t('start_test')} <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
+      <CardContent className="space-y-3">
+        {tests.map(test => (
+          <Card key={test.id} className="bg-background">
+            <CardContent className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="flex-grow">
+                <p className="font-medium">{test.syllabusCategory || 'General'}</p>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <span>{test.questionIds.length} {t('questions')}</span>
+                  <Badge variant="outline">{test.medium}</Badge>
+                  <TestProgressBadge testId={test.id} />
                 </div>
-            )}
-        </div>
+              </div>
+              <div className="w-full md:w-auto shrink-0 md:min-w-[300px]">
+                <TestStartControl test={test} />
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </CardContent>
     </Card>
   );
@@ -344,7 +293,7 @@ export default function SubjectWiseTestsPage() {
                                                                   <AccordionContent className="pt-0 p-4">
                                                                     <div className="space-y-4">
                                                                       {Object.entries(testsByTopic).map(([topicName, testsForTopic]) => (
-                                                                        <TopicTestGroup key={topicName} topicName={topicName} tests={testsForTopic} part={part} />
+                                                                        <TopicTestGroup key={topicName} topicName={topicName} tests={testsForTopic} />
                                                                       ))}
                                                                     </div>
                                                                   </AccordionContent>
@@ -372,8 +321,3 @@ export default function SubjectWiseTestsPage() {
     </div>
   );
 }
-
-
-    
-
-
