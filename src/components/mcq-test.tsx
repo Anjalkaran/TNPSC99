@@ -30,6 +30,7 @@ import {
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/hooks/use-translation';
 import { CommentDialog } from './comment-dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 
 const formatQuestionText = (text: string) => {
@@ -71,6 +72,8 @@ export function McqTest({
 
   const [isCommentDialogOpen, setIsCommentDialogOpen] = useState(false);
   const [commentQuestion, setCommentQuestion] = useState<Question | null>(null);
+  const [isPdfViewerOpen, setIsPdfViewerOpen] = useState(false);
+  const [pdfViewUrl, setPdfViewUrl] = useState<string | null>(null);
 
   const { user } = useUser();
   const firestore = useFirestore();
@@ -84,6 +87,11 @@ export function McqTest({
     setIsCommentDialogOpen(true);
   };
   
+  const handleReferenceClick = (url: string) => {
+    setPdfViewUrl(url);
+    setIsPdfViewerOpen(true);
+  };
+
   const getReturnHref = useCallback(() => {
     // Special handling for Tamil categories which have a different URL structure
     // and don't seem to use the bookType parameter.
@@ -353,7 +361,8 @@ export function McqTest({
     const finalPage = pageNum + offsetNum;
 
     if (finalPage > 0) {
-      return `${baseUrl}#page=${finalPage}`;
+      // The Google Docs Viewer doesn't support jumping to a page, so we just return the base URL.
+      return baseUrl;
     }
     return baseUrl;
   }, [currentQuestion, test.referencePageOffset]);
@@ -579,14 +588,12 @@ export function McqTest({
                   {currentQuestion.reference && pdfReferenceUrl && (
                       <div>
                           <p className="text-sm font-semibold">குறிப்பு</p>
-                          <a
-                            href={pdfReferenceUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="p-0 h-auto text-sm text-blue-600 hover:underline dark:text-blue-400"
+                          <button
+                            onClick={() => handleReferenceClick(pdfReferenceUrl)}
+                            className="p-0 h-auto text-sm text-blue-600 hover:underline dark:text-blue-400 text-left"
                           >
                             {currentQuestion.reference}
-                          </a>
+                          </button>
                       </div>
                   )}
                   {currentQuestion.reference && currentQuestion.explanation && (
@@ -607,6 +614,23 @@ export function McqTest({
         onOpenChange={setIsCommentDialogOpen}
         question={commentQuestion}
       />
+      <Dialog open={isPdfViewerOpen} onOpenChange={setIsPdfViewerOpen}>
+        <DialogContent className="max-w-4xl h-[90vh]">
+            <DialogHeader>
+                <DialogTitle>Reference Document</DialogTitle>
+                <DialogDescription>
+                    Viewing: {pdfViewUrl}
+                </DialogDescription>
+            </DialogHeader>
+            {pdfViewUrl && (
+                <iframe
+                    src={`https://docs.google.com/gview?url=${encodeURIComponent(pdfViewUrl)}&embedded=true`}
+                    className="w-full h-full border-0"
+                    allow="fullscreen"
+                />
+            )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
