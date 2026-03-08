@@ -175,7 +175,7 @@ export default function SubscriptionPage() {
                   </div>
                 )}
                 
-                <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto items-start">
+                <div className="grid md:grid-cols-1 gap-8 max-w-lg mx-auto items-start">
                     <Card className="border-primary border-2 shadow-lg relative">
                         <div className="absolute top-0 -translate-y-1/2 w-full flex justify-center">
                             <div className="bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-semibold">
@@ -202,30 +202,6 @@ export default function SubscriptionPage() {
                         </CardContent>
                         <CardFooter>
                             <Button className="w-full" onClick={() => handleSubscribe('Offer Plan', 99)}>Subscribe Now</Button>
-                        </CardFooter>
-                    </Card>
-                    
-                     <Card>
-                        <CardHeader>
-                            <CardTitle>Standard Plan</CardTitle>
-                            <CardDescription>The regular price after the offer period.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-6">
-                             <div className="text-4xl font-bold">
-                                ₹999 <span className="text-xl font-normal text-muted-foreground">/ month</span>
-                            </div>
-                            <p className="text-sm text-muted-foreground">Billed monthly.</p>
-                            <ul className="space-y-2 text-sm">
-                                {features.map((feature, i) => (
-                                    <li key={i} className="flex items-center gap-2">
-                                        <Check className="h-4 w-4 text-green-500" />
-                                        <span>{feature}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </CardContent>
-                        <CardFooter>
-                            <Button className="w-full" variant="outline" onClick={() => handleSubscribe('Standard Plan', 999)}>Subscribe Now</Button>
                         </CardFooter>
                     </Card>
                 </div>
