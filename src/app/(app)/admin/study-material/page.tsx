@@ -335,16 +335,17 @@ export default function StudyMaterialAdminPage() {
                 <FormField
                   control={form.control}
                   name="file"
-                  render={({ field: { value, onChange, ...fieldRest } }) => (
+                  render={({ field: { value, onChange, ...fieldProps } }) => (
                     <FormItem>
                       <FormLabel>PDF File</FormLabel>
                       <FormControl>
                         <Input
-                          {...fieldRest}
+                          {...fieldProps}
                           type="file"
-                          accept=".pdf"
-                          onChange={(e) => {
-                            onChange(e.target.files?.[0]);
+                          accept="application/pdf"
+                          onChange={(event) => {
+                            const file = event.target.files?.[0];
+                            if (file) onChange(file);
                           }}
                         />
                       </FormControl>
