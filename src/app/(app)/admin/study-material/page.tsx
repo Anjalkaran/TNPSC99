@@ -183,7 +183,6 @@ export default function StudyMaterialAdminPage() {
         return;
     }
 
-    // 1. CLEAN THE PATH: Replace spaces and special characters
     const cleanClass = classId.replace(/[^\w\u0B80-\u0BFF-]/g, '_');
     const cleanSubject = subjectId.replace(/[^\w\u0B80-\u0BFF-]/g, '_');
     const cleanTerm = term.replace(/[^\w\u0B80-\u0BFF-]/g, '_');
@@ -192,25 +191,27 @@ export default function StudyMaterialAdminPage() {
     const storagePath = `study-materials/${cleanClass}/${cleanSubject}/${cleanTerm}/${cleanFileName}`;
     const storageRef = ref(storage, storagePath);
 
-    // 2. ADD ERROR HANDLING WRAPPER
     try {
       const uploadTask = uploadBytesResumable(storageRef, file);
 
       uploadTask.on('state_changed',
         (snapshot) => {
           const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          console.log("Upload Progress:", progress); // For debugging
+          console.log("Upload Progress:", progress);
           setUploadProgress(progress || 0);
         },
         (error) => {
-          // A full list of error codes is available at
-          // https://firebase.google.com/docs/storage/web/handle-errors
           console.error("Firebase Storage Error Object:", error);
-          toast({ variant: 'destructive', title: 'Upload Error', description: `Error: ${error.code}` });
+          let description = `An unknown error occurred. Code: ${error.code}`;
+          if (error.code === 'storage/unauthorized') {
+            description = "Permission Denied. Please check your Storage Security Rules to ensure authenticated users can write to the 'study-materials' path.";
+          } else if (error.code === 'storage/retry-limit-exceeded' || error.code === 'storage/unknown') {
+            description = "Network error or CORS issue. Open the browser console (F12) > Network tab. If you see a 'CORS' error in red, you must run the 'gsutil' command to configure your storage bucket.";
+          }
+          toast({ variant: 'destructive', title: 'Upload Failed', description: description, duration: 10000 });
           setIsUploading(false);
         },
         async () => {
-          // Success logic...
           const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
           const newMaterial: Omit<StudyMaterial, 'id'> = {
             classId,
@@ -218,7 +219,7 @@ export default function StudyMaterialAdminPage() {
             term,
             medium,
             bookType,
-            fileName: cleanFileName, // Save the cleaned file name
+            fileName: cleanFileName,
             downloadURL,
             storagePath,
             createdAt: new Date().toISOString(),
