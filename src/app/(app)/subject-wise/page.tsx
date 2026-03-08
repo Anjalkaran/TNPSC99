@@ -137,7 +137,7 @@ export default function SubjectWiseTestsPage() {
 
   const testsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    const qConstraints = [where('syllabusUnitName', '!=', null)];
+    const qConstraints = [];
     if (examGroup) {
       qConstraints.push(where('examGroup', '==', examGroup));
     }
@@ -148,7 +148,10 @@ export default function SubjectWiseTestsPage() {
 
   const groupedSyllabusTests = useMemo(() => {
     if (!tests) return {};
-    const grouped = tests.reduce((acc, test) => {
+
+    const validTests = tests.filter(t => t.syllabusUnitName != null);
+
+    const grouped = validTests.reduce((acc, test) => {
         const groupKey = examGroup || test.examGroup || 'Uncategorized';
         const part = test.syllabusPart || 'Uncategorized Part';
         const unitKey = (test.syllabusUnit && test.syllabusUnitName) ? `${test.syllabusUnit}: ${test.syllabusUnitName}` : 'Uncategorized Unit';

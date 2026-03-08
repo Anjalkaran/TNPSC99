@@ -42,34 +42,40 @@ service cloud.firestore {
       }
     }
     
-    // App Content collections (read-only for users, writable for admins)
+    // App Content collections (read for signed-in users, writable for admins)
     match /classes/{classId} {
       allow get, list: if isSignedIn();
       allow write: if isAdmin();
     }
     
     match /subjects/{subjectId} {
-      allow read, write: if true;
+      allow get, list: if isSignedIn();
+      allow write: if isAdmin();
     }
     
     match /categories/{categoryId} {
-      allow read, write: if true;
+      allow get, list: if isSignedIn();
+      allow write: if isAdmin();
     }
 
     match /units/{unitId} {
-      allow read, write: if true;
+      allow get, list: if isSignedIn();
+      allow write: if isAdmin();
     }
     
     match /syllabus/{syllabusId} {
-      allow read, write: if true;
+      allow get, list: if isSignedIn();
+      allow write: if isAdmin();
     }
 
     match /questions/{questionId} {
-      allow read, write: if true;
+      allow get, list: if isSignedIn();
+      allow write: if isAdmin();
     }
 
     match /tests/{testId} {
-      allow read, write: if true;
+      allow get, list: if isSignedIn();
+      allow write: if isAdmin();
     }
 
     // Public scores for leaderboard
