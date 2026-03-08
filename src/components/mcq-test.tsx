@@ -27,6 +27,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/hooks/use-translation';
 import { CommentDialog } from './comment-dialog';
@@ -72,6 +78,10 @@ export function McqTest({
   const [isCommentDialogOpen, setIsCommentDialogOpen] = useState(false);
   const [commentQuestion, setCommentQuestion] = useState<Question | null>(null);
 
+  const [isReferenceOpen, setIsReferenceOpen] = useState(false);
+  const [currentReferenceUrl, setCurrentReferenceUrl] = useState<string | null>(null);
+
+
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
@@ -82,6 +92,13 @@ export function McqTest({
   const handleOpenCommentDialog = (question: Question) => {
     setCommentQuestion(question);
     setIsCommentDialogOpen(true);
+  };
+
+  const handleReferenceClick = (url: string | null) => {
+    if (url) {
+        setCurrentReferenceUrl(url);
+        setIsReferenceOpen(true);
+    }
   };
   
   const getReturnHref = useCallback(() => {
@@ -579,14 +596,13 @@ export function McqTest({
                   {currentQuestion.reference && pdfReferenceUrl && (
                       <div>
                           <p className="text-sm font-semibold">குறிப்பு</p>
-                          <a
-                            href={pdfReferenceUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-sm text-blue-600 hover:underline dark:text-blue-400"
+                          <Button
+                            variant="link"
+                            className="p-0 h-auto text-sm text-blue-600 hover:underline dark:text-blue-400"
+                            onClick={() => handleReferenceClick(pdfReferenceUrl)}
                           >
                             {currentQuestion.reference}
-                          </a>
+                          </Button>
                       </div>
                   )}
                   {currentQuestion.reference && currentQuestion.explanation && (
@@ -607,6 +623,18 @@ export function McqTest({
         onOpenChange={setIsCommentDialogOpen}
         question={commentQuestion}
       />
+      <Dialog open={isReferenceOpen} onOpenChange={setIsReferenceOpen}>
+        <DialogContent className="max-w-5xl h-[90vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle>{currentQuestion?.reference || 'Reference'}</DialogTitle>
+          </DialogHeader>
+          <div className="flex-grow">
+            {currentReferenceUrl && (
+                <iframe src={currentReferenceUrl} className="w-full h-full border-0" title="Reference Document" />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
