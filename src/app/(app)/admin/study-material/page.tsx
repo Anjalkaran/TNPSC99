@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -184,8 +182,15 @@ export default function StudyMaterialAdminPage() {
         return;
     }
     
-    const cleanFileName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
-    const storagePath = `study-materials/${cleanFileName}`;
+    // Sanitize path components to be URL-safe
+    const cleanClass = classId.replace(/[^\w-]/g, '_');
+    const cleanSubject = subjectId.replace(/[^\w-]/g, '_');
+    const cleanTerm = term.replace(/[^\w-]/g, '_');
+    const cleanMedium = medium.replace(/[^\w-]/g, '_');
+    const cleanBookType = bookType.replace(/[^\w-]/g, '_');
+    const cleanFileName = file.name.replace(/[^\w-.]/g, '_');
+
+    const storagePath = `study-materials/${cleanClass}/${cleanSubject}/${cleanTerm}/${cleanMedium}_${cleanBookType}_${cleanFileName}`;
     const storageRef = ref(storage, storagePath);
 
     try {
@@ -200,9 +205,9 @@ export default function StudyMaterialAdminPage() {
           console.error("Firebase Storage Error:", error);
           let description = `An unknown error occurred. Code: ${error.code}`;
           if (error.code === 'storage/unauthorized') {
-            description = "Permission Denied. Please ensure your Storage Security Rules are correct.";
-          } else if (error.code === 'storage/retry-limit-exceeded' || error.code === 'storage/canceled') {
-            description = "CORS/Network Error. The upload was blocked. Please ensure you have enabled Storage in Firebase and applied the CORS policy with 'gsutil'.";
+            description = "Permission Denied. Please check your Storage Security Rules are correct.";
+          } else if (error.code === 'storage/retry-limit-exceeded' || error.code === 'storage/canceled' || error.code === 'storage/unknown') {
+            description = "CORS/Network Error. The upload was blocked. Please ensure you have enabled Storage in Firebase and applied the correct CORS policy with 'gsutil'.";
           }
           toast({
             variant: 'destructive',
