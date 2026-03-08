@@ -31,6 +31,15 @@ export default function SubscriptionPage() {
 
 
     const handleSubscribe = async (plan: string, amount: number) => {
+        if (!window.Razorpay) {
+            toast({
+                variant: 'destructive',
+                title: 'Payment Gateway Not Ready',
+                description: 'Please wait a moment for the payment gateway to load and try again.',
+            });
+            return;
+        }
+
         if (!user || !userProfile) {
             toast({
                 title: 'Please log in',
