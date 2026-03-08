@@ -148,10 +148,6 @@ export default function ContactPage() {
                 <Phone className="h-4 w-4" />
                 <a href="tel:+919597091008" className="hover:underline">+91 95970 91008</a>
             </div>
-            <div className="flex items-center justify-center gap-2 text-muted-foreground text-center">
-                <MapPin className="h-4 w-4 flex-shrink-0" />
-                <span>3/503, Subash Street, Muneeswarar Nagar, Tiruppalai, Madurai - 625014</span>
-            </div>
             <p className="text-sm text-muted-foreground pt-2">Follow us on social media:</p>
             <div className="flex items-center justify-center gap-6">
                 <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
