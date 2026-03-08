@@ -7,7 +7,7 @@ import type { UserTestAttempt, Test, Subject, Category, Unit, Class } from '@/li
 import { useMemo, useState, useEffect } from 'react';
 import { useTranslation } from '@/hooks/use-translation';
 import { Progress } from '@/components/ui/progress';
-import { Sparkles, Target, TrendingUp, BookCheck, Shapes, FolderKanban } from 'lucide-react';
+import { BrainCircuit, Sparkles, Target, TrendingUp, BookCheck, Shapes, FolderKanban } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface PerformanceMetric {
@@ -125,7 +125,7 @@ function AiAnalysis({
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                        <Sparkles className="h-5 w-5 text-primary" />
+                        <BrainCircuit className="h-5 w-5 text-primary" />
                         {t('ai_performance_analysis')}
                     </CardTitle>
                     <CardDescription>{t('ai_performance_analysis_desc')}</CardDescription>
@@ -148,7 +148,7 @@ function AiAnalysis({
         <Card>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                    <Sparkles className="h-5 w-5 text-primary" />
+                    <BrainCircuit className="h-5 w-5 text-primary" />
                     {t('ai_performance_analysis')}
                 </CardTitle>
                 <CardDescription>{analysis.overallSummary}</CardDescription>
