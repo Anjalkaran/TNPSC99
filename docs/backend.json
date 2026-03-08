@@ -35,7 +35,16 @@
         "subscriptionStatus": {
             "type": "string",
             "description": "The user's current subscription status.",
-            "enum": ["none", "free_access"]
+            "enum": ["none", "free_access", "premium"]
+        },
+        "subscriptionId": {
+          "type": "string",
+          "description": "The ID of the subscription from the payment provider (e.g., Razorpay)."
+        },
+        "subscriptionExpires": {
+            "type": "string",
+            "description": "The date and time when the current subscription expires.",
+            "format": "date-time"
         }
       },
       "required": [
