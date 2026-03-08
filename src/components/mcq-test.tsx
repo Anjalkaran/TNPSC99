@@ -363,18 +363,21 @@ export function McqTest({
 
   const returnHref = getReturnHref();
   
-  const pdfViewerUrl = useMemo(() => {
-    // Get the base URL from either the dynamic study material or the question itself
+  const pdfReferenceUrl = useMemo(() => {
     const baseUrl = studyMaterial?.downloadURL || currentQuestion?.referenceUrl?.split('#')[0];
-
     if (!baseUrl) {
       return null;
     }
-
-    // The Google Docs viewer URL. We must encode the PDF URL as a parameter.
-    const encodedUrl = encodeURIComponent(baseUrl);
-    return `https://docs.google.com/gview?url=${encodedUrl}&embedded=true`;
-  }, [currentQuestion?.referenceUrl, studyMaterial?.downloadURL]);
+    
+    const questionPage = currentQuestion?.referencePage;
+    if (typeof questionPage === 'number' && questionPage > 0) {
+      const pageOffset = test.referencePageOffset || 0;
+      const targetPage = questionPage + pageOffset;
+      return `${baseUrl}#page=${targetPage}`;
+    }
+    
+    return baseUrl;
+  }, [currentQuestion, studyMaterial, test.referencePageOffset]);
 
 
   if (questions.length === 0) {
@@ -592,21 +595,19 @@ export function McqTest({
             )}
           </div>
 
-          {(isAnswered && (currentQuestion.reference || currentQuestion.explanation)) && (
-              <div className="mt-4 p-4 bg-muted/50 rounded-lg">
-                  {pdfViewerUrl && (
+          {(isAnswered && (currentQuestion.reference || currentQuestion.explanation || pdfReferenceUrl)) && (
+              <div className="mt-4 p-4 bg-muted/50 rounded-lg space-y-3">
+                  {pdfReferenceUrl && (
                       <div>
                           <p className="text-sm font-semibold">குறிப்பு</p>
                           <Button asChild variant="link" className="p-0 h-auto text-sm text-blue-600 hover:underline dark:text-blue-400 text-left whitespace-normal">
-                             <Link href={pdfViewerUrl} target="_blank" rel="noopener noreferrer">
+                             <Link href={pdfReferenceUrl} target="_blank" rel="noopener noreferrer">
                                 {currentQuestion.reference || 'View Reference PDF'}
                              </Link>
                           </Button>
                       </div>
                   )}
-                  {currentQuestion.reference && currentQuestion.explanation && (
-                      <div className="my-3 border-t border-border"></div>
-                  )}
+                  
                   {currentQuestion.explanation && (
                       <div>
                           <p className="text-sm font-semibold">விளக்கம்</p>
