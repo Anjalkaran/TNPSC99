@@ -36,20 +36,6 @@ const nextConfig: NextConfig = {
       }
     ],
   },
-  webpack: (config, { isServer }) => {
-    if (!isServer) {
-      // This prevents the "Module not found: Can't resolve 'fs'" error
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-        net: false,
-        tls: false,
-        child_process: false,
-        perf_hooks: false,
-      };
-    }
-    return config;
-  },
 };
 
 export default nextConfig;
