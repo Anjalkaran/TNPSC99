@@ -15,7 +15,7 @@ export default function Group4Page() {
     },
     {
       title: t('syllabus_wise_tests'),
-      href: '/subject-wise',
+      href: '/subject-wise?examGroup=Group%20IV',
       icon: <BookOpenCheck className="h-8 w-8 text-blue-500" />,
     },
     {

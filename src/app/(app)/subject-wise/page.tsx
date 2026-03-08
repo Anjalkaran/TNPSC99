@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { useSearchParams } from 'next/navigation';
 
 
 function TestStartControl({ test }: { test: Test }) {
@@ -131,27 +132,34 @@ function TestCard({ test }: { test: Test }) {
 export default function SubjectWiseTestsPage() {
   const { t } = useTranslation();
   const firestore = useFirestore();
+  const searchParams = useSearchParams();
+  const examGroup = searchParams.get('examGroup');
 
-  const testsQuery = useMemoFirebase(() => 
-    firestore ? query(collection(firestore, 'tests'), where('syllabusUnitName', '!=', null)) : null,
-    [firestore]
-  );
+  const testsQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    const qConstraints = [where('syllabusUnitName', '!=', null)];
+    if (examGroup) {
+      qConstraints.push(where('examGroup', '==', examGroup));
+    }
+    return query(collection(firestore, 'tests'), ...qConstraints);
+  }, [firestore, examGroup]);
+
   const { data: tests, isLoading } = useCollection<Test>(testsQuery);
 
   const groupedSyllabusTests = useMemo(() => {
     if (!tests) return {};
     const grouped = tests.reduce((acc, test) => {
-        const examGroup = test.examGroup || 'Uncategorized';
+        const groupKey = examGroup || test.examGroup || 'Uncategorized';
         const part = test.syllabusPart || 'Uncategorized Part';
         const unitKey = (test.syllabusUnit && test.syllabusUnitName) ? `${test.syllabusUnit}: ${test.syllabusUnitName}` : 'Uncategorized Unit';
         const topicKey = test.syllabusTopic || 'Uncategorized Topic';
 
-        if (!acc[examGroup]) acc[examGroup] = {};
-        if (!acc[examGroup][part]) acc[examGroup][part] = {};
-        if (!acc[examGroup][part][unitKey]) acc[examGroup][part][unitKey] = {};
-        if (!acc[examGroup][part][unitKey][topicKey]) acc[examGroup][part][unitKey][topicKey] = [];
+        if (!acc[groupKey]) acc[groupKey] = {};
+        if (!acc[groupKey][part]) acc[groupKey][part] = {};
+        if (!acc[groupKey][part][unitKey]) acc[groupKey][part][unitKey] = {};
+        if (!acc[groupKey][part][unitKey][topicKey]) acc[groupKey][part][unitKey][topicKey] = [];
         
-        acc[examGroup][part][unitKey][topicKey].push(test);
+        acc[groupKey][part][unitKey][topicKey].push(test);
         return acc;
     }, {} as Record<string, Record<string, Record<string, Record<string, Test[]>>>>);
 
@@ -166,18 +174,23 @@ export default function SubjectWiseTestsPage() {
         }
     }
     return grouped;
-  }, [tests]);
+  }, [tests, examGroup]);
+  
+  const pageTitle = examGroup ? `${examGroup} ${t('syllabus_wise_tests')}` : t('syllabus_wise_tests');
+  const backLink = examGroup ? `/exam-wise/${examGroup.toLowerCase().replace(' ', '-')}` : '/dashboard';
+  const backLinkText = examGroup ? `Back to ${examGroup}` : 'Back to Dashboard';
+
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
       <div className="mb-8">
         <Button asChild variant="ghost" className="mb-4">
-            <Link href="/exam-wise/group-4">
+            <Link href={backLink}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Group IV
+                {backLinkText}
             </Link>
         </Button>
-        <h1 className="text-3xl md:text-4xl font-bold">{t('syllabus_wise_tests')}</h1>
+        <h1 className="text-3xl md:text-4xl font-bold">{pageTitle}</h1>
         <p className="text-muted-foreground mt-2">Practice tests organized by the official TNPSC syllabus.</p>
       </div>
 
@@ -264,7 +277,11 @@ export default function SubjectWiseTestsPage() {
         </Accordion>
       ) : (
         <div className="text-center py-16">
-          <p className="text-muted-foreground">No syllabus-wise tests found. Upload some in the admin panel!</p>
+          <p className="text-muted-foreground">
+            {examGroup 
+              ? `No syllabus-wise tests found for ${examGroup}.` 
+              : 'No syllabus-wise tests found. Upload some in the admin panel!'}
+          </p>
         </div>
       )}
     </div>
