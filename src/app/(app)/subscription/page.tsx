@@ -5,9 +5,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { useToast } from "@/hooks/use-toast";
 import { Check } from "lucide-react";
 import Link from 'next/link';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import type { UserProfile } from '@/lib/types';
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function SubscriptionPage() {
     const { toast } = useToast();
+    const { user } = useUser();
+    const firestore = useFirestore();
+    const userProfileRef = useMemoFirebase(
+      () => (user ? doc(firestore, 'users', user.uid) : null),
+      [user, firestore]
+    );
+    const { data: userProfile, isLoading } = useDoc<UserProfile>(userProfileRef);
+
 
     const handleSubscribe = (plan: string) => {
         toast({
@@ -21,7 +33,7 @@ export default function SubscriptionPage() {
         // 2. Calling a backend endpoint to create a Razorpay Order.
         // 3. Opening the Razorpay checkout with the order ID.
         // 4. Handling the payment success/failure in a callback.
-        // 5. On success, updating the user's subscription status in Firestore.
+        // 5. On success, updating the user's subscriptionStatus in Firestore.
     };
     
     const features = [
@@ -33,12 +45,33 @@ export default function SubscriptionPage() {
         "Ad-free experience"
     ];
 
+    if (isLoading) {
+        return (
+             <div className="container mx-auto p-4 sm:p-6 md:p-8 space-y-4">
+                <Skeleton className="h-10 w-1/2 mx-auto" />
+                <Skeleton className="h-6 w-3/4 mx-auto" />
+                <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto items-start pt-8">
+                    <Skeleton className="h-[400px] w-full" />
+                    <Skeleton className="h-[400px] w-full" />
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="container mx-auto p-4 sm:p-6 md:p-8">
             <div className="text-center mb-12">
                 <h1 className="text-3xl md:text-4xl font-bold">Choose Your Plan</h1>
                 <p className="text-muted-foreground mt-2">Unlock all features and accelerate your TNPSC preparation.</p>
             </div>
+
+            {userProfile?.subscriptionStatus === 'free_trial' && userProfile.trialEndsAt && (
+              <div className="mb-8 text-center p-4 bg-blue-100 dark:bg-blue-900/50 border border-blue-200 dark:border-blue-800 rounded-lg max-w-4xl mx-auto">
+                <p className="font-semibold text-blue-800 dark:text-blue-300">You are currently on a free trial.</p>
+                <p className="text-sm text-blue-700 dark:text-blue-400">Your trial ends on {new Date(userProfile.trialEndsAt).toLocaleString()}.</p>
+              </div>
+            )}
+            
             <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto items-start">
                 <Card className="border-primary border-2 shadow-lg relative">
                     <div className="absolute top-0 -translate-y-1/2 w-full flex justify-center">

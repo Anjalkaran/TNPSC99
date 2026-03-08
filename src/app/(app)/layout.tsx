@@ -1,8 +1,8 @@
 'use client';
 
-import { useUser } from '@/firebase';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Sidebar,
   SidebarInset,
@@ -15,6 +15,9 @@ import { useTranslation } from '@/hooks/use-translation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { SiteFooter } from '@/components/site-footer';
+import type { UserProfile } from '@/lib/types';
+import { doc } from 'firebase/firestore';
+import { TrialExpiryModal } from '@/components/trial-expiry-modal';
 
 export default function AppLayout({
   children,
@@ -25,6 +28,14 @@ export default function AppLayout({
   const router = useRouter();
   const pathname = usePathname();
   const { t } = useTranslation();
+  const firestore = useFirestore();
+  const [isTrialExpired, setIsTrialExpired] = useState(false);
+
+  const userProfileRef = useMemoFirebase(
+    () => (user ? doc(firestore, 'users', user.uid) : null),
+    [user, firestore]
+  );
+  const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
 
   useEffect(() => {
     if (!isUserLoading && !user) {
@@ -32,12 +43,26 @@ export default function AppLayout({
     }
   }, [user, isUserLoading, router, pathname]);
 
-  if (isUserLoading || !user) {
+  useEffect(() => {
+    if (userProfile?.subscriptionStatus === 'free_trial' && userProfile.trialEndsAt) {
+      if (new Date(userProfile.trialEndsAt) < new Date()) {
+        setIsTrialExpired(true);
+      }
+    } else {
+        setIsTrialExpired(false);
+    }
+  }, [userProfile]);
+
+  if (isUserLoading || !user || isProfileLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         Loading...
       </div>
     );
+  }
+
+  if (isTrialExpired) {
+    return <TrialExpiryModal isOpen={isTrialExpired} />;
   }
 
   const getPageTitle = () => {

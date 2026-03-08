@@ -35,7 +35,12 @@
         "subscriptionStatus": {
             "type": "string",
             "description": "The user's current subscription status.",
-            "enum": ["none", "free_access", "premium"]
+            "enum": ["none", "free_trial", "free_access", "premium"]
+        },
+        "trialEndsAt": {
+            "type": "string",
+            "description": "The date and time when the free trial expires.",
+            "format": "date-time"
         },
         "subscriptionId": {
           "type": "string",

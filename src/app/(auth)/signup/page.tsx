@@ -100,6 +100,9 @@ export default function SignupPage() {
         const userDocSnap = await getDoc(userDocRef);
 
         if (!userDocSnap.exists()) {
+            const trialEndsAt = new Date();
+            trialEndsAt.setDate(trialEndsAt.getDate() + 1);
+
             const userProfile: UserProfile = {
                 id: user.uid,
                 username: user.displayName || user.email!,
@@ -108,7 +111,8 @@ export default function SignupPage() {
                 isAdmin: user.email === 'admin@tnpsc99.com',
                 referralCode: user.uid.slice(0, 8),
                 referralCount: 0,
-                subscriptionStatus: 'none',
+                subscriptionStatus: 'free_trial',
+                trialEndsAt: trialEndsAt.toISOString(),
             };
 
             setDoc(userDocRef, userProfile).catch((error) => {
@@ -152,11 +156,8 @@ export default function SignupPage() {
       // Also update the user's auth profile
       await updateProfile(newUser, { displayName: values.username });
       
-      // TODO: This is where the referral code logic would go.
-      // 1. Query the 'users' collection to find a user with the matching `values.referralCode`.
-      // 2. If a referrer is found, use a transaction to increment their `referralCount`.
-      // 3. If their new count reaches 10, update their `subscriptionStatus` to 'free_access'.
-      // This logic requires secure backend implementation (e.g., Cloud Functions) to prevent abuse.
+      const trialEndsAt = new Date();
+      trialEndsAt.setDate(trialEndsAt.getDate() + 1);
 
       const userProfile: UserProfile = {
         id: newUser.uid,
@@ -166,8 +167,8 @@ export default function SignupPage() {
         isAdmin: values.email === 'admin@tnpsc99.com',
         referralCode: newUser.uid.slice(0, 8), // Generate a unique code
         referralCount: 0,
-        subscriptionStatus: 'none',
-        // referredBy: referrerId, // This would be set if a valid code was used
+        subscriptionStatus: 'free_trial',
+        trialEndsAt: trialEndsAt.toISOString(),
       };
 
       const userDocRef = doc(firestore, 'users', newUser.uid);

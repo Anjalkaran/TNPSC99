@@ -107,7 +107,8 @@ export interface UserProfile {
   referralCode: string;
   referredBy?: string;
   referralCount: number;
-  subscriptionStatus: 'none' | 'free_access' | 'premium';
+  subscriptionStatus: 'none' | 'free_trial' | 'free_access' | 'premium';
+  trialEndsAt?: string;
   subscriptionId?: string;
   subscriptionExpires?: string;
 }
