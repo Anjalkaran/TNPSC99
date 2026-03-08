@@ -3,7 +3,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useFirestore, useCollection, useMemoFirebase, useFirebaseApp } from '@/firebase';
-import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
+import { getStorage, ref, getDownloadURL, deleteObject, uploadBytes } from 'firebase/storage';
 import {
   collection,
   doc,
@@ -159,7 +159,7 @@ export default function StudyMaterialAdminPage() {
   
   const firestore = useFirestore();
   const firebaseApp = useFirebaseApp();
-  const storage = getStorage(firebaseApp);
+  const storage = getStorage(firebaseApp, "gs://tnpsc99.appspot.com");
   const { toast } = useToast();
 
   const classesQuery = useMemoFirebase(() => collection(firestore, 'classes'), [firestore]);
@@ -182,65 +182,47 @@ export default function StudyMaterialAdminPage() {
         setIsUploading(false);
         return;
     }
-
-    const cleanClass = classId.replace(/[^\w\u0B80-\u0BFF-]/g, '_');
-    const cleanSubject = subjectId.replace(/[^\w\u0B80-\u0BFF-]/g, '_');
-    const cleanTerm = term.replace(/[^\w\u0B80-\u0BFF-]/g, '_');
-    const cleanFileName = file.name.replace(/\s+/g, '_');
     
-    const storagePath = `study-materials/${cleanClass}/${cleanSubject}/${cleanTerm}/${cleanFileName}`;
+    // TEMPORARY: Use a timestamp-based simple path for testing
+    const timestamp = Date.now();
+    const cleanFileName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
+    const storagePath = `testing/${timestamp}_${cleanFileName}`;
     const storageRef = ref(storage, storagePath);
 
     try {
-      const uploadTask = uploadBytesResumable(storageRef, file);
+      console.log("Starting upload for:", file.name, "Size:", file.size);
+      
+      const snapshot = await uploadBytes(storageRef, file);
+      console.log("Upload finished!");
+      
+      const downloadURL = await getDownloadURL(snapshot.ref);
 
-      uploadTask.on('state_changed',
-        (snapshot) => {
-          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          console.log("Upload Progress:", progress);
-          setUploadProgress(progress || 0);
-        },
-        (error) => {
-          console.error("Firebase Storage Error Object:", error);
-          let description = `An unknown error occurred. Code: ${error.code}`;
-          if (error.code === 'storage/unauthorized') {
-            description = "Permission Denied. Please check your Storage Security Rules to ensure authenticated users can write to the 'study-materials' path.";
-          } else if (error.code === 'storage/retry-limit-exceeded' || error.code === 'storage/unknown') {
-            description = "Network error or CORS issue. Open the browser console (F12) > Network tab. If you see a 'CORS' error in red, you must run the 'gsutil' command to configure your storage bucket.";
-          }
-          toast({ variant: 'destructive', title: 'Upload Failed', description: description, duration: 10000 });
-          setIsUploading(false);
-        },
-        async () => {
-          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-          const newMaterial: Omit<StudyMaterial, 'id'> = {
-            classId,
-            subjectId,
-            term,
-            medium,
-            bookType,
-            fileName: cleanFileName,
-            downloadURL,
-            storagePath,
-            createdAt: new Date().toISOString(),
-          };
+      const newMaterial: Omit<StudyMaterial, 'id'> = {
+        classId,
+        subjectId,
+        term,
+        medium,
+        bookType,
+        fileName: cleanFileName,
+        downloadURL,
+        storagePath,
+        createdAt: new Date().toISOString(),
+      };
 
-          try {
-            await addDoc(collection(firestore, 'studyMaterials'), newMaterial);
-            toast({ title: 'Upload Successful', description: `${cleanFileName} has been uploaded.` });
-            form.reset();
-          } catch (error: any) {
-            toast({ variant: 'destructive', title: 'Database Error', description: 'Could not save file metadata to database.' });
-          } finally {
-            setIsUploading(false);
-            setUploadProgress(0);
-          }
-        }
-      );
-    } catch (err) {
-      console.error("Immediate error before upload:", err);
-      toast({ variant: 'destructive', title: 'Upload Failed', description: 'An unexpected client-side error occurred.' });
-      setIsUploading(false);
+      await addDoc(collection(firestore, 'studyMaterials'), newMaterial);
+      toast({ title: 'Upload Successful', description: `${cleanFileName} has been uploaded.` });
+      form.reset();
+
+    } catch (error: any) {
+        console.error("DETAILED ERROR:", error);
+        toast({ 
+            variant: 'destructive', 
+            title: 'Upload Failed', 
+            description: `Code: ${error.code} - ${error.message}` 
+        });
+    } finally {
+        setIsUploading(false);
+        setUploadProgress(0);
     }
   };
   
