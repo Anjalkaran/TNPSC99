@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import type { Test, UserTestAttempt, Score, Question, BookmarkedQuestion } from '@/lib/types';
+import type { Test, UserTestAttempt, Score, Question, BookmarkedQuestion, StudyMaterial } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -9,7 +9,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft, ArrowRight, CheckCircle2, XCircle, RotateCw, Timer, Info, Bookmark, Save, MessageSquareQuote } from 'lucide-react';
 import Link from 'next/link';
-import { useFirestore, useUser } from '@/firebase';
+import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
 import { addDoc, collection, doc, setDoc, getDocs, query, where, deleteDoc, writeBatch } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -83,6 +83,25 @@ export function McqTest({
   const firestore = useFirestore();
   const { toast } = useToast();
   
+  const studyMaterialQuery = useMemoFirebase(() => {
+    // Query should only be created if all required test properties are present
+    if (!firestore || !test.classId || !test.subjectId || !test.term) {
+        return null;
+    }
+    const qConstraints = [
+        where('classId', '==', test.classId),
+        where('subjectId', '==', test.subjectId),
+        where('term', '==', test.term),
+    ];
+    if (test.bookType) qConstraints.push(where('bookType', '==', test.bookType));
+    if (test.medium) qConstraints.push(where('medium', '==', test.medium));
+    
+    return query(collection(firestore, 'studyMaterials'), ...qConstraints);
+  }, [firestore, test.classId, test.subjectId, test.term, test.bookType, test.medium]);
+
+  const { data: studyMaterials } = useCollection<StudyMaterial>(studyMaterialQuery);
+  const studyMaterial = useMemo(() => (studyMaterials && studyMaterials.length > 0 ? studyMaterials[0] : null), [studyMaterials]);
+
   const decodedTitle = decodeURIComponent(test.title);
   const currentQuestion = questions[currentQuestionIndex];
 
@@ -351,11 +370,14 @@ export function McqTest({
   const returnHref = getReturnHref();
   
   const pdfReferenceUrl = useMemo(() => {
-    if (!currentQuestion?.referenceUrl) {
+    // Prioritize the dynamically found study material URL.
+    const baseUrl = studyMaterial?.downloadURL || currentQuestion?.referenceUrl?.split('#')[0];
+
+    if (!baseUrl) {
       return null;
     }
-    const baseUrl = currentQuestion.referenceUrl.split('#')[0];
-    const pageNum = Number(currentQuestion.referencePage ?? 0);
+
+    const pageNum = Number(currentQuestion?.referencePage ?? 0);
     const offsetNum = Number(test.referencePageOffset ?? 0);
     const finalPage = pageNum + offsetNum;
 
@@ -363,7 +385,7 @@ export function McqTest({
       return `${baseUrl}#page=${finalPage}`;
     }
     return baseUrl;
-  }, [currentQuestion, test.referencePageOffset]);
+  }, [currentQuestion, test.referencePageOffset, studyMaterial]);
 
 
   if (questions.length === 0) {
