@@ -12,6 +12,7 @@ export default function AdminPage() {
         { href: '/admin/users', label: t('user_management'), icon: <Shield /> },
         { href: '/admin/topics', label: t('topic_management'), icon: <IconTopicManagement />},
         { href: '/admin/upload', label: t('mcq_bank'), icon: <IconMcqBank /> },
+        { href: '/admin/study-material', label: 'Study Material', icon: <BookOpen /> },
         { href: '/admin/syllabus', label: 'Syllabus Management', icon: <BookOpenCheck /> },
         { href: '/admin/comments', label: 'User Feedback', icon: <FileText /> },
         { href: '/admin/previous-year-papers', label: t('previous_year_papers'), icon: <Archive /> },
@@ -42,3 +43,5 @@ export default function AdminPage() {
     </div>
   );
 }
+
+    

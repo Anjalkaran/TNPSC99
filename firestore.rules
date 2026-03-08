@@ -78,6 +78,11 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    match /studyMaterials/{materialId} {
+      allow get, list: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
     // Public scores for leaderboard
     match /scores/{scoreId} {
         allow read: if true;
@@ -107,3 +112,5 @@ service cloud.firestore {
     }
   }
 }
+
+    

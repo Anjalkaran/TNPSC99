@@ -27,6 +27,7 @@ import {
   Bookmark,
   Gift,
   Crown,
+  Library,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useAuth, useUser, useDoc, useMemoFirebase, useFirestore } from '@/firebase';
@@ -75,6 +76,7 @@ export function AppSidebar() {
 
   const allSidebarLinks: SidebarLink[] = [
       { href: '/dashboard', label: t('dashboard'), icon: LayoutDashboard },
+      { href: '/study-material', label: t('study_material'), icon: Library },
       { href: '/bookmarks', label: 'Bookmarks', icon: Bookmark },
       { href: '/subscription', label: 'Subscription', icon: Crown },
       { href: '/referrals', label: 'Referrals', icon: Gift, adminOnly: true },
@@ -171,3 +173,5 @@ export function AppSidebar() {
     </>
   );
 }
+
+    
