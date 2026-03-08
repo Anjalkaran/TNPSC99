@@ -27,12 +27,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/hooks/use-translation';
 import { CommentDialog } from './comment-dialog';
@@ -77,7 +71,6 @@ export function McqTest({
 
   const [isCommentDialogOpen, setIsCommentDialogOpen] = useState(false);
   const [commentQuestion, setCommentQuestion] = useState<Question | null>(null);
-  const [isPdfViewerOpen, setIsPdfViewerOpen] = useState(false);
 
   const { user } = useUser();
   const firestore = useFirestore();
@@ -605,15 +598,13 @@ export function McqTest({
 
           {(isAnswered && (currentQuestion.reference || currentQuestion.explanation)) && (
               <div className="mt-4 p-4 bg-muted/50 rounded-lg">
-                  {currentQuestion.reference && pdfReferenceUrl && (
+                  {pdfReferenceUrl && (
                       <div>
                           <p className="text-sm font-semibold">குறிப்பு</p>
-                          <Button
-                            variant="link"
-                            onClick={() => setIsPdfViewerOpen(true)}
-                            className="p-0 h-auto text-sm text-blue-600 hover:underline dark:text-blue-400 text-left whitespace-normal"
-                          >
-                            {currentQuestion.reference}
+                          <Button asChild variant="link" className="p-0 h-auto text-sm text-blue-600 hover:underline dark:text-blue-400 text-left whitespace-normal">
+                             <Link href={pdfReferenceUrl} target="_blank" rel="noopener noreferrer">
+                                {currentQuestion.reference || 'View Reference PDF'}
+                             </Link>
                           </Button>
                       </div>
                   )}
@@ -635,18 +626,6 @@ export function McqTest({
         onOpenChange={setIsCommentDialogOpen}
         question={commentQuestion}
       />
-      {pdfReferenceUrl && (
-        <Dialog open={isPdfViewerOpen} onOpenChange={setIsPdfViewerOpen}>
-            <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
-                <DialogHeader>
-                    <DialogTitle>{currentQuestion.reference || 'Reference PDF'}</DialogTitle>
-                </DialogHeader>
-                <div className="flex-1">
-                  <iframe src={pdfReferenceUrl} className="w-full h-full border-0" title="PDF Reference" />
-                </div>
-            </DialogContent>
-        </Dialog>
-      )}
     </>
   );
 }
