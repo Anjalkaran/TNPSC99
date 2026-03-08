@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
@@ -362,23 +363,18 @@ export function McqTest({
 
   const returnHref = getReturnHref();
   
-  const pdfReferenceUrl = useMemo(() => {
-    // Prioritize the dynamically found study material URL.
+  const pdfViewerUrl = useMemo(() => {
+    // Get the base URL from either the dynamic study material or the question itself
     const baseUrl = studyMaterial?.downloadURL || currentQuestion?.referenceUrl?.split('#')[0];
 
     if (!baseUrl) {
       return null;
     }
 
-    const pageNum = Number(currentQuestion?.referencePage ?? 0);
-    const offsetNum = Number(test.referencePageOffset ?? 0);
-    const finalPage = pageNum + offsetNum;
-
-    if (finalPage > 0) {
-      return `${baseUrl}#page=${finalPage}`;
-    }
-    return baseUrl;
-  }, [currentQuestion, test.referencePageOffset, studyMaterial]);
+    // The Google Docs viewer URL. We must encode the PDF URL as a parameter.
+    const encodedUrl = encodeURIComponent(baseUrl);
+    return `https://docs.google.com/gview?url=${encodedUrl}&embedded=true`;
+  }, [currentQuestion?.referenceUrl, studyMaterial?.downloadURL]);
 
 
   if (questions.length === 0) {
@@ -598,11 +594,11 @@ export function McqTest({
 
           {(isAnswered && (currentQuestion.reference || currentQuestion.explanation)) && (
               <div className="mt-4 p-4 bg-muted/50 rounded-lg">
-                  {pdfReferenceUrl && (
+                  {pdfViewerUrl && (
                       <div>
                           <p className="text-sm font-semibold">குறிப்பு</p>
                           <Button asChild variant="link" className="p-0 h-auto text-sm text-blue-600 hover:underline dark:text-blue-400 text-left whitespace-normal">
-                             <Link href={pdfReferenceUrl} target="_blank" rel="noopener noreferrer">
+                             <Link href={pdfViewerUrl} target="_blank" rel="noopener noreferrer">
                                 {currentQuestion.reference || 'View Reference PDF'}
                              </Link>
                           </Button>
