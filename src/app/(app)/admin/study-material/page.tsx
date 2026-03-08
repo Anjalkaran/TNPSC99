@@ -159,7 +159,7 @@ export default function StudyMaterialAdminPage() {
   
   const firestore = useFirestore();
   const firebaseApp = useFirebaseApp();
-  const storage = getStorage(firebaseApp, "gs://tnpsc99.appspot.com");
+  const storage = getStorage(firebaseApp);
   const { toast } = useToast();
 
   const classesQuery = useMemoFirebase(() => collection(firestore, 'classes'), [firestore]);
