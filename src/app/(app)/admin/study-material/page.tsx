@@ -1,9 +1,10 @@
 
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
 import { useFirestore, useCollection, useMemoFirebase, useFirebaseApp } from '@/firebase';
-import { getStorage, ref, getDownloadURL, deleteObject, uploadBytes } from 'firebase/storage';
+import { getStorage, ref, getDownloadURL, deleteObject, uploadBytesResumable } from 'firebase/storage';
 import {
   collection,
   doc,
@@ -183,46 +184,59 @@ export default function StudyMaterialAdminPage() {
         return;
     }
     
-    // TEMPORARY: Use a timestamp-based simple path for testing
-    const timestamp = Date.now();
     const cleanFileName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
-    const storagePath = `testing/${timestamp}_${cleanFileName}`;
+    const storagePath = `study-materials/${cleanFileName}`;
     const storageRef = ref(storage, storagePath);
 
     try {
-      console.log("Starting upload for:", file.name, "Size:", file.size);
-      
-      const snapshot = await uploadBytes(storageRef, file);
-      console.log("Upload finished!");
-      
-      const downloadURL = await getDownloadURL(snapshot.ref);
+      const uploadTask = uploadBytesResumable(storageRef, file);
 
-      const newMaterial: Omit<StudyMaterial, 'id'> = {
-        classId,
-        subjectId,
-        term,
-        medium,
-        bookType,
-        fileName: cleanFileName,
-        downloadURL,
-        storagePath,
-        createdAt: new Date().toISOString(),
-      };
+      uploadTask.on('state_changed',
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          setUploadProgress(progress);
+        },
+        (error) => {
+          console.error("Firebase Storage Error:", error);
+          let description = `An unknown error occurred. Code: ${error.code}`;
+          if (error.code === 'storage/unauthorized') {
+            description = "Permission Denied. Please ensure your Storage Security Rules are correct.";
+          } else if (error.code === 'storage/retry-limit-exceeded' || error.code === 'storage/canceled') {
+            description = "CORS/Network Error. The upload was blocked. Please ensure you have enabled Storage in Firebase and applied the CORS policy with 'gsutil'.";
+          }
+          toast({
+            variant: 'destructive',
+            title: 'Upload Failed',
+            description: description,
+          });
+          setIsUploading(false);
+        },
+        async () => {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
 
-      await addDoc(collection(firestore, 'studyMaterials'), newMaterial);
-      toast({ title: 'Upload Successful', description: `${cleanFileName} has been uploaded.` });
-      form.reset();
+          const newMaterial: Omit<StudyMaterial, 'id'> = {
+            classId,
+            subjectId,
+            term,
+            medium,
+            bookType,
+            fileName: cleanFileName,
+            downloadURL,
+            storagePath,
+            createdAt: new Date().toISOString(),
+          };
 
-    } catch (error: any) {
-        console.error("DETAILED ERROR:", error);
-        toast({ 
-            variant: 'destructive', 
-            title: 'Upload Failed', 
-            description: `Code: ${error.code} - ${error.message}` 
-        });
-    } finally {
-        setIsUploading(false);
-        setUploadProgress(0);
+          await addDoc(collection(firestore, 'studyMaterials'), newMaterial);
+          toast({ title: 'Upload Successful', description: `${cleanFileName} has been uploaded.` });
+          form.reset();
+          setIsUploading(false);
+          setUploadProgress(0);
+        }
+      );
+    } catch (err) {
+      console.error("Immediate upload error:", err);
+      toast({ variant: 'destructive', title: 'Upload Error', description: 'An unexpected error occurred before the upload could start.' });
+      setIsUploading(false);
     }
   };
   
