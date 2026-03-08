@@ -177,48 +177,70 @@ export default function StudyMaterialAdminPage() {
     setUploadProgress(0);
 
     const { classId, subjectId, term, medium, bookType, file } = values;
-    const fileName = file.name;
-    const storagePath = `study-materials/${classId}/${subjectId}/${term}/${fileName}`;
+    if (!file) {
+        toast({ variant: 'destructive', title: 'File not found', description: 'Please select a file to upload.' });
+        setIsUploading(false);
+        return;
+    }
+
+    // 1. CLEAN THE PATH: Replace spaces and special characters
+    const cleanClass = classId.replace(/[^\w\u0B80-\u0BFF-]/g, '_');
+    const cleanSubject = subjectId.replace(/[^\w\u0B80-\u0BFF-]/g, '_');
+    const cleanTerm = term.replace(/[^\w\u0B80-\u0BFF-]/g, '_');
+    const cleanFileName = file.name.replace(/\s+/g, '_');
+    
+    const storagePath = `study-materials/${cleanClass}/${cleanSubject}/${cleanTerm}/${cleanFileName}`;
     const storageRef = ref(storage, storagePath);
 
-    const uploadTask = uploadBytesResumable(storageRef, file);
+    // 2. ADD ERROR HANDLING WRAPPER
+    try {
+      const uploadTask = uploadBytesResumable(storageRef, file);
 
-    uploadTask.on('state_changed',
-      (snapshot) => {
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        setUploadProgress(progress);
-      },
-      (error) => {
-        console.error("Upload failed:", error);
-        toast({ variant: 'destructive', title: 'Upload Failed', description: error.message });
-        setIsUploading(false);
-      },
-      async () => {
-        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-        const newMaterial: Omit<StudyMaterial, 'id'> = {
-          classId,
-          subjectId,
-          term,
-          medium,
-          bookType,
-          fileName,
-          downloadURL,
-          storagePath,
-          createdAt: new Date().toISOString(),
-        };
-
-        try {
-          await addDoc(collection(firestore, 'studyMaterials'), newMaterial);
-          toast({ title: 'Upload Successful', description: `${fileName} has been uploaded.` });
-          form.reset();
-        } catch (error: any) {
-          toast({ variant: 'destructive', title: 'Database Error', description: 'Could not save file metadata to database.' });
-        } finally {
+      uploadTask.on('state_changed',
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          console.log("Upload Progress:", progress); // For debugging
+          setUploadProgress(progress || 0);
+        },
+        (error) => {
+          // A full list of error codes is available at
+          // https://firebase.google.com/docs/storage/web/handle-errors
+          console.error("Firebase Storage Error Object:", error);
+          toast({ variant: 'destructive', title: 'Upload Error', description: `Error: ${error.code}` });
           setIsUploading(false);
-          setUploadProgress(0);
+        },
+        async () => {
+          // Success logic...
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          const newMaterial: Omit<StudyMaterial, 'id'> = {
+            classId,
+            subjectId,
+            term,
+            medium,
+            bookType,
+            fileName: cleanFileName, // Save the cleaned file name
+            downloadURL,
+            storagePath,
+            createdAt: new Date().toISOString(),
+          };
+
+          try {
+            await addDoc(collection(firestore, 'studyMaterials'), newMaterial);
+            toast({ title: 'Upload Successful', description: `${cleanFileName} has been uploaded.` });
+            form.reset();
+          } catch (error: any) {
+            toast({ variant: 'destructive', title: 'Database Error', description: 'Could not save file metadata to database.' });
+          } finally {
+            setIsUploading(false);
+            setUploadProgress(0);
+          }
         }
-      }
-    );
+      );
+    } catch (err) {
+      console.error("Immediate error before upload:", err);
+      toast({ variant: 'destructive', title: 'Upload Failed', description: 'An unexpected client-side error occurred.' });
+      setIsUploading(false);
+    }
   };
   
   return (
