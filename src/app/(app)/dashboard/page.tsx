@@ -3,9 +3,9 @@ import Link from 'next/link';
 import {
   ArrowRight,
   BookCopy,
-  Library,
   Archive,
   Flame,
+  Book,
 } from 'lucide-react';
 import {
   Card,
@@ -24,7 +24,7 @@ export default function DashboardPage() {
     {
       title: t('class_wise_tests'),
       href: '/class-wise',
-      icon: <Library className="h-8 w-8 text-blue-500" />,
+      icon: <Book className="h-8 w-8 text-blue-500" />,
     },
     {
       title: t('group_1_tests'),
