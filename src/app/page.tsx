@@ -114,9 +114,9 @@ export default function PublicHomePage() {
         >
            <div className="container mx-auto px-4">
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-3 text-green-700">
-              Crack TNPSC in Your First Attempt with TNPSC99
+              Level Up Your Preparation with TNPSC99
             </h1>
-            <p className="max-w-3xl mx-auto text-base text-gray-700 mb-4" style={{lineHeight: 1.6}}>
+            <p className="max-w-3xl mx-auto text-base text-gray-700 mb-2" style={{lineHeight: 1.6}}>
               Curated MCQs for Group 1, 2, 2A, 4 & VAO • Real-Time Performance Tracking • Previous Year Questions with Explanations • Ace Your Exam with Confidence
             </p>
             <div className="flex flex-wrap justify-center items-center gap-6 md:gap-12 my-4">
@@ -140,7 +140,7 @@ export default function PublicHomePage() {
         </section>
 
         {/* Exam Categories Section */}
-        <section className="pt-0 pb-8 md:pb-12 bg-white">
+        <section className="pt-8 pb-8 md:pb-12 bg-white">
           <div className="container mx-auto px-4">
             <div className="text-center mb-10">
               <h2 className="text-3xl md:text-4xl font-bold text-green-700">Exam Categories</h2>
