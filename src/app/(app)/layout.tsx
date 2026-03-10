@@ -67,9 +67,15 @@ export default function AppLayout({
   }
 
   const getPageTitle = () => {
-    // These paths have dynamic titles set by their respective page components.
-    if (pathname.startsWith('/test/') || pathname.startsWith('/class/')) {
-        return t('online_tests'); 
+    // These paths have their own titles within the page content,
+    // so we hide the header title to avoid duplication.
+    if (
+      pathname.startsWith('/test/') ||
+      pathname.startsWith('/class/') ||
+      pathname.startsWith('/exam-wise/') ||
+      pathname.startsWith('/previous-year/')
+    ) {
+      return '';
     }
 
     if (pathname === '/bookmarks') {
