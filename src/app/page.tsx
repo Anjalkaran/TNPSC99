@@ -116,10 +116,10 @@ export default function PublicHomePage() {
             <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-3 text-green-700">
               Crack TNPSC in Your First Attempt with TNPSC99
             </h1>
-            <p className="max-w-3xl mx-auto text-base text-gray-700 mb-8" style={{lineHeight: 1.6}}>
+            <p className="max-w-3xl mx-auto text-base text-gray-700 mb-4" style={{lineHeight: 1.6}}>
               Curated MCQs for Group 1, 2, 2A, 4 & VAO • Real-Time Performance Tracking • Previous Year Questions with Explanations • Ace Your Exam with Confidence
             </p>
-            <div className="flex flex-wrap justify-center items-center gap-6 md:gap-12 my-8">
+            <div className="flex flex-wrap justify-center items-center gap-6 md:gap-12 my-4">
                 <div className="flex items-center gap-2 text-green-600">
                     <ClipboardList className="h-6 w-6" />
                     <span className="font-semibold">1,00,000+ MCQs</span>
