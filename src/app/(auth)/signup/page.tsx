@@ -305,7 +305,7 @@ export default function SignupPage() {
         </div>
         <Button variant="outline" className="w-full bg-transparent hover:bg-white/10" onClick={handleGoogleSignUp} disabled={isSubmitting}>
           <GoogleIcon className="mr-2 h-4 w-4" />
-          Google
+          Continue with Gmail
         </Button>
       </CardContent>
       <CardFooter className="flex justify-center">

@@ -278,7 +278,7 @@ export default function LoginPage() {
         </div>
         <Button variant="outline" className="w-full bg-transparent hover:bg-white/10" onClick={handleGoogleSignIn} disabled={isSubmitting}>
           <GoogleIcon className="mr-2 h-4 w-4" />
-          Google
+          Continue with Gmail
         </Button>
       </CardContent>
       <CardFooter className="flex justify-center">
