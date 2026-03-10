@@ -47,14 +47,14 @@ export default function DashboardPage() {
     <div className="container mx-auto px-4 py-8 md:py-12">
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 max-w-5xl mx-auto">
         {categories.map((category) => (
-           <Link href={category.href} key={category.title} className="block hover:no-underline">
-            <Card className="flex h-full flex-col overflow-hidden transition-all duration-300 hover:shadow-xl group hover:ring-2 hover:ring-primary">
+           <Link href={category.href} key={category.title} className="block hover:no-underline group">
+            <Card className="flex h-full flex-col overflow-hidden transition-all duration-300 hover:shadow-xl group-hover:ring-1 group-hover:ring-primary">
               <CardContent className="flex flex-grow flex-col items-center justify-center p-6 gap-4 text-center">
                 {category.icon}
                 <CardTitle className="text-xl">{category.title}</CardTitle>
               </CardContent>
               <CardFooter className="justify-center">
-                 <div className="flex items-center text-sm font-medium text-accent group-hover:underline">
+                 <div className="flex items-center text-sm font-medium text-primary group-hover:underline">
                     {t('view_tests')}
                     <ArrowRight className="ml-2 h-4 w-4" />
                 </div>

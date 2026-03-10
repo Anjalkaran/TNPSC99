@@ -118,7 +118,7 @@ export default function ClassSubjectsPage() {
                     </p>
                   </CardContent>
                   <CardFooter>
-                      <div className="flex items-center text-sm font-medium text-accent group-hover:underline">
+                      <div className="flex items-center text-sm font-medium text-primary group-hover:underline">
                           {t('view_tests')}
                           <ArrowRight className="ml-2 h-4 w-4" />
                       </div>

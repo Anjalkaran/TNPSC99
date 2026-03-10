@@ -76,14 +76,14 @@ export default function OnlineTestsPage() {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {sortedClasses.map((cls, index) => {
             return (
-              <Link key={cls.id} href={`/class/${cls.id}?bookType=${bookType}`} className="block hover:no-underline">
-                <Card className="flex h-full flex-col overflow-hidden transition-all duration-300 hover:shadow-xl group text-center hover:ring-1 hover:ring-primary">
+              <Link key={cls.id} href={`/class/${cls.id}?bookType=${bookType}`} className="block hover:no-underline group">
+                <Card className="flex h-full flex-col overflow-hidden transition-all duration-300 hover:shadow-xl text-center group-hover:ring-1 group-hover:ring-primary">
                   <CardContent className="flex-grow p-6 flex flex-col items-center justify-center gap-4">
                     <Book className={cn("w-10 h-10", iconColors[index % iconColors.length])} />
                     <CardTitle className="text-xl">{cls.name_ta || cls.name}</CardTitle>
                   </CardContent>
                   <CardFooter className="justify-center">
-                    <div className="flex items-center text-sm font-medium text-accent group-hover:underline">
+                    <div className="flex items-center text-sm font-medium text-primary group-hover:underline">
                         {t('view_tests')}
                         <ArrowRight className="ml-2 h-4 w-4" />
                     </div>
