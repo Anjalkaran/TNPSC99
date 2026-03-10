@@ -122,11 +122,11 @@ export default function PublicHomePage() {
             <div className="flex flex-wrap justify-center items-center gap-6 md:gap-12 my-8">
                 <div className="flex items-center gap-2 text-green-600">
                     <ClipboardList className="h-6 w-6" />
-                    <span className="font-semibold">100000+ Mcqs</span>
+                    <span className="font-semibold">1,00,000+ MCQs</span>
                 </div>
                 <div className="flex items-center gap-2 text-green-600">
                     <FileText className="h-6 w-6" />
-                    <span className="font-semibold">unlimited mock test</span>
+                    <span className="font-semibold">Unlimited Mock Tests</span>
                 </div>
                 <div className="flex items-center gap-2 text-green-600">
                     <BarChart2 className="h-6 w-6" />
