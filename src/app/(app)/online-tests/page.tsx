@@ -8,6 +8,7 @@ import type { Class } from "@/lib/types";
 import { useMemo } from 'react';
 import { useTranslation } from '@/hooks/use-translation';
 import { useSearchParams } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 export default function OnlineTestsPage() {
   const firestore = useFirestore();
@@ -52,6 +53,15 @@ export default function OnlineTestsPage() {
     });
   }, [classes, language]);
   
+  const iconColors = [
+    "text-blue-500",
+    "text-green-500",
+    "text-red-500",
+    "text-yellow-500",
+    "text-indigo-500",
+    "text-purple-500",
+    "text-pink-500",
+  ];
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
@@ -64,12 +74,12 @@ export default function OnlineTestsPage() {
 
       {!isLoading && sortedClasses && sortedClasses.length > 0 ? (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {sortedClasses.map((cls) => {
+          {sortedClasses.map((cls, index) => {
             return (
               <Link key={cls.id} href={`/class/${cls.id}?bookType=${bookType}`} className="block hover:no-underline">
                 <Card className="flex h-full flex-col overflow-hidden transition-shadow duration-300 hover:shadow-xl group text-center">
                   <CardContent className="flex-grow p-6 flex flex-col items-center justify-center gap-4">
-                    <Book className="w-10 h-10 text-accent" />
+                    <Book className={cn("w-10 h-10", iconColors[index % iconColors.length])} />
                     <CardTitle className="text-xl">{cls.name_ta || cls.name}</CardTitle>
                   </CardContent>
                   <CardFooter className="justify-center">
