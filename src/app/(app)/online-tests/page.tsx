@@ -1,7 +1,7 @@
 'use client';
 import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
-import { ArrowRight, BookText } from "lucide-react";
+import { ArrowRight, Book, GraduationCap, NotebookText, PencilRuler, Library, School, Award } from "lucide-react";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, query } from "firebase/firestore";
 import type { Class } from "@/lib/types";
@@ -51,6 +51,8 @@ export default function OnlineTestsPage() {
       return !duplicate;
     });
   }, [classes, language]);
+  
+  const classIcons = [Book, GraduationCap, NotebookText, PencilRuler, Library, School, Award];
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
@@ -63,23 +65,24 @@ export default function OnlineTestsPage() {
 
       {!isLoading && sortedClasses && sortedClasses.length > 0 ? (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {sortedClasses.map((cls) => (
-            <Link key={cls.id} href={`/class/${cls.id}?bookType=${bookType}`} className="block hover:no-underline">
-              <Card className="flex h-full flex-col overflow-hidden transition-shadow duration-300 hover:shadow-xl group">
-                <CardHeader className="flex-row items-center gap-4">
-                  <BookText className="w-8 w-8 text-primary" />
-                  <CardTitle className="text-xl">{cls.name_ta || cls.name}</CardTitle>
-                </CardHeader>
-                <CardContent className="flex-grow" />
-                <CardFooter>
-                  <div className="flex items-center text-sm font-medium text-accent group-hover:underline">
-                      {t('view_tests')}
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                  </div>
-                </CardFooter>
-              </Card>
-            </Link>
-          ))}
+          {sortedClasses.map((cls, index) => {
+            const Icon = classIcons[index % classIcons.length];
+            return (
+              <Link key={cls.id} href={`/class/${cls.id}?bookType=${bookType}`} className="block hover:no-underline">
+                <Card className="flex h-full flex-col overflow-hidden transition-shadow duration-300 hover:shadow-xl group text-center">
+                  <CardContent className="flex-grow p-6 flex flex-col items-center justify-center gap-4">
+                    <Icon className="w-10 h-10 text-primary" />
+                    <CardTitle className="text-xl">{cls.name_ta || cls.name}</CardTitle>
+                  </CardContent>
+                  <CardFooter className="justify-center">
+                    <div className="flex items-center text-sm font-medium text-accent group-hover:underline">
+                        {t('view_tests')}
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                    </div>
+                  </CardFooter>
+                </Card>
+              </Link>
+          )})}
         </div>
       ) : (
         !isLoading && <div className="text-center py-16">
