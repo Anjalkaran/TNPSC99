@@ -25,6 +25,7 @@ import type { UserProfile } from '@/lib/types';
 import { useTranslation } from '@/hooks/use-translation';
 import { LanguageSwitcher } from './language-switcher';
 import Image from 'next/image';
+import { ThemeSwitcher } from './theme-switcher';
 
 
 function UserNav() {
@@ -123,6 +124,7 @@ export function SiteHeader() {
               <Link href="/contact">{t('contact_us')}</Link>
             </Button>
             <LanguageSwitcher />
+            <ThemeSwitcher />
             <UserNav />
         </div>
       </div>

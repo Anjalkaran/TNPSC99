@@ -18,6 +18,7 @@ import { SiteFooter } from '@/components/site-footer';
 import type { UserProfile } from '@/lib/types';
 import { doc } from 'firebase/firestore';
 import { TrialExpiryModal } from '@/components/trial-expiry-modal';
+import { ThemeSwitcher } from '@/components/theme-switcher';
 
 export default function AppLayout({
   children,
@@ -103,6 +104,7 @@ export default function AppLayout({
             <Link href="/contact">{t('contact_us')}</Link>
           </Button>
           <LanguageSwitcher />
+          <ThemeSwitcher />
         </header>
         <div className="flex-1 p-4 sm:p-6 bg-background">{children}</div>
         <SiteFooter />
