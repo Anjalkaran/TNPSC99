@@ -180,7 +180,19 @@ export default function SubjectWiseTestsPage() {
   }, [tests, examGroup]);
   
   const pageTitle = examGroup ? `${examGroup} ${t('syllabus_wise_tests')}` : t('syllabus_wise_tests');
-  const backLink = examGroup ? `/exam-wise/${examGroup.toLowerCase().replace(' ', '-')}` : '/dashboard';
+  
+  const getSlugFromExamGroup = (group: string | null): string | null => {
+      if (!group) return null;
+      switch (group) {
+          case 'Group I': return 'group-1';
+          case 'Group II': return 'group-2';
+          case 'Group IV': return 'group-4';
+          default: return group.toLowerCase().replace(' ', '-');
+      }
+  }
+
+  const backLinkSlug = getSlugFromExamGroup(examGroup);
+  const backLink = backLinkSlug ? `/exam-wise/${backLinkSlug}` : '/dashboard';
   const backLinkText = examGroup ? `Back to ${examGroup}` : 'Back to Dashboard';
 
 
