@@ -69,7 +69,7 @@ export default function OnlineTestsPage() {
               <Link key={cls.id} href={`/class/${cls.id}?bookType=${bookType}`} className="block hover:no-underline">
                 <Card className="flex h-full flex-col overflow-hidden transition-shadow duration-300 hover:shadow-xl group text-center">
                   <CardContent className="flex-grow p-6 flex flex-col items-center justify-center gap-4">
-                    <Book className="w-10 h-10 text-primary" />
+                    <Book className="w-10 h-10 text-accent" />
                     <CardTitle className="text-xl">{cls.name_ta || cls.name}</CardTitle>
                   </CardContent>
                   <CardFooter className="justify-center">
