@@ -100,8 +100,8 @@ export function AppSidebar() {
 
   return (
     <>
-      <SidebarHeader>
-        <Link href="/dashboard" className="flex items-center gap-2">
+      <SidebarHeader className="bg-white p-4">
+        <Link href="/dashboard" className="flex items-center justify-center gap-2">
             <Image src="https://firebasestorage.googleapis.com/v0/b/studio-5029416251-928dd.firebasestorage.app/o/final%20tnpsc99.png?alt=media&token=45dc292d-a09c-49de-aa14-9ed0ae769c47" alt="TNPSC99 Logo" width={150} height={40} />
         </Link>
       </SidebarHeader>
@@ -173,5 +173,3 @@ export function AppSidebar() {
     </>
   );
 }
-
-    
