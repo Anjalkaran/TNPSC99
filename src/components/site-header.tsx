@@ -123,9 +123,9 @@ export function SiteHeader() {
             <Button asChild variant="ghost" className="hidden md:inline-flex">
               <Link href="/contact">{t('contact_us')}</Link>
             </Button>
+            <UserNav />
             <LanguageSwitcher />
             <ThemeSwitcher />
-            <UserNav />
         </div>
       </div>
     </header>
