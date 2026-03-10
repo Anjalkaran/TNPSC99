@@ -117,7 +117,7 @@ export default function PublicHomePage() {
               Level Up Your Preparation with TNPSC99
             </h1>
             <p className="max-w-3xl mx-auto text-sm text-gray-700 mb-2" style={{lineHeight: 1.6}}>
-              Curated MCQs for Group 1, 2, 2A, 4 & VAO • Real-Time Performance Tracking • Previous Year Questions with Explanations • Ace Your Exam with Confidence
+              Curated MCQs for Group I, II, IIA, IV • Real-Time Performance Tracking • Previous Year Questions with Explanations • Ace Your Exam with Confidence
             </p>
             <div className="flex flex-wrap justify-center items-center gap-6 md:gap-12 my-4">
                 <div className="flex items-center gap-2 text-green-600">
