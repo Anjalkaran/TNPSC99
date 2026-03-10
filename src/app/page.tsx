@@ -149,7 +149,7 @@ export default function PublicHomePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
               {examCategories.map((category) => (
                 <Link href={category.href} key={category.title} className="block hover:no-underline group">
-                  <Card className="text-center h-full transition-all group-hover:shadow-lg group-hover:ring-2 group-hover:ring-primary">
+                  <Card className="text-center h-full transition-all group-hover:shadow-lg group-hover:ring-1 group-hover:ring-primary">
                     <CardContent className="p-6 flex flex-col items-center justify-center">
                         <div className="p-3 bg-gray-100 rounded-lg mb-4">
                             {category.icon}
@@ -181,7 +181,7 @@ export default function PublicHomePage() {
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
               {features.map((feature, index) => (
                 <Link href={feature.href} key={index} className="block hover:no-underline">
-                  <Card className="text-center h-full transition-all hover:shadow-lg hover:ring-2 hover:ring-primary">
+                  <Card className="text-center h-full transition-all hover:shadow-lg hover:ring-1 hover:ring-primary">
                     <CardContent className="p-6 flex flex-col items-center justify-center">
                         <div className="p-3 bg-gray-100 rounded-lg mb-4">
                             {feature.icon}

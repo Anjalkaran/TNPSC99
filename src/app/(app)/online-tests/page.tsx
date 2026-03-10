@@ -77,7 +77,7 @@ export default function OnlineTestsPage() {
           {sortedClasses.map((cls, index) => {
             return (
               <Link key={cls.id} href={`/class/${cls.id}?bookType=${bookType}`} className="block hover:no-underline">
-                <Card className="flex h-full flex-col overflow-hidden transition-all duration-300 hover:shadow-xl group text-center hover:ring-2 hover:ring-primary">
+                <Card className="flex h-full flex-col overflow-hidden transition-all duration-300 hover:shadow-xl group text-center hover:ring-1 hover:ring-primary">
                   <CardContent className="flex-grow p-6 flex flex-col items-center justify-center gap-4">
                     <Book className={cn("w-10 h-10", iconColors[index % iconColors.length])} />
                     <CardTitle className="text-xl">{cls.name_ta || cls.name}</CardTitle>

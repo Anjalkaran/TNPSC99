@@ -107,7 +107,7 @@ export default function ClassSubjectsPage() {
 
             return (
               <Link key={subject.id} href={href} className="block hover:no-underline group">
-                <Card className="flex h-full flex-col overflow-hidden transition-all duration-300 group-hover:shadow-xl group-hover:ring-2 group-hover:ring-primary">
+                <Card className="flex h-full flex-col overflow-hidden transition-all duration-300 group-hover:shadow-xl group-hover:ring-1 group-hover:ring-primary">
                   <CardHeader className="flex-row items-center gap-4">
                     <BookText className="w-8 h-8 text-primary" />
                     <CardTitle className="text-xl">{language === 'ta' && subject.name_ta ? subject.name_ta : subject.name}</CardTitle>

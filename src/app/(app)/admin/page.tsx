@@ -30,7 +30,7 @@ export default function AdminPage() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {adminSections.map(section => (
                 <Link key={section.label} href={section.href} className={section.comingSoon ? "pointer-events-none" : ""}>
-                    <Card className="h-full hover:border-primary hover:ring-2 hover:ring-primary transition-all">
+                    <Card className="h-full hover:border-primary hover:ring-1 hover:ring-primary transition-all">
                         <CardContent className="p-4 flex flex-col items-center justify-center text-center gap-2">
                             <div className="text-primary">{section.icon}</div>
                             <span className="font-semibold">{section.label}</span>
@@ -43,5 +43,3 @@ export default function AdminPage() {
     </div>
   );
 }
-
-    

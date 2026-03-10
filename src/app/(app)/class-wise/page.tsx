@@ -18,7 +18,7 @@ export default function ClassWiseTestsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
         {/* Samacheer Kalvi Books Card */}
         <Link href="/online-tests" className="block hover:no-underline">
-          <Card className="flex flex-col overflow-hidden hover:shadow-xl hover:shadow-accent/20 transition-all duration-300 h-full hover:ring-2 hover:ring-primary">
+          <Card className="flex flex-col overflow-hidden hover:shadow-xl hover:shadow-accent/20 transition-all duration-300 h-full hover:ring-1 hover:ring-primary">
               <CardHeader className="flex-row items-center gap-4">
                   <BookCopy className="h-8 w-8 text-primary" />
                   <div>
@@ -34,7 +34,7 @@ export default function ClassWiseTestsPage() {
 
         {/* Old Books Card */}
         <Link href="/online-tests?bookType=old" className="block hover:no-underline">
-            <Card className="flex flex-col overflow-hidden hover:shadow-xl hover:shadow-accent/20 transition-all duration-300 h-full hover:ring-2 hover:ring-primary">
+            <Card className="flex flex-col overflow-hidden hover:shadow-xl hover:shadow-accent/20 transition-all duration-300 h-full hover:ring-1 hover:ring-primary">
                 <CardHeader className="flex-row items-center gap-4">
                     <Archive className="h-8 w-8 text-primary" />
                     <div>
