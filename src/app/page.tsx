@@ -109,7 +109,7 @@ export default function PublicHomePage() {
       <main className="flex-1">
         {/* Hero Section */}
         <section
-          className="py-12 md:py-16 text-center"
+          className="pt-12 md:pt-16 pb-8 text-center"
           style={{ background: 'linear-gradient(to bottom, #e8f5e9, #ffffff)' }}
         >
            <div className="container mx-auto px-4">
@@ -140,7 +140,7 @@ export default function PublicHomePage() {
         </section>
 
         {/* Exam Categories Section */}
-        <section className="py-8 md:py-12 bg-white">
+        <section className="pt-0 pb-8 md:pb-12 bg-white">
           <div className="container mx-auto px-4">
             <div className="text-center mb-10">
               <h2 className="text-3xl md:text-4xl font-bold text-green-700">Exam Categories</h2>
