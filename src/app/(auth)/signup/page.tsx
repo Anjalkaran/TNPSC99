@@ -299,7 +299,7 @@ export default function SignupPage() {
           </div>
           <div className="relative flex justify-center text-xs uppercase">
             <span className="bg-black/30 px-2 text-gray-400">
-              {t('or_continue_with')}
+              OR
             </span>
           </div>
         </div>
