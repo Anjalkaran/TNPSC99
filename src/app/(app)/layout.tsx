@@ -74,7 +74,8 @@ export default function AppLayout({
       pathname.startsWith('/class/') ||
       pathname.startsWith('/exam-wise/') ||
       pathname.startsWith('/previous-year/') ||
-      pathname === '/online-tests'
+      pathname === '/online-tests' ||
+      pathname === '/dashboard'
     ) {
       return '';
     }
