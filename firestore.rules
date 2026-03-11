@@ -1,4 +1,6 @@
+
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -11,57 +13,77 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
     
-    // Most robust isAdmin check. Avoids errors if a user doc is missing.
+    // A safer check that ensures the user document exists before trying to read a field from it.
+    // This prevents errors for users who might not have an `isAdmin` field.
     function isAdmin() {
       return isSignedIn() && 
         exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
     }
 
-    // --- User Profiles ---
+    // --- User Profiles & Subcollections ---
     match /users/{userId} {
+      // A user can read and write to their own profile. An admin can read/write any profile.
       allow read, write: if isOwner(userId) || isAdmin();
-      // Allow user to write to their own subcollections (like testAttempts)
+
+      // This covers subcollections like /testAttempts, /bookmarkedQuestions etc.
       match /{allSubcollections=**} {
         allow read, write: if isOwner(userId) || isAdmin();
       }
     }
     
-    // --- Mock Test Generation ---
-    // Anyone signed in can read all questions and tests to generate a mock test.
+    // --- Mock Test Generation & Core Content ---
     match /questions/{questionId} {
-      allow read: if isSignedIn(); // read = get + list
+      // Any signed-in user must be able to read questions to generate a test.
+      allow read: if isSignedIn();
       allow write: if isAdmin();
     }
 
     match /tests/{testId} {
-      allow read: if isSignedIn(); // read = get + list
-      // ANY signed-in user can create a test. This is required for the client-side logic.
-      allow create: if isSignedIn();
-      // Only admins can modify or delete existing tests.
+      // Any signed-in user can create a test (for mock tests) and read any test.
+      allow create, read: if isSignedIn();
+      // Only admins can modify or delete existing test banks.
       allow update, delete: if isAdmin();
     }
 
-    // --- Other Content Collections ---
-    // These are read-only for users, writable by admins.
-    match /classes/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
-    match /subjects/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
-    match /units/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
-    match /categories/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
-    match /syllabus/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
-    match /studyMaterials/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
+    // --- General Read-Only Content for Users ---
+    match /classes/{classId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+    match /subjects/{subjectId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+    match /units/{unitId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+     match /categories/{categoryId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+    match /syllabus/{syllabusId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+    match /studyMaterials/{materialId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
 
     // --- User-Generated Content ---
     match /scores/{scoreId} {
-      allow read: if true; // Public leaderboard
+      // Leaderboard is public, but creation is protected.
+      allow read: if true;
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       allow update, delete: if isAdmin();
     }
     
     match /questionComments/{commentId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn();
-      // Only admins can resolve/delete comments.
+      // Any signed-in user can create/read comments.
+      allow read, create: if isSignedIn();
+      // Only admins can modify or delete comments.
       allow update, delete: if isAdmin();
     }
   }
