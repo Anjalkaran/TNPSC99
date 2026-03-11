@@ -128,6 +128,61 @@ function TestCard({ test }: { test: Test }) {
     );
 }
 
+function TopicContent({ tests }: { tests: Test[] }) {
+    const { t } = useTranslation();
+    const [selectedCategory, setSelectedCategory] = useState<string>('all');
+
+    const categories = useMemo(() => {
+        const uniqueCategories = new Set<string>();
+        tests.forEach(test => {
+            uniqueCategories.add(test.syllabusCategory || 'General');
+        });
+        return ['all', ...Array.from(uniqueCategories).sort((a, b) => a.localeCompare(b))];
+    }, [tests]);
+
+    const filteredTests = useMemo(() => {
+        if (selectedCategory === 'all') {
+            return tests;
+        }
+        return tests.filter(test => (test.syllabusCategory || 'General') === selectedCategory);
+    }, [tests, selectedCategory]);
+
+    if (categories.length <= 2) {
+         return (
+             <div className="space-y-3">
+                 {tests.map(test => (
+                     <TestCard key={test.id} test={test} />
+                 ))}
+             </div>
+         );
+    }
+    
+    return (
+        <div className="space-y-4">
+            <div className="max-w-sm">
+                <Label htmlFor="category-select" className="text-xs text-muted-foreground">Filter by Category</Label>
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                    <SelectTrigger id="category-select" className="mt-1">
+                        <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {categories.map(category => (
+                            <SelectItem key={category} value={category}>
+                                {category === 'all' ? 'All Categories' : category}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
+            <div className="space-y-3">
+                {filteredTests.map(test => (
+                     <TestCard key={test.id} test={test} />
+                ))}
+            </div>
+        </div>
+    );
+}
+
 
 export default function SubjectWiseTestsPage() {
   const { t } = useTranslation();
@@ -269,9 +324,7 @@ export default function SubjectWiseTestsPage() {
                                                                             {topicName}
                                                                         </AccordionTrigger>
                                                                         <AccordionContent className="pt-0 p-4 space-y-3">
-                                                                            {testList.map(test => (
-                                                                                <TestCard key={test.id} test={test} />
-                                                                            ))}
+                                                                            <TopicContent tests={testList} />
                                                                         </AccordionContent>
                                                                     </Card>
                                                                 </AccordionItem>
