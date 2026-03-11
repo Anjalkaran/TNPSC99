@@ -1,4 +1,3 @@
-
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -12,68 +11,70 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
     
+    // Improved isAdmin: Uses a safer check that won't fail the whole rule if the doc is missing
     function isAdmin() {
-      // Safe check for admin status
       return isSignedIn() && 
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('isAdmin', false) == true;
     }
 
-    // --- User Profiles ---
+    // --- User Profiles & Personal Data ---
     match /users/{userId} {
-      // Only the owner or an admin can read/write user profiles
+      // Allow a user to manage their own document
       allow read, write: if isOwner(userId) || isAdmin();
-      
-      // This applies to subcollections like /testAttempts, /bookmarkedQuestions
+
+      // Allow access to all subcollections (scores, testAttempts, etc.)
       match /{allSubcollections=**} {
         allow read, write: if isOwner(userId) || isAdmin();
       }
     }
     
-    // --- Public Content & Test Generation ---
-    match /questions/{questionId} {
-      // Any client (including unauthenticated server actions) can read questions to generate a test
-      allow read, list: if true;
+    // --- Questions (The most likely failure point) ---
+    // This path=** ensures that if your questions are nested inside 
+    // subjects or classes, they are still readable.
+    match /{path=**}/questions/{questionId} {
+      allow read, list: if isSignedIn();
       allow write: if isAdmin();
     }
 
+    // --- Tests ---
     match /tests/{testId} {
-      // Allow any client to read/list tests. Test definitions are not secret.
-      // This is CRITICAL for the mock test server action to gather questions.
-      allow read: if true; 
-      
-      // Allow create if it's a mock test (from our server action)
-      // OR if an admin is creating a test (from the admin panel).
-      allow create: if request.resource.data.isMockTest == true || isAdmin();
-      
-      // Only admins can modify/delete the test bank.
+      // Allow any authenticated user to create a test
+      allow create: if isSignedIn();
+      allow read: if isSignedIn();
       allow update, delete: if isAdmin();
     }
 
-    // --- App Content (publicly readable) ---
-    match /classes/{classId} { allow read: if true; allow write: if isAdmin(); }
-    match /subjects/{subjectId} { allow read: if true; allow write: if isAdmin(); }
-    match /units/{unitId} { allow read: if true; allow write: if isAdmin(); }
-    match /categories/{categoryId} { allow read: if true; allow write: if isAdmin(); }
-    match /syllabus/{syllabusId} { allow read: if true; allow write: if isAdmin(); }
-    match /studyMaterials/{materialId} { allow read: if true; allow write: if isAdmin(); }
-    
-    // --- User-Specific Write Collections ---
-    match /questionComments/{commentId} {
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      // Only admins can see/manage feedback
-      allow read, list, update, delete: if isAdmin();
-    }
+    // --- General App Content ---
+    // Simplifies rules for all standard content collections
+    match /classes/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
+    match /subjects/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
+    match /units/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
+    match /categories/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
+    match /syllabus/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
+    match /studyMaterials/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
 
-    match /scores/{scoreId} {
-      // Scores can be public for leaderboards
+    // --- Public/User Created Content ---
+    match /scores/{id} {
       allow read: if true;
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       allow update, delete: if isAdmin();
     }
-
+    
+    match /questionComments/{id} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+    
     // --- Legacy Collections (Read-only for safety) ---
     match /classTests/{classTestId} { allow read: if isSignedIn(); allow write: if false; }
     match /subjectTests/{subjectTestId} { allow read: if isSignedIn(); allow write: if false; }
     match /previousYearPapers/{paperId} { allow read: if isSignedIn(); allow write: if false; }
+
+    // --- Global Catch-all (Emergency Safety Net) ---
+    match /{document=**} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
   }
 }
