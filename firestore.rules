@@ -11,65 +11,71 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
     
-    // Improved isAdmin: Uses a safer check that won't fail the whole rule if the doc is missing
     function isAdmin() {
-      return isSignedIn() && 
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('isAdmin', false) == true;
+      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('isAdmin', false) == true;
     }
 
-    // --- User Profiles & Personal Data ---
+    // --- Collections ---
+
     match /users/{userId} {
-      // Allow a user to manage their own document
       allow read, write: if isOwner(userId) || isAdmin();
-
-      // Allow access to all subcollections (scores, testAttempts, etc.)
-      match /{allSubcollections=**} {
-        allow read, write: if isOwner(userId) || isAdmin();
-      }
     }
     
-    // --- Questions (The most likely failure point) ---
-    // This path=** ensures that if your questions are nested inside 
-    // subjects or classes, they are still readable.
-    match /{path=**}/questions/{questionId} {
-      allow read, list: if isSignedIn();
+    match /users/{userId}/{subcollection}/{docId} {
+      allow read, write: if isOwner(userId) || isAdmin();
+    }
+
+    match /questions/{questionId} {
+      allow read: if isSignedIn();
       allow write: if isAdmin();
     }
 
-    // --- Tests ---
     match /tests/{testId} {
-      // Allow any authenticated user to create a test
-      allow create: if isSignedIn();
-      allow read: if isSignedIn();
-      allow update, delete: if isAdmin();
-    }
-
-    // --- General App Content ---
-    // Simplifies rules for all standard content collections
-    match /classes/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
-    match /subjects/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
-    match /units/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
-    match /categories/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
-    match /syllabus/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
-    match /studyMaterials/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
-
-    // --- Public/User Created Content ---
-    match /scores/{id} {
-      allow read: if true;
-      allow create: if isSignedIn();
-      allow update, delete: if isAdmin();
-    }
-    
-    match /questionComments/{id} {
       allow read: if isSignedIn();
       allow create: if isSignedIn();
       allow update, delete: if isAdmin();
     }
-    
-    // --- Global Catch-all (Emergency Safety Net) ---
-    match /{document=**} {
+
+    match /classes/{classId} {
       allow read: if isSignedIn();
       allow write: if isAdmin();
+    }
+
+    match /subjects/{subjectId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    match /units/{unitId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+    
+    match /categories/{categoryId} {
+        allow read: if isSignedIn();
+        allow write: if isAdmin();
+    }
+    
+    match /syllabus/{syllabusId} {
+        allow read: if isSignedIn();
+        allow write: if isAdmin();
+    }
+    
+    match /studyMaterials/{materialId} {
+        allow read: if isSignedIn();
+        allow write: if isAdmin();
+    }
+    
+    match /scores/{scoreId} {
+        allow read: if true;
+        allow create: if isSignedIn();
+        allow update, delete: if isAdmin();
+    }
+    
+    match /questionComments/{commentId} {
+        allow read: if isSignedIn();
+        allow create: if isSignedIn();
+        allow update, delete: if isAdmin();
     }
   }
 }
