@@ -13,20 +13,19 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
     
-    // A safer check that ensures the user document exists before trying to read a field from it.
-    // This prevents errors for users who might not have an `isAdmin` field.
+    // Improved isAdmin: Uses a safer check that won't fail the whole rule if the doc is missing
     function isAdmin() {
       return isSignedIn() && 
         exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
     }
 
-    // --- User Profiles & Subcollections ---
+    // --- User Profiles & Personal Data ---
     match /users/{userId} {
-      // A user can read and write to their own profile. An admin can read/write any profile.
+      // A user can manage their own document
       allow read, write: if isOwner(userId) || isAdmin();
 
-      // This covers subcollections like /testAttempts, /bookmarkedQuestions etc.
+      // Allow access to all subcollections (scores, testAttempts, etc.)
       match /{allSubcollections=**} {
         allow read, write: if isOwner(userId) || isAdmin();
       }
@@ -34,41 +33,43 @@ service cloud.firestore {
     
     // --- Mock Test Generation & Core Content ---
     match /questions/{questionId} {
-      // Any signed-in user must be able to read questions to generate a test.
-      allow read: if isSignedIn();
+      // USERS MUST BE ABLE TO READ AND LIST QUESTIONS TO GENERATE A TEST
+      allow get, list: if isSignedIn();
       allow write: if isAdmin();
     }
 
     match /tests/{testId} {
-      // Any signed-in user can create a test (for mock tests) and read any test.
-      allow create, read: if isSignedIn();
+      // Allow any signed-in user to create a test (for mock tests)
+      // and read/list existing tests.
+      allow create, get, list: if isSignedIn();
+      
       // Only admins can modify or delete existing test banks.
       allow update, delete: if isAdmin();
     }
 
     // --- General Read-Only Content for Users ---
     match /classes/{classId} {
-      allow read: if isSignedIn();
+      allow get, list: if isSignedIn();
       allow write: if isAdmin();
     }
     match /subjects/{subjectId} {
-      allow read: if isSignedIn();
+      allow get, list: if isSignedIn();
       allow write: if isAdmin();
     }
     match /units/{unitId} {
-      allow read: if isSignedIn();
+      allow get, list: if isSignedIn();
       allow write: if isAdmin();
     }
      match /categories/{categoryId} {
-      allow read: if isSignedIn();
+      allow get, list: if isSignedIn();
       allow write: if isAdmin();
     }
     match /syllabus/{syllabusId} {
-      allow read: if isSignedIn();
+      allow get, list: if isSignedIn();
       allow write: if isAdmin();
     }
     match /studyMaterials/{materialId} {
-      allow read: if isSignedIn();
+      allow get, list: if isSignedIn();
       allow write: if isAdmin();
     }
 
