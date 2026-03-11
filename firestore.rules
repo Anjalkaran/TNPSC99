@@ -16,7 +16,7 @@ service cloud.firestore {
     function isAdmin() {
       return isSignedIn() &&
              exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('isAdmin', false) == true;
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
     }
 
     // --- User Data ---
@@ -44,8 +44,8 @@ service cloud.firestore {
       // Anyone can read tests, which is safe as they only contain metadata and question IDs.
       allow get, list: if true;
       
-      // Any signed-in user can create a new test (e.g., generating a mock test).
-      allow create: if isSignedIn();
+      // Allow users to create mock tests; admins can create any test.
+      allow create: if (isSignedIn() && request.resource.data.isMockTest == true) || isAdmin();
       
       // Only admins can modify or delete the main test bank.
       allow update, delete: if isAdmin();
