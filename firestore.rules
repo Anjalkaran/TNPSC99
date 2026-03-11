@@ -11,40 +11,39 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
     
-    // Improved isAdmin: Uses a safer check that won't fail the whole rule if the doc is missing
+    // Most robust isAdmin check. Avoids errors if a user doc is missing.
     function isAdmin() {
       return isSignedIn() && 
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('isAdmin', false) == true;
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
     }
 
-    // --- User Profiles & Personal Data ---
+    // --- User Profiles ---
     match /users/{userId} {
-      // Allow a user to manage their own document
       allow read, write: if isOwner(userId) || isAdmin();
-
-      // Allow access to all subcollections (scores, testAttempts, etc.)
+      // Allow user to write to their own subcollections (like testAttempts)
       match /{allSubcollections=**} {
         allow read, write: if isOwner(userId) || isAdmin();
       }
     }
     
-    // All signed-in users can read questions to generate tests
+    // --- Mock Test Generation ---
+    // Anyone signed in can read all questions and tests to generate a mock test.
     match /questions/{questionId} {
-      allow read: if isSignedIn();
+      allow read: if isSignedIn(); // read = get + list
       allow write: if isAdmin();
     }
 
-    // Test documents
     match /tests/{testId} {
-      // Any signed-in user can read tests
-      allow read: if isSignedIn();
-      // Any signed-in user can create a test (for mock tests)
+      allow read: if isSignedIn(); // read = get + list
+      // ANY signed-in user can create a test. This is required for the client-side logic.
       allow create: if isSignedIn();
-      // Only admins can update or delete tests
+      // Only admins can modify or delete existing tests.
       allow update, delete: if isAdmin();
     }
-    
-    // Other public content
+
+    // --- Other Content Collections ---
+    // These are read-only for users, writable by admins.
     match /classes/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
     match /subjects/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
     match /units/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
@@ -52,9 +51,9 @@ service cloud.firestore {
     match /syllabus/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
     match /studyMaterials/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
 
-    // User-generated content
+    // --- User-Generated Content ---
     match /scores/{scoreId} {
-      allow read: if true; // Leaderboard is public
+      allow read: if true; // Public leaderboard
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       allow update, delete: if isAdmin();
     }
@@ -62,6 +61,7 @@ service cloud.firestore {
     match /questionComments/{commentId} {
       allow read: if isSignedIn();
       allow create: if isSignedIn();
+      // Only admins can resolve/delete comments.
       allow update, delete: if isAdmin();
     }
   }
