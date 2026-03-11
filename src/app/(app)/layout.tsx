@@ -46,6 +46,12 @@ export default function AppLayout({
 
   useEffect(() => {
     if (userProfile) {
+      // Admins should not be affected by subscription status
+      if (userProfile.isAdmin) {
+        setShowExpiryModal(false);
+        return;
+      }
+      
       const isPremium = userProfile.subscriptionStatus === 'premium';
       const expires = userProfile.subscriptionExpires ? new Date(userProfile.subscriptionExpires) : null;
       const hasExpired = expires ? expires < new Date() : false;
@@ -102,7 +108,7 @@ export default function AppLayout({
         <header className="flex h-14 items-center gap-4 border-b bg-card px-4 md:px-6 sticky top-0 z-40">
           <SidebarTrigger className="md:hidden" />
           <div className="flex-1">
-            <h1 className="text-lg font-semibold md:text-xl capitalize">{getPageTitle()}</h1>
+            
           </div>
           <Button asChild variant="ghost">
             <Link href="/dashboard">{t('dashboard')}</Link>

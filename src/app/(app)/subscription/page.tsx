@@ -120,7 +120,7 @@ export default function SubscriptionPage() {
 
     const isPremium = userProfile?.subscriptionStatus === 'premium';
     const subscriptionExpires = userProfile?.subscriptionExpires ? new Date(userProfile.subscriptionExpires) : null;
-    const hasActiveSubscription = isPremium && subscriptionExpires && subscriptionExpires > new Date();
+    const hasActiveSubscription = userProfile?.isAdmin || (isPremium && subscriptionExpires && subscriptionExpires > new Date());
 
     return (
         <>
@@ -134,10 +134,10 @@ export default function SubscriptionPage() {
                     <p className="text-muted-foreground mt-2">Unlock all features and accelerate your TNPSC preparation.</p>
                 </div>
 
-                {hasActiveSubscription && subscriptionExpires && (
+                {hasActiveSubscription && (
                   <div className="mb-8 text-center p-4 bg-green-100 dark:bg-green-900/50 border border-green-200 dark:border-green-800 rounded-lg max-w-4xl mx-auto">
                     <p className="font-semibold text-green-800 dark:text-green-300">You are a Premium Member!</p>
-                    <p className="text-sm text-green-700 dark:text-green-400">Your subscription is active until {subscriptionExpires.toLocaleString()}.</p>
+                    <p className="text-sm text-green-700 dark:text-green-400">{userProfile?.isAdmin ? 'You have permanent access as an administrator.' : `Your subscription is active until ${subscriptionExpires?.toLocaleString()}.`}</p>
                   </div>
                 )}
                 
