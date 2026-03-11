@@ -13,7 +13,7 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
     
-    // Improved isAdmin: Uses a safer check that won't fail the whole rule if the doc is missing
+    // Improved isAdmin: Uses a safer check that won't fail if the doc is missing
     function isAdmin() {
       return isSignedIn() && 
         exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
@@ -22,8 +22,9 @@ service cloud.firestore {
 
     // --- User Profiles & Personal Data ---
     match /users/{userId} {
-      // A user can manage their own document
-      allow read, write: if isOwner(userId) || isAdmin();
+      allow get, update, delete: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+      allow create: if isSignedIn();
 
       // Allow access to all subcollections (scores, testAttempts, etc.)
       match /{allSubcollections=**} {
@@ -35,7 +36,7 @@ service cloud.firestore {
     match /questions/{questionId} {
       // USERS MUST BE ABLE TO READ AND LIST QUESTIONS TO GENERATE A TEST
       allow get, list: if isSignedIn();
-      allow write: if isAdmin();
+      allow create, update, delete: if isAdmin();
     }
 
     match /tests/{testId} {
@@ -50,40 +51,40 @@ service cloud.firestore {
     // --- General Read-Only Content for Users ---
     match /classes/{classId} {
       allow get, list: if isSignedIn();
-      allow write: if isAdmin();
+      allow create, update, delete: if isAdmin();
     }
     match /subjects/{subjectId} {
       allow get, list: if isSignedIn();
-      allow write: if isAdmin();
+      allow create, update, delete: if isAdmin();
     }
     match /units/{unitId} {
       allow get, list: if isSignedIn();
-      allow write: if isAdmin();
+      allow create, update, delete: if isAdmin();
     }
      match /categories/{categoryId} {
       allow get, list: if isSignedIn();
-      allow write: if isAdmin();
+      allow create, update, delete: if isAdmin();
     }
     match /syllabus/{syllabusId} {
       allow get, list: if isSignedIn();
-      allow write: if isAdmin();
+      allow create, update, delete: if isAdmin();
     }
     match /studyMaterials/{materialId} {
       allow get, list: if isSignedIn();
-      allow write: if isAdmin();
+      allow create, update, delete: if isAdmin();
     }
 
     // --- User-Generated Content ---
     match /scores/{scoreId} {
       // Leaderboard is public, but creation is protected.
-      allow read: if true;
+      allow get, list: if true;
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       allow update, delete: if isAdmin();
     }
     
     match /questionComments/{commentId} {
       // Any signed-in user can create/read comments.
-      allow read, create: if isSignedIn();
+      allow get, list, create: if isSignedIn();
       // Only admins can modify or delete comments.
       allow update, delete: if isAdmin();
     }
