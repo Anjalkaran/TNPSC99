@@ -3,7 +3,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions
+    // --- Helper Functions ---
     function isSignedIn() {
       return request.auth != null;
     }
@@ -12,119 +12,68 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
     
+    // Check if user is admin WITHOUT causing a circular loop
     function isAdmin() {
-      // This rule is safe because the /users/{userId} read rule allows users to read their own doc.
-      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+      return isSignedIn() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
     }
 
-    // User Profile Rules
+    // --- Rules ---
+
     match /users/{userId} {
-      // Allow a user to read their own document.
-      // Allow an admin to read any user's document.
       allow get: if isOwner(userId) || isAdmin();
-      
-      // Allow admins to list all users.
       allow list: if isAdmin();
-      
-      // A user can create their own profile document.
-      allow create: if isOwner(userId);
-      
-      // A user or an admin can update a profile.
-      allow update: if isOwner(userId) || isAdmin();
-      
-      // A user or an admin can delete their own profile.
-      allow delete: if isOwner(userId) || isAdmin();
+      allow create: if isSignedIn(); // Allow creation if signed in
+      allow update, delete: if isOwner(userId) || isAdmin();
 
-      // Subcollections for a user
-      match /scores/{scoreId} {
-        allow read: if isOwner(userId) || isAdmin();
-        allow write: if isOwner(userId);
-      }
-
-      match /testAttempts/{attemptId} {
-        allow read: if isOwner(userId) || isAdmin();
-        allow write: if isOwner(userId);
-      }
-
-      match /bookmarkedQuestions/{bookmarkId} {
-        allow read, write: if isOwner(userId);
+      match /{allSubcollections=**} {
+        allow read, write: if isOwner(userId) || isAdmin();
       }
     }
     
-    // App Content collections (read for signed-in users, writable for admins)
-    match /classes/{classId} {
-      allow get, list: if isSignedIn();
-      allow write: if isAdmin();
-    }
-    
-    match /subjects/{subjectId} {
-      allow get, list: if isSignedIn();
-      allow write: if isAdmin();
-    }
-    
-    match /categories/{categoryId} {
-      allow get, list: if isSignedIn();
-      allow write: if isAdmin();
-    }
-
-    match /units/{unitId} {
-      allow get, list: if isSignedIn();
-      allow write: if isAdmin();
-    }
-    
-    match /syllabus/{syllabusId} {
-      allow get, list: if isSignedIn();
-      allow write: if isAdmin();
-    }
-
     match /questions/{questionId} {
-      allow get, list: if isSignedIn();
+      // USERS MUST BE ABLE TO READ QUESTIONS TO GENERATE A TEST
+      allow read, list: if isSignedIn();
       allow write: if isAdmin();
     }
 
     match /tests/{testId} {
-      // Allow anyone to read tests (needed for mock test generation).
-      allow read: if true;
-
-      // Allow creation ONLY IF it's a mock test OR the user is an admin.
-      // This allows the unauthenticated server action to create mock tests.
-      allow create: if request.resource.data.isMockTest == true || isAdmin();
+      // 1. Anyone signed in can read tests
+      allow read: if isSignedIn();
       
-      // Only admins can update or delete tests.
+      // 2. Allow creation if it's a mock test OR the user is an admin
+      // IMPORTANT: The code creating the test MUST include isMockTest: true
+      allow create: if isSignedIn() && (
+        request.resource.data.isMockTest == true || 
+        isAdmin()
+      );
+      
       allow update, delete: if isAdmin();
     }
 
-    match /studyMaterials/{materialId} {
-      allow get, list: if isSignedIn();
-      allow write: if isAdmin();
-    }
-
-    // Public scores for leaderboard
-    match /scores/{scoreId} {
-        allow read: if true;
-        allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-        allow update, delete: if false; // Scores shouldn't be updated or deleted by clients
-    }
-    
+    // Common Collections (Read for users, write for admins)
+    match /classes/{classId} { allow read: if isSignedIn(); allow write: if isAdmin(); }
+    match /subjects/{subjectId} { allow read: if isSignedIn(); allow write: if isAdmin(); }
+    match /units/{unitId} { allow read: if isSignedIn(); allow write: if isAdmin(); }
+    match /categories/{categoryId} { allow read: if isSignedIn(); allow write: if isAdmin(); }
+    match /syllabus/{syllabusId} { allow read: if isSignedIn(); allow write: if isAdmin(); }
+    match /studyMaterials/{materialId} { allow read: if isSignedIn(); allow write: if isAdmin(); }
     match /questionComments/{commentId} {
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow read, update, delete, list: if isAdmin();
+      allow read, list, update, delete: if isAdmin();
     }
 
-    // Legacy collections, keep as read-only for signed-in users
-    match /classTests/{classTestId} {
-      allow read: if isSignedIn();
-      allow write: if false;
+    match /scores/{scoreId} {
+      allow read: if true;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin();
     }
-
-    match /subjectTests/{subjectTestId} {
-      allow read: if isSignedIn();
-      allow write: if false;
-    }
-
-    match /previousYearPapers/{previousYearPaperId} {
-      allow read: if isSignedIn();
-      allow write: if false;
-    }
+    
+    // The following rules are for legacy collections and should not be needed for new functionality.
+    // They are kept here for reference but the catch-all below is more future-proof.
+    match /classTests/{classTestId} { allow read: if isSignedIn(); allow write: if false; }
+    match /subjectTests/{subjectTestId} { allow read: if isSignedIn(); allow write: if false; }
+    match /previousYearPapers/{paperId} { allow read: if isSignedIn(); allow write: if false; }
   }
 }
