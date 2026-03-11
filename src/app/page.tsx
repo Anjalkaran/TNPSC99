@@ -109,17 +109,17 @@ export default function PublicHomePage() {
       <main className="flex-1">
         {/* Hero Section */}
         <section
-          className="pt-12 md:pt-16 pb-8 text-center"
+          className="pt-8 pb-8 md:pb-12"
           style={{ background: 'linear-gradient(to bottom, #e8f5e9, #ffffff)' }}
         >
            <div className="container mx-auto px-4">
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-3 text-green-700">
+            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-3 text-green-700 text-center">
               Level Up Your Preparation with TNPSC99
             </h1>
-            <p className="max-w-3xl mx-auto text-xs text-gray-700 mb-4" style={{lineHeight: 1.6}}>
+            <p className="max-w-3xl mx-auto text-sm text-gray-700 mb-4 text-center" style={{lineHeight: 1.6}}>
               Curated MCQs for Group I, II, IIA, IV • Real-Time Performance Tracking • Previous Year Questions with Explanations • Ace Your Exam with Confidence
             </p>
-            <div className="flex flex-wrap justify-center items-center gap-6 md:gap-12 my-4">
+            <div className="flex flex-wrap justify-center items-center gap-6 md:gap-12 my-8">
                 <div className="flex items-center gap-2 text-green-600">
                     <ClipboardList className="h-6 w-6" />
                     <span className="font-semibold">1,00,000+ MCQs</span>
@@ -133,14 +133,16 @@ export default function PublicHomePage() {
                     <span className="font-semibold">Real-Time Analytics</span>
                 </div>
             </div>
-            <Button asChild size="lg">
-                <Link href="/signup">{t('get_started_free')}</Link>
-            </Button>
+            <div className="text-center">
+              <Button asChild size="lg">
+                  <Link href="/signup">{t('get_started_free')}</Link>
+              </Button>
+            </div>
           </div>
         </section>
 
         {/* Exam Categories Section */}
-        <section className="pt-8 pb-8 md:pb-12 bg-white">
+        <section className="py-8 bg-white">
           <div className="container mx-auto px-4">
             <div className="text-center mb-10">
               <h2 className="text-3xl md:text-4xl font-bold text-green-700">Exam Categories</h2>
