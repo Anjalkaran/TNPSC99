@@ -42,7 +42,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
 import { useTranslation } from '@/hooks/use-translation';
 
@@ -122,12 +122,19 @@ export default function LoginPage() {
         const userDocSnap = await getDoc(userDocRef);
 
         if (!userDocSnap.exists()) {
+            const trialEndsAt = new Date();
+            trialEndsAt.setDate(trialEndsAt.getDate() + 1);
+
             const userProfile: UserProfile = {
                 id: user.uid,
                 username: user.displayName || user.email!,
                 email: user.email!,
                 registrationDate: new Date().toISOString(),
                 isAdmin: user.email === 'admin@tnpsc99.com',
+                referralCode: user.uid.slice(0, 8),
+                referralCount: 0,
+                subscriptionStatus: 'free_trial',
+                trialEndsAt: trialEndsAt.toISOString(),
             };
 
             setDoc(userDocRef, userProfile).catch((error) => {
@@ -137,6 +144,16 @@ export default function LoginPage() {
                     requestResourceData: userProfile,
                 }));
             });
+        } else {
+            const userProfile = userDocSnap.data() as UserProfile;
+            if (!userProfile.subscriptionStatus) {
+                const trialEndsAt = new Date();
+                trialEndsAt.setDate(trialEndsAt.getDate() + 1);
+                await updateDoc(userDocRef, {
+                    subscriptionStatus: 'free_trial',
+                    trialEndsAt: trialEndsAt.toISOString()
+                });
+            }
         }
 
         toast({
@@ -159,7 +176,39 @@ export default function LoginPage() {
   const onSubmit = async (values: LoginFormValues) => {
     setIsSubmitting(true);
     try {
-      await signInWithEmailAndPassword(auth, values.email, values.password);
+      const credential = await signInWithEmailAndPassword(auth, values.email, values.password);
+      const user = credential.user;
+      const firestore = getFirestore(auth.app);
+      const userDocRef = doc(firestore, 'users', user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (userDocSnap.exists()) {
+        const userProfile = userDocSnap.data() as UserProfile;
+        if (!userProfile.subscriptionStatus) {
+            const trialEndsAt = new Date();
+            trialEndsAt.setDate(trialEndsAt.getDate() + 1);
+            await updateDoc(userDocRef, {
+                subscriptionStatus: 'free_trial',
+                trialEndsAt: trialEndsAt.toISOString()
+            });
+        }
+      } else {
+        const trialEndsAt = new Date();
+        trialEndsAt.setDate(trialEndsAt.getDate() + 1);
+        const userProfile: UserProfile = {
+            id: user.uid,
+            username: user.displayName || user.email!,
+            email: user.email!,
+            registrationDate: new Date().toISOString(),
+            isAdmin: user.email === 'admin@tnpsc99.com',
+            referralCode: user.uid.slice(0, 8),
+            referralCount: 0,
+            subscriptionStatus: 'free_trial',
+            trialEndsAt: trialEndsAt.toISOString(),
+        };
+        await setDoc(userDocRef, userProfile);
+      }
+      
       toast({
         title: t('login_successful'),
         description: t('redirecting_to_dashboard'),
