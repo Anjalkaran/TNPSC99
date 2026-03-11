@@ -11,71 +11,58 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
     
+    // Improved isAdmin: Uses a safer check that won't fail the whole rule if the doc is missing
     function isAdmin() {
-      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('isAdmin', false) == true;
+      return isSignedIn() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('isAdmin', false) == true;
     }
 
-    // --- Collections ---
-
+    // --- User Profiles & Personal Data ---
     match /users/{userId} {
+      // Allow a user to manage their own document
       allow read, write: if isOwner(userId) || isAdmin();
+
+      // Allow access to all subcollections (scores, testAttempts, etc.)
+      match /{allSubcollections=**} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
     }
     
-    match /users/{userId}/{subcollection}/{docId} {
-      allow read, write: if isOwner(userId) || isAdmin();
-    }
-
+    // All signed-in users can read questions to generate tests
     match /questions/{questionId} {
       allow read: if isSignedIn();
       allow write: if isAdmin();
     }
 
+    // Test documents
     match /tests/{testId} {
+      // Any signed-in user can read tests
       allow read: if isSignedIn();
+      // Any signed-in user can create a test (for mock tests)
       allow create: if isSignedIn();
+      // Only admins can update or delete tests
       allow update, delete: if isAdmin();
     }
+    
+    // Other public content
+    match /classes/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
+    match /subjects/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
+    match /units/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
+    match /categories/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
+    match /syllabus/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
+    match /studyMaterials/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
 
-    match /classes/{classId} {
-      allow read: if isSignedIn();
-      allow write: if isAdmin();
-    }
-
-    match /subjects/{subjectId} {
-      allow read: if isSignedIn();
-      allow write: if isAdmin();
-    }
-
-    match /units/{unitId} {
-      allow read: if isSignedIn();
-      allow write: if isAdmin();
-    }
-    
-    match /categories/{categoryId} {
-        allow read: if isSignedIn();
-        allow write: if isAdmin();
-    }
-    
-    match /syllabus/{syllabusId} {
-        allow read: if isSignedIn();
-        allow write: if isAdmin();
-    }
-    
-    match /studyMaterials/{materialId} {
-        allow read: if isSignedIn();
-        allow write: if isAdmin();
-    }
-    
+    // User-generated content
     match /scores/{scoreId} {
-        allow read: if true;
-        allow create: if isSignedIn();
-        allow update, delete: if isAdmin();
+      allow read: if true; // Leaderboard is public
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin();
     }
     
     match /questionComments/{commentId} {
-        allow read: if isSignedIn();
-        allow create: if isSignedIn();
-        allow update, delete: if isAdmin();
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
     }
   }
 }

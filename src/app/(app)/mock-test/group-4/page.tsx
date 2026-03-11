@@ -6,12 +6,12 @@ import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebas
 import { collection, query, where, getDocs, doc, setDoc } from 'firebase/firestore';
 import type { Test, UserTestAttempt } from '@/lib/types';
 import { useRouter } from 'next/navigation';
-import { useTransition, useMemo } from 'react';
+import { useTransition, useMemo, useEffect } from 'react';
 import { Loader2, ArrowLeft, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 
-// Moved from actions.ts
+// Configuration for the mock test structure.
 const MOCK_TEST_CONFIG = [
     { part: 'பகுதி இ', unit: 'அலகு I', unitName: 'இலக்கணம்', count: 25 },
     { part: 'பகுதி இ', unit: 'அலகு II', unitName: 'சொல்லகராதி', count: 15 },
@@ -30,6 +30,7 @@ const MOCK_TEST_CONFIG = [
     { part: 'பகுதி ஆ', unit: 'அலகு II', unitName: 'காரணவியல்', count: 10 },
 ];
 
+// Fisher-Yates shuffle algorithm
 function shuffleArray<T>(array: T[]): T[] {
   const newArray = [...array];
   for (let i = newArray.length - 1; i > 0; i--) {
@@ -69,13 +70,16 @@ export default function Group4MockTestPage() {
     const inProgressTest = useMemo(() => inProgressMockTests?.[0], [inProgressMockTests]);
 
     const handleGenerateTest = async () => {
-        if (!user) {
+        if (!user || !firestore) {
             toast({ variant: 'destructive', title: 'Authentication required', description: 'You must be logged in to generate a mock test.' });
             return;
         }
 
         startTransition(async () => {
             try {
+                toast({ title: 'Generating Test...', description: 'Please wait while we assemble your mock test. This may take a moment.' });
+                
+                // 1. Get all question IDs the user has answered correctly before.
                 const correctlyAnsweredIds = new Set<string>();
                 if (completedAttempts) {
                     completedAttempts.forEach(attempt => {
@@ -85,15 +89,17 @@ export default function Group4MockTestPage() {
                     });
                 }
 
+                // 2. Fetch all tests relevant to Group IV syllabus.
                 const testsRef = collection(firestore, 'tests');
                 const testsQuery = query(testsRef, where('examGroup', '==', 'Group IV'));
                 const testsSnapshot = await getDocs(testsQuery);
                 const allGroupIVTests = testsSnapshot.docs.map(doc => doc.data() as Test);
                 
-                const partCQuestionIds: string[] = [];
-                const partABQuestionIds: string[] = [];
+                // 3. Assemble question IDs based on the config.
+                const allMockQuestionIds: string[] = [];
 
                 for (const config of MOCK_TEST_CONFIG) {
+                    // Find all source question IDs for the current config topic.
                     const sourceQuestionIds = new Set<string>();
                     allGroupIVTests
                         .filter(test => test.syllabusPart === config.part && test.syllabusUnit === config.unit && test.syllabusUnitName === config.unitName)
@@ -104,37 +110,32 @@ export default function Group4MockTestPage() {
                         });
 
                     let questionPool = Array.from(sourceQuestionIds);
+                    // Prioritize questions the user hasn't answered correctly.
                     let availableQuestions = questionPool.filter(id => !correctlyAnsweredIds.has(id));
 
+                    // If not enough new questions, backfill with already answered ones.
                     if (availableQuestions.length < config.count) {
                         const answeredInThisUnit = questionPool.filter(id => correctlyAnsweredIds.has(id));
                         availableQuestions.push(...shuffleArray(answeredInThisUnit));
                     }
 
+                    // If still not enough questions, something is wrong with the data.
                     if (availableQuestions.length < config.count) {
                          toast({ variant: 'destructive', title: 'Error Generating Test', description: `Not enough questions for "${config.unitName}". Found ${availableQuestions.length}, need ${config.count}.` });
                          return;
                     }
                     
+                    // Select the required number of questions randomly from the pool.
                     const selectedIds = shuffleArray(availableQuestions).slice(0, config.count);
-                    
-                    if (config.part === 'பகுதி இ') {
-                        partCQuestionIds.push(...selectedIds);
-                    } else {
-                        partABQuestionIds.push(...selectedIds);
-                    }
+                    allMockQuestionIds.push(...selectedIds);
                 }
                 
-                const allMockQuestionIds = [
-                    ...shuffleArray(partCQuestionIds),
-                    ...shuffleArray(partABQuestionIds)
-                ];
-
                 if (allMockQuestionIds.length !== 200) {
                      toast({ variant: 'destructive', title: 'Error Generating Test', description: `Generated test has ${allMockQuestionIds.length} questions, but expected 200.` });
                      return;
                 }
 
+                // 4. Create the new mock test document in Firestore.
                 const newTestRef = doc(collection(firestore, 'tests'));
                 const newMockTest: Partial<Test> = {
                     id: newTestRef.id,
@@ -142,7 +143,7 @@ export default function Group4MockTestPage() {
                     description: "A dynamically generated mock test for Group IV.",
                     questionIds: allMockQuestionIds,
                     examGroup: 'Group IV',
-                    isMockTest: true,
+                    isMockTest: true, // This flag is important!
                 };
                 
                 await setDoc(newTestRef, newMockTest);
