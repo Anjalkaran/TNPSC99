@@ -156,3 +156,16 @@ export interface QuestionComment {
     createdAt: string;
     status: 'open' | 'resolved';
 }
+
+export interface StudyMaterial {
+  id: string;
+  classId: string;
+  subjectId: string;
+  term: string;
+  medium: 'tamil' | 'english';
+  bookType: 'samacheer' | 'old';
+  fileName: string;
+  downloadURL: string;
+  storagePath: string;
+  createdAt: string;
+}
