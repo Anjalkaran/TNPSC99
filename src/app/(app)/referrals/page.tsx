@@ -1,7 +1,7 @@
 'use client';
 
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { doc, updateDoc } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { Copy, Gift } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useEffect } from 'react';
 
 const REFERRAL_GOAL = 10;
 
@@ -23,6 +24,27 @@ export default function ReferralsPage() {
     [user, firestore]
   );
   const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
+  
+  useEffect(() => {
+    if (userProfile && userProfile.referralCount >= REFERRAL_GOAL && userProfile.subscriptionStatus !== 'premium') {
+      const grantReferralAccess = async () => {
+        if (userProfileRef) {
+          const newExpiry = new Date();
+          newExpiry.setMonth(newExpiry.getMonth() + 1);
+          await updateDoc(userProfileRef, {
+            subscriptionStatus: 'premium',
+            subscriptionExpires: newExpiry.toISOString(),
+          });
+          toast({
+            title: 'Reward Unlocked!',
+            description: 'Congratulations! You have earned a one-month free subscription.',
+          });
+        }
+      };
+      grantReferralAccess();
+    }
+  }, [userProfile, userProfileRef, toast]);
+
 
   const copyToClipboard = () => {
     if (userProfile?.referralCode) {
@@ -37,6 +59,10 @@ export default function ReferralsPage() {
   const isLoading = isUserLoading || isProfileLoading;
   const referrals = userProfile?.referralCount || 0;
   const progress = (referrals / REFERRAL_GOAL) * 100;
+  
+  const hasActiveSubscription = userProfile?.subscriptionStatus === 'premium' && 
+                                userProfile.subscriptionExpires && 
+                                new Date(userProfile.subscriptionExpires) > new Date();
 
   return (
     <div className="container mx-auto p-4 sm:p-6 md:p-8">
@@ -79,10 +105,10 @@ export default function ReferralsPage() {
                 <Progress value={progress} className="w-full h-3" />
               </div>
               
-              {userProfile.subscriptionStatus === 'free_access' ? (
+              {referrals >= REFERRAL_GOAL ? (
                  <div className="p-4 bg-green-100 border border-green-200 text-green-800 rounded-lg text-center">
                     <p className="font-bold">Congratulations!</p>
-                    <p>You have earned a one month free subscription!</p>
+                    <p>{hasActiveSubscription ? "Your one-month free subscription has been applied!" : "You have earned a one month free subscription!"}</p>
                  </div>
               ) : (
                 <div className="text-center text-muted-foreground">

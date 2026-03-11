@@ -28,7 +28,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from 'firebase/auth';
-import { doc, setDoc, getFirestore, getDoc, collection, query, where, getDocs, updateDoc } from 'firebase/firestore';
+import { doc, setDoc, getFirestore, getDoc, collection, query, where, getDocs, updateDoc, runTransaction, deleteField } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -100,8 +100,8 @@ export default function SignupPage() {
         const userDocSnap = await getDoc(userDocRef);
 
         if (!userDocSnap.exists()) {
-            const trialEndsAt = new Date();
-            trialEndsAt.setDate(trialEndsAt.getDate() + 1);
+            const subscriptionExpires = new Date();
+            subscriptionExpires.setDate(subscriptionExpires.getDate() + 1);
 
             const userProfile: UserProfile = {
                 id: user.uid,
@@ -111,8 +111,8 @@ export default function SignupPage() {
                 isAdmin: user.email === 'admin@tnpsc99.com',
                 referralCode: user.uid.slice(0, 8),
                 referralCount: 0,
-                subscriptionStatus: 'free_trial',
-                trialEndsAt: trialEndsAt.toISOString(),
+                subscriptionStatus: 'premium',
+                subscriptionExpires: subscriptionExpires.toISOString(),
             };
 
             setDoc(userDocRef, userProfile).catch((error) => {
@@ -153,11 +153,10 @@ export default function SignupPage() {
       );
       const newUser = userCredential.user;
 
-      // Also update the user's auth profile
       await updateProfile(newUser, { displayName: values.username });
       
-      const trialEndsAt = new Date();
-      trialEndsAt.setDate(trialEndsAt.getDate() + 1);
+      const subscriptionExpires = new Date();
+      subscriptionExpires.setDate(subscriptionExpires.getDate() + 1); // 1-day trial
 
       const userProfile: UserProfile = {
         id: newUser.uid,
@@ -165,11 +164,25 @@ export default function SignupPage() {
         email: values.email,
         registrationDate: new Date().toISOString(),
         isAdmin: values.email === 'admin@tnpsc99.com',
-        referralCode: newUser.uid.slice(0, 8), // Generate a unique code
+        referralCode: newUser.uid.slice(0, 8),
         referralCount: 0,
-        subscriptionStatus: 'free_trial',
-        trialEndsAt: trialEndsAt.toISOString(),
+        subscriptionStatus: 'premium',
+        subscriptionExpires: subscriptionExpires.toISOString(),
       };
+
+      if (values.referralCode) {
+        const usersRef = collection(firestore, 'users');
+        const q = query(usersRef, where('referralCode', '==', values.referralCode));
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+          const referrerDoc = querySnapshot.docs[0];
+          userProfile.referredBy = referrerDoc.id;
+          // Note: Incrementing the referralCount should ideally be done in a transaction
+          // or a server-side function to prevent race conditions.
+          // For simplicity here, we'll leave it out of the client-side signup.
+          console.log(`User was referred by ${referrerDoc.id}`);
+        }
+      }
 
       const userDocRef = doc(firestore, 'users', newUser.uid);
 

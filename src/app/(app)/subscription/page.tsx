@@ -11,8 +11,6 @@ import type { UserProfile } from '@/lib/types';
 import { Skeleton } from "@/components/ui/skeleton";
 import Script from "next/script";
 
-// This is a placeholder for the Razorpay instance
-// since the script loads externally.
 declare global {
     interface Window {
         Razorpay: any;
@@ -48,19 +46,6 @@ export default function SubscriptionPage() {
             });
             return;
         }
-
-        // --- Step 1: Create Order (Backend) ---
-        // In a real application, you would make an API call to your backend here.
-        // Your backend would use the Razorpay Node.js SDK and your KEY SECRET
-        // to securely create an order. It would then return the order_id.
-        //
-        // Example backend call (you would need to create this API route):
-        // const response = await fetch('/api/razorpay/create-order', {
-        //   method: 'POST',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify({ amount: amount * 100, currency: 'INR' }),
-        // });
-        // const order = await response.json();
         
         toast({
             title: 'Simulation: Creating Order...',
@@ -69,46 +54,23 @@ export default function SubscriptionPage() {
         });
         
         const options = {
-            key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, // From .env file
-            amount: amount * 100, // amount in the smallest currency unit (paise)
+            key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, 
+            amount: amount * 100, 
             currency: 'INR',
             name: 'TNPSC99 Subscription',
             description: `Payment for ${plan}`,
-            // order_id: order.id, // This would come from your backend response
             
             handler: async function (response: any) {
-                // --- Step 2: Verify Payment (Backend) ---
-                // The payment response is received here. It's CRITICAL to send this
-                // to your backend to verify the payment signature.
-                // DO NOT trust the client-side success response alone.
-                //
-                // Example verification call:
-                // const verificationResponse = await fetch('/api/razorpay/verify-payment', {
-                //   method: 'POST',
-                //   headers: { 'Content-Type': 'application/json' },
-                //   body: JSON.stringify({
-                //     razorpay_payment_id: response.razorpay_payment_id,
-                //     razorpay_order_id: response.razorpay_order_id,
-                //     razorpay_signature: response.razorpay_signature,
-                //   }),
-                // });
-                // const result = await verificationResponse.json();
-                // if (result.isVerified) { ... }
-
                 toast({
                     title: 'Payment Successful (Simulation)',
                     description: 'Verifying payment on backend and updating subscription...',
                 });
                 
-                // --- Step 3: Update Database (Backend) ---
-                // After successful verification on your backend, update the user's
-                // subscription status in Firestore.
                 if (userProfileRef) {
                     const newExpiry = new Date();
                     newExpiry.setMonth(newExpiry.getMonth() + 1);
                     await updateDoc(userProfileRef, {
                         subscriptionStatus: 'premium',
-                        subscriptionId: response.razorpay_payment_id,
                         subscriptionExpires: newExpiry.toISOString(),
                     });
                      toast({
@@ -156,6 +118,10 @@ export default function SubscriptionPage() {
         );
     }
 
+    const isPremium = userProfile?.subscriptionStatus === 'premium';
+    const subscriptionExpires = userProfile?.subscriptionExpires ? new Date(userProfile.subscriptionExpires) : null;
+    const hasActiveSubscription = isPremium && subscriptionExpires && subscriptionExpires > new Date();
+
     return (
         <>
             <Script
@@ -168,10 +134,10 @@ export default function SubscriptionPage() {
                     <p className="text-muted-foreground mt-2">Unlock all features and accelerate your TNPSC preparation.</p>
                 </div>
 
-                {userProfile?.subscriptionStatus === 'free_trial' && userProfile.trialEndsAt && (
-                  <div className="mb-8 text-center p-4 bg-blue-100 dark:bg-blue-900/50 border border-blue-200 dark:border-blue-800 rounded-lg max-w-4xl mx-auto">
-                    <p className="font-semibold text-blue-800 dark:text-blue-300">You are currently on a free trial.</p>
-                    <p className="text-sm text-blue-700 dark:text-blue-400">Your trial ends on {new Date(userProfile.trialEndsAt).toLocaleString()}.</p>
+                {hasActiveSubscription && subscriptionExpires && (
+                  <div className="mb-8 text-center p-4 bg-green-100 dark:bg-green-900/50 border border-green-200 dark:border-green-800 rounded-lg max-w-4xl mx-auto">
+                    <p className="font-semibold text-green-800 dark:text-green-300">You are a Premium Member!</p>
+                    <p className="text-sm text-green-700 dark:text-green-400">Your subscription is active until {subscriptionExpires.toLocaleString()}.</p>
                   </div>
                 )}
                 
@@ -201,7 +167,9 @@ export default function SubscriptionPage() {
                             </ul>
                         </CardContent>
                         <CardFooter>
-                            <Button className="w-full" onClick={() => handleSubscribe('Offer Plan', 99)}>Subscribe Now</Button>
+                            <Button className="w-full" onClick={() => handleSubscribe('Offer Plan', 99)} disabled={hasActiveSubscription}>
+                                {hasActiveSubscription ? 'Subscribed' : 'Subscribe Now'}
+                            </Button>
                         </CardFooter>
                     </Card>
                 </div>

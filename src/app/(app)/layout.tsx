@@ -30,7 +30,7 @@ export default function AppLayout({
   const pathname = usePathname();
   const { t } = useTranslation();
   const firestore = useFirestore();
-  const [isTrialExpired, setIsTrialExpired] = useState(false);
+  const [showExpiryModal, setShowExpiryModal] = useState(false);
 
   const userProfileRef = useMemoFirebase(
     () => (user ? doc(firestore, 'users', user.uid) : null),
@@ -45,12 +45,17 @@ export default function AppLayout({
   }, [user, isUserLoading, router, pathname]);
 
   useEffect(() => {
-    if (userProfile?.subscriptionStatus === 'free_trial' && userProfile.trialEndsAt) {
-      if (new Date(userProfile.trialEndsAt) < new Date()) {
-        setIsTrialExpired(true);
+    if (userProfile) {
+      const isPremium = userProfile.subscriptionStatus === 'premium';
+      const expires = userProfile.subscriptionExpires ? new Date(userProfile.subscriptionExpires) : null;
+      const hasExpired = expires ? expires < new Date() : false;
+
+      // Show the modal if the user was premium but their subscription has now expired.
+      if (isPremium && hasExpired) {
+        setShowExpiryModal(true);
+      } else {
+        setShowExpiryModal(false);
       }
-    } else {
-        setIsTrialExpired(false);
     }
   }, [userProfile]);
 
@@ -62,20 +67,18 @@ export default function AppLayout({
     );
   }
 
-  if (isTrialExpired) {
-    return <TrialExpiryModal isOpen={isTrialExpired} />;
+  if (showExpiryModal) {
+    return <TrialExpiryModal isOpen={showExpiryModal} />;
   }
 
   const getPageTitle = () => {
-    // These paths have their own titles within the page content,
-    // so we hide the header title to avoid duplication.
     if (
       pathname.startsWith('/test/') ||
       pathname.startsWith('/class/') ||
       pathname.startsWith('/exam-wise/') ||
       pathname.startsWith('/previous-year/') ||
       pathname.startsWith('/admin') ||
-      pathname === '/online-tests' ||
+      pathname.startsWith('/online-tests') ||
       pathname === '/dashboard'
     ) {
       return '';
@@ -85,10 +88,8 @@ export default function AppLayout({
       return 'Bookmarks';
     }
     
-    // For other static pages, derive the title from the path.
     const segment = pathname.split('/').pop()?.replace(/-/g, '_') || 'dashboard';
     
-    // The translation hook will return the key if not found, which is acceptable here.
     return t(segment as any);
   }
 

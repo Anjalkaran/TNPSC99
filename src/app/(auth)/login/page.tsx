@@ -42,7 +42,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { getFirestore, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteField } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
 import { useTranslation } from '@/hooks/use-translation';
 
@@ -110,52 +110,80 @@ export default function LoginPage() {
     }
   };
 
+  const handleSuccessfulLogin = async (user: import('firebase/auth').User) => {
+    const firestore = getFirestore(auth.app);
+    const userDocRef = doc(firestore, 'users', user.uid);
+    const userDocSnap = await getDoc(userDocRef);
+    const update: any = {};
+    let needsUpdate = false;
+
+    if (userDocSnap.exists()) {
+        const userProfile = userDocSnap.data() as any; // Read as 'any' to handle old data model
+        const now = new Date();
+        const expires = userProfile.subscriptionExpires ? new Date(userProfile.subscriptionExpires) : null;
+        const trialExpires = userProfile.trialEndsAt ? new Date(userProfile.trialEndsAt) : null;
+
+        // Migrate old 'free_trial' status
+        if (userProfile.subscriptionStatus === 'free_trial') {
+            update.subscriptionStatus = 'premium';
+            if (trialExpires) {
+                update.subscriptionExpires = userProfile.trialEndsAt;
+            }
+            update.trialEndsAt = deleteField();
+            needsUpdate = true;
+        }
+        // Migrate old 'free_access' status
+        else if (userProfile.subscriptionStatus === 'free_access') {
+            const longExpiry = new Date();
+            longExpiry.setFullYear(longExpiry.getFullYear() + 50); // Grant 50 years of premium
+            update.subscriptionStatus = 'premium';
+            update.subscriptionExpires = longExpiry.toISOString();
+            needsUpdate = true;
+        }
+        // Handle expired premium users
+        else if (userProfile.subscriptionStatus === 'premium' && expires && expires < now) {
+            update.subscriptionStatus = 'free';
+            needsUpdate = true;
+        }
+        // Handle users with no status (old users)
+        else if (!userProfile.subscriptionStatus || userProfile.subscriptionStatus === 'none') {
+            const newTrialExpiry = new Date();
+            newTrialExpiry.setDate(newTrialExpiry.getDate() + 1);
+            update.subscriptionStatus = 'premium';
+            update.subscriptionExpires = newTrialExpiry.toISOString();
+            needsUpdate = true;
+        }
+
+        if (needsUpdate) {
+            await updateDoc(userDocRef, update);
+        }
+    } else {
+        // New user (e.g., first sign-in with Google, or email sign-in without sign-up)
+        const subscriptionExpires = new Date();
+        subscriptionExpires.setDate(subscriptionExpires.getDate() + 1);
+
+        const newUserProfile: UserProfile = {
+            id: user.uid,
+            username: user.displayName || user.email!,
+            email: user.email!,
+            registrationDate: new Date().toISOString(),
+            isAdmin: user.email === 'admin@tnpsc99.com',
+            referralCode: user.uid.slice(0, 8),
+            referralCount: 0,
+            subscriptionStatus: 'premium', // Grant trial
+            subscriptionExpires: subscriptionExpires.toISOString(),
+        };
+        await setDoc(userDocRef, newUserProfile);
+    }
+  };
+
+
   const handleGoogleSignIn = async () => {
     setIsSubmitting(true);
     const provider = new GoogleAuthProvider();
     try {
         const result = await signInWithPopup(auth, provider);
-        const user = result.user;
-        const firestore = getFirestore(auth.app);
-
-        const userDocRef = doc(firestore, 'users', user.uid);
-        const userDocSnap = await getDoc(userDocRef);
-
-        if (!userDocSnap.exists()) {
-            const trialEndsAt = new Date();
-            trialEndsAt.setDate(trialEndsAt.getDate() + 1);
-
-            const userProfile: UserProfile = {
-                id: user.uid,
-                username: user.displayName || user.email!,
-                email: user.email!,
-                registrationDate: new Date().toISOString(),
-                isAdmin: user.email === 'admin@tnpsc99.com',
-                referralCode: user.uid.slice(0, 8),
-                referralCount: 0,
-                subscriptionStatus: 'free_trial',
-                trialEndsAt: trialEndsAt.toISOString(),
-            };
-
-            setDoc(userDocRef, userProfile).catch((error) => {
-                errorEmitter.emit('permission-error', new FirestorePermissionError({
-                    path: userDocRef.path,
-                    operation: 'create',
-                    requestResourceData: userProfile,
-                }));
-            });
-        } else {
-            const userProfile = userDocSnap.data() as UserProfile;
-            if (!userProfile.subscriptionStatus) {
-                const trialEndsAt = new Date();
-                trialEndsAt.setDate(trialEndsAt.getDate() + 1);
-                await updateDoc(userDocRef, {
-                    subscriptionStatus: 'free_trial',
-                    trialEndsAt: trialEndsAt.toISOString()
-                });
-            }
-        }
-
+        await handleSuccessfulLogin(result.user);
         toast({
             title: t('login_successful'),
             description: t('redirecting_to_dashboard'),
@@ -177,38 +205,7 @@ export default function LoginPage() {
     setIsSubmitting(true);
     try {
       const credential = await signInWithEmailAndPassword(auth, values.email, values.password);
-      const user = credential.user;
-      const firestore = getFirestore(auth.app);
-      const userDocRef = doc(firestore, 'users', user.uid);
-      const userDocSnap = await getDoc(userDocRef);
-
-      if (userDocSnap.exists()) {
-        const userProfile = userDocSnap.data() as UserProfile;
-        if (!userProfile.subscriptionStatus) {
-            const trialEndsAt = new Date();
-            trialEndsAt.setDate(trialEndsAt.getDate() + 1);
-            await updateDoc(userDocRef, {
-                subscriptionStatus: 'free_trial',
-                trialEndsAt: trialEndsAt.toISOString()
-            });
-        }
-      } else {
-        const trialEndsAt = new Date();
-        trialEndsAt.setDate(trialEndsAt.getDate() + 1);
-        const userProfile: UserProfile = {
-            id: user.uid,
-            username: user.displayName || user.email!,
-            email: user.email!,
-            registrationDate: new Date().toISOString(),
-            isAdmin: user.email === 'admin@tnpsc99.com',
-            referralCode: user.uid.slice(0, 8),
-            referralCount: 0,
-            subscriptionStatus: 'free_trial',
-            trialEndsAt: trialEndsAt.toISOString(),
-        };
-        await setDoc(userDocRef, userProfile);
-      }
-      
+      await handleSuccessfulLogin(credential.user);
       toast({
         title: t('login_successful'),
         description: t('redirecting_to_dashboard'),
