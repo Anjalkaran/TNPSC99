@@ -74,12 +74,14 @@ service cloud.firestore {
     }
 
     match /tests/{testId} {
-      allow get: if isSignedIn();
-      // Allow list for the mock test generation server action.
-      allow list: if true;
+      // Allow read for anyone (for mock test generation).
+      // This is safe as test definitions are not sensitive.
+      // `get` and `list` are covered by this rule.
+      allow read: if true;
+
       // Allow creation of a test if it's a mock test by any signed-in user,
       // OR if the user is an admin (for any type of test).
-      allow create: if (request.resource.data.isMockTest == true) || isAdmin();
+      allow create: if (request.resource.data.isMockTest == true && isSignedIn()) || isAdmin();
       
       // Only allow admins to update or delete tests.
       allow update, delete: if isAdmin();
