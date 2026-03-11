@@ -13,71 +13,52 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
     
-    // Improved isAdmin: Uses a safer check that won't fail if the doc is missing
+    // SAFER isAdmin check as per user guidance. Avoids errors if field is missing.
     function isAdmin() {
       return isSignedIn() && 
-        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('isAdmin', false) == true;
     }
 
     // --- User Profiles & Personal Data ---
     match /users/{userId} {
       allow get, update, delete: if isOwner(userId) || isAdmin();
-      allow list: if isAdmin();
-      allow create: if isSignedIn();
+      allow create: if isSignedIn(); // Allows user to create their own document on signup
+      allow list: if isAdmin(); // Only admins can list all users
 
-      // Allow access to all subcollections (scores, testAttempts, etc.)
+      // Allow access to own subcollections (scores, testAttempts, etc.)
       match /{allSubcollections=**} {
         allow read, write: if isOwner(userId) || isAdmin();
       }
     }
     
-    // --- Mock Test Generation & Core Content ---
-    match /questions/{questionId} {
-      // USERS MUST BE ABLE TO READ AND LIST QUESTIONS TO GENERATE A TEST
+    // --- Questions (Handles Collection Group Queries) ---
+    // This recursive path is more robust as per user guidance.
+    match /{path=**}/questions/{questionId} {
       allow get, list: if isSignedIn();
       allow create, update, delete: if isAdmin();
     }
 
+    // --- Tests ---
     match /tests/{testId} {
-      // Allow any signed-in user to create a test (for mock tests)
-      // and read/list existing tests.
+      // Allow any signed-in user to create and read tests
       allow create, get, list: if isSignedIn();
       
-      // Only admins can modify or delete existing test banks.
+      // Only admins can modify or delete the test bank
       allow update, delete: if isAdmin();
     }
 
-    // --- General Read-Only Content for Users ---
-    match /classes/{classId} {
-      allow get, list: if isSignedIn();
-      allow create, update, delete: if isAdmin();
-    }
-    match /subjects/{subjectId} {
-      allow get, list: if isSignedIn();
-      allow create, update, delete: if isAdmin();
-    }
-    match /units/{unitId} {
-      allow get, list: if isSignedIn();
-      allow create, update, delete: if isAdmin();
-    }
-     match /categories/{categoryId} {
-      allow get, list: if isSignedIn();
-      allow create, update, delete: if isAdmin();
-    }
-    match /syllabus/{syllabusId} {
-      allow get, list: if isSignedIn();
-      allow create, update, delete: if isAdmin();
-    }
-    match /studyMaterials/{materialId} {
-      allow get, list: if isSignedIn();
-      allow create, update, delete: if isAdmin();
-    }
+    // --- General App Content ---
+    match /classes/{id} { allow get, list: if isSignedIn(); allow create, update, delete: if isAdmin(); }
+    match /subjects/{id} { allow get, list: if isSignedIn(); allow create, update, delete: if isAdmin(); }
+    match /units/{id} { allow get, list: if isSignedIn(); allow create, update, delete: if isAdmin(); }
+    match /categories/{id} { allow get, list: if isSignedIn(); allow create, update, delete: if isAdmin(); }
+    match /syllabus/{id} { allow get, list: if isSignedIn(); allow create, update, delete: if isAdmin(); }
+    match /studyMaterials/{materialId} { allow get, list: if isSignedIn(); allow create, update, delete: if isAdmin(); }
 
     // --- User-Generated Content ---
     match /scores/{scoreId} {
       // Leaderboard is public, but creation is protected.
-      allow get, list: if true;
+      allow list, get: if true;
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       allow update, delete: if isAdmin();
     }
