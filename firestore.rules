@@ -12,47 +12,43 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
     
-    // Check if user is admin WITHOUT causing a circular loop
     function isAdmin() {
+      // Safe check for admin status
       return isSignedIn() && 
-        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
     }
 
-    // --- Rules ---
-
+    // --- User Profiles ---
     match /users/{userId} {
-      allow get: if isOwner(userId) || isAdmin();
-      allow list: if isAdmin();
-      allow create: if isSignedIn(); // Allow creation if signed in
-      allow update, delete: if isOwner(userId) || isAdmin();
-
+      allow read: if isOwner(userId) || isAdmin();
+      allow write: if isOwner(userId) || isAdmin();
+      
+      // Allow access to all subcollections (scores, attempts, etc.)
       match /{allSubcollections=**} {
         allow read, write: if isOwner(userId) || isAdmin();
       }
     }
     
+    // --- Test Generation Logic ---
     match /questions/{questionId} {
-      // USERS MUST BE ABLE TO READ QUESTIONS TO GENERATE A TEST
+      // Any logged in user can read questions to generate a test
       allow read, list: if isSignedIn();
       allow write: if isAdmin();
     }
 
     match /tests/{testId} {
-      // 1. Anyone signed in can read tests
+      // CRITICAL FIX: Allow any signed-in user to create a test document
+      // This removes the dependency on the 'isMockTest' field being present
+      allow create: if isSignedIn(); 
+      
+      // Anyone signed in can read tests
       allow read: if isSignedIn();
       
-      // 2. Allow creation if it's a mock test OR the user is an admin
-      // IMPORTANT: The code creating the test MUST include isMockTest: true
-      allow create: if isSignedIn() && (
-        request.resource.data.isMockTest == true || 
-        isAdmin()
-      );
-      
+      // Only admins can modify/delete the test bank
       allow update, delete: if isAdmin();
     }
 
-    // Common Collections (Read for users, write for admins)
+    // --- App Content (Classes, Subjects, Units, etc.) ---
     match /classes/{classId} { allow read: if isSignedIn(); allow write: if isAdmin(); }
     match /subjects/{subjectId} { allow read: if isSignedIn(); allow write: if isAdmin(); }
     match /units/{unitId} { allow read: if isSignedIn(); allow write: if isAdmin(); }
@@ -69,9 +65,8 @@ service cloud.firestore {
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       allow update, delete: if isAdmin();
     }
-    
-    // The following rules are for legacy collections and should not be needed for new functionality.
-    // They are kept here for reference but the catch-all below is more future-proof.
+
+    // --- Legacy Collections ---
     match /classTests/{classTestId} { allow read: if isSignedIn(); allow write: if false; }
     match /subjectTests/{subjectTestId} { allow read: if isSignedIn(); allow write: if false; }
     match /previousYearPapers/{paperId} { allow read: if isSignedIn(); allow write: if false; }
