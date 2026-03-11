@@ -6,6 +6,7 @@ import {
   Archive,
   Flame,
   Book,
+  Search,
 } from 'lucide-react';
 import {
   Card,
@@ -15,10 +16,22 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { useTranslation } from '@/hooks/use-translation';
+import { Input } from '@/components/ui/input';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 
 export default function DashboardPage() {
   const { t } = useTranslation();
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
 
   const categories = [
     {
@@ -45,6 +58,21 @@ export default function DashboardPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
+       <section className="mb-12 max-w-2xl mx-auto">
+        <h1 className="text-3xl font-bold text-center mb-4">Find What You Need</h1>
+        <p className="text-muted-foreground text-center mb-6">Search for tests, topics, or anything across the app.</p>
+        <form onSubmit={handleSearch} className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Input
+            type="search"
+            placeholder="Search for a test..."
+            className="w-full pl-10 h-12 text-lg"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </form>
+      </section>
+
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 max-w-5xl mx-auto">
         {categories.map((category) => (
            <Link href={category.href} key={category.title} className="block hover:no-underline group">
