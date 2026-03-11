@@ -49,6 +49,8 @@ import { setDoc } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Badge } from '@/components/ui/badge';
+import { format } from 'date-fns';
 
 
 const addUserSchema = z.object({
@@ -93,6 +95,9 @@ function AddUserForm({ onFinished }: { onFinished: () => void }) {
                 email: values.email,
                 registrationDate: new Date().toISOString(),
                 isAdmin: values.isAdmin,
+                referralCode: newUser.uid.slice(0, 8),
+                referralCount: 0,
+                subscriptionStatus: 'free',
             };
 
             const userDocRef = doc(firestore, 'users', newUser.uid);
@@ -247,6 +252,7 @@ export default function UserManagementPage() {
                                     <TableHead>{t('username')}</TableHead>
                                     <TableHead>{t('email')}</TableHead>
                                     <TableHead>Role</TableHead>
+                                    <TableHead>Subscription</TableHead>
                                     <TableHead className="text-right">{t('actions')}</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -255,7 +261,23 @@ export default function UserManagementPage() {
                                     <TableRow key={user.id}>
                                         <TableCell>{user.username}</TableCell>
                                         <TableCell>{user.email}</TableCell>
-                                        <TableCell>{user.isAdmin ? 'Admin' : 'User'}</TableCell>
+                                        <TableCell>{user.isAdmin ? <Badge>Admin</Badge> : 'User'}</TableCell>
+                                        <TableCell>
+                                            {user.isAdmin ? (
+                                                <Badge>Admin Access</Badge>
+                                            ) : user.subscriptionStatus === 'premium' ? (
+                                                <div className="flex flex-col">
+                                                <Badge>Premium</Badge>
+                                                {user.subscriptionExpires && (
+                                                    <span className="text-xs text-muted-foreground">
+                                                    Expires: {format(new Date(user.subscriptionExpires), 'P')}
+                                                    </span>
+                                                )}
+                                                </div>
+                                            ) : (
+                                                <Badge variant="secondary">Free</Badge>
+                                            )}
+                                        </TableCell>
                                         <TableCell className="text-right">
                                             <TooltipProvider>
                                                 <div className="flex justify-end items-center gap-2">
