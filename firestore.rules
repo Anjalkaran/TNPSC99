@@ -13,18 +13,27 @@ service cloud.firestore {
     }
     
     function isAdmin() {
-      // Check for the existence of the user document and the isAdmin flag
-      return exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+      // This rule is safe because the /users/{userId} read rule allows users to read their own doc.
+      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
     }
 
     // User Profile Rules
     match /users/{userId} {
+      // Allow a user to read their own document.
+      // Allow an admin to read any user's document.
       allow get: if isOwner(userId) || isAdmin();
-      allow list: if isAdmin(); // Only admins can list all users
-      allow create: if isOwner(userId); // A user can create their own profile
-      allow update: if isOwner(userId) || isAdmin(); // A user or an admin can update a profile
-      allow delete: if isOwner(userId) || isAdmin(); // A user can delete their own profile, or an admin can
+      
+      // Allow admins to list all users.
+      allow list: if isAdmin();
+      
+      // A user can create their own profile document.
+      allow create: if isOwner(userId);
+      
+      // A user or an admin can update a profile.
+      allow update: if isOwner(userId) || isAdmin();
+      
+      // A user or an admin can delete their own profile.
+      allow delete: if isOwner(userId) || isAdmin();
 
       // Subcollections for a user
       match /scores/{scoreId} {
@@ -74,16 +83,14 @@ service cloud.firestore {
     }
 
     match /tests/{testId} {
-      // Allow read for anyone (for mock test generation).
-      // This is safe as test definitions are not sensitive.
-      // `get` and `list` are covered by this rule.
+      // Allow anyone to read tests (needed for mock test generation).
       allow read: if true;
 
-      // Allow creation of a mock test by the unauthenticated server action,
-      // OR any test by an admin.
-      allow create: if (request.resource.data.isMockTest == true) || isAdmin();
+      // Allow creation ONLY IF it's a mock test OR the user is an admin.
+      // This allows the unauthenticated server action to create mock tests.
+      allow create: if request.resource.data.isMockTest == true || isAdmin();
       
-      // Only allow admins to update or delete tests.
+      // Only admins can update or delete tests.
       allow update, delete: if isAdmin();
     }
 
@@ -121,5 +128,3 @@ service cloud.firestore {
     }
   }
 }
-
-    
