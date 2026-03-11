@@ -13,7 +13,9 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
     
-    // A safer isAdmin check that verifies the user doc exists first.
+    // SAFE a_is_admin CHECK: First, verify the user document exists. This prevents
+    // the entire rule evaluation from failing if the user document is missing.
+    // This was the likely root cause of the persistent permission errors.
     function isAdmin() {
       return isSignedIn() &&
              exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
