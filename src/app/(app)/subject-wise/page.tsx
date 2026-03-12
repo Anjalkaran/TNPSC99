@@ -299,52 +299,56 @@ export default function SubjectWiseTestsPage() {
                                     <Card className="bg-muted/50">
                                         <AccordionTrigger className="p-4 text-xl font-semibold hover:no-underline">{part}</AccordionTrigger>
                                         <AccordionContent className="pt-0 p-4 space-y-4">
-                                            {Object.entries(units).sort(([unitKeyA], [unitKeyB]) => {
-                                                    const romanMap: { [key: string]: number } = { 'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000 };
-                                                    const getUnitNumber = (unitKey: string): number => {
-                                                        const match = unitKey.match(/அலகு\s+([IVXLCDM]+)/);
-                                                        if (!match || !match[1]) return 999;
-                                                        const roman = match[1];
-                                                        let result = 0;
-                                                        let i = 0;
-                                                        while (i < roman.length) {
-                                                            const currentVal = romanMap[roman[i]];
-                                                            if (currentVal === undefined) return 999;
-                                                            const nextVal = (i + 1 < roman.length) ? romanMap[roman[i+1]] : 0;
-                                                            if(nextVal && currentVal < nextVal) {
-                                                            result += nextVal - currentVal;
-                                                            i += 2;
-                                                            } else {
-                                                            result += currentVal;
-                                                            i += 1;
+                                            <Accordion type="multiple" className="w-full space-y-2">
+                                                {Object.entries(units).sort(([unitKeyA], [unitKeyB]) => {
+                                                        const romanMap: { [key: string]: number } = { 'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000 };
+                                                        const getUnitNumber = (unitKey: string): number => {
+                                                            const match = unitKey.match(/அலகு\s+([IVXLCDM]+)/);
+                                                            if (!match || !match[1]) return 999;
+                                                            const roman = match[1];
+                                                            let result = 0;
+                                                            let i = 0;
+                                                            while (i < roman.length) {
+                                                                const currentVal = romanMap[roman[i]];
+                                                                if (currentVal === undefined) return 999;
+                                                                const nextVal = (i + 1 < roman.length) ? romanMap[roman[i+1]] : 0;
+                                                                if(nextVal && currentVal < nextVal) {
+                                                                result += nextVal - currentVal;
+                                                                i += 2;
+                                                                } else {
+                                                                result += currentVal;
+                                                                i += 1;
+                                                                }
                                                             }
-                                                        }
-                                                        return result;
-                                                    };
-                                                    return getUnitNumber(unitKeyA) - getUnitNumber(unitKeyB);
-                                                }).map(([unitKey, topics]) => (
-                                                <Card key={unitKey} className="bg-background">
-                                                    <CardHeader>
-                                                        <CardTitle className="text-lg">{unitKey}</CardTitle>
-                                                    </CardHeader>
-                                                    <CardContent className="space-y-4">
-                                                        <Accordion type="multiple" className="w-full space-y-2">
-                                                            {Object.entries(topics).map(([topicName, testList]) => (
-                                                                <AccordionItem value={topicName} key={topicName} className="border-b-0">
-                                                                    <Card className="bg-muted/20">
-                                                                        <AccordionTrigger className="p-4 text-base font-semibold hover:no-underline text-left">
-                                                                            {topicName}
-                                                                        </AccordionTrigger>
-                                                                        <AccordionContent className="pt-0 p-4 space-y-3">
-                                                                            <TopicContent tests={testList} />
-                                                                        </AccordionContent>
-                                                                    </Card>
-                                                                </AccordionItem>
-                                                            ))}
-                                                        </Accordion>
-                                                    </CardContent>
-                                                </Card>
-                                            ))}
+                                                            return result;
+                                                        };
+                                                        return getUnitNumber(unitKeyA) - getUnitNumber(unitKeyB);
+                                                    }).map(([unitKey, topics]) => (
+                                                    <AccordionItem value={unitKey} key={unitKey} className="border-b-0">
+                                                        <Card className="bg-background">
+                                                            <AccordionTrigger className="p-4 text-lg font-semibold hover:no-underline">
+                                                                {unitKey}
+                                                            </AccordionTrigger>
+                                                            <AccordionContent className="pt-0 p-4">
+                                                                <Accordion type="multiple" className="w-full space-y-2">
+                                                                    {Object.entries(topics).map(([topicName, testList]) => (
+                                                                        <AccordionItem value={topicName} key={topicName} className="border-b-0">
+                                                                            <Card className="bg-muted/20">
+                                                                                <AccordionTrigger className="p-4 text-base font-semibold hover:no-underline text-left">
+                                                                                    {topicName}
+                                                                                </AccordionTrigger>
+                                                                                <AccordionContent className="pt-0 p-4 space-y-3">
+                                                                                    <TopicContent tests={testList} />
+                                                                                </AccordionContent>
+                                                                            </Card>
+                                                                        </AccordionItem>
+                                                                    ))}
+                                                                </Accordion>
+                                                            </AccordionContent>
+                                                        </Card>
+                                                    </AccordionItem>
+                                                ))}
+                                            </Accordion>
                                         </AccordionContent>
                                     </Card>
                                 </AccordionItem>
