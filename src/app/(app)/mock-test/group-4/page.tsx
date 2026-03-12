@@ -78,7 +78,6 @@ export default function Group4MockTestPage() {
                 }
                 
                 const testsRef = collection(firestore, 'tests');
-                // Fetch all Group IV tests. We will filter out mock tests in the client.
                 const testsQuery = query(
                     testsRef, 
                     where('examGroup', '==', 'Group IV')
@@ -92,7 +91,6 @@ export default function Group4MockTestPage() {
                 for (const config of MOCK_TEST_CONFIG) {
                     const sourceQuestionIds = new Set<string>();
                     
-                    // Filter tests on the client side
                     allGroupIVTests
                         .filter(test => !test.isMockTest && test.syllabusPart === config.part && test.syllabusUnit === config.unit && test.syllabusUnitName === config.unitName)
                         .forEach(test => {
@@ -130,7 +128,7 @@ export default function Group4MockTestPage() {
                     description: "A dynamically generated mock test for Group IV.",
                     questionIds: allMockQuestionIds,
                     examGroup: 'Group IV',
-                    isMockTest: true, // This is crucial for the security rule
+                    isMockTest: true,
                 };
                 
                 await setDoc(newTestRef, newMockTest);
