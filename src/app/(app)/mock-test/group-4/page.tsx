@@ -129,6 +129,7 @@ export default function Group4MockTestPage() {
                     questionIds: allMockQuestionIds,
                     examGroup: 'Group IV',
                     isMockTest: true,
+                    userId: user.uid,
                 };
                 
                 await setDoc(newTestRef, newMockTest);

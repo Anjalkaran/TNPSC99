@@ -37,6 +37,7 @@ export interface Test {
   unitName?: string;
   isPreviousYearPaper?: boolean;
   isMockTest?: boolean;
+  userId?: string;
   year?: number;
   referencePageOffset?: number;
   bookType?: 'samacheer' | 'old';
