@@ -13,7 +13,7 @@ import Link from 'next/link';
 
 // Structure and question count for the mock test
 const MOCK_TEST_CONFIG = [
-    // Part C
+    // Part C - General Tamil (100 Questions)
     { part: 'பகுதி இ', unit: 'அலகு I', unitName: 'இலக்கணம்', count: 25 },
     { part: 'பகுதி இ', unit: 'அலகு II', unitName: 'சொல்லகராதி', count: 15 },
     { part: 'பகுதி இ', unit: 'அலகு III', unitName: 'எழுதும் திறன்', count: 15 },
@@ -21,14 +21,16 @@ const MOCK_TEST_CONFIG = [
     { part: 'பகுதி இ', unit: 'அலகு V', unitName: 'வாசித்தல் – புரிந்து கொள்ளும் திறன்', count: 15 },
     { part: 'பகுதி இ', unit: 'அலகு VI', unitName: 'எளிய மொழி பெயர்ப்பு', count: 5 },
     { part: 'பகுதி இ', unit: 'அலகு VII', unitName: 'இலக்கியம், தமிழ் அறிஞர்களும், தமிழ்த்தொண்டும்', count: 15 },
-    // Part A
+    
+    // Part A - General Studies (75 Questions)
     { part: 'பகுதி அ', unit: 'அலகு I', unitName: 'பொது அறிவியல்', count: 5 },
     { part: 'பகுதி அ', unit: 'அலகு II', unitName: 'புவியியல்', count: 5 },
     { part: 'பகுதி அ', unit: 'அலகு III', unitName: 'இந்தியாவின் வரலாறு, பண்பாடு மற்றும் இந்திய தேசிய இயக்கம்', count: 10 },
     { part: 'பகுதி அ', unit: 'அலகு IV', unitName: 'இந்திய ஆட்சியியல்', count: 15 },
     { part: 'பகுதி அ', unit: 'அலகு V', unitName: 'இந்தியப் பொருளாதாரம் மற்றும் தமிழ்நாட்டில் வளர்ச்சி நிர்வாகம்', count: 20 },
     { part: 'பகுதி அ', unit: 'அலகு VI', unitName: 'தமிழ்நாட்டின் வரலாறு, பண்பாடு, மரபு மற்றும் சமூக - அரசியல் இயக்கங்கள்', count: 20 },
-    // Part B
+    
+    // Part B - Aptitude & Mental Ability (25 Questions)
     { part: 'பகுதி ஆ', unit: 'அலகு I', unitName: 'திறனறிவு', count: 15 },
     { part: 'பகுதி ஆ', unit: 'அலகு II', unitName: 'காரணவியல்', count: 10 },
 ];
