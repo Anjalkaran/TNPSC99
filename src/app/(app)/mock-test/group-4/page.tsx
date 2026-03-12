@@ -76,10 +76,10 @@ export default function Group4MockTestPage() {
                 }
                 
                 const testsRef = collection(firestore, 'tests');
+                // Fetch all Group IV tests. We will filter out mock tests in the client.
                 const testsQuery = query(
                     testsRef, 
-                    where('examGroup', '==', 'Group IV'), 
-                    where('isMockTest', '==', false) // Explicitly check for false
+                    where('examGroup', '==', 'Group IV')
                 );
 
                 const testsSnapshot = await getDocs(testsQuery);
@@ -89,8 +89,10 @@ export default function Group4MockTestPage() {
 
                 for (const config of MOCK_TEST_CONFIG) {
                     const sourceQuestionIds = new Set<string>();
+                    
+                    // Filter tests on the client side
                     allGroupIVTests
-                        .filter(test => test.syllabusPart === config.part && test.syllabusUnit === config.unit && test.syllabusUnitName === config.unitName)
+                        .filter(test => !test.isMockTest && test.syllabusPart === config.part && test.syllabusUnit === config.unit && test.syllabusUnitName === config.unitName)
                         .forEach(test => {
                             if (Array.isArray(test.questionIds)) {
                                 test.questionIds.forEach(id => sourceQuestionIds.add(id));
