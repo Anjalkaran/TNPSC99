@@ -2,14 +2,25 @@
     
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where, getDocs, doc, setDoc } from 'firebase/firestore';
-import type { Test, UserTestAttempt } from '@/lib/types';
+import { useUser, useFirestore } from '@/firebase';
+import { collection, query, where, getDocs, doc, setDoc, deleteDoc } from 'firebase/firestore';
+import type { Test } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { Loader2, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+
 
 // Structure and question count for the mock test
 const MOCK_TEST_CONFIG = [
@@ -50,41 +61,30 @@ export default function Group4MockTestPage() {
     const router = useRouter();
     const { toast } = useToast();
     const [isPending, startTransition] = useTransition();
+    const [isChecking, setIsChecking] = useState(false);
+    const [inProgressTest, setInProgressTest] = useState<{testId: string, attemptId: string} | null>(null);
 
-    const completedAttemptsQuery = useMemoFirebase(() => {
-        if (!user || !firestore) return null;
-        return query(
-            collection(firestore, `users/${user.uid}/testAttempts`),
-            where('status', '==', 'completed')
-        );
-    }, [user, firestore]);
-    const { data: completedAttempts, isLoading: isLoadingAttempts } = useCollection<UserTestAttempt>(completedAttemptsQuery);
-
-    const handleGenerateTest = async () => {
-        if (!user || !firestore) {
-            toast({ variant: 'destructive', title: 'Authentication required', description: 'You must be logged in to generate a mock test.' });
-            return;
-        }
-
+    const proceedToGenerateTest = () => {
         startTransition(async () => {
+            if (!user || !firestore) return;
             try {
+                // Fetch completed attempts to exclude correctly answered questions
+                const completedAttemptsRef = collection(firestore, `users/${user.uid}/testAttempts`);
+                const completedAttemptsQuery = query(completedAttemptsRef, where('status', '==', 'completed'));
+                const completedAttemptsSnapshot = await getDocs(completedAttemptsQuery);
                 const correctlyAnsweredIds = new Set<string>();
-                if (completedAttempts) {
-                    completedAttempts.forEach(attempt => {
-                        if (attempt.correctlyAnsweredQuestionIds) {
-                            attempt.correctlyAnsweredQuestionIds.forEach((id: string) => correctlyAnsweredIds.add(id));
-                        }
-                    });
-                }
-                
-                const testsRef = collection(firestore, 'tests');
-                const testsQuery = query(
-                    testsRef, 
-                    where('examGroup', '==', 'Group IV')
-                );
+                completedAttemptsSnapshot.forEach(doc => {
+                    const attempt = doc.data();
+                    if (attempt.correctlyAnsweredQuestionIds) {
+                        attempt.correctlyAnsweredQuestionIds.forEach((id: string) => correctlyAnsweredIds.add(id));
+                    }
+                });
 
+                // Fetch all Group IV tests from the main bank
+                const testsRef = collection(firestore, 'tests');
+                const testsQuery = query(testsRef, where('examGroup', '==', 'Group IV'));
                 const testsSnapshot = await getDocs(testsQuery);
-                const allGroupIVTests = testsSnapshot.docs.map(doc => doc.data() as Test);
+                const allGroupIVTests = testsSnapshot.docs.map(doc => doc.data() as Test).filter(test => !test.isMockTest);
                 
                 const allMockQuestionIds: string[] = [];
 
@@ -92,7 +92,7 @@ export default function Group4MockTestPage() {
                     const sourceQuestionIds = new Set<string>();
                     
                     allGroupIVTests
-                        .filter(test => !test.isMockTest && test.syllabusPart === config.part && test.syllabusUnit === config.unit && test.syllabusUnitName === config.unitName)
+                        .filter(test => test.syllabusPart === config.part && test.syllabusUnit === config.unit && test.syllabusUnitName === config.unitName)
                         .forEach(test => {
                             if (Array.isArray(test.questionIds)) {
                                 test.questionIds.forEach(id => sourceQuestionIds.add(id));
@@ -143,40 +143,106 @@ export default function Group4MockTestPage() {
         });
     };
 
-    const isGenerating = isPending || isLoadingAttempts;
+    const handleGenerateClick = async () => {
+        if (!user || !firestore) {
+            toast({ variant: 'destructive', title: 'Authentication required', description: 'You must be logged in to generate a mock test.' });
+            return;
+        }
+        setIsChecking(true);
+        const attemptsRef = collection(firestore, `users/${user.uid}/testAttempts`);
+        const q = query(attemptsRef, where('isMockTest', '==', true), where('status', '==', 'in-progress'));
+        const querySnapshot = await getDocs(q);
+        
+        if (!querySnapshot.empty) {
+            const attempt = querySnapshot.docs[0];
+            setInProgressTest({ testId: attempt.data().testId, attemptId: attempt.id });
+        } else {
+            proceedToGenerateTest();
+        }
+        setIsChecking(false);
+    };
+
+    const handleResume = () => {
+        if (inProgressTest) {
+            router.push(`/test/${inProgressTest.testId}`);
+        }
+        setInProgressTest(null);
+    };
+
+    const handleStartNew = async () => {
+        if (!inProgressTest || !user || !firestore) return;
+        
+        toast({ description: "Removing previous mock test..." });
+        const oldAttemptRef = doc(firestore, `users/${user.uid}/testAttempts`, inProgressTest.attemptId);
+        const oldTestRef = doc(firestore, 'tests', inProgressTest.testId);
+        
+        try {
+            await deleteDoc(oldAttemptRef);
+            await deleteDoc(oldTestRef);
+        } catch (e) {
+            console.error("Failed to delete old mock test:", e);
+        } finally {
+            setInProgressTest(null);
+            proceedToGenerateTest();
+        }
+    };
+
+
+    const isBusy = isPending || isChecking;
 
     return (
-        <div className="container mx-auto px-4 py-8 md:py-12">
-            <div className="mb-8">
-                <Button asChild variant="ghost" className="mb-4">
-                    <Link href="/exam-wise/group-4">
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to Group IV
-                    </Link>
-                </Button>
-                <h1 className="text-3xl md:text-4xl font-bold">Group IV - Mock Test Generator</h1>
-                <p className="text-muted-foreground mt-2">Generate a full-length mock test based on the official Group IV syllabus distribution.</p>
-            </div>
-            <Card className="max-w-2xl mx-auto">
-                <CardHeader>
-                    <CardTitle>Generate New Mock Test</CardTitle>
-                    <CardDescription>
-                        Click the button below to create a new 200-question mock test. Questions are pulled from all available syllabus units. Previously answered questions will not be repeated until you have attempted all available questions in a unit.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="text-center">
-                    <Button onClick={handleGenerateTest} disabled={isGenerating} size="lg">
-                        {isGenerating ? (
-                            <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Generating Test...
-                            </>
-                        ) : (
-                            "Generate Group IV Mock Test"
-                        )}
+        <>
+            <div className="container mx-auto px-4 py-8 md:py-12">
+                <div className="mb-8">
+                    <Button asChild variant="ghost" className="mb-4">
+                        <Link href="/exam-wise/group-4">
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Back to Group IV
+                        </Link>
                     </Button>
-                </CardContent>
-            </Card>
-        </div>
+                    <h1 className="text-3xl md:text-4xl font-bold">Group IV - Mock Test Generator</h1>
+                    <p className="text-muted-foreground mt-2">Generate a full-length mock test based on the official Group IV syllabus distribution.</p>
+                </div>
+                <Card className="max-w-2xl mx-auto">
+                    <CardHeader>
+                        <CardTitle>Generate New Mock Test</CardTitle>
+                        <CardDescription>
+                            Click the button below to create a new 200-question mock test. Questions are pulled from all available syllabus units. Previously answered questions will not be repeated until you have attempted all available questions in a unit.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="text-center">
+                        <Button onClick={handleGenerateClick} disabled={isBusy} size="lg">
+                            {isBusy ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    {isChecking ? 'Checking for existing tests...' : 'Generating Test...'}
+                                </>
+                            ) : (
+                                "Generate Group IV Mock Test"
+                            )}
+                        </Button>
+                    </CardContent>
+                </Card>
+            </div>
+            <AlertDialog open={!!inProgressTest} onOpenChange={(isOpen) => !isOpen && setInProgressTest(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Resume In-Progress Mock Test?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            You have an unfinished mock test. Would you like to resume it, or discard it and start a new one?
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleStartNew} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            Start New
+                        </AlertDialogAction>
+                        <AlertDialogAction onClick={handleResume}>
+                            Resume Test
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </>
     );
 }
