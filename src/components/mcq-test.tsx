@@ -227,15 +227,6 @@ export function McqTest({
     }
   }, [user, firestore, questions, answers, test, decodedTitle, currentQuestionIndex, attemptId]);
   
-  const handleFinalSubmit = useCallback(async () => {
-    await saveProgress('completed');
-    setIsSubmitted(true);
-    toast({
-        title: "தேர்வு சமர்ப்பிக்கப்பட்டது",
-        description: "உங்கள் மதிப்பெண் சேமிக்கப்பட்டது.",
-    });
-  }, [saveProgress, toast]);
-
   const handleExit = useCallback(async () => {
     if (isExitingIntentionally.current) return;
     isExitingIntentionally.current = true;
@@ -243,6 +234,20 @@ export function McqTest({
     toast({ description: t('progress_saved') });
     router.push(getReturnHref());
   }, [saveProgress, toast, router, getReturnHref, t]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden' && !isSubmitted && !isExitingIntentionally.current) {
+        saveProgress('in-progress');
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [saveProgress, isSubmitted, isExitingIntentionally]);
 
   useEffect(() => {
     if (!user || !firestore) return;
@@ -309,6 +314,16 @@ export function McqTest({
         document.title = decodedTitle;
     }
   }, [decodedTitle]);
+  
+  const handleFinalSubmit = useCallback(async () => {
+    isExitingIntentionally.current = true; // Prevent unload listeners from firing
+    await saveProgress('completed');
+    setIsSubmitted(true);
+    toast({
+        title: "தேர்வு சமர்ப்பிக்கப்பட்டது",
+        description: "உங்கள் மதிப்பெண் சேமிக்கப்பட்டது.",
+    });
+  }, [saveProgress, toast]);
 
   useEffect(() => {
     if (isSubmitted) {
