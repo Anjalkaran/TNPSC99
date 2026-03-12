@@ -107,78 +107,90 @@ function TestProgressBadge({ testId }: { testId: string }) {
     )
 }
 
-function TestCard({ test }: { test: Test }) {
-    const { t } = useTranslation();
-    return (
-        <Card className="bg-background">
-            <CardContent className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex-grow">
-                    <p className="font-medium">{test.syllabusCategory || 'General'}</p>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <span>{test.questionIds.length} {t('questions')}</span>
-                        <Badge variant="outline">{test.medium}</Badge>
-                        <TestProgressBadge testId={test.id} />
-                    </div>
-                </div>
-                <div className="w-full md:w-auto shrink-0 md:min-w-[300px]">
-                    <TestStartControl test={test} />
-                </div>
-            </CardContent>
-        </Card>
-    );
-}
-
 function TopicContent({ tests }: { tests: Test[] }) {
     const { t } = useTranslation();
-    const [selectedCategory, setSelectedCategory] = useState<string>('all');
+    const [selectedTestId, setSelectedTestId] = useState<string>('');
+    const [limit, setLimit] = useState<string>('');
 
-    const categories = useMemo(() => {
-        const uniqueCategories = new Set<string>();
-        tests.forEach(test => {
-            uniqueCategories.add(test.syllabusCategory || 'General');
-        });
-        return ['all', ...Array.from(uniqueCategories).sort((a, b) => a.localeCompare(b))];
+    // Calculate total questions available across all categories for this topic.
+    const allQuestionsCount = useMemo(() => {
+        return tests.reduce((sum, test) => sum + test.questionIds.length, 0);
     }, [tests]);
 
-    const filteredTests = useMemo(() => {
-        if (selectedCategory === 'all') {
-            return tests;
-        }
-        return tests.filter(test => (test.syllabusCategory || 'General') === selectedCategory);
-    }, [tests, selectedCategory]);
+    // Find the currently selected test object based on its ID.
+    const selectedTest = useMemo(() => {
+        return tests.find(test => test.id === selectedTestId);
+    }, [tests, selectedTestId]);
 
-    if (categories.length <= 2) {
-         return (
-             <div className="space-y-3">
-                 {tests.map(test => (
-                     <TestCard key={test.id} test={test} />
-                 ))}
-             </div>
-         );
-    }
-    
+    // Reset the question limit whenever the category (and thus the test) changes.
+    useEffect(() => {
+        setLimit('');
+    }, [selectedTestId]);
+
+    // Determine the options for the question limit dropdown based on the selected test.
+    const limitOptions = useMemo(() => {
+        if (!selectedTest) return [];
+        const questionCount = selectedTest.questionIds.length;
+        if (questionCount === 0) return [];
+        
+        let options = [10, 25, 50].filter(o => o < questionCount);
+        if (questionCount > 0) {
+            options.push(questionCount);
+        }
+        // ensure unique and sorted
+        return [...new Set(options)].sort((a,b) => a - b);
+    }, [selectedTest]);
+
+    // Construct the URL for starting the test.
+    const startHref = selectedTest ? `/test/${selectedTest.id}${limit ? `?limit=${limit}` : ''}` : '#';
+
     return (
-        <div className="space-y-4">
-            <div className="max-w-sm">
-                <Label htmlFor="category-select" className="text-xs text-muted-foreground">Filter by Category</Label>
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                    <SelectTrigger id="category-select" className="mt-1">
-                        <SelectValue placeholder="Select a category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        {categories.map(category => (
-                            <SelectItem key={category} value={category}>
-                                {category === 'all' ? 'All Categories' : category}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            </div>
-            <div className="space-y-3">
-                {filteredTests.map(test => (
-                     <TestCard key={test.id} test={test} />
-                ))}
-            </div>
+        <div className="space-y-3">
+            <Card className="bg-background">
+                <CardContent className="p-4">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div className="flex-grow space-y-2 w-full">
+                            <p className="font-medium text-lg">Take a test on this topic</p>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <span>Total of {allQuestionsCount} {t('questions')} available.</span>
+                            </div>
+                        </div>
+                        <div className="w-full md:w-auto shrink-0 flex flex-col sm:flex-row gap-2 items-center">
+                            <Select onValueChange={setSelectedTestId} value={selectedTestId}>
+                                <SelectTrigger className="w-full sm:w-[180px]">
+                                    <SelectValue placeholder="Select Category" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {tests.map(test => (
+                                        <SelectItem key={test.id} value={test.id}>
+                                            {test.syllabusCategory || 'General'}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+
+                            <Select onValueChange={setLimit} value={limit} disabled={!selectedTest}>
+                                <SelectTrigger className="w-full sm:w-[180px]">
+                                    <SelectValue placeholder={selectedTest ? `Questions (${selectedTest.questionIds.length})` : 'Select Questions'} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {selectedTest && limitOptions.map(opt => (
+                                        <SelectItem key={opt} value={String(opt)}>
+                                            {opt === selectedTest.questionIds.length ? t('all_questions', { count: opt }) : t('questions_count', { count: opt })}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            
+                            <Button asChild className="w-full sm:w-auto" disabled={!selectedTestId || !limit} style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
+                                <Link href={startHref}>
+                                    {t('start_test')} <ArrowRight className="ml-2 h-4 w-4" />
+                                </Link>
+                            </Button>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
         </div>
     );
 }
