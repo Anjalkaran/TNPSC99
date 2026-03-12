@@ -1,6 +1,6 @@
 'use server';
 
-import { initializeFirebaseServer } from '@/firebase/server-init';
+import { adminDb } from '@/firebase/admin';
 import { collection, query, where, getDocs, doc, setDoc } from 'firebase/firestore';
 import type { Test } from '@/lib/types';
 
@@ -41,7 +41,7 @@ export async function generateGroup4MockTest(userId: string, correctlyAnsweredId
         return { error: "Authentication required." };
     }
 
-    const { firestore } = initializeFirebaseServer();
+    const firestore = adminDb;
 
     try {
         // 1. Use the passed-in list of correctly answered questions
@@ -49,7 +49,7 @@ export async function generateGroup4MockTest(userId: string, correctlyAnsweredId
 
         // 2. Fetch all Group IV syllabus tests once
         const testsRef = collection(firestore, 'tests');
-        const testsQuery = query(testsRef, where('examGroup', '==', 'Group IV'), where('isMockTest', '!=', true));
+        const testsQuery = query(testsRef, where('examGroup', '==', 'Group IV'), where('isMockTest', '==', false));
         const testsSnapshot = await getDocs(testsQuery);
         const allGroupIVTests = testsSnapshot.docs.map(doc => doc.data() as Test);
         
