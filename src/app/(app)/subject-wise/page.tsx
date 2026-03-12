@@ -150,7 +150,7 @@ function TopicContent({ tests }: { tests: Test[] }) {
                 <CardContent className="p-4">
                     <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                         <div className="flex-grow space-y-2 w-full">
-                            <p className="font-medium text-lg">Take a test on this topic</p>
+                            <p className="font-medium text-lg">Practice this topic</p>
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                 <span>Total of {allQuestionsCount} {t('questions')} available.</span>
                             </div>
