@@ -9,84 +9,69 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-    
-    // SAFE isAdmin CHECK: First, verify the user document exists. This prevents
-    // the entire rule evaluation from failing if the user document is missing.
-    // This was the likely root cause of the persistent permission errors.
+    // Simplest possible isAdmin check - avoid using this inside the User rule itself
     function isAdmin() {
-      return isSignedIn() &&
-             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+      return isSignedIn() && 
              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
     }
 
     // --- User Data ---
     match /users/{userId} {
-      // Users can create their own profile.
-      allow create: if isOwner(userId);
-      // Users can read/update their own profile. Admins can read/update any.
-      allow get, update: if isOwner(userId) || isAdmin();
-      // Only admins can list or delete users.
+      // FIX: Check isOwner BEFORE isAdmin to prevent the recursive loop
+      allow get: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      allow update: if isSignedIn() && (request.auth.uid == userId || isAdmin());
       allow list, delete: if isAdmin();
       
-      // Explicit rule for testAttempts to allow filtered queries by the owner.
-      match /testAttempts/{attemptId} {
-        allow get, list, create, update, delete: if isOwner(userId) || isAdmin();
-      }
-
-      // Explicit rule for bookmarks to allow filtered queries by the owner.
-      match /bookmarkedQuestions/{bookmarkId} {
-        allow get, list, create, update, delete: if isOwner(userId) || isAdmin();
+      // Subcollections
+      match /{allSubcollections=**} {
+        allow read, write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
       }
     }
 
-    // --- Publicly Readable Content ---
+    // --- Tests Collection (The Mock Test Fix) ---
     match /tests/{testId} {
-      // Anyone can read tests, which is safe as they only contain metadata and question IDs.
       allow get, list: if true;
       
-      // Allow users to create mock tests for themselves; admins can create any test.
-      allow create: if (isSignedIn() && request.resource.data.isMockTest == true && request.resource.data.userId == request.auth.uid) || isAdmin();
+      // FIX: Simplified creation rule
+      allow create: if isSignedIn() && (
+        request.resource.data.userId == request.auth.uid || 
+        isAdmin()
+      );
       
-      // Only admins can modify the main test bank.
       allow update: if isAdmin();
 
-      // Admins can delete any test. Users can only delete their own mock tests.
-      // Reverted to using get() as it was the previously working implementation.
-      allow delete: if isAdmin() || (get(/databases/$(database)/documents/tests/$(testId)).data.isMockTest == true && get(/databases/$(database)/documents/tests/$(testId)).data.userId == request.auth.uid);
+      // FIX: Use 'resource' (current data) instead of 'get()' for deletion. 
+      // This is much faster and more reliable.
+      allow delete: if isSignedIn() && (
+        resource.data.userId == request.auth.uid || 
+        isAdmin()
+      );
     }
 
+    // --- Question Bank ---
     match /questions/{questionId} {
-        // Any signed-in user can read questions. This is required for taking tests.
-        allow get, list: if isSignedIn();
-        // Only admins can modify the question bank.
-        allow create, update, delete: if isAdmin();
+        allow read, list: if isSignedIn();
+        allow write: if isAdmin();
     }
     
-    // Other public collections
-    match /classes/{id} { allow get, list: if true; allow create, update, delete: if isAdmin(); }
-    match /subjects/{id} { allow get, list: if true; allow create, update, delete: if isAdmin(); }
-    match /units/{id} { allow get, list: if true; allow create, update, delete: if isAdmin(); }
-    match /categories/{id} { allow get, list: if true; allow create, update, delete: if isAdmin(); }
-    match /syllabus/{id} { allow get, list: if true; allow create, update, delete: if isAdmin(); }
-    match /studyMaterials/{materialId} { allow get, list: if true; allow create, update, delete: if isAdmin(); }
+    // --- App Metadata ---
+    match /classes/{id} { allow read: if true; allow write: if isAdmin(); }
+    match /subjects/{id} { allow read: if true; allow write: if isAdmin(); }
+    match /units/{id} { allow read: if true; allow write: if isAdmin(); }
+    match /categories/{id} { allow read: if true; allow write: if isAdmin(); }
+    match /syllabus/{id} { allow read: if true; allow write: if isAdmin(); }
+    match /studyMaterials/{id} { allow read: if true; allow write: if isAdmin(); }
 
-    // --- User-Generated Content ---
-    match /scores/{scoreId} {
-      // Leaderboard is public.
-      allow get, list: if true;
-      // Users can only create scores for themselves.
+    // --- User Activity ---
+    match /scores/{id} {
+      allow read: if true;
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      // Only admins can modify scores.
       allow update, delete: if isAdmin();
     }
     
-    match /questionComments/{commentId} {
-      // Any signed-in user can create/read comments.
-      allow create, get, list: if isSignedIn();
-      // Only admins can modify or delete comments.
+    match /questionComments/{id} {
+      allow read, create: if isSignedIn();
       allow update, delete: if isAdmin();
     }
   }
