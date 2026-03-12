@@ -41,6 +41,9 @@ export async function generateGroup4MockTest(userId: string, correctlyAnsweredId
         return { error: "Authentication required." };
     }
 
+    if (!adminDb) {
+        return { error: "Firebase Admin is not configured on the server. Please set the required environment variables." };
+    }
     const firestore = adminDb;
 
     try {
