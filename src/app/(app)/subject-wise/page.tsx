@@ -34,22 +34,18 @@ function TopicContent({ tests }: { tests: Test[] }) {
     const [selectedTestId, setSelectedTestId] = useState<string>('');
     const [limit, setLimit] = useState<string>('');
 
-    // Calculate total questions available across all categories for this topic.
     const allQuestionsCount = useMemo(() => {
         return tests.reduce((sum, test) => sum + test.questionIds.length, 0);
     }, [tests]);
 
-    // Find the currently selected test object based on its ID.
     const selectedTest = useMemo(() => {
         return tests.find(test => test.id === selectedTestId);
     }, [tests, selectedTestId]);
 
-    // Reset the question limit whenever the category (and thus the test) changes.
     useEffect(() => {
         setLimit('');
     }, [selectedTestId]);
 
-    // Determine the options for the question limit dropdown based on the selected test.
     const limitOptions = useMemo(() => {
         if (!selectedTest) return [];
         const questionCount = selectedTest.questionIds.length;
@@ -59,59 +55,49 @@ function TopicContent({ tests }: { tests: Test[] }) {
         if (questionCount > 0) {
             options.push(questionCount);
         }
-        // ensure unique and sorted
         return [...new Set(options)].sort((a,b) => a - b);
     }, [selectedTest]);
 
-    // Construct the URL for starting the test.
     const startHref = selectedTest ? `/test/${selectedTest.id}${limit ? `?limit=${limit}` : ''}` : '#';
 
     return (
         <div className="space-y-3">
-            <Card className="bg-background">
-                <CardContent className="p-4">
-                    <div className="flex flex-col md:flex-row items-center justify-end gap-4">
-                        <div className="w-full md:w-auto flex flex-col gap-2 items-stretch md:items-end">
-                            <div className="text-sm text-muted-foreground">
-                                <span>Total of {allQuestionsCount} {t('questions')} available.</span>
-                            </div>
-                            <div className="flex flex-col sm:flex-row gap-2 w-full">
-                                <Select onValueChange={setSelectedTestId} value={selectedTestId}>
-                                    <SelectTrigger className="w-full sm:w-[180px]">
-                                        <SelectValue placeholder="Select Category" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {tests.map(test => (
-                                            <SelectItem key={test.id} value={test.id}>
-                                                {test.syllabusCategory || 'General'}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+             <div className="text-sm text-muted-foreground">
+                <span>Total of {allQuestionsCount} {t('questions')} available.</span>
+            </div>
+            <div className="flex flex-col sm:flex-row items-center justify-end gap-2 w-full">
+                <Select onValueChange={setSelectedTestId} value={selectedTestId}>
+                    <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Select Category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {tests.map(test => (
+                            <SelectItem key={test.id} value={test.id}>
+                                {test.syllabusCategory || 'General'}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
 
-                                <Select onValueChange={setLimit} value={limit} disabled={!selectedTest}>
-                                    <SelectTrigger className="w-full sm:w-[180px]">
-                                        <SelectValue placeholder={selectedTest ? `Questions (${selectedTest.questionIds.length})` : 'Select Questions'} />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {selectedTest && limitOptions.map(opt => (
-                                            <SelectItem key={opt} value={String(opt)}>
-                                                {opt === selectedTest.questionIds.length ? t('all_questions', { count: opt }) : t('questions_count', { count: opt })}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                
-                                <Button asChild className="w-full sm:w-auto" disabled={!selectedTestId || !limit} style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
-                                    <Link href={startHref}>
-                                        {t('start_test')} <ArrowRight className="ml-2 h-4 w-4" />
-                                    </Link>
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
+                <Select onValueChange={setLimit} value={limit} disabled={!selectedTest}>
+                    <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder={selectedTest ? `Questions (${selectedTest.questionIds.length})` : 'Select Questions'} />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {selectedTest && limitOptions.map(opt => (
+                            <SelectItem key={opt} value={String(opt)}>
+                                {opt === selectedTest.questionIds.length ? t('all_questions', { count: opt }) : t('questions_count', { count: opt })}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                
+                <Button asChild className="w-full sm:w-auto" disabled={!selectedTestId || !limit} style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
+                    <Link href={startHref}>
+                        {t('start_test')} <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
+                </Button>
+            </div>
         </div>
     );
 }
@@ -200,26 +186,30 @@ export default function SubjectWiseTestsPage() {
       {isLoading ? (
         <p>Loading tests...</p>
       ) : Object.keys(groupedSyllabusTests).length > 0 ? (
-        <Accordion type="multiple" className="w-full space-y-4" defaultValue={Object.keys(groupedSyllabusTests)}>
-          {Object.entries(groupedSyllabusTests).map(([examGroup, parts]) => (
-            <AccordionItem value={examGroup} key={examGroup} className="border-b-0">
-                <Card>
-                    <AccordionTrigger className="p-4 text-2xl font-bold hover:no-underline">{examGroup}</AccordionTrigger>
-                    <AccordionContent className="px-6 pb-6">
-                        <Accordion type="multiple" className="w-full space-y-4" defaultValue={Object.keys(parts)}>
-                            {Object.entries(parts).sort((a, b) => {
-                                const order = ['பகுதி அ', 'பகுதி ஆ', 'பகுதி இ'];
-                                const indexA = order.indexOf(a[0]);
-                                const indexB = order.indexOf(b[0]);
-                                if (indexA === -1 && indexB === -1) return a[0].localeCompare(b[0]);
-                                if (indexA === -1) return 1;
-                                if (indexB === -1) return -1;
-                                return indexA - indexB;
-                            }).map(([part, units]) => (
-                                <AccordionItem value={part} key={part} className="border-b-0">
-                                    <Card className="bg-muted/50">
-                                        <AccordionTrigger className="p-4 text-xl font-semibold hover:no-underline">{part}</AccordionTrigger>
-                                        <AccordionContent className="pt-0 p-4 space-y-4">
+        <Card>
+            <CardContent className="p-2 sm:p-4">
+                <Accordion type="multiple" className="w-full" defaultValue={Object.keys(groupedSyllabusTests)}>
+                {Object.entries(groupedSyllabusTests).map(([examGroup, parts]) => (
+                    <AccordionItem value={examGroup} key={examGroup} className="border-b-0">
+                        <AccordionTrigger className="p-4 text-xl font-bold hover:no-underline rounded-md hover:bg-muted/50">
+                            {examGroup}
+                        </AccordionTrigger>
+                        <AccordionContent className="px-2 sm:px-4 pb-2">
+                            <Accordion type="multiple" className="w-full space-y-2">
+                                {Object.entries(parts).sort((a, b) => {
+                                    const order = ['பகுதி அ', 'பகுதி ஆ', 'பகுதி இ'];
+                                    const indexA = order.indexOf(a[0]);
+                                    const indexB = order.indexOf(b[0]);
+                                    if (indexA === -1 && indexB === -1) return a[0].localeCompare(b[0]);
+                                    if (indexA === -1) return 1;
+                                    if (indexB === -1) return -1;
+                                    return indexA - indexB;
+                                }).map(([part, units]) => (
+                                    <AccordionItem value={part} key={part} className="border rounded-md bg-muted/50">
+                                        <AccordionTrigger className="p-3 text-lg font-semibold hover:no-underline">
+                                            {part}
+                                        </AccordionTrigger>
+                                        <AccordionContent className="pt-0 p-3 space-y-2">
                                             <Accordion type="multiple" className="w-full space-y-2">
                                                 {Object.entries(units).sort(([unitKeyA], [unitKeyB]) => {
                                                         const romanMap: { [key: string]: number } = { 'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000 };
@@ -245,41 +235,37 @@ export default function SubjectWiseTestsPage() {
                                                         };
                                                         return getUnitNumber(unitKeyA) - getUnitNumber(unitKeyB);
                                                     }).map(([unitKey, topics]) => (
-                                                    <AccordionItem value={unitKey} key={unitKey} className="border-b-0">
-                                                        <Card className="bg-background">
-                                                            <AccordionTrigger className="p-4 text-lg font-semibold hover:no-underline">
-                                                                {unitKey}
-                                                            </AccordionTrigger>
-                                                            <AccordionContent className="pt-0 p-4">
-                                                                <Accordion type="multiple" className="w-full space-y-2">
-                                                                    {Object.entries(topics).map(([topicName, testList]) => (
-                                                                        <AccordionItem value={topicName} key={topicName} className="border-b-0">
-                                                                            <Card className="bg-muted/20">
-                                                                                <AccordionTrigger className="p-4 text-base font-semibold hover:no-underline text-left">
-                                                                                    {topicName}
-                                                                                </AccordionTrigger>
-                                                                                <AccordionContent className="pt-0 p-4 space-y-3">
-                                                                                    <TopicContent tests={testList} />
-                                                                                </AccordionContent>
-                                                                            </Card>
-                                                                        </AccordionItem>
-                                                                    ))}
-                                                                </Accordion>
-                                                            </AccordionContent>
-                                                        </Card>
+                                                    <AccordionItem value={unitKey} key={unitKey} className="border rounded-md bg-background">
+                                                        <AccordionTrigger className="p-3 font-semibold hover:no-underline">
+                                                            {unitKey}
+                                                        </AccordionTrigger>
+                                                        <AccordionContent className="pt-0 p-3">
+                                                            <Accordion type="multiple" className="w-full space-y-2">
+                                                                {Object.entries(topics).map(([topicName, testList]) => (
+                                                                    <AccordionItem value={topicName} key={topicName} className="border rounded-md bg-muted/30">
+                                                                        <AccordionTrigger className="p-3 text-base font-medium hover:no-underline text-left">
+                                                                            {topicName}
+                                                                        </AccordionTrigger>
+                                                                        <AccordionContent className="pt-0 p-3 space-y-3">
+                                                                            <TopicContent tests={testList} />
+                                                                        </AccordionContent>
+                                                                    </AccordionItem>
+                                                                ))}
+                                                            </Accordion>
+                                                        </AccordionContent>
                                                     </AccordionItem>
                                                 ))}
                                             </Accordion>
                                         </AccordionContent>
-                                    </Card>
-                                </AccordionItem>
-                            ))}
-                        </Accordion>
-                    </AccordionContent>
-                </Card>
-            </AccordionItem>
-          ))}
-        </Accordion>
+                                    </AccordionItem>
+                                ))}
+                            </Accordion>
+                        </AccordionContent>
+                    </AccordionItem>
+                ))}
+                </Accordion>
+            </CardContent>
+        </Card>
       ) : (
         <div className="text-center py-16">
           <p className="text-muted-foreground">
