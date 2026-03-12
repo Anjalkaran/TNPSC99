@@ -148,7 +148,8 @@ export function McqTest({
         questions.forEach((q, index) => {
             const answerIndex = answers[index];
             if (answerIndex !== undefined) {
-                if (q.correctAnswerIndex === answerIndex) {
+                const isCorrect = q.correctAnswer ? q.answerOptions[answerIndex] === q.correctAnswer : q.correctAnswerIndex === answerIndex;
+                if (isCorrect) {
                     calculatedScore++;
                     correctlyAnsweredQuestionIds.push(q.id);
                 } else {
@@ -458,22 +459,25 @@ export function McqTest({
             மொத்த முன்னேற்றம்: {answeredQuestions + score} / {totalQuestions} கேள்விகள் சரியாக பதிலளிக்கப்பட்டுள்ளன
           </Badge>
           <div className="space-y-4 max-h-60 overflow-y-auto p-4 border rounded-md">
-            {questions.slice(0, questionsInThisSession).map((q, index) => (
-              <div key={q.id} className="text-left p-2 rounded-md bg-muted/50">
-                <p className="font-semibold flex items-center gap-2 whitespace-pre-line">
-                  {answers[index] === q.correctAnswerIndex ? <CheckCircle2 className="text-green-500"/> : <XCircle className="text-red-500"/>}
-                  {formatQuestionText(q.text)}
-                </p>
-                <p className="text-sm pl-8">உங்கள் பதில்: <span className={answers[index] === q.correctAnswerIndex ? 'text-green-600' : 'text-red-600'}>{answers[index] !== undefined ? q.answerOptions[answers[index]!] : 'பதிலளிக்கப்படவில்லை'}</span></p>
-                <p className="text-sm pl-8">சரியான பதில்: <span className="text-green-600">{q.answerOptions[q.correctAnswerIndex]}</span></p>
-                 {q.explanation && (
-                    <div className="mt-2 text-xs text-muted-foreground pl-8 flex gap-2">
-                        <Info className="h-4 w-4 flex-shrink-0" />
-                        <span className="whitespace-pre-line">{q.explanation}</span>
-                    </div>
-                )}
-              </div>
-            ))}
+            {questions.slice(0, questionsInThisSession).map((q, index) => {
+                const isCorrect = q.correctAnswer ? q.answerOptions[answers[index]!] === q.correctAnswer : answers[index] === q.correctAnswerIndex;
+                return (
+                  <div key={q.id} className="text-left p-2 rounded-md bg-muted/50">
+                    <p className="font-semibold flex items-center gap-2 whitespace-pre-line">
+                      {isCorrect ? <CheckCircle2 className="text-green-500"/> : <XCircle className="text-red-500"/>}
+                      {formatQuestionText(q.text)}
+                    </p>
+                    <p className="text-sm pl-8">உங்கள் பதில்: <span className={isCorrect ? 'text-green-600' : 'text-red-600'}>{answers[index] !== undefined ? q.answerOptions[answers[index]!] : 'பதிலளிக்கப்படவில்லை'}</span></p>
+                    <p className="text-sm pl-8">சரியான பதில்: <span className="text-green-600">{q.correctAnswer ?? q.answerOptions[q.correctAnswerIndex!]}</span></p>
+                     {q.explanation && (
+                        <div className="mt-2 text-xs text-muted-foreground pl-8 flex gap-2">
+                            <Info className="h-4 w-4 flex-shrink-0" />
+                            <span className="whitespace-pre-line">{q.explanation}</span>
+                        </div>
+                    )}
+                  </div>
+                )
+            })}
           </div>
         </CardContent>
         <CardFooter className="flex-col sm:flex-row gap-4">
@@ -567,7 +571,7 @@ export function McqTest({
           >
             <div className="space-y-4">
               {currentQuestion.answerOptions.map((option, index) => {
-                const isCorrect = index === currentQuestion.correctAnswerIndex;
+                const isCorrect = currentQuestion.correctAnswer ? option === currentQuestion.correctAnswer : index === currentQuestion.correctAnswerIndex;
                 const isSelected = index === userAnswer;
 
                 const getOptionClass = () => {

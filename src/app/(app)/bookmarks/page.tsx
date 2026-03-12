@@ -115,13 +115,16 @@ export default function BookmarksPage() {
                         <AccordionContent>
                            <div className="px-4 pb-4">
                              <div className="space-y-2">
-                                {q.answerOptions.map((option, i) => (
-                                    <div key={i} className={`p-2 rounded-md ${i === q.correctAnswerIndex ? 'bg-green-100 dark:bg-green-900' : 'bg-muted/50'}`}>
-                                        <p className={`font-medium ${i === q.correctAnswerIndex ? 'text-green-800 dark:text-green-200' : ''}`}>
-                                            {option} {i === q.correctAnswerIndex && '(Correct Answer)'}
-                                        </p>
-                                    </div>
-                                ))}
+                                {q.answerOptions.map((option, i) => {
+                                    const isCorrectAnswer = q.correctAnswer ? option === q.correctAnswer : i === q.correctAnswerIndex;
+                                    return (
+                                        <div key={i} className={`p-2 rounded-md ${isCorrectAnswer ? 'bg-green-100 dark:bg-green-900' : 'bg-muted/50'}`}>
+                                            <p className={`font-medium ${isCorrectAnswer ? 'text-green-800 dark:text-green-200' : ''}`}>
+                                                {option} {isCorrectAnswer && '(Correct Answer)'}
+                                            </p>
+                                        </div>
+                                    )
+                                })}
                              </div>
                              {q.explanation && (
                                 <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg dark:bg-blue-950 dark:border-blue-800 flex gap-2">

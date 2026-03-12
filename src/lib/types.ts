@@ -10,7 +10,8 @@ export interface Question {
   classId?: string;
   unitId?: string;
   category?: string;
-  correctAnswerIndex: number;
+  correctAnswerIndex?: number;
+  correctAnswer?: string;
   answerOptions: string[];
   reference?: string;
   referenceUrl?: string;
