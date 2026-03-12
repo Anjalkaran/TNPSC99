@@ -54,7 +54,7 @@ service cloud.firestore {
       allow update: if isAdmin();
 
       // Admins can delete any test. Users can only delete their own mock tests.
-      allow delete: if isAdmin() || (get(/databases/$(database)/documents/tests/$(testId)).data.isMockTest == true && get(/databases/$(database)/documents/tests/$(testId)).data.userId == request.auth.uid);
+      allow delete: if isAdmin() || (resource.data.isMockTest == true && resource.data.userId == request.auth.uid);
     }
 
     match /questions/{questionId} {

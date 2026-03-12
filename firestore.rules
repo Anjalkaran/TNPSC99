@@ -13,6 +13,9 @@ service cloud.firestore {
       return isSignedIn() && request.auth.uid == userId;
     }
     
+    // SAFE isAdmin CHECK: First, verify the user document exists. This prevents
+    // the entire rule evaluation from failing if the user document is missing.
+    // This was the likely root cause of the persistent permission errors.
     function isAdmin() {
       return isSignedIn() &&
              exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
@@ -51,7 +54,7 @@ service cloud.firestore {
       allow update: if isAdmin();
 
       // Admins can delete any test. Users can only delete their own mock tests.
-      allow delete: if isAdmin() || (get(/databases/$(database)/documents/tests/$(testId)).data.isMockTest == true && get(/databases/$(database)/documents/tests/$(testId)).data.userId == request.auth.uid);
+      allow delete: if isAdmin() || (resource.data.isMockTest == true && resource.data.userId == request.auth.uid);
     }
 
     match /questions/{questionId} {
