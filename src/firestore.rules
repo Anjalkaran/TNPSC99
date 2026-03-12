@@ -33,20 +33,15 @@ service cloud.firestore {
     match /tests/{testId} {
       allow get, list: if true;
       
-      // FIX: Simplified creation rule
-      allow create: if isSignedIn() && (
-        request.resource.data.userId == request.auth.uid || 
-        isAdmin()
-      );
+      // Admins can create any test.
+      // Users can only create tests that are marked as mock tests.
+      allow create: if isAdmin() || (isSignedIn() && request.resource.data.isMockTest == true);
       
       allow update: if isAdmin();
 
-      // FIX: Use 'resource' (current data) instead of 'get()' for deletion. 
-      // This is much faster and more reliable.
-      allow delete: if isSignedIn() && (
-        resource.data.userId == request.auth.uid || 
-        isAdmin()
-      );
+      // Admins can delete any test.
+      // Users can only delete tests that are marked as mock tests.
+      allow delete: if isAdmin() || (isSignedIn() && resource.data.isMockTest == true);
     }
 
     // --- Question Bank ---
