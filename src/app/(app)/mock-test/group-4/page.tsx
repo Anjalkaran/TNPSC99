@@ -172,8 +172,24 @@ export default function Group4MockTestPage() {
     };
 
     const handleStartNew = async () => {
-        // Bypass deletion to avoid permission errors.
-        // This will leave the old test document in the database, but will fix the user-facing error.
+        if (inProgressTest && firestore && user) {
+            try {
+                // Delete the old test document first.
+                const testDocRef = doc(firestore, 'tests', inProgressTest.testId);
+                await deleteDoc(testDocRef);
+
+                // Then delete the attempt document.
+                const attemptDocRef = doc(firestore, `users/${user.uid}/testAttempts`, inProgressTest.attemptId);
+                await deleteDoc(attemptDocRef);
+
+                toast({ title: "Starting Fresh", description: "Your previous unfinished mock test has been discarded." });
+            } catch (error: any) {
+                 console.error("Error deleting old mock test:", error);
+                 toast({ variant: 'destructive', title: 'Cleanup Failed', description: "Could not remove the old in-progress test. Please ask an admin to check permissions." });
+                 setInProgressTest(null);
+                 return; // Stop if we can't clean up
+            }
+        }
         setInProgressTest(null);
         proceedToGenerateTest();
     };
