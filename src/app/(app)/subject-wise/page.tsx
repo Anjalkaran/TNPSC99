@@ -29,84 +29,6 @@ import { Label } from '@/components/ui/label';
 import { useSearchParams } from 'next/navigation';
 
 
-function TestStartControl({ test }: { test: Test }) {
-  const { t } = useTranslation();
-  const [limit, setLimit] = useState<string>('');
-  const questionCount = test.questionIds.length;
-  const options = [10, 25, 50].filter(o => o < questionCount);
-
-  return (
-    <div className="flex flex-col sm:flex-row gap-2 w-full justify-end">
-      <Select onValueChange={setLimit} value={limit}>
-        <SelectTrigger className="w-full sm:w-[180px]">
-          <SelectValue placeholder={t('select_questions')} />
-        </SelectTrigger>
-        <SelectContent>
-          {options.map(opt => <SelectItem key={opt} value={String(opt)}>{t('questions_count', { count: opt })}</SelectItem>)}
-          <SelectItem value={String(questionCount)}>{t('all_questions', { count: questionCount })}</SelectItem>
-        </SelectContent>
-      </Select>
-      <Button asChild className="w-full sm:w-auto" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
-        <Link href={`/test/${test.id}${limit ? `?limit=${limit}` : ''}`}>
-          {t('start_test')} <ArrowRight className="ml-2 h-4 w-4" />
-        </Link>
-      </Button>
-    </div>
-  );
-}
-
-function TestProgressBadge({ testId }: { testId: string }) {
-    const { user } = useUser();
-    const firestore = useFirestore();
-    const [answeredCount, setAnsweredCount] = useState(0);
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        if (!user || !firestore || !testId) {
-            setIsLoading(false);
-            return;
-        };
-
-        const fetchAttempts = async () => {
-            setIsLoading(true);
-            const attemptsRef = collection(firestore, `users/${user.uid}/testAttempts`);
-            const attemptsQuery = query(attemptsRef, where('testId', '==', testId));
-            const attemptsSnapshot = await getDocs(attemptsQuery);
-
-            const attemptedQuestionIds = new Set<string>();
-            attemptsSnapshot.forEach(doc => {
-                const attempt = doc.data() as UserTestAttempt;
-                if (attempt.sessionQuestionIds && attempt.answers) {
-                    attempt.answers.forEach((answer, index) => {
-                        if (answer !== undefined && answer !== -1) {
-                            const questionId = attempt.sessionQuestionIds?.[index];
-                            if (questionId) {
-                                attemptedQuestionIds.add(questionId);
-                            }
-                        }
-                    });
-                }
-            });
-            setAnsweredCount(attemptedQuestionIds.size);
-            setIsLoading(false);
-        };
-
-        fetchAttempts();
-    }, [user, firestore, testId]);
-
-    if (isLoading) {
-        return <Badge variant="outline">Loading...</Badge>;
-    }
-    
-    if (answeredCount === 0) return null;
-
-    return (
-         <Badge variant="secondary">
-            {answeredCount} attended
-        </Badge>
-    )
-}
-
 function TopicContent({ tests }: { tests: Test[] }) {
     const { t } = useTranslation();
     const [selectedTestId, setSelectedTestId] = useState<string>('');
@@ -148,45 +70,44 @@ function TopicContent({ tests }: { tests: Test[] }) {
         <div className="space-y-3">
             <Card className="bg-background">
                 <CardContent className="p-4">
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                        <div className="flex-grow space-y-2 w-full">
-                            <p className="font-medium text-lg">Practice this topic</p>
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="flex flex-col md:flex-row items-center justify-end gap-4">
+                        <div className="w-full md:w-auto flex flex-col gap-2 items-stretch md:items-end">
+                            <div className="text-sm text-muted-foreground">
                                 <span>Total of {allQuestionsCount} {t('questions')} available.</span>
                             </div>
-                        </div>
-                        <div className="w-full md:w-auto shrink-0 flex flex-col sm:flex-row gap-2 items-center">
-                            <Select onValueChange={setSelectedTestId} value={selectedTestId}>
-                                <SelectTrigger className="w-full sm:w-[180px]">
-                                    <SelectValue placeholder="Select Category" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {tests.map(test => (
-                                        <SelectItem key={test.id} value={test.id}>
-                                            {test.syllabusCategory || 'General'}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <div className="flex flex-col sm:flex-row gap-2 w-full">
+                                <Select onValueChange={setSelectedTestId} value={selectedTestId}>
+                                    <SelectTrigger className="w-full sm:w-[180px]">
+                                        <SelectValue placeholder="Select Category" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {tests.map(test => (
+                                            <SelectItem key={test.id} value={test.id}>
+                                                {test.syllabusCategory || 'General'}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
 
-                            <Select onValueChange={setLimit} value={limit} disabled={!selectedTest}>
-                                <SelectTrigger className="w-full sm:w-[180px]">
-                                    <SelectValue placeholder={selectedTest ? `Questions (${selectedTest.questionIds.length})` : 'Select Questions'} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {selectedTest && limitOptions.map(opt => (
-                                        <SelectItem key={opt} value={String(opt)}>
-                                            {opt === selectedTest.questionIds.length ? t('all_questions', { count: opt }) : t('questions_count', { count: opt })}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            
-                            <Button asChild className="w-full sm:w-auto" disabled={!selectedTestId || !limit} style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
-                                <Link href={startHref}>
-                                    {t('start_test')} <ArrowRight className="ml-2 h-4 w-4" />
-                                </Link>
-                            </Button>
+                                <Select onValueChange={setLimit} value={limit} disabled={!selectedTest}>
+                                    <SelectTrigger className="w-full sm:w-[180px]">
+                                        <SelectValue placeholder={selectedTest ? `Questions (${selectedTest.questionIds.length})` : 'Select Questions'} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {selectedTest && limitOptions.map(opt => (
+                                            <SelectItem key={opt} value={String(opt)}>
+                                                {opt === selectedTest.questionIds.length ? t('all_questions', { count: opt }) : t('questions_count', { count: opt })}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                
+                                <Button asChild className="w-full sm:w-auto" disabled={!selectedTestId || !limit} style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
+                                    <Link href={startHref}>
+                                        {t('start_test')} <ArrowRight className="ml-2 h-4 w-4" />
+                                    </Link>
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </CardContent>
