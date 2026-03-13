@@ -10,25 +10,24 @@ service cloud.firestore {
     }
 
     function isAdmin() {
+      // defensive check
       let userData = get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
       return isSignedIn() && 'isAdmin' in userData && userData.isAdmin == true;
     }
 
     // --- 2. USER DATA & SUBCOLLECTIONS ---
+    // This rule applies ONLY to the user document itself (e.g., /users/USER_ID)
     match /users/{userId} {
       allow read, update, delete: if request.auth.uid == userId || isAdmin();
       allow create: if request.auth.uid == userId;
-
-      // Allow user to manage their own test attempts
-      match /testAttempts/{attemptId} {
-        allow read, write: if request.auth.uid == userId || isAdmin();
-      }
-
-      // Allow user to manage their own bookmarks
-      match /bookmarkedQuestions/{bookmarkId} {
-        allow read, write: if request.auth.uid == userId || isAdmin();
-      }
     }
+
+    // This rule applies to ALL documents in ALL subcollections under a user
+    // (e.g., /users/USER_ID/testAttempts/ATTEMPT_ID)
+    match /users/{userId}/{allPaths=**} {
+      allow read, write: if request.auth.uid == userId || isAdmin();
+    }
+
 
     // --- 3. TESTS COLLECTION ---
     match /tests/{testId} {
