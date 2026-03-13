@@ -116,7 +116,7 @@ export default function BookmarksPage() {
                            <div className="px-4 pb-4">
                              <div className="space-y-2">
                                 {q.answerOptions.map((option, i) => {
-                                    const isCorrectAnswer = q.correctAnswer ? option === q.correctAnswer : i === q.correctAnswerIndex;
+                                    const isCorrectAnswer = option === q.correctAnswer;
                                     return (
                                         <div key={i} className={`p-2 rounded-md ${isCorrectAnswer ? 'bg-green-100 dark:bg-green-900' : 'bg-muted/50'}`}>
                                             <p className={`font-medium ${isCorrectAnswer ? 'text-green-800 dark:text-green-200' : ''}`}>

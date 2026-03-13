@@ -70,7 +70,7 @@ const jsonStructureExample = `[
     "id": "your-unique-question-id",
     "text": "Your question text here?",
     "answerOptions": ["Option A", "Option B", "Option C", "Option D"],
-    "correctAnswerIndex": 0,
+    "correctAnswer": "Option A",
     "explanation": "Detailed explanation for the correct answer (optional)",
     "reference": "TNPSC Group IV 2022 (optional)"
   }
@@ -314,8 +314,8 @@ export default function PreviousYearPaperUploadPage() {
         throw new Error('JSON must be a non-empty array of questions.');
       }
        for(const q of questions) {
-        if (!q.id || !q.text || !q.answerOptions || q.correctAnswerIndex === undefined) {
-            throw new Error('Each question object must have id, text, answerOptions, and correctAnswerIndex.');
+        if (!q.id || !q.text || !q.answerOptions || !q.correctAnswer) {
+            throw new Error('Each question object must have id, text, answerOptions, and correctAnswer.');
         }
       }
     } catch (error: any) {
@@ -343,7 +343,7 @@ export default function PreviousYearPaperUploadPage() {
               id: q.id,
               text: q.text,
               answerOptions: Array.isArray(q.answerOptions) ? q.answerOptions.flat() : q.answerOptions,
-              correctAnswerIndex: q.correctAnswerIndex,
+              correctAnswer: q.correctAnswer,
               explanation: q.explanation || '',
               reference: q.reference || `${year} ${examGroup}`,
           };

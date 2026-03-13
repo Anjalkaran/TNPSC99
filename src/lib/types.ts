@@ -10,8 +10,8 @@ export interface Question {
   classId?: string;
   unitId?: string;
   category?: string;
-  correctAnswerIndex?: number;
-  correctAnswer?: string;
+  correctAnswerIndex?: number; // Kept as optional for backward compatibility during transition
+  correctAnswer: string;
   answerOptions: string[];
   reference?: string;
   referenceUrl?: string;

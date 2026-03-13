@@ -32,7 +32,7 @@
     "fix:categories": "tsx src/scripts/fix-category-names.ts",
     "add:group4-syllabus": "tsx src/scripts/add-group4-syllabus.ts",
     "add:group2-syllabus": "tsx src/scripts/add-group2-syllabus.ts",
-    "test:migrate:answer-format": "tsx src/scripts/test-answer-migration.ts"
+    "migrate:answers": "tsx src/scripts/migrate-all-answers.ts"
   },
   "dependencies": {
     "@genkit-ai/core": "1.1.0",

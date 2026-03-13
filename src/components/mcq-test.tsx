@@ -148,7 +148,7 @@ export function McqTest({
         questions.forEach((q, index) => {
             const answerIndex = answers[index];
             if (answerIndex !== undefined) {
-                const isCorrect = q.correctAnswer ? q.answerOptions[answerIndex] === q.correctAnswer : q.correctAnswerIndex === answerIndex;
+                const isCorrect = q.answerOptions[answerIndex] === q.correctAnswer;
                 if (isCorrect) {
                     calculatedScore++;
                     correctlyAnsweredQuestionIds.push(q.id);
@@ -460,7 +460,7 @@ export function McqTest({
           </Badge>
           <div className="space-y-4 max-h-60 overflow-y-auto p-4 border rounded-md">
             {questions.slice(0, questionsInThisSession).map((q, index) => {
-                const isCorrect = q.correctAnswer ? q.answerOptions[answers[index]!] === q.correctAnswer : answers[index] === q.correctAnswerIndex;
+                const isCorrect = q.answerOptions[answers[index]!] === q.correctAnswer;
                 return (
                   <div key={q.id} className="text-left p-2 rounded-md bg-muted/50">
                     <p className="font-semibold flex items-center gap-2 whitespace-pre-line">
@@ -468,7 +468,7 @@ export function McqTest({
                       {formatQuestionText(q.text)}
                     </p>
                     <p className="text-sm pl-8">உங்கள் பதில்: <span className={isCorrect ? 'text-green-600' : 'text-red-600'}>{answers[index] !== undefined ? q.answerOptions[answers[index]!] : 'பதிலளிக்கப்படவில்லை'}</span></p>
-                    <p className="text-sm pl-8">சரியான பதில்: <span className="text-green-600">{q.correctAnswer ?? q.answerOptions[q.correctAnswerIndex!]}</span></p>
+                    <p className="text-sm pl-8">சரியான பதில்: <span className="text-green-600">{q.correctAnswer}</span></p>
                      {q.explanation && (
                         <div className="mt-2 text-xs text-muted-foreground pl-8 flex gap-2">
                             <Info className="h-4 w-4 flex-shrink-0" />
@@ -571,7 +571,7 @@ export function McqTest({
           >
             <div className="space-y-4">
               {currentQuestion.answerOptions.map((option, index) => {
-                const isCorrect = currentQuestion.correctAnswer ? option === currentQuestion.correctAnswer : index === currentQuestion.correctAnswerIndex;
+                const isCorrect = option === currentQuestion.correctAnswer;
                 const isSelected = index === userAnswer;
 
                 const getOptionClass = () => {

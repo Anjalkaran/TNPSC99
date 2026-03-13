@@ -66,7 +66,7 @@ const jsonStructureExample = `[
     "id": "your-unique-question-id",
     "text": "Your question text here?",
     "answerOptions": ["Option A", "Option B", "Option C", "Option D"],
-    "correctAnswerIndex": 0,
+    "correctAnswer": "Option A",
     "unitId": "your-unit-id-here",
     "explanation": "Detailed explanation for the correct answer (optional)",
     "reference": "6th std unit 1 page 5 (optional)",
@@ -964,8 +964,8 @@ export default function UploadMcqPage() {
         throw new Error('JSON must be a non-empty array of questions.');
       }
        for(const q of questions) {
-        if (!q.id || !q.text || !q.answerOptions || q.correctAnswerIndex === undefined || !q.unitId) {
-            throw new Error('Each question object must have id, text, answerOptions, correctAnswerIndex and unitId.');
+        if (!q.id || !q.text || !q.answerOptions || !q.correctAnswer || !q.unitId) {
+            throw new Error('Each question object must have id, text, answerOptions, correctAnswer and unitId.');
         }
       }
     } catch (error: any) {
@@ -1079,7 +1079,7 @@ export default function UploadMcqPage() {
               id: q.id,
               text: q.text,
               answerOptions: Array.isArray(q.answerOptions) ? q.answerOptions.flat() : q.answerOptions,
-              correctAnswerIndex: q.correctAnswerIndex,
+              correctAnswer: q.correctAnswer,
               classId,
               subjectId,
               unitId: q.unitId || unitId,
