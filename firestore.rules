@@ -18,20 +18,24 @@ service cloud.firestore {
 
     // --- 2. USER DATA & SUBCOLLECTIONS ---
     match /users/{userId} {
-      // 1. If you are the owner, ALLOW. (No isAdmin check here)
+      // These rules apply to the user document itself.
+      // Separate allow statements prevent the isAdmin() 'get' call from failing the rule for the owner.
       allow read, write: if isSignedIn() && request.auth.uid == userId;
-      
-      // 2. If you are NOT the owner, check if you are an Admin
-      allow read, update, delete: if request.auth.uid != userId && isAdmin();
+      allow read, write: if isAdmin(); // Admins can manage user profiles.
 
-      // Rule for all subcollections (testAttempts, bookmarkedQuestions, etc.)
-      match /{allPaths=**} {
-        // Owner can do anything in their own subcollections.
-        // This rule will match first and grant access without calling isAdmin().
+      // --- SUBCOLLECTION RULES ---
+      // These rules apply to documents within subcollections like 'testAttempts'.
+      match /testAttempts/{attemptId} {
+        // Owner can read/write their own test attempts.
         allow read, write: if isSignedIn() && request.auth.uid == userId;
-        
-        // Admins can do anything in any user's subcollections.
-        // This rule is only evaluated if the first one doesn't match.
+        // Admins can read/write any user's test attempts.
+        allow read, write: if isAdmin();
+      }
+      
+      match /bookmarkedQuestions/{bookmarkId} {
+        // Owner can read/write their own bookmarks.
+        allow read, write: if isSignedIn() && request.auth.uid == userId;
+        // Admins can read/write any user's bookmarks.
         allow read, write: if isAdmin();
       }
     }
