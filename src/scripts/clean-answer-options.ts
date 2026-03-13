@@ -1,32 +1,39 @@
 'use server';
 
-import { initializeFirebaseServer } from '@/firebase/server-init';
-import { collection, getDocs, writeBatch } from 'firebase/firestore';
+import { db as firestore } from '@/firebase/admin'; // Use the admin SDK
 import type { Question } from '@/lib/types';
 
 async function cleanAnswerOptions() {
   console.log('Starting to clean answer options...');
-  const { firestore } = initializeFirebaseServer();
-  let batch = writeBatch(firestore);
+  let batch = firestore.batch(); // Use admin firestore instance
   let questionsToUpdate = 0;
   let operationsInCurrentBatch = 0;
   const BATCH_LIMIT = 400; // Firestore limit is 500, using a safe number
 
   try {
-    const questionsRef = collection(firestore, 'questions');
-    const questionsSnapshot = await getDocs(questionsRef);
+    const questionsRef = firestore.collection('questions');
+    const questionsSnapshot = await questionsRef.get(); // Use admin SDK get()
     console.log(`Found ${questionsSnapshot.size} total questions to inspect.`);
 
     for (const doc of questionsSnapshot.docs) {
       const question = doc.data() as Question;
+      
+      if (!question.answerOptions || !Array.isArray(question.answerOptions)) {
+          console.log(`Skipping question ${doc.id} due to missing or invalid answerOptions.`);
+          continue;
+      }
+      
       const originalOptions = question.answerOptions;
       
-      const cleanedOptions = originalOptions.map(option => option.replace(/\s*\([^)]*\)/g, '').trim());
+      // The logic to clean options (e.g., "Option A (Explanation)" -> "Option A")
+      const cleanedOptions = originalOptions.map(option => 
+        typeof option === 'string' ? option.replace(/\s*\([^)]*\)/g, '').trim() : option
+      );
 
+      // Check if any option has changed
       const hasChanged = originalOptions.some((original, index) => original !== cleanedOptions[index]);
 
       if (hasChanged) {
-        // console.log(`- Queuing update for question ID: ${doc.id}`); // Logging every line can be slow
         batch.update(doc.ref, { answerOptions: cleanedOptions });
         questionsToUpdate++;
         operationsInCurrentBatch++;
@@ -36,7 +43,7 @@ async function cleanAnswerOptions() {
       if (operationsInCurrentBatch >= BATCH_LIMIT) {
         console.log(`Committing batch of ${operationsInCurrentBatch} updates...`);
         await batch.commit();
-        batch = writeBatch(firestore);
+        batch = firestore.batch(); // Start a new batch
         operationsInCurrentBatch = 0;
         console.log('Batch committed. Starting new batch.');
       }
@@ -58,7 +65,7 @@ async function cleanAnswerOptions() {
 
   } catch (error) {
     console.error('An error occurred during the cleaning process:', error);
-    console.log('The operation failed. Please check the error message and your Firestore security rules.');
+    console.log('The operation failed. Please check the error message for more details.');
   }
 }
 
