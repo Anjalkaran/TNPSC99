@@ -404,7 +404,7 @@ const syllabusMcqUploadSchema = z.object({
   questionText: z.string().optional(),
   imageUrl: z.string().optional(),
   answerOptions: z.array(z.object({ text: z.string() })).optional(),
-  correctAnswerIndex: z.coerce.number().optional(),
+  correctAnswer: z.string().optional(),
   explanation: z.string().optional(),
   reference: z.string().optional(),
 
@@ -431,8 +431,8 @@ const syllabusMcqUploadSchema = z.object({
         if (!data.answerOptions || data.answerOptions.length < 2 || data.answerOptions.some(opt => !opt.text.trim())) {
             ctx.addIssue({ code: 'custom', path: ['answerOptions'], message: 'At least two non-empty answer options are required.' });
         }
-        if (data.correctAnswerIndex === undefined || isNaN(data.correctAnswerIndex)) {
-            ctx.addIssue({ code: 'custom', path: ['correctAnswerIndex'], message: 'Please select a correct answer.' });
+        if (!data.correctAnswer) {
+            ctx.addIssue({ code: 'custom', path: ['correctAnswer'], message: 'Please select a correct answer.' });
         }
     }
 });
@@ -676,7 +676,7 @@ function SyllabusMcqUploadForm() {
             questionText: '',
             imageUrl: '',
             answerOptions: [{ text: '' }, { text: '' }],
-            correctAnswerIndex: undefined,
+            correctAnswer: '',
             explanation: '',
             reference: '',
         }
@@ -766,7 +766,7 @@ function SyllabusMcqUploadForm() {
     "id": "your-unique-question-id-1",
     "text": "Which one of the following is a fundamental right?",
     "answerOptions": ["Right to Property", "Right to Equality", "Right to Work", "Right to Vote"],
-    "correctAnswerIndex": 1,
+    "correctAnswer": "Right to Equality",
     "category": "kootru kaarani",
     "explanation": "Right to Equality is a fundamental right under Article 14 of the Indian Constitution.",
     "reference": "Indian Polity - Laxmikanth",
@@ -782,7 +782,7 @@ function SyllabusMcqUploadForm() {
         "id": "GP4-TAM-RC-046",
         "text": "சங்க காலத்தில் முதன்மையானதாக இருந்த இசைக்கருவி எது?",
         "answerOptions": ["மத்தளம்", "யாழ்", "வீணை", "புல்லாங்குழல்"],
-        "correctAnswerIndex": 1,
+        "correctAnswer": "யாழ்",
         "category": "பத்தி வினா"
       }
     ]
@@ -794,7 +794,7 @@ function SyllabusMcqUploadForm() {
     "text": "What does this Venn diagram represent?",
     "imageUrl": "https://your-host.com/venn-diagram.png",
     "answerOptions": ["Option A", "Option B", "Option C", "Option D"],
-    "correctAnswerIndex": 1,
+    "correctAnswer": "Option B",
     "category": "Venn Diagram",
     "explanation": "The diagram shows the intersection of two sets.",
     "reference": "Aptitude Book, Page 50"
@@ -814,10 +814,9 @@ function SyllabusMcqUploadForm() {
             }
             
             if (values.uploadFormat === 'image') {
-                const { questionId, questionText, imageUrl, answerOptions, correctAnswerIndex, explanation, reference } = values;
+                const { questionId, questionText, imageUrl, answerOptions, correctAnswer, explanation, reference } = values;
 
-                // This check is redundant due to zod schema but good for type safety
-                if (!questionId || !questionText || !imageUrl || !answerOptions || correctAnswerIndex === undefined) {
+                if (!questionId || !questionText || !imageUrl || !answerOptions || !correctAnswer) {
                     toast({ variant: 'destructive', title: "Missing Fields", description: "Please fill all required fields for the image question." });
                     setIsSubmitting(false);
                     return;
@@ -832,7 +831,7 @@ function SyllabusMcqUploadForm() {
                     text: questionText,
                     imageUrl,
                     answerOptions: answerOptions.map(opt => opt.text),
-                    correctAnswerIndex,
+                    correctAnswer: correctAnswer,
                     explanation: explanation || '',
                     reference: reference || '',
                     category: 'Image Question', // Hardcoded for this form type
@@ -885,7 +884,7 @@ function SyllabusMcqUploadForm() {
                     questionText: '',
                     imageUrl: '',
                     answerOptions: [{ text: '' }, { text: '' }],
-                    correctAnswerIndex: undefined,
+                    correctAnswer: '',
                     explanation: '',
                     reference: '',
                 });
@@ -928,7 +927,7 @@ function SyllabusMcqUploadForm() {
                     for (const passageData of passageDataArray) {
                         if (!passageData.id || !passageData.passage || !Array.isArray(passageData.questions)) throw new Error("Each passage object must have 'id', 'passage', and a 'questions' array.");
                         for (const q of passageData.questions) {
-                            if (!q.id || !q.text || !q.answerOptions || !Array.isArray(q.answerOptions) || q.correctAnswerIndex === undefined) throw new Error(`Invalid question object in passage '${passageData.id}'.`);
+                            if (!q.id || !q.text || !q.answerOptions || !Array.isArray(q.answerOptions) || q.correctAnswer === undefined) throw new Error(`Invalid question object in passage '${passageData.id}'.`);
                         }
 
                         const questionsBatch = writeBatch(firestore);
@@ -968,7 +967,7 @@ function SyllabusMcqUploadForm() {
                     const questions = parsedJson as any[];
                     if (!Array.isArray(questions) || questions.length === 0) throw new Error('JSON must be a non-empty array.');
                     for (const q of questions) {
-                        if (!q.id || !q.text || !q.answerOptions || !Array.isArray(q.answerOptions) || q.correctAnswerIndex === undefined) throw new Error('Each question in JSON needs id, text, answerOptions (array), and correctAnswerIndex.');
+                        if (!q.id || !q.text || !q.answerOptions || !Array.isArray(q.answerOptions) || q.correctAnswer === undefined) throw new Error('Each question in JSON needs id, text, answerOptions (array), and correctAnswer.');
                     }
                     
                     const questionsByCategory: Record<string, any[]> = questions.reduce((acc, q) => {
@@ -1160,12 +1159,12 @@ function SyllabusMcqUploadForm() {
                                     />
                                     <FormItem>
                                         <FormLabel>Answer Options</FormLabel>
-                                        <RadioGroup onValueChange={(val) => form.setValue('correctAnswerIndex', parseInt(val))} value={String(form.watch('correctAnswerIndex'))} >
+                                        <RadioGroup onValueChange={(val) => form.setValue('correctAnswer', val)} value={form.watch('correctAnswer')} >
                                             <div className="space-y-2">
                                             {fields.map((field, index) => (
                                                 <div key={field.id} className="flex items-center gap-2">
                                                     <FormControl>
-                                                        <RadioGroupItem value={String(index)} id={`correct-option-${index}`} />
+                                                        <RadioGroupItem value={form.getValues(`answerOptions.${index}.text`)} id={`correct-option-${index}`} />
                                                     </FormControl>
                                                     <Label htmlFor={`correct-option-${index}`} className="sr-only">Set option {index + 1} as correct</Label>
                                                     <FormField
@@ -1180,7 +1179,7 @@ function SyllabusMcqUploadForm() {
                                             </div>
                                         </RadioGroup>
                                         <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => append({ text: '' })}>Add Option</Button>
-                                        <FormMessage>{form.formState.errors.answerOptions?.message}</FormMessage>
+                                        <FormMessage>{form.formState.errors.correctAnswer?.message}</FormMessage>
                                     </FormItem>
                                     <FormField
                                         control={form.control} name="explanation"

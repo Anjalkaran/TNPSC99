@@ -34,7 +34,7 @@ const questionEditSchema = z.object({
   text: z.string().min(1, 'Question text is required.'),
   imageUrl: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal('')),
   answerOptions: z.array(z.object({ text: z.string().min(1, 'Option text cannot be empty.') })).min(2, 'Must have at least two options.'),
-  correctAnswerIndex: z.coerce.number().min(0, 'Please select a correct answer.'),
+  correctAnswer: z.string({ required_error: 'Please select a correct answer.'}).min(1, 'Please select a correct answer.'),
   explanation: z.string().optional(),
   reference: z.string().optional(),
 });
@@ -57,7 +57,7 @@ export default function EditQuestionPage() {
       text: '',
       imageUrl: '',
       answerOptions: [],
-      correctAnswerIndex: 0,
+      correctAnswer: '',
       explanation: '',
       reference: '',
     },
@@ -74,7 +74,7 @@ export default function EditQuestionPage() {
         text: question.text,
         imageUrl: question.imageUrl || '',
         answerOptions: question.answerOptions.map(opt => ({ text: opt })),
-        correctAnswerIndex: question.correctAnswerIndex,
+        correctAnswer: question.correctAnswer || '',
         explanation: question.explanation || '',
         reference: question.reference || '',
       });
@@ -90,6 +90,7 @@ export default function EditQuestionPage() {
     const valuesToSubmit: { [key: string]: any } = {
         ...rest,
         answerOptions: answerOptions.map(opt => opt.text),
+        correctAnswerIndex: deleteField()
     };
     
     if (values.imageUrl) {
@@ -227,9 +228,15 @@ export default function EditQuestionPage() {
 
               <FormItem>
                 <FormLabel>Answer Options</FormLabel>
-                <RadioGroup 
-                    onValueChange={(val) => form.setValue('correctAnswerIndex', parseInt(val))}
-                    value={String(form.watch('correctAnswerIndex'))}
+                 <RadioGroup 
+                    onValueChange={(val) => {
+                        const newIndex = parseInt(val, 10);
+                        const options = form.getValues('answerOptions');
+                        if (options && options[newIndex]) {
+                            form.setValue('correctAnswer', options[newIndex].text);
+                        }
+                    }}
+                    value={String(form.getValues('answerOptions').findIndex(opt => opt.text === form.watch('correctAnswer')))}
                 >
                     <div className="space-y-4">
                     {fields.map((field, index) => (
@@ -255,6 +262,7 @@ export default function EditQuestionPage() {
                 <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => append({ text: '' })}>
                     Add Option
                 </Button>
+                 <FormMessage>{form.formState.errors.correctAnswer?.message}</FormMessage>
               </FormItem>
               
               <FormField
