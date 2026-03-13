@@ -1,6 +1,7 @@
+
 'use server';
 
-import { initializeFirebaseServer } from '@/firebase/server-init';
+import { db as firestore } from '@/firebase/admin';
 import { collection, getDocs, writeBatch, query, where } from 'firebase/firestore';
 import type { Question } from '@/lib/types';
 
@@ -10,7 +11,6 @@ const QUESTION_IDS_TO_MIGRATE = ['soc-06-01'];
 
 async function testAnswerMigration() {
   console.log('Starting TEST migration for answer format...');
-  const { firestore } = initializeFirebaseServer();
   const batch = writeBatch(firestore);
   let questionsToUpdate = 0;
 

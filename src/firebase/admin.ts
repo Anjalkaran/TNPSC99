@@ -1,4 +1,19 @@
-// This file is no longer used. The mock test generation logic has been
-// moved to the client-side in the corresponding page.tsx file.
-// This was done to remove the requirement for server-side Firebase Admin credentials.
-// The Admin SDK is not needed for this feature anymore.
+
+import * as admin from 'firebase-admin';
+
+// Check if the app is already initialized to prevent errors
+if (!admin.apps.length) {
+  try {
+    // When deployed to a Firebase or Google Cloud environment, the SDK will
+    // automatically discover the service account credentials.
+    admin.initializeApp();
+  } catch (e) {
+    console.error('Firebase admin initialization error', e);
+    // For local development, you might need to set GOOGLE_APPLICATION_CREDENTIALS
+    // See: https://firebase.google.com/docs/admin/setup#initialize-sdk
+    console.log('For local script execution, ensure the GOOGLE_APPLICATION_CREDENTIALS environment variable is set.');
+  }
+}
+
+export const db = admin.firestore();
+export default admin;
