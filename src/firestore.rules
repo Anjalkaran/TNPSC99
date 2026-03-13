@@ -10,24 +10,22 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      // defensive check
-      let userData = get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
-      return isSignedIn() && 'isAdmin' in userData && userData.isAdmin == true;
+      // Use exists() before get() to prevent errors
+      return isSignedIn() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
     }
 
     // --- 2. USER DATA & SUBCOLLECTIONS ---
-    // This rule applies ONLY to the user document itself (e.g., /users/USER_ID)
     match /users/{userId} {
       allow read, update, delete: if request.auth.uid == userId || isAdmin();
       allow create: if request.auth.uid == userId;
-    }
 
-    // This rule applies to ALL documents in ALL subcollections under a user
-    // (e.g., /users/USER_ID/testAttempts/ATTEMPT_ID)
-    match /users/{userId}/{allPaths=**} {
-      allow read, write: if request.auth.uid == userId || isAdmin();
+      // Move subcollection logic inside to ensure it inherits userId correctly
+      match /{allPaths=**} {
+        allow read, write: if request.auth.uid == userId || isAdmin();
+      }
     }
-
 
     // --- 3. TESTS COLLECTION ---
     match /tests/{testId} {
@@ -37,13 +35,13 @@ service cloud.firestore {
         (resource.data.userId == request.auth.uid || isAdmin());
     }
 
-    // --- 4. QUESTION BANK (NOW SECURE) ---
+    // --- 4. QUESTION BANK ---
     match /questions/{questionId} {
       allow read, list: if isSignedIn();
       allow write: if isAdmin();
     }
 
-    // --- 5. APP CONTENT (READ-ONLY FOR USERS) ---
+    // --- 5. APP CONTENT ---
     match /classes/{id} { allow read: if true; allow write: if isAdmin(); }
     match /subjects/{id} { allow read: if true; allow write: if isAdmin(); }
     match /units/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }

@@ -136,31 +136,42 @@ export function McqTest({
   const saveProgress = useCallback(async (status: 'in-progress' | 'completed' = 'in-progress') => {
     if (!user || !firestore || isSavingRef.current) return null;
     isSavingRef.current = true;
-
+  
     if (timerRef.current) clearInterval(timerRef.current);
-
+  
+    const attemptCollectionRef = collection(firestore, `users/${user.uid}/testAttempts`);
+    let attemptDocRef;
+    let newAttemptId: string | null = null;
+  
+    if (attemptId) {
+      attemptDocRef = doc(attemptCollectionRef, attemptId);
+    } else {
+      attemptDocRef = doc(attemptCollectionRef); // Generate new ref with auto-ID
+      newAttemptId = attemptDocRef.id; // Store new ID to update state later
+    }
+  
     let calculatedScore = 0;
     const correctlyAnsweredQuestionIds: string[] = [];
     const incorrectlyAnsweredQuestionIds: string[] = [];
-    
+  
     if (status === 'completed') {
-        questions.forEach((q, index) => {
-            const answerIndex = answers[index];
-            if (answerIndex !== undefined) {
-                const isCorrect = q.answerOptions[answerIndex] === q.correctAnswer;
-                if (isCorrect) {
-                    calculatedScore++;
-                    correctlyAnsweredQuestionIds.push(q.id);
-                } else {
-                    incorrectlyAnsweredQuestionIds.push(q.id);
-                }
-            } else {
-                incorrectlyAnsweredQuestionIds.push(q.id);
-            }
-        });
-        setScore(calculatedScore);
+      questions.forEach((q, index) => {
+        const answerIndex = answers[index];
+        if (answerIndex !== undefined) {
+          const isCorrect = q.answerOptions[answerIndex] === q.correctAnswer;
+          if (isCorrect) {
+            calculatedScore++;
+            correctlyAnsweredQuestionIds.push(q.id);
+          } else {
+            incorrectlyAnsweredQuestionIds.push(q.id);
+          }
+        } else {
+          incorrectlyAnsweredQuestionIds.push(q.id);
+        }
+      });
+      setScore(calculatedScore);
     }
-    
+  
     const attemptData: Omit<UserTestAttempt, 'id'> = {
       userId: user.uid,
       testId: test.id,
@@ -174,56 +185,51 @@ export function McqTest({
       isMockTest: test.isMockTest || false,
       ...(status === 'completed' && { correctlyAnsweredQuestionIds, incorrectlyAnsweredQuestionIds })
     };
-
+  
     try {
-      let docRef;
-      if (attemptId) {
-        docRef = doc(firestore, `users/${user.uid}/testAttempts`, attemptId);
-        await setDoc(docRef, attemptData, { merge: true });
-      } else {
-        docRef = doc(collection(firestore, `users/${user.uid}/testAttempts`));
-        await setDoc(docRef, { ...attemptData, id: docRef.id });
-        setAttemptId(docRef.id);
+      await setDoc(attemptDocRef, { ...attemptData, id: attemptDocRef.id }, { merge: true });
+      if (newAttemptId) {
+        setAttemptId(newAttemptId);
       }
-
+  
       if (status === 'completed' && calculatedScore > 0) {
-          const scoreData: Score = {
-            userId: user.uid,
-            username: user.displayName || 'Anonymous',
-            score: calculatedScore,
-            testId: test.id,
-            testTitle: decodedTitle,
-            createdAt: new Date().toISOString(),
-            classId: test.classId,
-            subjectId: test.subjectId,
-          };
-          const scoresCollectionRef = collection(firestore, `scores`);
-          addDoc(scoresCollectionRef, scoreData).catch(error => {
-              errorEmitter.emit(
-              'permission-error',
-              new FirestorePermissionError({
-                  path: scoresCollectionRef.path,
-                  operation: 'create',
-                  requestResourceData: scoreData,
-              })
-              )
-          });
-      }
-      isSavingRef.current = false;
-      return docRef.id;
-
-    } catch (error) {
-       console.error("Error saving test attempt: ", error);
-        errorEmitter.emit(
+        const scoreData: Score = {
+          userId: user.uid,
+          username: user.displayName || 'Anonymous',
+          score: calculatedScore,
+          testId: test.id,
+          testTitle: decodedTitle,
+          createdAt: new Date().toISOString(),
+          classId: test.classId,
+          subjectId: test.subjectId,
+        };
+        const scoresCollectionRef = collection(firestore, `scores`);
+        addDoc(scoresCollectionRef, scoreData).catch(error => {
+          errorEmitter.emit(
             'permission-error',
             new FirestorePermissionError({
-                path: `users/${user.uid}/testAttempts/${attemptId || ''}`,
-                operation: 'write',
-                requestResourceData: attemptData,
+              path: scoresCollectionRef.path,
+              operation: 'create',
+              requestResourceData: scoreData,
             })
-        )
-       isSavingRef.current = false;
-       return null;
+          )
+        });
+      }
+      isSavingRef.current = false;
+      return attemptDocRef.id;
+  
+    } catch (error) {
+      console.error("Error saving test attempt: ", error);
+      errorEmitter.emit(
+        'permission-error',
+        new FirestorePermissionError({
+          path: attemptDocRef.path,
+          operation: 'write',
+          requestResourceData: attemptData,
+        })
+      )
+      isSavingRef.current = false;
+      return null;
     }
   }, [user, firestore, questions, answers, test, decodedTitle, currentQuestionIndex, attemptId]);
   
