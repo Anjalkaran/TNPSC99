@@ -2,7 +2,6 @@
 'use server';
 
 import { db as firestore } from '@/firebase/admin';
-import { collection, getDocs, writeBatch, query, where } from 'firebase/firestore';
 import type { Question } from '@/lib/types';
 
 // Let's target a specific test for this pilot migration.
@@ -11,22 +10,28 @@ const QUESTION_IDS_TO_MIGRATE = ['soc-06-01'];
 
 async function testAnswerMigration() {
   console.log('Starting TEST migration for answer format...');
-  const batch = writeBatch(firestore);
+  const batch = firestore.batch();
   let questionsToUpdate = 0;
 
   try {
-    const questionsRef = collection(firestore, 'questions');
-    const q = query(questionsRef, where('__name__', 'in', QUESTION_IDS_TO_MIGRATE));
-    const questionsSnapshot = await getDocs(q);
+    const questionsRef = firestore.collection('questions');
+    
+    // Admin SDK method to get multiple documents by ID
+    const docRefs = QUESTION_IDS_TO_MIGRATE.map(id => questionsRef.doc(id));
+    const questionsSnapshots = await firestore.getAll(...docRefs);
 
-    if (questionsSnapshot.empty) {
+    if (questionsSnapshots.length === 0) {
         console.log(`No questions found with the specified IDs: ${QUESTION_IDS_TO_MIGRATE.join(', ')}`);
         return;
     }
 
-    console.log(`Found ${questionsSnapshot.size} questions to migrate.`);
+    console.log(`Found ${questionsSnapshots.length} questions to check.`);
 
-    for (const doc of questionsSnapshot.docs) {
+    for (const doc of questionsSnapshots) {
+      if (!doc.exists) {
+          console.warn(`- Document with ID ${doc.id} does not exist. Skipping.`);
+          continue;
+      }
       const question = doc.data() as Question;
       
       // Check if migration is needed (has index but not the new field)
