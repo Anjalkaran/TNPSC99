@@ -2,7 +2,7 @@
 import { McqTest } from '@/components/mcq-test';
 import { notFound, useParams, useSearchParams } from 'next/navigation';
 import { useUser, useFirestore } from '@/firebase';
-import { collection, query, where, getDocs, doc, getDoc, deleteDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc, deleteDoc, documentId } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import type { Test, Question, UserTestAttempt } from '@/lib/types';
 import { useTranslation } from '@/hooks/use-translation';
@@ -35,7 +35,8 @@ export default function TestPage() {
   const firestore = useFirestore();
   const { t } = useTranslation();
 
-  const [test, setTest] = useState<Test | null>(null);
+  const [testData, setTestData] = useState<Test | null>(null);
+  const [sessionQuestions, setSessionQuestions] = useState<Question[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [totalQuestionsInTopic, setTotalQuestionsInTopic] = useState(0);
   const [answeredQuestionsCount, setAnsweredQuestionsCount] = useState(0);
@@ -48,7 +49,7 @@ export default function TestPage() {
   useEffect(() => {
     if (!firestore || !slug || !user) return;
 
-    const fetchTest = async () => {
+    const fetchTestAndQuestions = async () => {
       setIsLoading(true);
       const testId = Array.isArray(slug) ? slug[0] : decodeURIComponent(slug);
       
@@ -60,8 +61,9 @@ export default function TestPage() {
         return;
       }
 
-      const testData = { id: testDocSnap.id, ...testDocSnap.data() } as Test;
-      setTotalQuestionsInTopic(testData.questionIds.length);
+      const test = { id: testDocSnap.id, ...testDocSnap.data() } as Test;
+      setTestData(test);
+      setTotalQuestionsInTopic(test.questionIds.length);
 
       // Check for an in-progress attempt
       const attemptsRef = collection(firestore, `users/${user.uid}/testAttempts`);
@@ -88,74 +90,82 @@ export default function TestPage() {
         }
       }
 
-      let sessionQuestions: Question[] = [];
+      let questionsForSession: Question[] = [];
+      let questionIdsForSession: string[] = [];
       
-      if (userChoice === 'resume' && loadedAttempt?.sessionQuestions) {
+      if (userChoice === 'resume' && loadedAttempt?.questionIds) {
           setInProgressAttempt(loadedAttempt);
-          sessionQuestions = loadedAttempt.sessionQuestions;
+          questionIdsForSession = loadedAttempt.questionIds;
       } else {
         setInProgressAttempt(null);
         
-        // Fetch all questions for the test
-        const allQuestions: Question[] = [];
-        if (testData.questionIds) {
-          const questionIdChunks: string[][] = [];
-          for (let i = 0; i < testData.questionIds.length; i += 30) {
-            questionIdChunks.push(testData.questionIds.slice(i, i + 30));
-          }
-
-          for (const chunk of questionIdChunks) {
-            if (chunk.length > 0) {
-              const questionsQuery = query(collection(firestore, 'questions'), where('__name__', 'in', chunk));
-              const questionsSnap = await getDocs(questionsQuery);
-              questionsSnap.forEach(doc => {
-                allQuestions.push({ id: doc.id, ...doc.data() } as Question);
-              });
-            }
-          }
-        }
-        
-        const completedAttemptsQuery = query(attemptsRef, where('testId', '==', testData.id), where('status', '==', 'completed'));
+        const completedAttemptsQuery = query(attemptsRef, where('testId', '==', test.id), where('status', '==', 'completed'));
         const completedAttemptsSnapshot = await getDocs(completedAttemptsQuery);
         
         const correctlyAnsweredIds = new Set<string>();
-        completedAttemptsSnapshot.forEach(doc => {
-            const attempt = doc.data() as UserTestAttempt;
-            if (attempt.correctlyAnsweredQuestionIds) {
-                attempt.correctlyAnsweredQuestionIds.forEach(id => correctlyAnsweredIds.add(id));
+        for (const attemptDoc of completedAttemptsSnapshot.docs) {
+          const attemptData = attemptDoc.data();
+          const qSnapshot = await getDocs(query(collection(firestore, 'questions'), where(documentId(), 'in', attemptData.questionIds)))
+          qSnapshot.forEach((qDoc, index) => {
+            const qData = qDoc.data() as Question;
+            if(qData.answerOptions[attemptData.answers[index]] === qData.correctAnswer) {
+              correctlyAnsweredIds.add(qDoc.id);
             }
-        });
+          })
+        }
         setAnsweredQuestionsCount(correctlyAnsweredIds.size);
         
-        let filteredQuestions = allQuestions.filter(q => !correctlyAnsweredIds.has(q.id));
+        let availableQuestionIds = test.questionIds.filter(id => !correctlyAnsweredIds.has(id));
 
-        if (filteredQuestions.length === 0 && allQuestions.length > 0) {
-            filteredQuestions = allQuestions;
+        if (availableQuestionIds.length === 0 && test.questionIds.length > 0) {
+            availableQuestionIds = test.questionIds;
         }
         
-        const shuffledQuestions = shuffleArray(filteredQuestions);
+        const shuffledIds = shuffleArray(availableQuestionIds);
 
         const limitParam = searchParams.get('limit');
         const limit = limitParam ? parseInt(limitParam, 10) : null;
         if (limit && !isNaN(limit) && limit > 0) {
-          sessionQuestions = shuffledQuestions.slice(0, limit);
+          questionIdsForSession = shuffledIds.slice(0, limit);
         } else {
-          sessionQuestions = shuffledQuestions;
+          questionIdsForSession = shuffledIds;
         }
-
-        // Shuffle the options for the new session
-        sessionQuestions = sessionQuestions.map(q => ({
-            ...q,
-            answerOptions: shuffleArray([...q.answerOptions])
-        }));
       }
 
-      testData.questions = sessionQuestions;
-      setTest(testData);
+      if (questionIdsForSession.length > 0) {
+        const questionIdChunks: string[][] = [];
+        for (let i = 0; i < questionIdsForSession.length; i += 30) {
+          questionIdChunks.push(questionIdsForSession.slice(i, i + 30));
+        }
+
+        const fetchedQuestions: Question[] = [];
+        for (const chunk of questionIdChunks) {
+          if (chunk.length > 0) {
+            const questionsQuery = query(collection(firestore, 'questions'), where(documentId(), 'in', chunk));
+            const questionsSnap = await getDocs(questionsQuery);
+            questionsSnap.forEach(doc => {
+              fetchedQuestions.push({ id: doc.id, ...doc.data() } as Question);
+            });
+          }
+        }
+        // Ensure the order of questions matches the session IDs
+        const questionMap = new Map(fetchedQuestions.map(q => [q.id, q]));
+        questionsForSession = questionIdsForSession.map(id => questionMap.get(id)).filter(Boolean) as Question[];
+
+        // Shuffle answer options only for new sessions
+        if (userChoice === 'new') {
+            questionsForSession = questionsForSession.map(q => ({
+                ...q,
+                answerOptions: shuffleArray([...q.answerOptions])
+            }));
+        }
+      }
+
+      setSessionQuestions(questionsForSession);
       setIsLoading(false);
     };
 
-    fetchTest();
+    fetchTestAndQuestions();
   }, [firestore, slug, user, searchParams]);
   
   const handleResumeChoice = (choice: 'resume' | 'new') => {
@@ -165,7 +175,7 @@ export default function TestPage() {
   };
 
 
-  if (isLoading) {
+  if (isLoading || !testData) {
     return (
         <>
             <div className="flex min-h-screen items-center justify-center">Loading...</div>
@@ -194,9 +204,7 @@ export default function TestPage() {
     );
   }
   
-  if (!test) {
-    return notFound();
-  }
+  const finalTestProps = { ...testData, questions: sessionQuestions };
 
-  return <McqTest test={test} totalQuestions={totalQuestionsInTopic} answeredQuestions={answeredQuestionsCount} inProgressAttempt={inProgressAttempt} />;
+  return <McqTest test={finalTestProps} totalQuestions={totalQuestionsInTopic} answeredQuestions={answeredQuestionsCount} inProgressAttempt={inProgressAttempt} />;
 }

@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { ArrowLeft, ArrowRight, CheckCircle2, XCircle, RotateCw, Timer, Info, Bookmark, Save, MessageSquareQuote } from 'lucide-react';
 import Link from 'next/link';
 import { useFirestore, useUser, useCollection, useMemoFirebase } from '@/firebase';
-import { addDoc, collection, doc, setDoc, getDocs, query, where, deleteDoc, writeBatch } from 'firebase/firestore';
+import { addDoc, collection, doc, setDoc, getDocs, query, where, deleteDoc, writeBatch, documentId } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -26,7 +26,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/hooks/use-translation';
@@ -55,7 +54,7 @@ export function McqTest({
 }) {
   const router = useRouter();
   const { t } = useTranslation();
-  const questions = test.questions || [];
+  const [questions, setQuestions] = useState<Question[]>(test.questions || []);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(inProgressAttempt?.currentQuestionIndex || 0);
   const [answers, setAnswers] = useState<(number | undefined)[]>(
       inProgressAttempt?.answers.map(a => a === -1 ? undefined : a) || Array(questions.length).fill(undefined)
@@ -78,7 +77,6 @@ export function McqTest({
   const { toast } = useToast();
   
   const studyMaterialQuery = useMemoFirebase(() => {
-    // Query should only be created if all required test properties are present
     if (!firestore || !test.classId || !test.subjectId || !test.term) {
         return null;
     }
@@ -105,31 +103,22 @@ export function McqTest({
   };
 
   const getReturnHref = useCallback(() => {
-    // Special handling for Tamil categories which have a different URL structure
-    // and don't seem to use the bookType parameter.
     if (test.classId && test.subjectId === 'tamil' && test.categoryId) {
       const categoryName = test.title.includes('இலக்கணம்') ? 'ilakkanam' : 'urai-seyyul';
       return `/class/${test.classId}/tamil/${categoryName}`;
     }
-
-    // For all other class-based tests
     if (test.classId && test.subjectId) {
       const params = new URLSearchParams();
       if (test.bookType) {
         params.set('bookType', test.bookType);
       }
-      // If coming from a categorized view within a subject, preserve it.
       if (test.categoryId) {
         params.set('category', test.categoryId);
       }
-
       const queryString = params.toString();
       const basePath = `/class/${test.classId}/subject/${test.subjectId}`;
-      
       return `${basePath}${queryString ? `?${queryString}` : ''}`;
     }
-
-    // Fallback for tests that aren't tied to a class/subject (e.g., previous year papers)
     return '/dashboard';
   }, [test]);
 
@@ -146,45 +135,40 @@ export function McqTest({
     if (attemptId) {
       attemptDocRef = doc(attemptCollectionRef, attemptId);
     } else {
-      attemptDocRef = doc(attemptCollectionRef); // Generate new ref with auto-ID
-      newAttemptId = attemptDocRef.id; // Store new ID to update state later
+      attemptDocRef = doc(attemptCollectionRef);
+      newAttemptId = attemptDocRef.id;
     }
   
     let calculatedScore = 0;
-    const correctlyAnsweredQuestionIds: string[] = [];
-    const incorrectlyAnsweredQuestionIds: string[] = [];
   
     if (status === 'completed') {
       questions.forEach((q, index) => {
         const answerIndex = answers[index];
-        if (answerIndex !== undefined) {
-          const isCorrect = q.answerOptions[answerIndex] === q.correctAnswer;
-          if (isCorrect) {
-            calculatedScore++;
-            correctlyAnsweredQuestionIds.push(q.id);
-          } else {
-            incorrectlyAnsweredQuestionIds.push(q.id);
-          }
-        } else {
-          incorrectlyAnsweredQuestionIds.push(q.id);
+        if (answerIndex !== undefined && q.answerOptions[answerIndex] === q.correctAnswer) {
+          calculatedScore++;
         }
       });
       setScore(calculatedScore);
     }
   
-    const attemptData = {
+    const attemptData: Partial<UserTestAttempt> = {
       userId: user.uid,
       testId: test.id,
       testTitle: decodedTitle,
-      lastUpdatedDate: new Date().toISOString(),
-      score: status === 'completed' ? calculatedScore : 0,
-      answers: answers.map(a => a ?? -1),
-      sessionQuestionIds: questions.map(q => q.id),
       status,
       currentQuestionIndex,
+      answers: answers.map(a => a ?? -1),
+      questionIds: questions.map(q => q.id),
+      score: status === 'completed' ? calculatedScore : 0,
       isMockTest: test.isMockTest || false,
-      ...(status === 'completed' && { correctlyAnsweredQuestionIds, incorrectlyAnsweredQuestionIds })
     };
+
+    if (newAttemptId) {
+      attemptData.startedAt = new Date().toISOString();
+    }
+    if (status === 'completed') {
+      attemptData.completedAt = new Date().toISOString();
+    }
   
     try {
       await setDoc(attemptDocRef, attemptData, { merge: true });
@@ -192,27 +176,16 @@ export function McqTest({
         setAttemptId(newAttemptId);
       }
   
-      if (status === 'completed' && calculatedScore > 0) {
-        const scoreData: Score = {
+      if (status === 'completed') {
+        const leaderboardScoresRef = collection(firestore, 'leaderboards', test.id, 'scores');
+        const scoreData: LeaderboardScore = {
           userId: user.uid,
           username: user.displayName || 'Anonymous',
           score: calculatedScore,
-          testId: test.id,
-          testTitle: decodedTitle,
-          createdAt: new Date().toISOString(),
-          classId: test.classId,
-          subjectId: test.subjectId,
+          completedAt: new Date().toISOString(),
         };
-        const scoresCollectionRef = collection(firestore, `scores`);
-        addDoc(scoresCollectionRef, scoreData).catch(error => {
-          errorEmitter.emit(
-            'permission-error',
-            new FirestorePermissionError({
-              path: scoresCollectionRef.path,
-              operation: 'create',
-              requestResourceData: scoreData,
-            })
-          )
+        addDoc(leaderboardScoresRef, scoreData).catch(error => {
+          console.error("Could not write to leaderboard, it might be restricted.", error)
         });
       }
       isSavingRef.current = false;

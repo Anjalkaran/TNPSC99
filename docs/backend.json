@@ -8,134 +8,31 @@
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the user.",
-          "format": "uuid"
+          "description": "Unique identifier for the user (matches Firebase Auth UID)."
         },
         "email": {
           "type": "string",
           "description": "Email address of the user.",
           "format": "email"
         },
-        "name": {
+        "username": {
           "type": "string",
-          "description": "Full name of the user."
+          "description": "Display name of the user."
         },
-        "referralCode": {
-            "type": "string",
-            "description": "The user's unique referral code."
+        "isAdmin": {
+          "type": "boolean",
+          "description": "Flag indicating if the user has admin privileges."
         },
-        "referredBy": {
-            "type": "string",
-            "description": "The ID of the user who made the referral."
-        },
-        "referralCount": {
-            "type": "number",
-            "description": "The number of users successfully referred."
-        },
-        "subscriptionStatus": {
-            "type": "string",
-            "description": "The user's current subscription status.",
-            "enum": ["free", "premium"]
-        },
-        "subscriptionExpires": {
-            "type": "string",
-            "description": "The date and time when the current subscription expires.",
-            "format": "date-time"
+        "createdAt": {
+          "type": "string",
+          "description": "The date and time the user account was created.",
+          "format": "date-time"
         }
       },
       "required": [
         "id",
         "email",
-        "name"
-      ]
-    },
-    "ClassTest": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "ClassTest",
-      "type": "object",
-      "description": "Represents a class-wise MCQ test.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the class test."
-        },
-        "className": {
-          "type": "string",
-          "description": "The class name for the test (e.g., '6th', '7th')."
-        },
-        "subjectId": {
-          "type": "string",
-          "description": "Reference to Subject. (Relationship: Subject 1:N ClassTest)"
-        },
-        "questionIds": {
-          "type": "array",
-          "description": "References to Questions. (Relationship: Question N:N ClassTest)",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "required": [
-        "id",
-        "className",
-        "subjectId",
-        "questionIds"
-      ]
-    },
-    "SubjectTest": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "SubjectTest",
-      "type": "object",
-      "description": "Represents a subject-wise MCQ test.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the subject test."
-        },
-        "subjectName": {
-          "type": "string",
-          "description": "Name of the subject for the test."
-        },
-        "questionIds": {
-          "type": "array",
-          "description": "References to Questions. (Relationship: Question N:N SubjectTest)",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "required": [
-        "id",
-        "subjectName",
-        "questionIds"
-      ]
-    },
-    "PreviousYearPaper": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "PreviousYearPaper",
-      "type": "object",
-      "description": "Represents a previous year question paper.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the previous year paper."
-        },
-        "year": {
-          "type": "number",
-          "description": "The year of the question paper."
-        },
-        "questionIds": {
-          "type": "array",
-          "description": "References to Questions. (Relationship: Question N:N PreviousYearPaper)",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "required": [
-        "id",
-        "year",
-        "questionIds"
+        "username"
       ]
     },
     "Question": {
@@ -152,189 +49,218 @@
           "type": "string",
           "description": "The text of the question."
         },
-        "options": {
+        "answerOptions": {
           "type": "array",
           "description": "Array of possible answer options.",
           "items": {
             "type": "string"
           }
         },
-        "correctAnswerIndex": {
-          "type": "number",
-          "description": "The index of the correct answer in the options array."
+        "correctAnswer": {
+          "type": "string",
+          "description": "The string content of the correct answer."
+        },
+        "explanation": {
+          "type": "string",
+          "description": "Explanation for the correct answer."
+        },
+        "reference": {
+          "type": "string",
+          "description": "Reference to the source material (e.g., book, page)."
+        },
+        "subject": {
+          "type": "string",
+          "description": "The subject this question belongs to."
+        },
+        "topic": {
+          "type": "string",
+          "description": "The specific topic within the subject."
+        },
+        "difficulty": {
+          "type": "string",
+          "enum": [
+            "easy",
+            "medium",
+            "hard"
+          ]
+        },
+        "examType": {
+          "type": "string",
+          "enum": ["Group I", "Group II", "Group IV"],
+          "description": "The TNPSC exam group this question is relevant for."
         }
       },
       "required": [
         "id",
         "text",
-        "options",
-        "correctAnswerIndex"
+        "answerOptions",
+        "correctAnswer"
       ]
     },
-    "Score": {
+    "Test": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Score",
+      "title": "Test",
       "type": "object",
-      "description": "Represents a user's score on a test.",
+      "description": "Represents a collection of questions forming a test or quiz.",
       "properties": {
         "id": {
           "type": "string",
-          "description": "Unique identifier for the score record."
+          "description": "Unique identifier for the test."
         },
-        "userId": {
+        "title": {
           "type": "string",
-          "description": "Reference to User. (Relationship: User 1:N Score)"
+          "description": "Title of the test."
         },
-        "testId": {
+        "subject": {
           "type": "string",
-          "description": "Reference to ClassTest, SubjectTest, or PreviousYearPaper. (Relationship: Test 1:N Score)"
+          "description": "The main subject of the test."
         },
-        "testType": {
-          "type": "string",
-          "description": "Type of the test (e.g., 'class', 'subject', 'previousYear')."
+        "questionIds": {
+          "type": "array",
+          "description": "An array of question IDs that make up this test.",
+          "items": {
+            "type": "string"
+          }
         },
-        "score": {
+        "totalQuestions": {
           "type": "number",
-          "description": "The user's score on the test."
+          "description": "The total number of questions in this test."
         },
-        "dateTaken": {
-          "type": "string",
-          "description": "The date and time when the test was taken.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "userId",
-        "testId",
-        "testType",
-        "score",
-        "dateTaken"
-      ]
-    },
-    "Subject": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Subject",
-      "type": "object",
-      "description": "Represents an academic subject.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the subject."
-        },
-        "name": {
-          "type": "string",
-          "description": "Name of the subject."
-        }
-      },
-      "required": [
-        "id",
-        "name"
-      ]
-    },
-    "StudyMaterial": {
-      "title": "Study Material",
-      "type": "object",
-      "description": "Represents a study material PDF.",
-      "properties": {
-        "id": { "type": "string" },
-        "classId": { "type": "string" },
-        "subjectId": { "type": "string" },
-        "term": { "type": "string" },
-        "medium": { "type": "string", "enum": ["tamil", "english"] },
-        "bookType": { "type": "string", "enum": ["samacheer", "old"] },
-        "fileName": { "type": "string" },
-        "downloadURL": { "type": "string", "format": "uri" },
-        "storagePath": { "type": "string" },
-        "createdAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["id", "classId", "subjectId", "fileName", "downloadURL", "storagePath", "createdAt"]
-    },
-    "Syllabus": {
-      "title": "Syllabus",
-      "type": "object",
-      "description": "Represents a specific topic within the TNPSC syllabus structure.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the syllabus entry."
-        },
-        "examGroup": {
-          "type": "string",
-          "description": "The exam group (e.g., Group IV)."
-        },
-        "part": {
-          "type": "string",
-          "description": "The part of the syllabus (e.g., பகுதி அ, ஆ, இ)."
-        },
-        "unit": {
-          "type": "string",
-          "description": "The unit number (e.g., அலகு I)."
-        },
-        "unitName": {
-          "type": "string",
-          "description": "The name of the unit (e.g., பொது அறிவியல்)."
-        },
-        "topic": {
-          "type": "string",
-          "description": "The specific topic within the unit."
-        }
-      },
-      "required": [
-        "id",
-        "examGroup",
-        "part",
-        "unit",
-        "unitName",
-        "topic"
-      ]
-    },
-    "QuestionComment": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "QuestionComment",
-      "type": "object",
-      "description": "Represents a user's comment or feedback on a specific question.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the comment."
-        },
-        "questionId": {
-          "type": "string",
-          "description": "Reference to the Question."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to the User who made the comment."
-        },
-        "username": {
-          "type": "string",
-          "description": "Username of the user who made the comment."
-        },
-        "comment": {
-          "type": "string",
-          "description": "The content of the comment."
+        "duration": {
+          "type": "number",
+          "description": "The recommended duration for the test in minutes."
         },
         "createdAt": {
           "type": "string",
-          "description": "The date and time the comment was made.",
+          "description": "The date and time the test was created.",
           "format": "date-time"
+        },
+        "isMockTest": {
+          "type": "boolean",
+          "description": "Flag to indicate if this is a full-length mock test."
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "questionIds",
+        "totalQuestions"
+      ]
+    },
+    "UserTestAttempt": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserTestAttempt",
+      "type": "object",
+      "description": "Represents a user's attempt at a specific test.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the test attempt."
+        },
+        "testId": {
+          "type": "string",
+          "description": "Reference to the Test document."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User who took the test."
+        },
+        "questionIds": {
+          "type": "array",
+          "description": "The ordered list of question IDs for this specific attempt.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "answers": {
+          "type": "array",
+          "description": "The user's answers, mapping index-wise to questionIds.",
+          "items": {
+            "type": "number"
+          }
+        },
+        "score": {
+          "type": "number",
+          "description": "The final score for the attempt."
         },
         "status": {
           "type": "string",
-          "description": "Status of the comment (e.g., open, resolved).",
           "enum": [
-            "open",
-            "resolved"
+            "in-progress",
+            "completed"
           ]
+        },
+        "startedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "completedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "testId",
+        "userId",
+        "questionIds",
+        "answers",
+        "status"
+      ]
+    },
+    "Bookmark": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Bookmark",
+      "type": "object",
+      "description": "Represents a user's bookmarked question.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "questionId": {
+          "type": "string",
+          "description": "Reference to the Question document."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
         }
       },
       "required": [
         "id",
         "questionId",
-        "userId",
-        "comment",
         "createdAt"
+      ]
+    },
+    "LeaderboardScore": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "LeaderboardScore",
+      "type": "object",
+      "description": "A single score entry for a specific test leaderboard.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "score": {
+          "type": "number"
+        },
+        "completedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "username",
+        "score",
+        "completedAt"
       ]
     }
   },
@@ -354,61 +280,27 @@
           "schema": {
             "$ref": "#/backend/entities/User"
           },
-          "description": "Stores user profiles.  Path-based ownership ensures users can only access their own profile data.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            }
-          ]
+          "description": "Stores user profiles."
         }
       },
       {
-        "path": "/classTests/{classTestId}",
+        "path": "/users/{userId}/testAttempts/{attemptId}",
         "definition": {
-          "entityName": "ClassTest",
+          "entityName": "UserTestAttempt",
           "schema": {
-            "$ref": "#/backend/entities/ClassTest"
+            "$ref": "#/backend/entities/UserTestAttempt"
           },
-          "description": "Stores class-wise test definitions.",
-          "params": [
-            {
-              "name": "classTestId",
-              "description": "The unique identifier of the class test."
-            }
-          ]
+          "description": "Stores a user's attempt at a test. Owned by the user."
         }
       },
       {
-        "path": "/subjectTests/{subjectTestId}",
+        "path": "/users/{userId}/bookmarks/{bookmarkId}",
         "definition": {
-          "entityName": "SubjectTest",
+          "entityName": "Bookmark",
           "schema": {
-            "$ref": "#/backend/entities/SubjectTest"
+            "$ref": "#/backend/entities/Bookmark"
           },
-          "description": "Stores subject-wise test definitions.",
-          "params": [
-            {
-              "name": "subjectTestId",
-              "description": "The unique identifier of the subject test."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/previousYearPapers/{previousYearPaperId}",
-        "definition": {
-          "entityName": "PreviousYearPaper",
-          "schema": {
-            "$ref": "#/backend/entities/PreviousYearPaper"
-          },
-          "description": "Stores previous year question paper definitions.",
-          "params": [
-            {
-              "name": "previousYearPaperId",
-              "description": "The unique identifier of the previous year paper."
-            }
-          ]
+          "description": "Stores a user's bookmarked questions."
         }
       },
       {
@@ -418,94 +310,30 @@
           "schema": {
             "$ref": "#/backend/entities/Question"
           },
-          "description": "Stores individual question data.",
-          "params": [
-            {
-              "name": "questionId",
-              "description": "The unique identifier of the question."
-            }
-          ]
+          "description": "The central repository of all questions."
         }
       },
       {
-        "path": "/users/{userId}/scores/{scoreId}",
+        "path": "/tests/{testId}",
         "definition": {
-          "entityName": "Score",
+          "entityName": "Test",
           "schema": {
-            "$ref": "#/backend/entities/Score"
+            "$ref": "#/backend/entities/Test"
           },
-          "description": "Stores user scores for different tests. Path-based ownership: Users can only access their own scores. Enables QAPs for score listing.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            },
-            {
-              "name": "scoreId",
-              "description": "The unique identifier of the score record."
-            }
-          ]
+          "description": "Defines a test, containing metadata and a list of question IDs."
         }
       },
       {
-        "path": "/subjects/{subjectId}",
+        "path": "/leaderboards/{testId}/scores/{scoreId}",
         "definition": {
-          "entityName": "Subject",
+          "entityName": "LeaderboardScore",
           "schema": {
-            "$ref": "#/backend/entities/Subject"
+            "$ref": "#/backend/entities/LeaderboardScore"
           },
-          "description": "Stores subject information.",
-          "params": [
-            {
-              "name": "subjectId",
-              "description": "The unique identifier of the subject."
-            }
-          ]
-        }
-      },
-       {
-        "path": "/studyMaterials/{materialId}",
-        "definition": {
-          "entityName": "StudyMaterial",
-          "schema": {
-            "$ref": "#/backend/entities/StudyMaterial"
-          },
-          "description": "Stores metadata about uploaded study material PDFs."
-        }
-      },
-      {
-        "path": "/syllabus/{syllabusId}",
-        "definition": {
-          "entityName": "Syllabus",
-          "schema": {
-            "$ref": "#/backend/entities/Syllabus"
-          },
-          "description": "Stores the hierarchical structure of the exam syllabus.",
-          "params": [
-            {
-              "name": "syllabusId",
-              "description": "The unique identifier of the syllabus topic."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/questionComments/{commentId}",
-        "definition": {
-          "entityName": "QuestionComment",
-          "schema": {
-            "$ref": "#/backend/entities/QuestionComment"
-          },
-          "description": "Stores user comments on questions. Writable by users, readable only by admins.",
-          "params": [
-            {
-              "name": "commentId",
-              "description": "The unique identifier of the comment."
-            }
-          ]
+          "description": "Stores individual scores for a specific test leaderboard."
         }
       }
     ],
-    "reasoning": "The Firestore data structure is designed to support the TNPSC Ace app's requirements for class-wise, subject-wise, and previous year question paper MCQ tests, along with score tracking. It prioritizes authorization independence through denormalization where necessary and ensures structural segregation for simplified security rules.\n\n*   **Users:** User data is stored in a dedicated `users` collection, enabling easy management of user profiles.\n*   **Subjects:** Subject data is stored in a dedicated `subjects` collection.\n*   **Class Tests, Subject Tests, and Previous Year Papers:** These are stored in separate collections (`classTests`, `subjectTests`, `previousYearPapers`) to maintain structural segregation. This simplifies security rules as each collection has a distinct security posture. Each test document contains references to questions.\n*   **Scores:** User scores are stored in the `users/{userId}/scores/{scoreId}` subcollection. This structure enforces ownership and allows easy retrieval of a user's scores. It automatically filters list operations to only the user's own scores (QAPs).\n*   **Study Materials:** A new `studyMaterials` collection stores metadata for uploaded PDF books, linking them to classes and subjects.\n\n**Authorization Independence and QAPs:**\n\n*   Authorization Independence is achieved through path-based ownership for user scores. A user can only access their own scores because the scores are stored under their respective user ID (`/users/{userId}/scores/{scoreId}`).\n*   QAPs are supported by using structural segregation. List operations on `/classTests`, `/subjectTests`, and `/previousYearPapers` are secure because the rules can be written to allow only authenticated users to view the tests (or, if desired, to make them publicly readable). The scores subcollection automatically filters list operations to the current user because of the path-based ownership.\n"
+    "reasoning": "This architecture separates data into logical, independent collections. It avoids data duplication by referencing documents (e.g., tests reference questions via IDs). Test attempts by users are stored in a subcollection under the user's document, which allows for clean, path-based security rules ensuring users can only access their own attempts. The use of a dedicated leaderboards collection allows for efficient querying of top scores without needing to read all user documents."
   }
 }

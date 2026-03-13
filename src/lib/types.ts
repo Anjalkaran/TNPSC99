@@ -16,6 +16,8 @@ export interface Question {
   referenceUrl?: string;
   referencePage?: number;
   explanation?: string;
+  difficulty?: 'easy' | 'medium' | 'hard';
+  examType?: 'Group I' | 'Group II' | 'Group IV';
 }
 
 // Type for uploading questions, ID is optional as it will be generated.
@@ -48,6 +50,9 @@ export interface Test {
   syllabusUnitName?: string;
   syllabusTopic?: string;
   syllabusCategory?: string;
+  totalQuestions?: number;
+  duration?: number; // in minutes
+  createdAt?: string;
 }
 
 export interface Subject {
@@ -113,20 +118,20 @@ export interface UserProfile {
 }
 
 export interface UserTestAttempt {
-  id:string;
+  id: string;
   userId: string;
   testId: string;
-  lastUpdatedDate: string;
-  score: number;
+  questionIds: string[];
   answers: number[];
-  sessionQuestionIds?: string[];
-  testTitle?: string;
-  correctlyAnsweredQuestionIds?: string[];
-  incorrectlyAnsweredQuestionIds?: string[];
+  score: number;
   status: 'in-progress' | 'completed';
-  currentQuestionIndex: number;
+  startedAt: string;
+  completedAt?: string;
+  testTitle?: string;
   isMockTest?: boolean;
+  currentQuestionIndex: number;
 }
+
 
 export interface BookmarkedQuestion {
   id: string;
@@ -145,6 +150,14 @@ export interface Score {
   createdAt: string;
   classId?: string;
   subjectId?: string;
+}
+
+export interface LeaderboardScore {
+    userId: string;
+    username: string;
+    score: number;
+    completedAt: string;
+    timeTaken?: number;
 }
 
 export interface QuestionComment {
