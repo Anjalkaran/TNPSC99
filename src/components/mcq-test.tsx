@@ -139,7 +139,6 @@ export function McqTest({
 
     if (timerRef.current) clearInterval(timerRef.current);
 
-    const sessionQuestionIds = questions.map(q => q.id);
     let calculatedScore = 0;
     const correctlyAnsweredQuestionIds: string[] = [];
     const incorrectlyAnsweredQuestionIds: string[] = [];
@@ -169,7 +168,7 @@ export function McqTest({
       lastUpdatedDate: new Date().toISOString(),
       score: status === 'completed' ? calculatedScore : 0,
       answers: answers.map(a => a ?? -1),
-      sessionQuestionIds,
+      sessionQuestions: questions,
       status,
       currentQuestionIndex,
       isMockTest: test.isMockTest || false,

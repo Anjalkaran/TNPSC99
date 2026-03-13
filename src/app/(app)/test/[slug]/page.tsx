@@ -88,33 +88,33 @@ export default function TestPage() {
         }
       }
 
-      // Fetch all questions for the test
-      const allQuestions: Question[] = [];
-      if (testData.questionIds) {
-        const questionIdChunks: string[][] = [];
-        for (let i = 0; i < testData.questionIds.length; i += 30) {
-          questionIdChunks.push(testData.questionIds.slice(i, i + 30));
-        }
-
-        for (const chunk of questionIdChunks) {
-          if (chunk.length > 0) {
-            const questionsQuery = query(collection(firestore, 'questions'), where('__name__', 'in', chunk));
-            const questionsSnap = await getDocs(questionsQuery);
-            questionsSnap.forEach(doc => {
-              allQuestions.push({ id: doc.id, ...doc.data() } as Question);
-            });
-          }
-        }
-      }
-
       let sessionQuestions: Question[] = [];
       
-      if (userChoice === 'resume' && loadedAttempt) {
+      if (userChoice === 'resume' && loadedAttempt?.sessionQuestions) {
           setInProgressAttempt(loadedAttempt);
-          const questionMap = new Map(allQuestions.map(q => [q.id, q]));
-          sessionQuestions = (loadedAttempt.sessionQuestionIds || []).map(id => questionMap.get(id)).filter(Boolean) as Question[];
+          sessionQuestions = loadedAttempt.sessionQuestions;
       } else {
         setInProgressAttempt(null);
+        
+        // Fetch all questions for the test
+        const allQuestions: Question[] = [];
+        if (testData.questionIds) {
+          const questionIdChunks: string[][] = [];
+          for (let i = 0; i < testData.questionIds.length; i += 30) {
+            questionIdChunks.push(testData.questionIds.slice(i, i + 30));
+          }
+
+          for (const chunk of questionIdChunks) {
+            if (chunk.length > 0) {
+              const questionsQuery = query(collection(firestore, 'questions'), where('__name__', 'in', chunk));
+              const questionsSnap = await getDocs(questionsQuery);
+              questionsSnap.forEach(doc => {
+                allQuestions.push({ id: doc.id, ...doc.data() } as Question);
+              });
+            }
+          }
+        }
+        
         const completedAttemptsQuery = query(attemptsRef, where('testId', '==', testData.id), where('status', '==', 'completed'));
         const completedAttemptsSnapshot = await getDocs(completedAttemptsQuery);
         
@@ -142,6 +142,12 @@ export default function TestPage() {
         } else {
           sessionQuestions = shuffledQuestions;
         }
+
+        // Shuffle the options for the new session
+        sessionQuestions = sessionQuestions.map(q => ({
+            ...q,
+            answerOptions: shuffleArray([...q.answerOptions])
+        }));
       }
 
       testData.questions = sessionQuestions;

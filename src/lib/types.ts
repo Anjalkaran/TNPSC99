@@ -10,7 +10,6 @@ export interface Question {
   classId?: string;
   unitId?: string;
   category?: string;
-  correctAnswerIndex?: number; // Kept as optional for backward compatibility during transition
   correctAnswer: string;
   answerOptions: string[];
   reference?: string;
@@ -120,10 +119,10 @@ export interface UserTestAttempt {
   lastUpdatedDate: string;
   score: number;
   answers: number[];
+  sessionQuestions?: Question[];
   testTitle?: string;
   correctlyAnsweredQuestionIds?: string[];
   incorrectlyAnsweredQuestionIds?: string[];
-  sessionQuestionIds?: string[];
   status: 'in-progress' | 'completed';
   currentQuestionIndex: number;
   isMockTest?: boolean;

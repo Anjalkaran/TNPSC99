@@ -66,12 +66,10 @@ function TestProgressBadge({ testId }: { testId: string }) {
             const attemptedQuestionIds = new Set<string>();
             attemptsSnapshot.forEach(doc => {
                 const attempt = doc.data() as UserTestAttempt;
-                // Check if sessionQuestionIds and answers exist
-                if (attempt.sessionQuestionIds && attempt.answers) {
+                if (attempt.sessionQuestions && attempt.answers) {
                     attempt.answers.forEach((answer, index) => {
-                        // An answer is considered attempted if it's not undefined or -1
                         if (answer !== undefined && answer !== -1) {
-                            const questionId = attempt.sessionQuestionIds?.[index];
+                            const questionId = attempt.sessionQuestions?.[index]?.id;
                             if (questionId) {
                                 attemptedQuestionIds.add(questionId);
                             }
