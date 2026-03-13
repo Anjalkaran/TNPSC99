@@ -10,20 +10,24 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      return isSignedIn() && 
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+      let userData = get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+      return isSignedIn() && 'isAdmin' in userData && userData.isAdmin == true;
     }
 
-    // --- 2. USER DATA ---
-    match /users/{userId}/{allPaths=**} {
-      // A user can read and write to their own document and any subcollections within it.
-      // An admin also has full access.
-      allow read, write: if request.auth.uid == userId || isAdmin();
-    }
-    
-    // Explicit rule for user document creation
+    // --- 2. USER DATA & SUBCOLLECTIONS ---
     match /users/{userId} {
+      allow read, update, delete: if request.auth.uid == userId || isAdmin();
       allow create: if request.auth.uid == userId;
+
+      // Allow user to manage their own test attempts
+      match /testAttempts/{attemptId} {
+        allow read, write: if request.auth.uid == userId || isAdmin();
+      }
+
+      // Allow user to manage their own bookmarks
+      match /bookmarkedQuestions/{bookmarkId} {
+        allow read, write: if request.auth.uid == userId || isAdmin();
+      }
     }
 
     // --- 3. TESTS COLLECTION ---
