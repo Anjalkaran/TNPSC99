@@ -119,7 +119,7 @@ export interface UserTestAttempt {
   lastUpdatedDate: string;
   score: number;
   answers: number[];
-  sessionQuestions?: Question[];
+  sessionQuestionIds?: string[];
   testTitle?: string;
   correctlyAnsweredQuestionIds?: string[];
   incorrectlyAnsweredQuestionIds?: string[];

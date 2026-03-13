@@ -45,10 +45,10 @@ function TestProgressBadge({ testId }: { testId: string }) {
             const attemptedQuestionIds = new Set<string>();
             attemptsSnapshot.forEach(doc => {
                 const attempt = doc.data() as UserTestAttempt;
-                if (attempt.sessionQuestions && attempt.answers) {
+                if (attempt.sessionQuestionIds && attempt.answers) {
                     attempt.answers.forEach((answer, index) => {
                         if (answer !== undefined && answer !== -1) {
-                            const questionId = attempt.sessionQuestions?.[index]?.id;
+                            const questionId = attempt.sessionQuestionIds?.[index];
                             if (questionId) {
                                 attemptedQuestionIds.add(questionId);
                             }

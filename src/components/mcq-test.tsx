@@ -172,14 +172,14 @@ export function McqTest({
       setScore(calculatedScore);
     }
   
-    const attemptData: Omit<UserTestAttempt, 'id'> = {
+    const attemptData = {
       userId: user.uid,
       testId: test.id,
       testTitle: decodedTitle,
       lastUpdatedDate: new Date().toISOString(),
       score: status === 'completed' ? calculatedScore : 0,
       answers: answers.map(a => a ?? -1),
-      sessionQuestions: questions,
+      sessionQuestionIds: questions.map(q => q.id),
       status,
       currentQuestionIndex,
       isMockTest: test.isMockTest || false,
@@ -187,7 +187,7 @@ export function McqTest({
     };
   
     try {
-      await setDoc(attemptDocRef, { ...attemptData, id: attemptDocRef.id }, { merge: true });
+      await setDoc(attemptDocRef, attemptData, { merge: true });
       if (newAttemptId) {
         setAttemptId(newAttemptId);
       }
