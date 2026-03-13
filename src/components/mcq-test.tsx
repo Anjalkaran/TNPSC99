@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
@@ -26,6 +25,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/hooks/use-translation';
@@ -130,22 +130,28 @@ export function McqTest({
   
     const attemptCollectionRef = collection(firestore, `users/${user.uid}/testAttempts`);
     let attemptDocRef;
-    let newAttemptId: string | null = null;
-  
+    
     if (attemptId) {
       attemptDocRef = doc(attemptCollectionRef, attemptId);
     } else {
       attemptDocRef = doc(attemptCollectionRef);
-      newAttemptId = attemptDocRef.id;
+      setAttemptId(attemptDocRef.id);
     }
   
     let calculatedScore = 0;
+    const correctlyAnsweredQuestionIds: string[] = [];
+    const incorrectlyAnsweredQuestionIds: string[] = [];
   
     if (status === 'completed') {
       questions.forEach((q, index) => {
         const answerIndex = answers[index];
-        if (answerIndex !== undefined && q.answerOptions[answerIndex] === q.correctAnswer) {
-          calculatedScore++;
+        if (answerIndex !== undefined) {
+            if (q.answerOptions[answerIndex] === q.correctAnswer) {
+              calculatedScore++;
+              correctlyAnsweredQuestionIds.push(q.id);
+            } else {
+              incorrectlyAnsweredQuestionIds.push(q.id);
+            }
         }
       });
       setScore(calculatedScore);
@@ -158,23 +164,21 @@ export function McqTest({
       status,
       currentQuestionIndex,
       answers: answers.map(a => a ?? -1),
-      questionIds: questions.map(q => q.id),
+      sessionQuestionIds: questions.map(q => q.id),
       score: status === 'completed' ? calculatedScore : 0,
       isMockTest: test.isMockTest || false,
     };
 
-    if (newAttemptId) {
-      attemptData.startedAt = new Date().toISOString();
-    }
     if (status === 'completed') {
       attemptData.completedAt = new Date().toISOString();
+      attemptData.correctlyAnsweredQuestionIds = correctlyAnsweredQuestionIds;
+      attemptData.incorrectlyAnsweredQuestionIds = incorrectlyAnsweredQuestionIds;
+    } else {
+        attemptData.lastUpdatedDate = new Date().toISOString();
     }
   
     try {
       await setDoc(attemptDocRef, attemptData, { merge: true });
-      if (newAttemptId) {
-        setAttemptId(newAttemptId);
-      }
   
       if (status === 'completed') {
         const leaderboardScoresRef = collection(firestore, 'leaderboards', test.id, 'scores');
