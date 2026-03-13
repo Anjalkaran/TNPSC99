@@ -9,8 +9,8 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // A safer isAdmin function that is less likely to fail on non-existent data.
     function isAdmin() {
+      // Use exists() before get() to prevent errors
       return isSignedIn() && 
              exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
              'isAdmin' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data &&
@@ -19,24 +19,31 @@ service cloud.firestore {
 
     // --- 2. USER DATA & SUBCOLLECTIONS ---
     match /users/{userId} {
-      // These rules apply to the user document itself.
-      // Separate allow statements prevent the isAdmin() 'get' call from failing for the owner.
+      // Owner can read/write their own profile.
       allow read, write: if isSignedIn() && request.auth.uid == userId;
-      allow read, write: if isAdmin(); // Admins can manage user profiles.
+      // Admins can read/write any user's profile.
+      allow read, write: if isAdmin();
 
       // --- SUBCOLLECTION: testAttempts ---
       match /testAttempts/{attemptId} {
-        // Owner can read/write their own test attempts. This rule is simple and evaluated first.
-        allow read, write: if isSignedIn() && request.auth.uid == userId;
-        // Admins can also read/write to any user's test attempts. This is evaluated only if the first rule fails.
+        // Owner can read, create, update, delete their own attempts.
+        allow read: if isSignedIn() && request.auth.uid == userId;
+        // Explicitly check incoming data on create to ensure userId matches.
+        allow create: if isSignedIn() && request.auth.uid == userId && request.resource.data.userId == request.auth.uid;
+        allow update, delete: if isSignedIn() && request.auth.uid == userId;
+        
+        // Admins have full access to all attempts.
         allow read, write: if isAdmin();
       }
       
       // --- SUBCOLLECTION: bookmarkedQuestions ---
       match /bookmarkedQuestions/{bookmarkId} {
-        // Owner can read/write their own bookmarks.
-        allow read, write: if isSignedIn() && request.auth.uid == userId;
-        // Admins can also read/write any user's bookmarks.
+        // Owner can read, create, update, delete their own bookmarks.
+        allow read: if isSignedIn() && request.auth.uid == userId;
+        allow create: if isSignedIn() && request.auth.uid == userId && request.resource.data.userId == request.auth.uid;
+        allow update, delete: if isSignedIn() && request.auth.uid == userId;
+
+        // Admins have full access to all bookmarks.
         allow read, write: if isAdmin();
       }
     }
