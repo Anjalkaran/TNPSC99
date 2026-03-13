@@ -105,13 +105,16 @@ export default function TestPage() {
         const correctlyAnsweredIds = new Set<string>();
         for (const attemptDoc of completedAttemptsSnapshot.docs) {
           const attemptData = attemptDoc.data();
-          const qSnapshot = await getDocs(query(collection(firestore, 'questions'), where(documentId(), 'in', attemptData.questionIds)))
-          qSnapshot.forEach((qDoc, index) => {
-            const qData = qDoc.data() as Question;
-            if(qData.answerOptions[attemptData.answers[index]] === qData.correctAnswer) {
-              correctlyAnsweredIds.add(qDoc.id);
-            }
-          })
+          if (attemptData.questionIds && attemptData.questionIds.length > 0) {
+            const qSnapshot = await getDocs(query(collection(firestore, 'questions'), where(documentId(), 'in', attemptData.questionIds)));
+            qSnapshot.forEach((qDoc) => {
+              const qData = qDoc.data() as Question;
+              const questionIndex = attemptData.questionIds.indexOf(qDoc.id);
+              if (questionIndex !== -1 && qData.answerOptions[attemptData.answers[questionIndex]] === qData.correctAnswer) {
+                correctlyAnsweredIds.add(qDoc.id);
+              }
+            });
+          }
         }
         setAnsweredQuestionsCount(correctlyAnsweredIds.size);
         
