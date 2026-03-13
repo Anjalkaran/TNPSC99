@@ -9,31 +9,35 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Safer isAdmin: Only call this if the user is NOT the owner of the document
+    // A safer isAdmin function that is less likely to fail on non-existent data.
     function isAdmin() {
       return isSignedIn() && 
              exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             'isAdmin' in get(/databases/$(database)/documents/users/$(request.auth.uid)).data &&
              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
     }
 
     // --- 2. USER DATA & SUBCOLLECTIONS ---
     match /users/{userId} {
-      // 1. If you are the owner, ALLOW. (No isAdmin check here)
+      // These rules apply to the user document itself.
+      // Separate allow statements prevent the isAdmin() 'get' call from failing for the owner.
       allow read, write: if isSignedIn() && request.auth.uid == userId;
-      
-      // 2. If you are NOT the owner, check if you are an Admin
-      allow read, update, delete: if request.auth.uid != userId && isAdmin();
+      allow read, write: if isAdmin(); // Admins can manage user profiles.
 
-      // Rule for testAttempts subcollection
+      // --- SUBCOLLECTION: testAttempts ---
       match /testAttempts/{attemptId} {
-        allow read, write: if isSignedIn() && request.auth.uid == userId; // Owner access
-        allow read, write: if isAdmin(); // Admin access
+        // Owner can read/write their own test attempts. This rule is simple and evaluated first.
+        allow read, write: if isSignedIn() && request.auth.uid == userId;
+        // Admins can also read/write to any user's test attempts. This is evaluated only if the first rule fails.
+        allow read, write: if isAdmin();
       }
       
-      // Rule for bookmarkedQuestions subcollection
+      // --- SUBCOLLECTION: bookmarkedQuestions ---
       match /bookmarkedQuestions/{bookmarkId} {
-        allow read, write: if isSignedIn() && request.auth.uid == userId; // Owner access
-        allow read, write: if isAdmin(); // Admin access
+        // Owner can read/write their own bookmarks.
+        allow read, write: if isSignedIn() && request.auth.uid == userId;
+        // Admins can also read/write any user's bookmarks.
+        allow read, write: if isAdmin();
       }
     }
 
