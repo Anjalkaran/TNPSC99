@@ -43,10 +43,10 @@ service cloud.firestore {
       );
     }
 
-    // --- 4. QUESTION BANK ---
+    // --- 4. QUESTION BANK (TEMPORARILY UNSECURED FOR MIGRATION) ---
     match /questions/{questionId} {
       allow read, list: if isSignedIn();
-      allow write: if isAdmin();
+      allow write: if true; // WARNING: This is for migration script access. Should be changed back to 'if isAdmin();'
     }
 
     // --- 5. APP CONTENT (READ-ONLY FOR USERS) ---
