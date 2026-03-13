@@ -9,8 +9,8 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Safer isAdmin: Only call this if the UID check fails
     function isAdmin() {
+      // Use exists() before get() to prevent errors
       return isSignedIn() && 
              exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
@@ -18,22 +18,21 @@ service cloud.firestore {
 
     // --- 2. USER DATA & SUBCOLLECTIONS ---
     match /users/{userId} {
-      // Allow the owner to do anything without calling the isAdmin function
-      allow read, write: if isSignedIn() && request.auth.uid == userId;
-      
-      // Allow Admins to access other users' data
-      allow read, update, delete: if isAdmin();
+      // Rules for the user document itself
+      allow read, write: if request.auth.uid == userId;
+      allow read, write: if isAdmin();
 
-      // Rule for all subcollections (testAttempts, bookmarkedQuestions, etc.)
+      // Rules for all subcollections (testAttempts, bookmarkedQuestions, etc.)
       match /{allPaths=**} {
-        allow read, write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+        allow read, write: if request.auth.uid == userId;
+        allow read, write: if isAdmin();
       }
     }
 
     // --- 3. TESTS COLLECTION ---
     match /tests/{testId} {
       allow read: if isSignedIn();
-      allow write: if isAdmin(); // Only admins create/edit tests
+      allow write: if isAdmin();
     }
 
     // --- 4. QUESTION BANK ---
