@@ -9,8 +9,8 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    // Safer isAdmin: Only call this if the UID check fails
     function isAdmin() {
-      // Use exists() before get() to prevent errors
       return isSignedIn() && 
              exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
@@ -18,26 +18,27 @@ service cloud.firestore {
 
     // --- 2. USER DATA & SUBCOLLECTIONS ---
     match /users/{userId} {
-      allow read, update, delete: if request.auth.uid == userId || isAdmin();
-      allow create: if request.auth.uid == userId;
+      // Allow the owner to do anything without calling the isAdmin function
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
+      
+      // Allow Admins to access other users' data
+      allow read, update, delete: if isAdmin();
 
-      // Move subcollection logic inside to ensure it inherits userId correctly
+      // Rule for all subcollections (testAttempts, bookmarkedQuestions, etc.)
       match /{allPaths=**} {
-        allow read, write: if request.auth.uid == userId || isAdmin();
+        allow read, write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
       }
     }
 
     // --- 3. TESTS COLLECTION ---
     match /tests/{testId} {
-      allow read, list: if isSignedIn();
-      allow create: if isSignedIn();
-      allow update, delete: if isSignedIn() && 
-        (resource.data.userId == request.auth.uid || isAdmin());
+      allow read: if isSignedIn();
+      allow write: if isAdmin(); // Only admins create/edit tests
     }
 
     // --- 4. QUESTION BANK ---
     match /questions/{questionId} {
-      allow read, list: if isSignedIn();
+      allow read: if isSignedIn();
       allow write: if isAdmin();
     }
 
@@ -51,7 +52,7 @@ service cloud.firestore {
 
     // --- 6. USER GENERATED CONTENT ---
     match /scores/{id} {
-      allow read: if true;
+      allow read: if isSignedIn();
       allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
       allow update, delete: if isAdmin();
     }
