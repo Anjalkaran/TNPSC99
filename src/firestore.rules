@@ -15,16 +15,15 @@ service cloud.firestore {
     }
 
     // --- 2. USER DATA ---
+    match /users/{userId}/{allPaths=**} {
+      // A user can read and write to their own document and any subcollections within it.
+      // An admin also has full access.
+      allow read, write: if request.auth.uid == userId || isAdmin();
+    }
+    
+    // Explicit rule for user document creation
     match /users/{userId} {
-      allow get, create, update: if isSignedIn() && request.auth.uid == userId;
-      allow read, write: if isAdmin();
-
-      // User-owned subcollections.
-      // A recursive wildcard ensures any subcollection (testAttempts, bookmarkedQuestions, etc.)
-      // under a user's document can only be accessed by that user or an admin.
-      match /{allPaths=**} {
-        allow read, write: if request.auth.uid == userId || isAdmin();
-      }
+      allow create: if request.auth.uid == userId;
     }
 
     // --- 3. TESTS COLLECTION ---
