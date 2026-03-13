@@ -9,7 +9,6 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Safer isAdmin: Only call this if the user is NOT the owner of the document
     function isAdmin() {
       return isSignedIn() && 
              exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
@@ -26,25 +25,23 @@ service cloud.firestore {
 
       // --- SUBCOLLECTION: testAttempts ---
       match /testAttempts/{attemptId} {
-        // Owner can read, create, update, delete their own attempts.
+        // Owner rules
         allow read: if isSignedIn() && request.auth.uid == userId;
-        // Explicitly check incoming data on create to ensure userId matches.
         allow create: if isSignedIn() && request.auth.uid == userId && request.resource.data.userId == request.auth.uid;
         allow update, delete: if isSignedIn() && request.auth.uid == userId;
         
-        // Admins have full access to all attempts.
-        allow read, write: if isAdmin();
+        // Admin override for each action type.
+        allow read, create, update, delete: if isAdmin();
       }
       
       // --- SUBCOLLECTION: bookmarkedQuestions ---
       match /bookmarkedQuestions/{bookmarkId} {
-        // Owner can read, create, update, delete their own bookmarks.
         allow read: if isSignedIn() && request.auth.uid == userId;
         allow create: if isSignedIn() && request.auth.uid == userId && request.resource.data.userId == request.auth.uid;
         allow update, delete: if isSignedIn() && request.auth.uid == userId;
 
-        // Admins have full access to all bookmarks.
-        allow read, write: if isAdmin();
+        // Admin override for each action type.
+        allow read, create, update, delete: if isAdmin();
       }
     }
 
