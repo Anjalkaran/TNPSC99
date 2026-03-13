@@ -1,17 +1,15 @@
 'use server';
 
-import { initializeFirebase } from '@/firebase';
-import { collection, getDocs, writeBatch } from 'firebase/firestore';
+import { db as firestore } from '@/firebase/admin';
 
 export async function migrateQuestions() {
   console.log('Starting question migration...');
-  const { firestore } = initializeFirebase();
-  const batch = writeBatch(firestore);
+  const batch = firestore.batch();
   let updatedCount = 0;
 
   try {
-    const questionsCollection = collection(firestore, 'questions');
-    const questionsSnapshot = await getDocs(questionsCollection);
+    const questionsCollection = firestore.collection('questions');
+    const questionsSnapshot = await questionsCollection.get();
 
     console.log(`Found ${questionsSnapshot.size} questions to check.`);
 

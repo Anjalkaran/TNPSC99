@@ -1,8 +1,7 @@
 
 'use server';
 
-import { initializeFirebaseServer } from '@/firebase/server-init';
-import { collection, writeBatch, doc, query, where, getDocs } from 'firebase/firestore';
+import { db as firestore } from '@/firebase/admin';
 import type { Syllabus } from '@/lib/types';
 
 const syllabusData = {
@@ -80,21 +79,40 @@ const syllabusData = {
                 'சுயமரியாதை இயக்கம், திராவிட இயக்கம் மற்றும் இவ்வியக்கங்களுக்கான அடிப்படை கொள்கைகள்',
                 'தந்தை பெரியார் மற்றும் பேரறிஞர் அண்ணாவின் பங்களிப்புகள்',
             ]
-        }
+        },
+        'பகுதி ஆ': {
+            'அலகு I: திறனறிவு': [
+                'சுருக்குதல்',
+                'விழுக்காடு',
+                'மீப்பெரு பொதுக் காரணி (HCF)',
+                'மீச்சிறு பொது மடங்கு (LCM)',
+                'விகிதம் மற்றும் விகிதாச்சாரம்',
+                'தனிவட்டி - கூட்டு வட்டி',
+                'பரப்பு - கொள்ளளவு',
+                'காலம் மற்றும் வேலை',
+            ],
+            'அலகு II: காரணவியல்': [
+                'தருக்கக் காரணவியல்',
+                'புதிர்கள்',
+                'பகடை',
+                'காட்சிக் காரணவியல்',
+                'எண் எழுத்துக் காரணவியல்',
+                'எண் வரிசை',
+            ],
+        },
     }
 };
 
 async function addGroup2SyllabusTopics() {
     console.log('Adding Group II syllabus topics...');
-    const { firestore } = initializeFirebaseServer();
-    const syllabusCollection = collection(firestore, 'syllabus');
+    const syllabusCollection = firestore.collection('syllabus');
 
     // Delete existing Group II topics to prevent duplicates
     console.log('First, deleting all existing Group II syllabus topics to prevent duplicates...');
-    const deleteBatch = writeBatch(firestore);
-    const q = query(syllabusCollection, where('examGroup', '==', 'Group II'));
+    const deleteBatch = firestore.batch();
+    const q = syllabusCollection.where('examGroup', '==', 'Group II');
     try {
-        const querySnapshot = await getDocs(q);
+        const querySnapshot = await q.get();
         querySnapshot.forEach((doc) => {
             deleteBatch.delete(doc.ref);
         });
@@ -105,14 +123,14 @@ async function addGroup2SyllabusTopics() {
         return; // Stop if deletion fails
     }
 
-    const addBatch = writeBatch(firestore);
+    const addBatch = firestore.batch();
 
     for (const [examGroup, parts] of Object.entries(syllabusData)) {
         for (const [part, units] of Object.entries(parts)) {
             for (const [unitFullName, topics] of Object.entries(units)) {
                 const [unit, unitName] = unitFullName.split(': ');
                 for (const topic of topics) {
-                    const newDocRef = doc(syllabusCollection);
+                    const newDocRef = syllabusCollection.doc();
                     const syllabusEntry: Omit<Syllabus, 'id'> = {
                         examGroup: examGroup as any,
                         part,

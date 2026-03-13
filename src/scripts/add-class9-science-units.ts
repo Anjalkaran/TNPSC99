@@ -1,7 +1,6 @@
 'use server';
 
-import { initializeFirebaseServer } from '@/firebase/server-init';
-import { collection, writeBatch, doc, query, where, getDocs } from 'firebase/firestore';
+import { db as firestore } from '@/firebase/admin';
 import type { Unit } from '@/lib/types';
 
 const unitsToAdd = [
@@ -34,19 +33,18 @@ const unitsToAdd = [
 
 async function addUnits() {
   console.log('Adding Class 9 Science units...');
-  const { firestore } = initializeFirebaseServer();
 
-  const subjectsRef = collection(firestore, 'subjects');
+  const subjectsRef = firestore.collection('subjects');
   let scienceSubjectId: string | null = null;
 
   const queries = [
-    query(subjectsRef, where('name', '==', 'Science')),
-    query(subjectsRef, where('name', '==', 'அறிவியல்')),
-    query(subjectsRef, where('name_ta', '==', 'அறிவியல்'))
+    subjectsRef.where('name', '==', 'Science'),
+    subjectsRef.where('name', '==', 'அறிவியல்'),
+    subjectsRef.where('name_ta', '==', 'அறிவியல்')
   ];
 
   for (const q of queries) {
-      const snapshot = await getDocs(q);
+      const snapshot = await q.get();
       if (!snapshot.empty) {
           scienceSubjectId = snapshot.docs[0].id;
           console.log(`Found subject with query. ID: ${scienceSubjectId}`);
@@ -59,11 +57,11 @@ async function addUnits() {
     return;
   }
 
-  const batch = writeBatch(firestore);
-  const unitsCollection = collection(firestore, 'units');
+  const batch = firestore.batch();
+  const unitsCollection = firestore.collection('units');
 
   unitsToAdd.forEach(unitInfo => {
-    const newUnitRef = doc(unitsCollection);
+    const newUnitRef = unitsCollection.doc();
     const unitData: Omit<Unit, 'className' | 'subjectName' | 'categoryName'> = {
       id: newUnitRef.id,
       classId: '9',

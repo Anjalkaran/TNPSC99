@@ -1,7 +1,6 @@
 'use server';
 
-import { initializeFirebaseServer } from '@/firebase/server-init';
-import { collection, writeBatch, doc, query, where, getDocs } from 'firebase/firestore';
+import { db as firestore } from '@/firebase/admin';
 import type { Unit } from '@/lib/types';
 
 const unitsToAdd = [
@@ -30,28 +29,27 @@ const unitsToAdd = [
 
 async function addUnits() {
   console.log('Adding Class 8 Science units...');
-  const { firestore } = initializeFirebaseServer();
 
   // 1. Find the subjectId for "Science" or "அறிவியல்"
-  const subjectsRef = collection(firestore, 'subjects');
+  const subjectsRef = firestore.collection('subjects');
   // Try to find the subject by a few common names
-  const scienceQuery = query(subjectsRef, where('name', '==', 'Science'));
-  const ariviyalQuery = query(subjectsRef, where('name', '==', 'அறிவியல்'));
-  const ariviyalTaQuery = query(subjectsRef, where('name_ta', '==', 'அறிவியல்'));
+  const scienceQuery = subjectsRef.where('name', '==', 'Science');
+  const ariviyalQuery = subjectsRef.where('name', '==', 'அறிவியல்');
+  const ariviyalTaQuery = subjectsRef.where('name_ta', '==', 'அறிவியல்');
 
   let scienceSubjectId: string | null = null;
   
-  const scienceSnapshot = await getDocs(scienceQuery);
+  const scienceSnapshot = await scienceQuery.get();
   if (!scienceSnapshot.empty) {
     scienceSubjectId = scienceSnapshot.docs[0].id;
     console.log(`Found subject with name "Science" (ID: ${scienceSubjectId})`);
   } else {
-    const ariviyalSnapshot = await getDocs(ariviyalQuery);
+    const ariviyalSnapshot = await ariviyalQuery.get();
     if (!ariviyalSnapshot.empty) {
         scienceSubjectId = ariviyalSnapshot.docs[0].id;
         console.log(`Found subject with name "அறிவியல்" (ID: ${scienceSubjectId})`);
     } else {
-        const ariviyalTaSnapshot = await getDocs(ariviyalTaQuery);
+        const ariviyalTaSnapshot = await ariviyalTaQuery.get();
         if (!ariviyalTaSnapshot.empty) {
             scienceSubjectId = ariviyalTaSnapshot.docs[0].id;
             console.log(`Found subject with name_ta "அறிவியல்" (ID: ${scienceSubjectId})`);
@@ -65,12 +63,12 @@ async function addUnits() {
   }
 
   // 2. Add units with the correct subjectId
-  const batch = writeBatch(firestore);
-  const unitsCollection = collection(firestore, 'units');
+  const batch = firestore.batch();
+  const unitsCollection = firestore.collection('units');
 
   unitsToAdd.forEach(unitInfo => {
-    const newUnitRef = doc(unitsCollection);
-    const unitData: Unit = {
+    const newUnitRef = unitsCollection.doc();
+    const unitData: Omit<Unit, 'className' | 'subjectName' | 'categoryName'> = {
       id: newUnitRef.id,
       classId: '8',
       subjectId: scienceSubjectId, // Use the dynamically found ID

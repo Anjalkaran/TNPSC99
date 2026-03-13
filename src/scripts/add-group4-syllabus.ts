@@ -1,8 +1,7 @@
 
 'use server';
 
-import { initializeFirebaseServer } from '@/firebase/server-init';
-import { collection, writeBatch, doc, query, where, getDocs } from 'firebase/firestore';
+import { db as firestore } from '@/firebase/admin';
 import type { Syllabus } from '@/lib/types';
 
 const syllabusData = {
@@ -211,15 +210,14 @@ const syllabusData = {
 
 async function addGroup4SyllabusTopics() {
     console.log('Adding Group IV syllabus topics...');
-    const { firestore } = initializeFirebaseServer();
-    const syllabusCollection = collection(firestore, 'syllabus');
+    const syllabusCollection = firestore.collection('syllabus');
 
     // Delete existing Group IV topics to prevent duplicates
     console.log('First, deleting all existing Group IV syllabus topics to prevent duplicates...');
-    const deleteBatch = writeBatch(firestore);
-    const q = query(syllabusCollection, where('examGroup', '==', 'Group IV'));
+    const deleteBatch = firestore.batch();
+    const q = syllabusCollection.where('examGroup', '==', 'Group IV');
     try {
-        const querySnapshot = await getDocs(q);
+        const querySnapshot = await q.get();
         querySnapshot.forEach((doc) => {
             deleteBatch.delete(doc.ref);
         });
@@ -230,14 +228,14 @@ async function addGroup4SyllabusTopics() {
         return; // Stop if deletion fails
     }
 
-    const addBatch = writeBatch(firestore);
+    const addBatch = firestore.batch();
 
     for (const [examGroup, parts] of Object.entries(syllabusData)) {
         for (const [part, units] of Object.entries(parts)) {
             for (const [unitFullName, topics] of Object.entries(units)) {
                 const [unit, unitName] = unitFullName.split(': ');
                 for (const topic of topics) {
-                    const newDocRef = doc(syllabusCollection);
+                    const newDocRef = syllabusCollection.doc();
                     const syllabusEntry: Omit<Syllabus, 'id'> = {
                         examGroup: examGroup as any,
                         part,
@@ -260,8 +258,3 @@ async function addGroup4SyllabusTopics() {
 }
 
 addGroup4SyllabusTopics();
-
-    
-
-    
-

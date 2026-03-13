@@ -1,11 +1,6 @@
 'use server';
 
-import { initializeFirebase } from '@/firebase';
-import {
-  collection,
-  doc,
-  writeBatch,
-} from 'firebase/firestore';
+import { db as firestore } from '@/firebase/admin';
 import { PlaceHolderImages } from '../lib/placeholder-images';
 
 const findImage = (id: string) => {
@@ -367,41 +362,40 @@ const tests = [
 
 
 export async function seedDatabase() {
-  const { firestore } = initializeFirebase();
-  const batch = writeBatch(firestore);
+  const batch = firestore.batch();
 
   // Seed Subjects
-  const subjectsCollection = collection(firestore, 'subjects');
+  const subjectsCollection = firestore.collection('subjects');
   subjects.forEach((subject) => {
-    const docRef = doc(subjectsCollection, subject.id);
+    const docRef = subjectsCollection.doc(subject.id);
     batch.set(docRef, subject);
   });
 
   // Seed Classes
-  const classesCollection = collection(firestore, 'classes');
+  const classesCollection = firestore.collection('classes');
   classes.forEach((cls) => {
-    const docRef = doc(classesCollection, cls.id);
+    const docRef = classesCollection.doc(cls.id);
     batch.set(docRef, cls);
   });
   
   // Seed Categories
-  const categoriesCollection = collection(firestore, 'categories');
+  const categoriesCollection = firestore.collection('categories');
   categories.forEach((category) => {
-    const docRef = doc(categoriesCollection, category.id);
+    const docRef = categoriesCollection.doc(category.id);
     batch.set(docRef, category);
   });
 
   // Seed Questions
-  const questionsCollection = collection(firestore, 'questions');
+  const questionsCollection = firestore.collection('questions');
   questions.forEach((question) => {
-    const docRef = doc(questionsCollection, question.id);
+    const docRef = questionsCollection.doc(question.id);
     batch.set(docRef, question);
   });
 
   // Seed Tests
-  const testsCollection = collection(firestore, 'tests');
+  const testsCollection = firestore.collection('tests');
   tests.forEach((test: any) => {
-    const docRef = doc(testsCollection, test.id);
+    const docRef = testsCollection.doc(test.id);
     const { image, ...testData } = test; // Exclude image from Firestore data
     batch.set(docRef, testData);
   });
@@ -413,18 +407,3 @@ export async function seedDatabase() {
     console.error('Error seeding database:', error);
   }
 }
-    
-    
-
-    
-
-
-
-    
-
-    
-
-
-
-
-

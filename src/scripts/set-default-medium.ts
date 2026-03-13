@@ -1,21 +1,19 @@
 'use server';
 
-import { initializeFirebaseServer } from '@/firebase/server-init';
-import { collection, getDocs, writeBatch } from 'firebase/firestore';
+import { db as firestore } from '@/firebase/admin';
 import type { Test, Unit } from '@/lib/types';
 
 async function setDefaultMedium() {
   console.log('Starting migration to set default medium...');
-  const { firestore } = initializeFirebaseServer();
-  const batch = writeBatch(firestore);
+  const batch = firestore.batch();
   let updatedUnits = 0;
   let updatedTests = 0;
 
   try {
     // Update Units
     console.log('Checking units...');
-    const unitsCollection = collection(firestore, 'units');
-    const unitsSnapshot = await getDocs(unitsCollection);
+    const unitsCollection = firestore.collection('units');
+    const unitsSnapshot = await unitsCollection.get();
     unitsSnapshot.forEach((docSnapshot) => {
       const unit = docSnapshot.data() as Unit;
       if (!unit.medium) {
@@ -27,8 +25,8 @@ async function setDefaultMedium() {
 
     // Update Tests
     console.log('Checking tests...');
-    const testsCollection = collection(firestore, 'tests');
-    const testsSnapshot = await getDocs(testsCollection);
+    const testsCollection = firestore.collection('tests');
+    const testsSnapshot = await testsCollection.get();
     testsSnapshot.forEach((docSnapshot) => {
       const test = docSnapshot.data() as Test;
       if (!test.medium) {

@@ -1,26 +1,24 @@
 'use server';
 
-import { initializeFirebaseServer } from '@/firebase/server-init';
-import { collection, doc, getDoc, writeBatch, getDocs, query, where } from 'firebase/firestore';
+import { db as firestore } from '@/firebase/admin';
 
 async function renameSocialScienceId() {
   console.log('Starting migration to rename "social-science" subject ID...');
-  const { firestore } = initializeFirebaseServer();
-  const batch = writeBatch(firestore);
+  const batch = firestore.batch();
 
   const oldSubjectId = 'social-science';
   const newSubjectId = 'சமூக அறிவியல்'; // Using the Tamil name as the new ID as requested.
 
-  const oldSubjectRef = doc(firestore, 'subjects', oldSubjectId);
-  const newSubjectRef = doc(firestore, 'subjects', newSubjectId);
+  const oldSubjectRef = firestore.collection('subjects').doc(oldSubjectId);
+  const newSubjectRef = firestore.collection('subjects').doc(newSubjectId);
 
   try {
     // 1. Get the old subject document
-    const oldSubjectSnap = await getDoc(oldSubjectRef);
-    if (!oldSubjectSnap.exists()) {
+    const oldSubjectSnap = await oldSubjectRef.get();
+    if (!oldSubjectSnap.exists) {
       console.log(`Subject with ID "${oldSubjectId}" not found. It might have been renamed already. Checking for new ID...`);
-      const newSubjectSnap = await getDoc(newSubjectRef);
-      if (newSubjectSnap.exists()) {
+      const newSubjectSnap = await newSubjectRef.get();
+      if (newSubjectSnap.exists) {
           console.log(`Subject with new ID "${newSubjectId}" already exists. Migration seems complete.`);
       } else {
           console.log(`Neither old nor new subject ID found. Aborting.`);
@@ -39,27 +37,27 @@ async function renameSocialScienceId() {
     console.log(`- Prepared to create new subject with ID: ${newSubjectId}`);
 
     // 3. Find and update all references in 'tests'
-    const testsRef = collection(firestore, 'tests');
-    const testsQuery = query(testsRef, where('subjectId', '==', oldSubjectId));
-    const testsSnapshot = await getDocs(testsQuery);
+    const testsRef = firestore.collection('tests');
+    const testsQuery = testsRef.where('subjectId', '==', oldSubjectId);
+    const testsSnapshot = await testsQuery.get();
     console.log(`- Found ${testsSnapshot.size} tests referencing the old subject ID.`);
     testsSnapshot.forEach(doc => {
       batch.update(doc.ref, { subjectId: newSubjectId });
     });
 
     // 4. Find and update all references in 'units'
-    const unitsRef = collection(firestore, 'units');
-    const unitsQuery = query(unitsRef, where('subjectId', '==', oldSubjectId));
-    const unitsSnapshot = await getDocs(unitsQuery);
+    const unitsRef = firestore.collection('units');
+    const unitsQuery = unitsRef.where('subjectId', '==', oldSubjectId);
+    const unitsSnapshot = await unitsQuery.get();
     console.log(`- Found ${unitsSnapshot.size} units referencing the old subject ID.`);
     unitsSnapshot.forEach(doc => {
       batch.update(doc.ref, { subjectId: newSubjectId });
     });
 
     // 5. Find and update all references in 'categories'
-    const categoriesRef = collection(firestore, 'categories');
-    const categoriesQuery = query(categoriesRef, where('subjectId', '==', oldSubjectId));
-    const categoriesSnapshot = await getDocs(categoriesQuery);
+    const categoriesRef = firestore.collection('categories');
+    const categoriesQuery = categoriesRef.where('subjectId', '==', oldSubjectId);
+    const categoriesSnapshot = await categoriesQuery.get();
     console.log(`- Found ${categoriesSnapshot.size} categories referencing the old subject ID.`);
     categoriesSnapshot.forEach(doc => {
       batch.update(doc.ref, { subjectId: newSubjectId });

@@ -1,19 +1,17 @@
 'use server';
 
-import { initializeFirebaseServer } from '@/firebase/server-init';
-import { collection, query, where, getDocs, writeBatch } from 'firebase/firestore';
+import { db as firestore } from '@/firebase/admin';
 
 async function fixSocialScienceSubject() {
   console.log('Attempting to fix "Social Science" subject name...');
-  const { firestore } = initializeFirebaseServer();
-  const subjectsRef = collection(firestore, 'subjects');
-  const batch = writeBatch(firestore);
+  const subjectsRef = firestore.collection('subjects');
+  const batch = firestore.batch();
 
   // Find the document by its English name
-  const q = query(subjectsRef, where('name', '==', 'Social Science'));
+  const q = subjectsRef.where('name', '==', 'Social Science');
   
   try {
-    const querySnapshot = await getDocs(q);
+    const querySnapshot = await q.get();
     
     if (querySnapshot.empty) {
       console.log('Could not find a subject with the name "Social Science". No changes made.');
