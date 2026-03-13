@@ -4,9 +4,9 @@
 import { db as firestore } from '@/firebase/admin';
 import type { Question } from '@/lib/types';
 
-// Let's target a specific test for this pilot migration.
-// Test ID: 'class-6-social', Question ID: 'soc-06-01'
-const QUESTION_IDS_TO_MIGRATE = ['soc-06-01'];
+// Let's target a different, more reliable test question.
+// Test ID: 'indian-history', Question ID: 'his-12-01'
+const QUESTION_IDS_TO_MIGRATE = ['his-12-01'];
 
 async function testAnswerMigration() {
   console.log('Starting TEST migration for answer format...');
