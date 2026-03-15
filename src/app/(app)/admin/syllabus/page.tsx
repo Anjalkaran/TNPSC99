@@ -972,8 +972,10 @@ function SyllabusMcqUploadForm() {
                         if (!q.id || !q.text || !q.answerOptions || !Array.isArray(q.answerOptions) || q.correctAnswer === undefined) throw new Error('Each question in JSON needs id, text, answerOptions (array), and correctAnswer.');
                     }
                     
+                    const isPartB = selectedPart === 'பகுதி ஆ';
+
                     const questionsByCategory: Record<string, any[]> = questions.reduce((acc, q) => {
-                        const category = q.category || values.syllabusCategory || 'General';
+                        const category = isPartB ? 'General' : (q.category || values.syllabusCategory || 'General');
                         if (!acc[category]) acc[category] = [];
                         acc[category].push(q);
                         return acc;
@@ -1198,7 +1200,7 @@ function SyllabusMcqUploadForm() {
                                 </div>
                             ) : (
                                 <>
-                                    {uploadFormat === 'normal' && (
+                                    {uploadFormat === 'normal' && selectedPart !== 'பகுதி ஆ' && (
                                         <FormField
                                             control={form.control}
                                             name="syllabusCategory"
