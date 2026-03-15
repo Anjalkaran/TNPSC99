@@ -1,6 +1,6 @@
 'use client';
 
-import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
+import { useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { useMemo, useState, useEffect } from 'react';
 import type { Test, UserTestAttempt } from '@/lib/types';
@@ -109,16 +109,57 @@ export default function SubjectWiseTestsPage() {
   const searchParams = useSearchParams();
   const examGroup = searchParams.get('examGroup');
 
-  const testsQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
-    const qConstraints = [];
-    if (examGroup) {
-      qConstraints.push(where('examGroup', '==', examGroup));
-    }
-    return query(collection(firestore, 'tests'), ...qConstraints);
-  }, [firestore, examGroup]);
+  const [tests, setTests] = useState<Test[] | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const { data: tests, isLoading } = useCollection<Test>(testsQuery);
+  useEffect(() => {
+    if (!firestore) {
+      setIsLoading(false);
+      return;
+    }
+
+    const fetchTests = async () => {
+      setIsLoading(true);
+      const fetchedTests: Test[] = [];
+      const testsRef = collection(firestore, 'tests');
+
+      // Query 1: Get tests for the primary exam group
+      if (examGroup) {
+        const q1 = query(testsRef, where('examGroup', '==', examGroup));
+        const querySnapshot1 = await getDocs(q1);
+        querySnapshot1.forEach((doc) => {
+          fetchedTests.push({ id: doc.id, ...doc.data() } as Test);
+        });
+      } else {
+        // If no exam group, fetch all syllabus tests
+         const qAll = query(testsRef, where('syllabusUnitName', '!=', null));
+         const querySnapshotAll = await getDocs(qAll);
+         querySnapshotAll.forEach((doc) => {
+            fetchedTests.push({ id: doc.id, ...doc.data() } as Test);
+         });
+      }
+
+      // Query 2: If Group II, also get Group IV Part C tests
+      if (examGroup === 'Group II') {
+        const q2 = query(testsRef, 
+          where('examGroup', '==', 'Group IV'),
+          where('syllabusPart', '==', 'பகுதி இ')
+        );
+        const querySnapshot2 = await getDocs(q2);
+        querySnapshot2.forEach((doc) => {
+          // Avoid duplicates if a test somehow matches both
+          if (!fetchedTests.some(t => t.id === doc.id)) {
+            fetchedTests.push({ id: doc.id, ...doc.data() } as Test);
+          }
+        });
+      }
+      
+      setTests(fetchedTests);
+      setIsLoading(false);
+    };
+
+    fetchTests();
+  }, [firestore, examGroup]);
 
   const groupedSyllabusTests = useMemo(() => {
     if (!tests) return {};
@@ -126,7 +167,7 @@ export default function SubjectWiseTestsPage() {
     const validTests = tests.filter(t => t.syllabusUnitName != null);
 
     const grouped = validTests.reduce((acc, test) => {
-        const groupKey = examGroup || test.examGroup || 'Uncategorized';
+        const groupKey = test.examGroup || 'Uncategorized';
         const part = test.syllabusPart || 'Uncategorized Part';
         const unitKey = (test.syllabusUnit && test.syllabusUnitName) ? `${test.syllabusUnit}: ${test.syllabusUnitName}` : 'Uncategorized Unit';
         const topicKey = test.syllabusTopic || 'Uncategorized Topic';
@@ -151,7 +192,7 @@ export default function SubjectWiseTestsPage() {
         }
     }
     return grouped;
-  }, [tests, examGroup]);
+  }, [tests]);
   
   const pageTitle = examGroup ? `${examGroup} ${t('syllabus_wise_tests')}` : t('syllabus_wise_tests');
   
