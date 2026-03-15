@@ -270,7 +270,7 @@ export default function UserManagementPage() {
                                                 <Badge>Premium</Badge>
                                                 {user.subscriptionExpires && (
                                                     <span className="text-xs text-muted-foreground">
-                                                    Expires: {format(new Date(user.subscriptionExpires), 'P')}
+                                                    Expires: {format(new Date(user.subscriptionExpires), 'dd-MM-yyyy')}
                                                     </span>
                                                 )}
                                                 </div>

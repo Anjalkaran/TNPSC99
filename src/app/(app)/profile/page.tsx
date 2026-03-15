@@ -2,7 +2,7 @@
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { collection, query, where, orderBy } from 'firebase/firestore';
+import { collection, query, orderBy } from 'firebase/firestore';
 import type { UserTestAttempt } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { format } from 'date-fns';
@@ -47,7 +47,7 @@ export default function ProfilePage() {
           <div className="text-center sm:text-left">
             <CardTitle className="text-3xl">{user.displayName || user.email}</CardTitle>
             <CardDescription className="mt-2">{user.email}</CardDescription>
-             <CardDescription>பயனர் {new Date(user.metadata.creationTime!).toLocaleDateString()}-அன்று சேர்ந்தார்</CardDescription>
+             <CardDescription>பயனர் {user.metadata.creationTime ? format(new Date(user.metadata.creationTime), 'dd-MM-yyyy') : 'N/A'}-அன்று சேர்ந்தார்</CardDescription>
           </div>
         </CardHeader>
         <CardContent>
@@ -66,7 +66,7 @@ export default function ProfilePage() {
                 {testAttempts.map((attempt) => (
                   <TableRow key={attempt.id}>
                     <TableCell className="font-medium">{attempt.testTitle ?? 'Unknown Test'}</TableCell>
-                    <TableCell>{format(new Date(attempt.lastUpdatedDate), 'PPp')}</TableCell>
+                    <TableCell>{format(new Date(attempt.lastUpdatedDate), 'dd-MM-yyyy')}</TableCell>
                     <TableCell>
                       <Badge variant={attempt.status === 'completed' ? 'default' : 'secondary'}>
                         {attempt.status}

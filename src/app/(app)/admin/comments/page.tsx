@@ -82,7 +82,7 @@ export default function AdminCommentsPage() {
                             <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                                 <div>
                                     <p className="text-sm text-muted-foreground">From: {comment.username}</p>
-                                    <p className="text-sm text-muted-foreground">Date: {comment.createdAt ? format(new Date(comment.createdAt), 'PPp') : 'N/A'}</p>
+                                    <p className="text-sm text-muted-foreground">Date: {comment.createdAt ? format(new Date(comment.createdAt), 'dd-MM-yyyy') : 'N/A'}</p>
                                 </div>
                                 <div className="flex flex-wrap items-center justify-end gap-2">
                                   <Button asChild variant="outline" size="sm">
@@ -130,7 +130,7 @@ export default function AdminCommentsPage() {
                             <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                                 <div>
                                     <p className="text-sm text-muted-foreground">From: {comment.username}</p>
-                                    <p className="text-sm text-muted-foreground">Date: {comment.createdAt ? format(new Date(comment.createdAt), 'PPp') : 'N/A'}</p>
+                                    <p className="text-sm text-muted-foreground">Date: {comment.createdAt ? format(new Date(comment.createdAt), 'dd-MM-yyyy') : 'N/A'}</p>
                                 </div>
                                 <div className="flex flex-wrap items-center justify-end gap-2">
                                     <Badge variant="secondary">Resolved</Badge>

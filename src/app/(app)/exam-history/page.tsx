@@ -58,7 +58,7 @@ export default function ExamHistoryPage() {
                       {attempt.testTitle ?? 'Unknown Test'}
                       {attempt.isMockTest && <Badge variant="secondary" className="ml-2">Mock Test</Badge>}
                     </TableCell>
-                    <TableCell>{format(new Date(attempt.lastUpdatedDate), 'PPp')}</TableCell>
+                    <TableCell>{format(new Date(attempt.lastUpdatedDate), 'dd-MM-yyyy')}</TableCell>
                     <TableCell>
                       <Badge variant={attempt.status === 'completed' ? 'default' : 'secondary'}>
                         {attempt.status}
