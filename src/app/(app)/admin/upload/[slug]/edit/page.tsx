@@ -172,34 +172,36 @@ export default function EditTestPage() {
                 <TableBody>
                     {filteredQuestions.map(q => (
                         <TableRow key={q.id}>
-                            <TableCell className="font-mono text-xs">{q.id}</TableCell>
+                            <TableCell className="font-mono text-xs break-all">{q.id}</TableCell>
                             <TableCell className="max-w-prose">{q.text}</TableCell>
                             <TableCell>{q.unitId}</TableCell>
-                            <TableCell className="text-right space-x-1">
-                                <Button asChild variant="outline" size="icon">
-                                  <Link href={`/admin/questions/${q.id}/edit`}>
-                                    <Edit className="h-4 w-4" />
-                                  </Link>
-                                </Button>
-                               <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-                                            <Trash className="h-4 w-4" />
-                                        </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle>{t('confirm_remove_title')}</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                {t('remove_question_from_test_desc')}
-                                            </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                                            <AlertDialogAction onClick={() => handleRemoveQuestion(q.id)}>{t('remove')}</AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
+                            <TableCell className="text-right">
+                                <div className="flex flex-wrap justify-end gap-1">
+                                    <Button asChild variant="outline" size="icon">
+                                    <Link href={`/admin/questions/${q.id}/edit`}>
+                                        <Edit className="h-4 w-4" />
+                                    </Link>
+                                    </Button>
+                                <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                                <Trash className="h-4 w-4" />
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>{t('confirm_remove_title')}</AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    {t('remove_question_from_test_desc')}
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                                                <AlertDialogAction onClick={() => handleRemoveQuestion(q.id)}>{t('remove')}</AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </div>
                             </TableCell>
                         </TableRow>
                     ))}

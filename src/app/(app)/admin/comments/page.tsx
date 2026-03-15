@@ -79,12 +79,12 @@ export default function AdminCommentsPage() {
                     {!isLoading && openComments.length === 0 && <p className="text-muted-foreground p-4 text-center">No new comments.</p>}
                     {openComments.map(comment => (
                         <div key={comment.id} className="p-4 border rounded-lg">
-                            <div className="flex justify-between items-start gap-4">
+                            <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                                 <div>
                                     <p className="text-sm text-muted-foreground">From: {comment.username}</p>
                                     <p className="text-sm text-muted-foreground">Date: {comment.createdAt ? format(new Date(comment.createdAt), 'PPp') : 'N/A'}</p>
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex flex-wrap items-center justify-end gap-2">
                                   <Button asChild variant="outline" size="sm">
                                       <Link href={`/admin/questions/${comment.questionId}/edit`}>
                                           <Edit className="mr-2 h-4 w-4" />
@@ -127,12 +127,12 @@ export default function AdminCommentsPage() {
                     {!isLoading && resolvedComments.length === 0 && <p className="text-muted-foreground p-4 text-center">No resolved comments.</p>}
                     {resolvedComments.map(comment => (
                         <div key={comment.id} className="p-4 border rounded-lg bg-muted/50">
-                            <div className="flex justify-between items-start gap-4">
+                            <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                                 <div>
                                     <p className="text-sm text-muted-foreground">From: {comment.username}</p>
                                     <p className="text-sm text-muted-foreground">Date: {comment.createdAt ? format(new Date(comment.createdAt), 'PPp') : 'N/A'}</p>
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex flex-wrap items-center justify-end gap-2">
                                     <Badge variant="secondary">Resolved</Badge>
                                     <AlertDialog>
                                         <AlertDialogTrigger asChild>

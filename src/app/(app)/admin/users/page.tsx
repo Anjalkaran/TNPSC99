@@ -280,7 +280,7 @@ export default function UserManagementPage() {
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <TooltipProvider>
-                                                <div className="flex justify-end items-center gap-2">
+                                                <div className="flex flex-wrap justify-end items-center gap-1">
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
                                                             <Button asChild variant="ghost" size="icon">

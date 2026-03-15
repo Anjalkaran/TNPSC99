@@ -235,7 +235,8 @@ function ExistingPapersList() {
                                                     {paper.title}
                                                 </TableCell>
                                                 <TableCell>{paper.questionIds.length}</TableCell>
-                                                <TableCell className="text-right space-x-1">
+                                                <TableCell className="text-right">
+                                                  <div className="flex flex-wrap justify-end gap-1">
                                                     <Button variant="outline" size="icon" onClick={() => handleDownload(paper)}>
                                                         <Download className="h-4 w-4" />
                                                         <span className="sr-only">Download</span>
@@ -264,6 +265,7 @@ function ExistingPapersList() {
                                                             </AlertDialogFooter>
                                                         </AlertDialogContent>
                                                     </AlertDialog>
+                                                  </div>
                                                 </TableCell>
                                             </TableRow>
                                         ))}

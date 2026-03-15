@@ -62,9 +62,9 @@ export default function UserAdminLayout({
                 <h1 className="text-2xl md:text-3xl font-bold">Admin View: {userProfile.username}</h1>
                 <p className="text-muted-foreground">{userProfile.email}</p>
             </div>
-            <div className="flex items-center gap-2 border bg-muted p-1 rounded-lg">
+            <div className="flex flex-wrap items-center gap-1 border bg-muted p-1 rounded-lg">
                  {navLinks.map(link => (
-                    <Button key={link.href} asChild variant={pathname === link.href ? 'secondary' : 'ghost'} className="flex-1 justify-center">
+                    <Button key={link.href} asChild variant={pathname === link.href ? 'secondary' : 'ghost'} className="flex-grow justify-center">
                         <Link href={link.href}>
                             <link.icon className="mr-2 h-4 w-4" />
                             {link.label}
