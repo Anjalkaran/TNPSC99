@@ -4,7 +4,7 @@ import { notFound, useParams, useSearchParams } from 'next/navigation';
 import { useUser, useFirestore } from '@/firebase';
 import { collection, query, where, getDocs, doc, getDoc, deleteDoc, documentId } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
-import type { Test, Question, UserTestAttempt } from '@/lib/types';
+import type { Test, Question, UserTestAttempt, UserProfile } from '@/lib/types';
 import { useTranslation } from '@/hooks/use-translation';
 import {
   AlertDialog,
@@ -16,6 +16,8 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { buttonVariants } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 
 // Function to shuffle an array
 function shuffleArray<T>(array: T[]): T[] {
@@ -34,6 +36,8 @@ export default function TestPage() {
   const { user } = useUser();
   const firestore = useFirestore();
   const { t } = useTranslation();
+  const router = useRouter();
+  const { toast } = useToast();
 
   const [testData, setTestData] = useState<Test | null>(null);
   const [sessionQuestions, setSessionQuestions] = useState<Question[]>([]);
@@ -49,8 +53,38 @@ export default function TestPage() {
   useEffect(() => {
     if (!firestore || !slug || !user) return;
 
-    const fetchTestAndQuestions = async () => {
+    const checkAccessAndFetch = async () => {
       setIsLoading(true);
+
+      // 1. Check user's subscription status
+      const userDocRef = doc(firestore, 'users', user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (!userDocSnap.exists()) {
+          console.error("User profile not found, redirecting.");
+          router.push('/login');
+          return;
+      }
+
+      const userProfile = userDocSnap.data() as UserProfile;
+
+      if (!userProfile.isAdmin) {
+          const isPremium = userProfile.subscriptionStatus === 'premium';
+          const expires = userProfile.subscriptionExpires ? new Date(userProfile.subscriptionExpires) : null;
+          const hasExpired = expires ? expires < new Date() : false;
+
+          if (!isPremium || hasExpired) {
+              toast({
+                  title: 'Subscription Required',
+                  description: 'Your trial has ended or your subscription is inactive. Please subscribe to access tests.',
+                  variant: 'destructive',
+              });
+              router.push('/subscription');
+              return; // Stop execution
+          }
+      }
+
+      // If we reach here, user has access. Now fetch test data.
       const testId = Array.isArray(slug) ? slug[0] : decodeURIComponent(slug);
       
       const testDocRef = doc(firestore, 'tests', testId);
@@ -168,8 +202,8 @@ export default function TestPage() {
       setIsLoading(false);
     };
 
-    fetchTestAndQuestions();
-  }, [firestore, slug, user, searchParams]);
+    checkAccessAndFetch();
+  }, [firestore, slug, user, searchParams, router, toast, t]);
   
   const handleResumeChoice = (choice: 'resume' | 'new') => {
     if (resolveResume) {
