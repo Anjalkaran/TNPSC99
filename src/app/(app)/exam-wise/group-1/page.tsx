@@ -2,7 +2,7 @@
 import { useTranslation } from '@/hooks/use-translation';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Archive, ArrowRight } from 'lucide-react';
+import { Archive, ArrowRight, BookOpenCheck } from 'lucide-react';
 
 export default function Group1Page() {
   const { t } = useTranslation();
@@ -12,6 +12,11 @@ export default function Group1Page() {
       title: t('previous_year_papers'),
       href: '/previous-year/group-1',
       icon: <Archive className="h-8 w-8 text-amber-500" />,
+    },
+    {
+      title: t('syllabus_wise_tests'),
+      href: '/subject-wise?examGroup=Group%20I',
+      icon: <BookOpenCheck className="h-8 w-8 text-blue-500" />,
     },
   ];
 
