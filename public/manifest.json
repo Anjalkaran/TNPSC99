@@ -1,23 +1,21 @@
 {
-  "name": "TNPSC99",
-  "short_name": "TNPSC99",
-  "description": "tnpsc99.com is your ultimate partner for TNPSC exam preparation. Practice with thousands of MCQs for Group II, Group IV, and class-wise tests. Track your performance and succeed in your TNPSC exams.",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#e8f5e9",
-  "theme_color": "#15803d",
-  "icons": [
-    {
-      "src": "https://firebasestorage.googleapis.com/v0/b/studio-5029416251-928dd.firebasestorage.app/o/final%20tnpsc99.png?alt=media&token=45dc292d-a09c-49de-aa14-9ed0ae769c47",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "https://firebasestorage.googleapis.com/v0/b/studio-5029416251-928dd.firebasestorage.app/o/final%20tnpsc99.png?alt=media&token=45dc292d-a09c-49de-aa14-9ed0ae769c47",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ]
-}
+    "name": "tnpsc99.com - Your TNPSC Exam Partner",
+    "short_name": "TNPSC99",
+    "description": "The ultimate platform for TNPSC exam preparation with mock tests, MCQs, and performance tracking.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#2563eb",
+    "icons": [
+      {
+        "src": "https://firebasestorage.googleapis.com/v0/b/studio-5029416251-928dd.firebasestorage.app/o/final%20tnpsc99.png?alt=media&token=45dc292d-a09c-49de-aa14-9ed0ae769c47",
+        "sizes": "192x192",
+        "type": "image/png"
+      },
+      {
+        "src": "https://firebasestorage.googleapis.com/v0/b/studio-5029416251-928dd.firebasestorage.app/o/final%20tnpsc99.png?alt=media&token=45dc292d-a09c-49de-aa14-9ed0ae769c47",
+        "sizes": "512x512",
+        "type": "image/png"
+      }
+    ]
+  }
