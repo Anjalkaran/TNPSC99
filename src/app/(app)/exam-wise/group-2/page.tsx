@@ -2,7 +2,7 @@
 import { useTranslation } from '@/hooks/use-translation';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Archive, ArrowRight, BookOpenCheck } from 'lucide-react';
+import { Archive, ArrowRight, BookOpenCheck, ClipboardList } from 'lucide-react';
 
 export default function Group2Page() {
   const { t } = useTranslation();
@@ -18,6 +18,11 @@ export default function Group2Page() {
       href: '/subject-wise?examGroup=Group%20II',
       icon: <BookOpenCheck className="h-8 w-8 text-blue-500" />,
     },
+    {
+      title: t('mock_tests'),
+      href: '/mock-test/group-2',
+      icon: <ClipboardList className="h-8 w-8 text-purple-500" />,
+    }
   ];
 
   return (
@@ -29,7 +34,7 @@ export default function Group2Page() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-4xl mx-auto justify-center">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
         {categories.map((category) => (
           <Link href={category.href} key={category.title} className="block hover:no-underline">
             <Card className="flex h-full flex-col overflow-hidden transition-all duration-300 hover:shadow-xl group hover:ring-1 hover:ring-primary">

@@ -152,7 +152,7 @@ export default function Group4MockTestPage() {
         }
         setIsChecking(true);
         const attemptsRef = collection(firestore, `users/${user.uid}/testAttempts`);
-        const q = query(attemptsRef, where('isMockTest', '==', true), where('status', '==', 'in-progress'));
+        const q = query(attemptsRef, where('isMockTest', '==', true), where('examGroup', '==', 'Group IV'), where('status', '==', 'in-progress'));
         const querySnapshot = await getDocs(q);
         
         if (!querySnapshot.empty) {
