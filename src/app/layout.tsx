@@ -50,6 +50,7 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
+        <link rel="manifest" href="/manifest.json" />
       </head>
       <body className={inter.className}>
         <ThemeProvider
