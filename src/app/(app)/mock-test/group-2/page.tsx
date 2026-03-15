@@ -92,7 +92,9 @@ export default function Group2MockTestPage() {
                 const groupIVTestsSnapshot = await getDocs(groupIVTestsQuery);
                 const allGroupIVTests = groupIVTestsSnapshot.docs.map(doc => doc.data() as Test).filter(test => !test.isMockTest);
 
-                const allMockQuestionIds: string[] = [];
+                const partA_ids: string[] = [];
+                const partB_ids: string[] = [];
+                const partC_ids: string[] = [];
 
                 for (const config of MOCK_TEST_CONFIG) {
                     const sourceQuestionIds = new Set<string>();
@@ -122,8 +124,21 @@ export default function Group2MockTestPage() {
                     }
                     
                     const selectedIds = shuffleArray(availableQuestions).slice(0, config.count);
-                    allMockQuestionIds.push(...selectedIds);
+                    
+                    if (config.part === 'பகுதி அ') {
+                        partA_ids.push(...selectedIds);
+                    } else if (config.part === 'பகுதி ஆ') {
+                        partB_ids.push(...selectedIds);
+                    } else if (config.part === 'பகுதி இ') {
+                        partC_ids.push(...selectedIds);
+                    }
                 }
+                
+                const allMockQuestionIds = [
+                    ...shuffleArray(partC_ids),
+                    ...shuffleArray([...partA_ids, ...partB_ids]),
+                ];
+
 
                 if (allMockQuestionIds.length !== 200) {
                     toast({ variant: 'destructive', title: 'Error Generating Test', description: `Generated test has ${allMockQuestionIds.length} questions, but expected 200. Please check question availability.` });
