@@ -81,18 +81,26 @@ export default function Group2MockTestPage() {
                     }
                 });
 
-                // Fetch all Group II tests from the main bank
+                // Fetch all Group II and Group IV tests from the main bank
                 const testsRef = collection(firestore, 'tests');
-                const testsQuery = query(testsRef, where('examGroup', '==', 'Group II'));
-                const testsSnapshot = await getDocs(testsQuery);
-                const allGroupIITests = testsSnapshot.docs.map(doc => doc.data() as Test).filter(test => !test.isMockTest);
-                
+
+                const groupIITestsQuery = query(testsRef, where('examGroup', '==', 'Group II'));
+                const groupIITestsSnapshot = await getDocs(groupIITestsQuery);
+                const allGroupIITests = groupIITestsSnapshot.docs.map(doc => doc.data() as Test).filter(test => !test.isMockTest);
+
+                const groupIVTestsQuery = query(testsRef, where('examGroup', '==', 'Group IV'));
+                const groupIVTestsSnapshot = await getDocs(groupIVTestsQuery);
+                const allGroupIVTests = groupIVTestsSnapshot.docs.map(doc => doc.data() as Test).filter(test => !test.isMockTest);
+
                 const allMockQuestionIds: string[] = [];
 
                 for (const config of MOCK_TEST_CONFIG) {
                     const sourceQuestionIds = new Set<string>();
                     
-                    allGroupIITests
+                    // Determine which test bank to use based on the part
+                    const targetTestBank = config.part === 'பகுதி இ' ? allGroupIVTests : allGroupIITests;
+
+                    targetTestBank
                         .filter(test => test.syllabusPart === config.part && test.syllabusUnit === config.unit && test.syllabusUnitName === config.unitName)
                         .forEach(test => {
                             if (Array.isArray(test.questionIds)) {
