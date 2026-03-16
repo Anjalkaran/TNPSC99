@@ -153,6 +153,20 @@ export default function SubjectWiseTestsPage() {
           }
         });
       }
+
+      // Query 3: If Group I, also get Group II Part B tests
+      if (examGroup === 'Group I') {
+        const q3 = query(testsRef, 
+          where('examGroup', '==', 'Group II'),
+          where('syllabusPart', '==', 'பகுதி ஆ')
+        );
+        const querySnapshot3 = await getDocs(q3);
+        querySnapshot3.forEach((doc) => {
+          if (!fetchedTests.some(t => t.id === doc.id)) {
+            fetchedTests.push({ id: doc.id, ...doc.data() } as Test);
+          }
+        });
+      }
       
       setTests(fetchedTests);
       setIsLoading(false);
