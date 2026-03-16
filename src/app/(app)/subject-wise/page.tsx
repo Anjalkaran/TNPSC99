@@ -153,7 +153,7 @@ export default function SubjectWiseTestsPage() {
           }
         });
       }
-
+      
       // Query 3: If Group I, also get Group II Part B tests
       if (examGroup === 'Group I') {
         const q3 = query(testsRef, 
@@ -177,36 +177,56 @@ export default function SubjectWiseTestsPage() {
 
   const groupedSyllabusTests = useMemo(() => {
     if (!tests) return {};
-
+  
     const validTests = tests.filter(t => t.syllabusUnitName != null);
-
-    const grouped = validTests.reduce((acc, test) => {
-        const groupKey = test.examGroup || 'Uncategorized';
+    
+    let grouped: Record<string, any>;
+  
+    if (examGroup) {
+      // Group all tests under the main exam group, merging parts from other groups.
+      const parts = validTests.reduce((acc, test) => {
         const part = test.syllabusPart || 'Uncategorized Part';
         const unitKey = (test.syllabusUnit && test.syllabusUnitName) ? `${test.syllabusUnit}: ${test.syllabusUnitName}` : 'Uncategorized Unit';
         const topicKey = test.syllabusTopic || 'Uncategorized Topic';
-
-        if (!acc[groupKey]) acc[groupKey] = {};
-        if (!acc[groupKey][part]) acc[groupKey][part] = {};
-        if (!acc[groupKey][part][unitKey]) acc[groupKey][part][unitKey] = {};
-        if (!acc[groupKey][part][unitKey][topicKey]) acc[groupKey][part][unitKey][topicKey] = [];
+  
+        if (!acc[part]) acc[part] = {};
+        if (!acc[part][unitKey]) acc[part][unitKey] = {};
+        if (!acc[part][unitKey][topicKey]) acc[part][unitKey][topicKey] = [];
         
-        acc[groupKey][part][unitKey][topicKey].push(test);
+        acc[part][unitKey][topicKey].push(test);
         return acc;
-    }, {} as Record<string, Record<string, Record<string, Record<string, Test[]>>>>);
-
-    // Sorting
+      }, {} as Record<string, Record<string, Record<string, Test[]>>>);
+      grouped = { [examGroup]: parts };
+    } else {
+      // Default behavior: group by the test's own examGroup property
+      grouped = validTests.reduce((acc, test) => {
+          const groupKey = test.examGroup || 'Uncategorized';
+          const part = test.syllabusPart || 'Uncategorized Part';
+          const unitKey = (test.syllabusUnit && test.syllabusUnitName) ? `${test.syllabusUnit}: ${test.syllabusUnitName}` : 'Uncategorized Unit';
+          const topicKey = test.syllabusTopic || 'Uncategorized Topic';
+  
+          if (!acc[groupKey]) acc[groupKey] = {};
+          if (!acc[groupKey][part]) acc[groupKey][part] = {};
+          if (!acc[groupKey][part][unitKey]) acc[groupKey][part][unitKey] = {};
+          if (!acc[groupKey][part][unitKey][topicKey]) acc[groupKey][part][unitKey][topicKey] = [];
+          
+          acc[groupKey][part][unitKey][topicKey].push(test);
+          return acc;
+      }, {} as Record<string, Record<string, Record<string, Record<string, Test[]>>>>);
+    }
+    
+    // Sorting logic - applies to both scenarios
     for (const eg in grouped) {
         for (const p in grouped[eg]) {
             for (const uk in grouped[eg][p]) {
                 for (const tk in grouped[eg][p][uk]) {
-                    grouped[eg][p][uk][tk].sort((a,b) => (a.syllabusCategory || '').localeCompare(b.syllabusCategory || ''));
+                    grouped[eg][p][uk][tk].sort((a: Test, b: Test) => (a.syllabusCategory || '').localeCompare(b.syllabusCategory || ''));
                 }
             }
         }
     }
     return grouped;
-  }, [tests]);
+  }, [tests, examGroup]);
   
   const pageTitle = examGroup ? `${examGroup} ${t('syllabus_wise_tests')}` : t('syllabus_wise_tests');
   
