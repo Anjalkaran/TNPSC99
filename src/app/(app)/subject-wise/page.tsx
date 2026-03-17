@@ -1,13 +1,13 @@
 'use client';
 
 import { useFirestore, useMemoFirebase, useUser } from '@/firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { useMemo, useState, useEffect } from 'react';
+import { collection, query, where, getDocs, doc, setDoc } from 'firebase/firestore';
+import { useMemo, useState, useEffect, useTransition } from 'react';
 import type { Test, UserTestAttempt } from '@/lib/types';
 import { useTranslation } from '@/hooks/use-translation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import {
   Accordion,
@@ -26,19 +26,40 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 
+
+function shuffleArray<T>(array: T[]): T[] {
+  const newArray = [...array];
+  for (let i = newArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+  }
+  return newArray;
+}
 
 function TopicContent({ tests }: { tests: Test[] }) {
     const { t } = useTranslation();
     const [selectedTestId, setSelectedTestId] = useState<string>('');
     const [limit, setLimit] = useState<string>('');
+    const router = useRouter();
+    const firestore = useFirestore();
+    const { user } = useUser();
+    const [isGenerating, startTransition] = useTransition();
 
     const allQuestionsCount = useMemo(() => {
         return tests.reduce((sum, test) => sum + test.questionIds.length, 0);
     }, [tests]);
 
     const selectedTest = useMemo(() => {
+        if (selectedTestId === 'all') {
+            const allQuestionIds = tests.flatMap(t => t.questionIds);
+            return {
+                id: 'all',
+                title: 'All Categories',
+                questionIds: allQuestionIds,
+            } as Partial<Test> & { id: string };
+        }
         return tests.find(test => test.id === selectedTestId);
     }, [tests, selectedTestId]);
 
@@ -58,7 +79,45 @@ function TopicContent({ tests }: { tests: Test[] }) {
         return [...new Set(options)].sort((a,b) => a - b);
     }, [selectedTest]);
 
-    const startHref = selectedTest ? `/test/${selectedTest.id}${limit ? `?limit=${limit}` : ''}` : '#';
+    const handleStartTest = () => {
+        if (!limit || !selectedTestId) return;
+
+        if (selectedTestId === 'all') {
+            startTransition(async () => {
+                if (!user || !firestore || !tests.length) return;
+                
+                const allQuestionIds = tests.flatMap(t => t.questionIds);
+                const shuffledIds = shuffleArray(allQuestionIds);
+                const finalIds = limit ? shuffledIds.slice(0, parseInt(limit, 10)) : shuffledIds;
+
+                const newTestRef = doc(collection(firestore, 'tests'));
+                const firstTest = tests[0];
+                const newMockTest: Partial<Test> = {
+                    id: newTestRef.id,
+                    title: `${firstTest.syllabusTopic || 'Mixed'} - All Categories`,
+                    description: `A temporary test with questions from all categories for ${firstTest.syllabusTopic}.`,
+                    questionIds: finalIds,
+                    examGroup: firstTest.examGroup,
+                    syllabusPart: firstTest.syllabusPart,
+                    syllabusUnit: firstTest.syllabusUnit,
+                    syllabusUnitName: firstTest.syllabusUnitName,
+                    syllabusTopic: firstTest.syllabusTopic,
+                    isMockTest: true, // Mark as a temporary/mock test
+                    userId: user.uid, // Associate with user for potential cleanup
+                };
+
+                await setDoc(newTestRef, newMockTest);
+                router.push(`/test/${newTestRef.id}`);
+            });
+        } else {
+            const startHref = selectedTest ? `/test/${selectedTest.id}${limit ? `?limit=${limit}` : ''}` : '#';
+            if (startHref !== '#') {
+                router.push(startHref);
+            }
+        }
+    };
+    
+    const showAllOption = tests.length > 1;
 
     return (
         <div className="space-y-3">
@@ -71,6 +130,7 @@ function TopicContent({ tests }: { tests: Test[] }) {
                         <SelectValue placeholder="Select Category" />
                     </SelectTrigger>
                     <SelectContent>
+                        {showAllOption && <SelectItem value="all">All Categories</SelectItem>}
                         {tests.map(test => (
                             <SelectItem key={test.id} value={test.id}>
                                 {test.syllabusCategory || 'General'}
@@ -92,10 +152,17 @@ function TopicContent({ tests }: { tests: Test[] }) {
                     </SelectContent>
                 </Select>
                 
-                <Button asChild className="w-full sm:w-auto" disabled={!selectedTestId || !limit} style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
-                    <Link href={startHref}>
-                        {t('start_test')} <ArrowRight className="ml-2 h-4 w-4" />
-                    </Link>
+                <Button onClick={handleStartTest} className="w-full sm:w-auto" disabled={!selectedTestId || !limit || isGenerating} style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
+                     {isGenerating ? (
+                        <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Generating...
+                        </>
+                    ) : (
+                        <>
+                            {t('start_test')} <ArrowRight className="ml-2 h-4 w-4" />
+                        </>
+                    )}
                 </Button>
             </div>
         </div>
