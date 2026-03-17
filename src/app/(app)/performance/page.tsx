@@ -7,8 +7,11 @@ import type { UserTestAttempt, Test, Subject, Category, Unit, Class } from '@/li
 import { useMemo, useState, useEffect } from 'react';
 import { useTranslation } from '@/hooks/use-translation';
 import { Progress } from '@/components/ui/progress';
-import { BrainCircuit, Sparkles, Target, TrendingUp, BookCheck, Shapes, FolderKanban } from 'lucide-react';
+import { BrainCircuit, Sparkles, Target, TrendingUp, BookCheck, Shapes, FolderKanban, Activity } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 interface PerformanceMetric {
   id: string;
@@ -104,8 +107,8 @@ function AiAnalysis({
             } catch (error) {
                 console.error("Error analyzing performance:", error);
                 const summary = language === 'ta' 
-                    ? "AI பகுப்பாய்வு கிடைக்கவில்லை. உங்கள் ஜெமினி API விசையை உள்ளமைக்கவும்." 
-                    : "AI analysis is unavailable. Please configure your Gemini API key.";
+                    ? "AI நுண்ணறிவு விரைவில் கிடைக்கும்." 
+                    : "AI insights will be available soon.";
                 setAnalysis({
                     strengths: [],
                     weaknesses: [],
@@ -153,34 +156,44 @@ function AiAnalysis({
                 </CardTitle>
                 <CardDescription>{analysis.overallSummary}</CardDescription>
             </CardHeader>
-            <CardContent className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                     <div>
-                        <h3 className="font-semibold flex items-center gap-2 mb-2"><TrendingUp className="text-green-500" /> {t('strengths')}</h3>
-                        {analysis.strengths.length > 0 ? (
-                            <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                                {analysis.strengths.map(s => <li key={s}>{s}</li>)}
-                            </ul>
-                        ) : <p className="text-sm text-muted-foreground">{t('no_strengths_yet')}</p>}
+            <CardContent className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                        <div>
+                            <h3 className="font-semibold flex items-center gap-2 mb-2"><TrendingUp className="text-green-500" /> {t('strengths')}</h3>
+                            {analysis.strengths.length > 0 ? (
+                                <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+                                    {analysis.strengths.map(s => <li key={s}>{s}</li>)}
+                                </ul>
+                            ) : <p className="text-sm text-muted-foreground">{t('no_strengths_yet')}</p>}
+                        </div>
+                        <div>
+                            <h3 className="font-semibold flex items-center gap-2 mb-2"><Target className="text-red-500" /> {t('areas_for_improvement')}</h3>
+                            {analysis.weaknesses.length > 0 ? (
+                                <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+                                    {analysis.weaknesses.map(w => <li key={w}>{w}</li>)}
+                                </ul>
+                            ) : <p className="text-sm text-muted-foreground">{t('no_weaknesses_found')}</p>}
+                        </div>
                     </div>
-                     <div>
-                        <h3 className="font-semibold flex items-center gap-2 mb-2"><Target className="text-red-500" /> {t('areas_for_improvement')}</h3>
-                         {analysis.weaknesses.length > 0 ? (
-                            <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                                {analysis.weaknesses.map(w => <li key={w}>{w}</li>)}
-                            </ul>
-                        ) : <p className="text-sm text-muted-foreground">{t('no_weaknesses_found')}</p>}
+                    <div className="space-y-4">
+                        <div>
+                            <h3 className="font-semibold flex items-center gap-2 mb-2"><BookCheck className="text-blue-500" /> {t('actionable_advice')}</h3>
+                            {analysis.recommendations.length > 0 ? (
+                                <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+                                    {analysis.recommendations.map(r => <li key={r}>{r}</li>)}
+                                </ul>
+                            ) : <p className="text-sm text-muted-foreground">{t('keep_up_effort')}</p>}
+                        </div>
                     </div>
                 </div>
-                 <div className="space-y-4">
-                     <div>
-                        <h3 className="font-semibold flex items-center gap-2 mb-2"><BookCheck className="text-blue-500" /> {t('actionable_advice')}</h3>
-                         {analysis.recommendations.length > 0 ? (
-                            <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                                {analysis.recommendations.map(r => <li key={r}>{r}</li>)}
-                            </ul>
-                        ) : <p className="text-sm text-muted-foreground">{t('keep_up_effort')}</p>}
-                    </div>
+                 <div className="mt-6 pt-6 border-t flex justify-center">
+                    <Button asChild>
+                        <Link href="/subject-wise">
+                            <Activity className="mr-2" />
+                            Practice Weak Areas
+                        </Link>
+                    </Button>
                 </div>
             </CardContent>
         </Card>
@@ -416,6 +429,12 @@ export default function PerformancePage() {
 
   }, [testAttempts, attemptsLoading, firestore, language]);
 
+  const getProficiencyClass = (proficiency: number) => {
+    if (proficiency >= 80) return 'bg-green-500';
+    if (proficiency >= 60) return 'bg-yellow-500';
+    return 'bg-red-500';
+  };
+
   if (isUserLoading || isLoading) {
     return <div className="container mx-auto p-4">{t('loading_performance_data')}</div>;
   }
@@ -437,51 +456,48 @@ export default function PerformancePage() {
             unitPerformance={unitPerformance}
         />
         
-        <div className="grid md:grid-cols-2 gap-8">
-            <Card>
-                <CardHeader>
-                    <CardTitle className='flex items-center gap-2'><Shapes /> {t('subject_wise_proficiency')}</CardTitle>
-                    <CardDescription>{t('subject_wise_proficiency_desc')}</CardDescription>
-                </CardHeader>
-                <CardContent className='space-y-4'>
-                    {subjectPerformance.length > 0 ? (
-                      subjectPerformance.map(p => (
+        {(subjectPerformance.length > 0 || categoryPerformance.length > 0) && (
+          <div className="grid md:grid-cols-2 gap-8">
+              <Card>
+                  <CardHeader>
+                      <CardTitle className='flex items-center gap-2'><Shapes /> {t('subject_wise_proficiency')}</CardTitle>
+                      <CardDescription>{t('subject_wise_proficiency_desc')}</CardDescription>
+                  </CardHeader>
+                  <CardContent className='space-y-4'>
+                      {subjectPerformance.map(p => (
                         <div key={p.id}>
                             <div className='flex justify-between items-center mb-1'>
                                 <span className='font-medium text-sm'>{p.name}</span>
                                 <span className='text-sm text-muted-foreground'>{p.proficiency.toFixed(0)}%</span>
                             </div>
-                            <Progress value={p.proficiency} />
+                            <Progress value={p.proficiency} indicatorClassName={getProficiencyClass(p.proficiency)} />
                         </div>
-                      ))
-                    ) : (
-                      <p className="text-muted-foreground text-sm">{t('no_performance_data_desc')}</p>
-                    )}
-                </CardContent>
-            </Card>
+                      ))}
+                  </CardContent>
+              </Card>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle className='flex items-center gap-2'><FolderKanban /> Category-wise Proficiency</CardTitle>
-                    <CardDescription>Your proficiency score in each category you've attempted.</CardDescription>
-                </CardHeader>
-                <CardContent className='space-y-4'>
-                    {categoryPerformance.length > 0 ? (
-                      categoryPerformance.map(p => (
+              <Card>
+                  <CardHeader>
+                      <CardTitle className='flex items-center gap-2'><FolderKanban /> Category-wise Proficiency</CardTitle>
+                      <CardDescription>Your proficiency score in each category you've attempted.</CardDescription>
+                  </CardHeader>
+                  <CardContent className='space-y-4'>
+                      {categoryPerformance.map(p => (
                         <div key={p.id}>
                             <div className='flex justify-between items-center mb-1'>
                                 <span className='font-medium text-sm'>{p.name}</span>
                                 <span className='text-sm text-muted-foreground'>{p.proficiency.toFixed(0)}%</span>
                             </div>
-                            <Progress value={p.proficiency} />
+                            <Progress value={p.proficiency} indicatorClassName={getProficiencyClass(p.proficiency)} />
                         </div>
-                      ))
-                    ) : (
-                       <p className="text-muted-foreground text-sm">No category performance data yet. Some tests may not be assigned to a category.</p>
-                    )}
-                </CardContent>
-            </Card>
-        </div>
+                      ))}
+                       {categoryPerformance.length === 0 && (
+                          <p className="text-muted-foreground text-sm">No category performance data yet. Some tests may not be assigned to a category.</p>
+                      )}
+                  </CardContent>
+              </Card>
+          </div>
+        )}
         
         {(subjectPerformance.length === 0 && categoryPerformance.length === 0) && (
             <div className="text-center py-16 border-2 border-dashed rounded-lg">

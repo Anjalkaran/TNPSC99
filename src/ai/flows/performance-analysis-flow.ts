@@ -42,10 +42,10 @@ export type PerformanceInput = z.infer<typeof PerformanceInputSchema>;
 
 
 const PerformanceOutputSchema = z.object({
-  strengths: z.array(z.string()).describe('A list of 1-2 subjects where the user is performing well (proficiency > 75%).'),
-  weaknesses: z.array(z.string()).describe('A list of 2-3 granular topics (categories or units) where proficiency is lowest (< 60%), which the user should focus on.'),
-  recommendations: z.array(z.string()).describe('A list of 3-4 concise, actionable pieces of advice for improvement.'),
-  overallSummary: z.string().describe('A single, encouraging sentence summarizing the user\'s current standing.'),
+  strengths: z.array(z.string()).describe('A list of 1-2 subjects where the user is performing well (proficiency > 75%), formatted as "You are strong in {{name}} ({{proficiency}}%)".'),
+  weaknesses: z.array(z.string()).describe('A list of 2-3 granular topics (categories or units) where proficiency is lowest (< 60%), formatted as "Focus more on {{name}} ({{proficiency}}%)".'),
+  recommendations: z.array(z.string()).describe('A list of 3-4 concise, actionable pieces of advice for improvement, such as "Review the material for \'Topic Name\' and take more practice tests."'),
+  overallSummary: z.string().describe('A single, encouraging sentence summarizing the user\'s current standing and potential for improvement.'),
 });
 export type PerformanceOutput = z.infer<typeof PerformanceOutputSchema>;
 
@@ -94,10 +94,10 @@ if (process.env.GEMINI_API_KEY) {
 
       Based on this granular data, provide the following structured output:
 
-      1.  **strengths**: Identify 1-2 subjects where the user's proficiency is high (e.g., > 75%). If none, return an empty array.
-      2.  **weaknesses**: Identify the top 2-3 most specific topics (from categories or units) where proficiency is lowest (e.g., < 60%). Prioritize units if available for a weak area.
-      3.  **recommendations**: Generate 3-4 concise, actionable pieces of advice for improvement based on the weaknesses. For each weakness, create a specific recommendation. For example, if a user is weak in the unit "Age of Empires" for "Class 6 History", a recommendation could be "Your proficiency in 'Age of Empires' is low. Review the material in the 'Class 6 History' book for that unit.".
-      4.  **overallSummary**: Write a single, encouraging sentence that summarizes their current situation. Example: "You have a good grasp of some subjects, and with targeted practice on your weaker areas, you can see significant improvement."
+      1.  **strengths**: Identify 1-2 subjects where the user's proficiency is high (e.g., > 75%). For each, write a sentence like "You are strong in {{name}} ({{proficiency}}%)". If none, return an empty array.
+      2.  **weaknesses**: Identify the top 2-3 most specific topics (from categories or units) where proficiency is lowest (e.g., < 60%). Prioritize units if available for a weak area. For each, write a sentence like "Focus more on {{name}} ({{proficiency}}%)".
+      3.  **recommendations**: Generate 3-4 concise, actionable pieces of advice for improvement based on the weaknesses. For each weakness, create a specific recommendation. For example, if a user is weak in the unit "Age of Empires", a recommendation could be "Revise the material for 'Age of Empires' and take more practice tests.".
+      4.  **overallSummary**: Write a single, encouraging but realistic sentence that summarizes their current situation and potential. Example: "You are performing well overall, but need improvement in a few areas to boost your score."
     `,
     }
   );
@@ -114,8 +114,6 @@ if (process.env.GEMINI_API_KEY) {
       if (!output) {
         throw new Error("No output from LLM");
       }
-      
-      // The output is now structured, so no need for marked
       return output;
     }
   );
@@ -124,15 +122,52 @@ if (process.env.GEMINI_API_KEY) {
 
 export async function analyzePerformance(input: PerformanceInput): Promise<PerformanceOutput> {
   if (!performanceAnalysisFlow) {
-    console.warn("GEMINI_API_KEY is not set. Skipping AI performance analysis.");
-    const summary = input.language === 'ta' 
-        ? "AI பகுப்பாய்வு கிடைக்கவில்லை. உங்கள் ஜெமினி API விசையை உள்ளமைக்கவும்." 
-        : "AI analysis is unavailable. Please configure your Gemini API key.";
+    console.warn("GEMINI_API_KEY is not set. Using fallback AI performance analysis.");
+    
+    if (input.language === 'ta') {
+        return {
+            strengths: [],
+            weaknesses: [],
+            recommendations: [],
+            overallSummary: "AI நுண்ணறிவு விரைவில் கிடைக்கும். உங்கள் தயாரிப்பைத் தொடரவும்.",
+        };
+    }
+    
+    const allItems = [
+      ...input.subjects.map(s => ({ ...s, type: 'Subject' })),
+      ...input.categories.map(c => ({ ...c, type: 'Category' })),
+      ...input.units.map(u => ({ ...u, type: 'Unit' })),
+    ];
+
+    const strengths = allItems
+      .filter(item => item.proficiency >= 80)
+      .sort((a, b) => b.proficiency - a.proficiency)
+      .slice(0, 2)
+      .map(s => `You are strong in ${s.name} (${s.proficiency.toFixed(0)}%)`);
+
+    const weaknesses = allItems
+      .filter(item => item.proficiency < 60)
+      .sort((a, b) => a.proficiency - b.proficiency)
+      .slice(0, 3);
+      
+    const formattedWeaknesses = weaknesses.map(w => `Focus more on ${w.name} (${w.proficiency.toFixed(0)}%)`);
+
+    const recommendations = weaknesses.length > 0
+        ? [
+            ...weaknesses.map(w => `Review study materials and take more practice tests for '${w.name}'.`),
+            "Practice 10 MCQs daily in your weakest areas."
+          ].slice(0,4)
+        : ["Continue practicing consistently across all subjects to maintain your performance."];
+
+    const overallSummary = weaknesses.length > 0
+        ? "You have a good grasp of some subjects, and with targeted practice on your weaker areas, you can see significant improvement."
+        : "You are performing well across the board. Keep up the great work!";
+
     return {
-        strengths: [],
-        weaknesses: [],
-        recommendations: [],
-        overallSummary: summary,
+        strengths,
+        weaknesses: formattedWeaknesses,
+        recommendations,
+        overallSummary,
     };
   }
   return await performanceAnalysisFlow(input);
