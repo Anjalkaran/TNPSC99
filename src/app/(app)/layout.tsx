@@ -2,7 +2,7 @@
 
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import {
   Sidebar,
   SidebarInset,
@@ -17,7 +17,6 @@ import Link from 'next/link';
 import { SiteFooter } from '@/components/site-footer';
 import type { UserProfile } from '@/lib/types';
 import { doc } from 'firebase/firestore';
-import { TrialExpiryModal } from '@/components/trial-expiry-modal';
 import { ThemeSwitcher } from '@/components/theme-switcher';
 
 export default function AppLayout({
@@ -30,7 +29,6 @@ export default function AppLayout({
   const pathname = usePathname();
   const { t } = useTranslation();
   const firestore = useFirestore();
-  const [showExpiryModal, setShowExpiryModal] = useState(false);
 
   const userProfileRef = useMemoFirebase(
     () => (user ? doc(firestore, 'users', user.uid) : null),
@@ -39,16 +37,18 @@ export default function AppLayout({
   const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
 
   useEffect(() => {
-    if (!isUserLoading && !user) {
-      router.push('/login');
+    if (isUserLoading || isProfileLoading) {
+        return; // Wait until user and profile data have loaded
     }
-  }, [user, isUserLoading, router, pathname]);
 
-  useEffect(() => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+
     if (userProfile) {
-      // Admins should not be affected by subscription status
+      // Admins are exempt from subscription checks
       if (userProfile.isAdmin) {
-        setShowExpiryModal(false);
         return;
       }
       
@@ -56,14 +56,14 @@ export default function AppLayout({
       const expires = userProfile.subscriptionExpires ? new Date(userProfile.subscriptionExpires) : null;
       const hasExpired = expires ? expires < new Date() : false;
 
-      // Show the modal if the user was premium but their subscription has now expired.
-      if (isPremium && hasExpired) {
-        setShowExpiryModal(true);
-      } else {
-        setShowExpiryModal(false);
+      // If user is not premium or their premium has expired, redirect them to subscription page.
+      // But don't redirect if they are already on the subscription page.
+      if ((!isPremium || hasExpired) && pathname !== '/subscription') {
+        router.push('/subscription');
       }
     }
-  }, [userProfile]);
+  }, [user, isUserLoading, userProfile, isProfileLoading, pathname, router]);
+
 
   if (isUserLoading || !user || isProfileLoading) {
     return (
@@ -71,10 +71,6 @@ export default function AppLayout({
         Loading...
       </div>
     );
-  }
-
-  if (showExpiryModal) {
-    return <TrialExpiryModal isOpen={showExpiryModal} />;
   }
 
   const getPageTitle = () => {
