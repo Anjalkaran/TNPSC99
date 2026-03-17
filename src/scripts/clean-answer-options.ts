@@ -3,8 +3,8 @@
 import { db as firestore } from '@/firebase/admin'; // Use the admin SDK
 import type { Question } from '@/lib/types';
 
-async function cleanAnswerOptions() {
-  console.log('Starting to clean answer options and correct answers...');
+async function cleanQuestionFields() {
+  console.log('Starting to clean question text, answer options, and correct answers...');
   let batch = firestore.batch(); // Use admin firestore instance
   let questionsToUpdate = 0;
   let operationsInCurrentBatch = 0;
@@ -19,12 +19,24 @@ async function cleanAnswerOptions() {
       const question = doc.data() as Question;
       const updatePayload: { [key: string]: any } = {};
       let needsUpdate = false;
+      
+      const cleanString = (str: string) => str.replace(/\s*\([^)]*\)/g, '').trim();
+
+      // Clean question text
+      if (question.text && typeof question.text === 'string') {
+        const originalText = question.text;
+        const cleanedText = cleanString(originalText);
+        if (originalText !== cleanedText) {
+          updatePayload.text = cleanedText;
+          needsUpdate = true;
+        }
+      }
 
       // Clean answerOptions
       if (question.answerOptions && Array.isArray(question.answerOptions)) {
         const originalOptions = question.answerOptions;
         const cleanedOptions = originalOptions.map(option => 
-          typeof option === 'string' ? option.replace(/\s*\([^)]*\)/g, '').trim() : option
+          typeof option === 'string' ? cleanString(option) : option
         );
         const optionsChanged = originalOptions.some((original, index) => original !== cleanedOptions[index]);
         if (optionsChanged) {
@@ -36,7 +48,7 @@ async function cleanAnswerOptions() {
       // Clean correctAnswer
       if (question.correctAnswer && typeof question.correctAnswer === 'string') {
         const originalCorrectAnswer = question.correctAnswer;
-        const cleanedCorrectAnswer = originalCorrectAnswer.replace(/\s*\([^)]*\)/g, '').trim();
+        const cleanedCorrectAnswer = cleanString(originalCorrectAnswer);
         if (originalCorrectAnswer !== cleanedCorrectAnswer) {
           updatePayload.correctAnswer = cleanedCorrectAnswer;
           needsUpdate = true;
@@ -79,4 +91,4 @@ async function cleanAnswerOptions() {
   }
 }
 
-cleanAnswerOptions();
+cleanQuestionFields();
