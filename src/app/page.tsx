@@ -51,16 +51,16 @@ export default function PublicHomePage() {
 
   const features = [
     {
-      icon: <BookOpen className="h-8 w-8 text-orange-500" />,
-      title: 'Syllabus',
+      icon: <BookOpenCheck className="h-8 w-8 text-orange-500" />,
+      title: 'Syllabus wise test',
       description: 'Detailed Course Map',
-      href: '/online-tests'
+      href: '/subject-wise'
     },
     {
       icon: <FileText className="h-8 w-8 text-red-500" />,
       title: 'PDF Notes',
       description: 'Downloadable Content',
-      href: '/online-tests'
+      href: '/study-material'
     },
     {
       icon: <ClipboardList className="h-8 w-8 text-green-500" />,
