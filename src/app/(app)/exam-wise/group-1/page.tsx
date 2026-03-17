@@ -2,7 +2,7 @@
 import { useTranslation } from '@/hooks/use-translation';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Archive, ArrowRight, BookOpenCheck } from 'lucide-react';
+import { Archive, ArrowRight, BookOpenCheck, ClipboardList } from 'lucide-react';
 
 export default function Group1Page() {
   const { t } = useTranslation();
@@ -18,6 +18,11 @@ export default function Group1Page() {
       href: '/subject-wise?examGroup=Group%20I',
       icon: <BookOpenCheck className="h-8 w-8 text-blue-500" />,
     },
+    {
+      title: t('mock_tests'),
+      href: '/mock-test/group-1',
+      icon: <ClipboardList className="h-8 w-8 text-purple-500" />,
+    }
   ];
 
   return (
