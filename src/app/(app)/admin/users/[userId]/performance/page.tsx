@@ -255,23 +255,50 @@ export default function UserPerformancePage() {
 
         // Fetch all subjects
         if (subjectIds.size > 0) {
-            const subjectsQuery = query(collection(firestore, 'subjects'), where('__name__', 'in', Array.from(subjectIds)));
-            const subjectsSnapshot = await getDocs(subjectsQuery);
-            subjectsSnapshot.forEach(doc => subjectsMap.set(doc.id, doc.data() as Subject));
+            const idChunks = [];
+            const idArray = Array.from(subjectIds);
+            for (let i = 0; i < idArray.length; i += 30) {
+                idChunks.push(idArray.slice(i, i + 30));
+            }
+            for(const chunk of idChunks) {
+                if (chunk.length > 0) {
+                    const subjectsQuery = query(collection(firestore, 'subjects'), where('__name__', 'in', chunk));
+                    const subjectsSnapshot = await getDocs(subjectsQuery);
+                    subjectsSnapshot.forEach(doc => subjectsMap.set(doc.id, doc.data() as Subject));
+                }
+            }
         }
         
         // Fetch all categories
         if (categoryIds.size > 0) {
-            const categoriesQuery = query(collection(firestore, 'categories'), where('__name__', 'in', Array.from(categoryIds)));
-            const categoriesSnapshot = await getDocs(categoriesQuery);
-            categoriesSnapshot.forEach(doc => categoriesMap.set(doc.id, doc.data() as Category));
+            const idChunks = [];
+            const idArray = Array.from(categoryIds);
+            for (let i = 0; i < idArray.length; i += 30) {
+                idChunks.push(idArray.slice(i, i + 30));
+            }
+            for(const chunk of idChunks) {
+                if (chunk.length > 0) {
+                    const categoriesQuery = query(collection(firestore, 'categories'), where('__name__', 'in', chunk));
+                    const categoriesSnapshot = await getDocs(categoriesQuery);
+                    categoriesSnapshot.forEach(doc => categoriesMap.set(doc.id, doc.data() as Category));
+                }
+            }
         }
 
         // Fetch all units
         if (unitIds.size > 0) {
-            const unitsQuery = query(collection(firestore, 'units'), where('__name__', 'in', Array.from(unitIds)));
-            const unitsSnapshot = await getDocs(unitsQuery);
-            unitsSnapshot.forEach(doc => unitsMap.set(doc.id, doc.data() as Unit));
+            const idChunks = [];
+            const idArray = Array.from(unitIds);
+            for (let i = 0; i < idArray.length; i += 30) {
+                idChunks.push(idArray.slice(i, i + 30));
+            }
+            for(const chunk of idChunks) {
+                if (chunk.length > 0) {
+                    const unitsQuery = query(collection(firestore, 'units'), where('__name__', 'in', chunk));
+                    const unitsSnapshot = await getDocs(unitsQuery);
+                    unitsSnapshot.forEach(doc => unitsMap.set(doc.id, doc.data() as Unit));
+                }
+            }
         }
         
         const classIds = new Set<string>();
@@ -280,9 +307,18 @@ export default function UserPerformancePage() {
         });
 
         if(classIds.size > 0) {
-            const classesQuery = query(collection(firestore, 'classes'), where('__name__', 'in', Array.from(classIds)));
-            const classesSnapshot = await getDocs(classesQuery);
-            classesSnapshot.forEach(doc => classesMap.set(doc.id, doc.data() as Class));
+            const idChunks = [];
+            const idArray = Array.from(classIds);
+            for (let i = 0; i < idArray.length; i += 30) {
+                idChunks.push(idArray.slice(i, i + 30));
+            }
+            for(const chunk of idChunks) {
+                if (chunk.length > 0) {
+                    const classesQuery = query(collection(firestore, 'classes'), where('__name__', 'in', chunk));
+                    const classesSnapshot = await getDocs(classesQuery);
+                    classesSnapshot.forEach(doc => classesMap.set(doc.id, doc.data() as Class));
+                }
+            }
         }
        
         const subjectStats: { [key: string]: { totalScore: number, totalAttempts: number, totalQuestions: number } } = {};
