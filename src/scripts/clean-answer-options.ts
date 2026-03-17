@@ -4,7 +4,7 @@ import { db as firestore } from '@/firebase/admin'; // Use the admin SDK
 import type { Question } from '@/lib/types';
 
 async function cleanQuestionFields() {
-  console.log('Starting to clean question text, answer options, and correct answers...');
+  console.log('Starting to clean answer options and correct answers...');
   let batch = firestore.batch(); // Use admin firestore instance
   let questionsToUpdate = 0;
   let operationsInCurrentBatch = 0;
@@ -21,16 +21,6 @@ async function cleanQuestionFields() {
       let needsUpdate = false;
       
       const cleanString = (str: string) => str.replace(/\s*\([^)]*\)/g, '').trim();
-
-      // Clean question text
-      if (question.text && typeof question.text === 'string') {
-        const originalText = question.text;
-        const cleanedText = cleanString(originalText);
-        if (originalText !== cleanedText) {
-          updatePayload.text = cleanedText;
-          needsUpdate = true;
-        }
-      }
 
       // Clean answerOptions
       if (question.answerOptions && Array.isArray(question.answerOptions)) {
