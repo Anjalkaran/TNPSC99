@@ -4,7 +4,7 @@ import { db as firestore } from '@/firebase/admin'; // Use the admin SDK
 import type { Question } from '@/lib/types';
 
 async function cleanAnswerOptions() {
-  console.log('Starting to clean answer options...');
+  console.log('Starting to clean answer options and correct answers...');
   let batch = firestore.batch(); // Use admin firestore instance
   let questionsToUpdate = 0;
   let operationsInCurrentBatch = 0;
@@ -17,24 +17,34 @@ async function cleanAnswerOptions() {
 
     for (const doc of questionsSnapshot.docs) {
       const question = doc.data() as Question;
-      
-      if (!question.answerOptions || !Array.isArray(question.answerOptions)) {
-          console.log(`Skipping question ${doc.id} due to missing or invalid answerOptions.`);
-          continue;
+      const updatePayload: { [key: string]: any } = {};
+      let needsUpdate = false;
+
+      // Clean answerOptions
+      if (question.answerOptions && Array.isArray(question.answerOptions)) {
+        const originalOptions = question.answerOptions;
+        const cleanedOptions = originalOptions.map(option => 
+          typeof option === 'string' ? option.replace(/\s*\([^)]*\)/g, '').trim() : option
+        );
+        const optionsChanged = originalOptions.some((original, index) => original !== cleanedOptions[index]);
+        if (optionsChanged) {
+          updatePayload.answerOptions = cleanedOptions;
+          needsUpdate = true;
+        }
+      }
+
+      // Clean correctAnswer
+      if (question.correctAnswer && typeof question.correctAnswer === 'string') {
+        const originalCorrectAnswer = question.correctAnswer;
+        const cleanedCorrectAnswer = originalCorrectAnswer.replace(/\s*\([^)]*\)/g, '').trim();
+        if (originalCorrectAnswer !== cleanedCorrectAnswer) {
+          updatePayload.correctAnswer = cleanedCorrectAnswer;
+          needsUpdate = true;
+        }
       }
       
-      const originalOptions = question.answerOptions;
-      
-      // The logic to clean options (e.g., "Option A (Explanation)" -> "Option A")
-      const cleanedOptions = originalOptions.map(option => 
-        typeof option === 'string' ? option.replace(/\s*\([^)]*\)/g, '').trim() : option
-      );
-
-      // Check if any option has changed
-      const hasChanged = originalOptions.some((original, index) => original !== cleanedOptions[index]);
-
-      if (hasChanged) {
-        batch.update(doc.ref, { answerOptions: cleanedOptions });
+      if (needsUpdate) {
+        batch.update(doc.ref, updatePayload);
         questionsToUpdate++;
         operationsInCurrentBatch++;
       }
@@ -57,10 +67,10 @@ async function cleanAnswerOptions() {
     }
 
     if (questionsToUpdate > 0) {
-      console.log(`\nSuccessfully cleaned and updated answer options for ${questionsToUpdate} questions.`);
+      console.log(`\nSuccessfully cleaned data for ${questionsToUpdate} questions.`);
       console.log('The bulk edit is complete.');
     } else {
-      console.log('\nNo answer options needed cleaning. All data is already in the correct format.');
+      console.log('\nNo questions needed cleaning. All data is already in the correct format.');
     }
 
   } catch (error) {
