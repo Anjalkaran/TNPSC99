@@ -38,7 +38,7 @@ const formatQuestionText = (text: string) => {
     }
     // Automatically add line breaks before list items like a), b), c), d)
     // to fix formatting for questions where options were pasted into the text body.
-    return text.replace(/\s+([a-d]\))/g, '\n$1');
+    return text.replace(/\s*\([a-d]\)/g, '\n$1');
 };
 
 export function McqTest({ 
@@ -164,7 +164,7 @@ export function McqTest({
       status,
       currentQuestionIndex,
       answers: answers.map(a => a ?? -1),
-      sessionQuestionIds: questions.map(q => q.id),
+      questionIds: questions.map(q => q.id),
       score: status === 'completed' ? calculatedScore : 0,
       isMockTest: test.isMockTest || false,
     };
@@ -181,14 +181,17 @@ export function McqTest({
       await setDoc(attemptDocRef, attemptData, { merge: true });
   
       if (status === 'completed') {
-        const leaderboardScoresRef = collection(firestore, 'leaderboards', test.id, 'scores');
-        const scoreData: LeaderboardScore = {
+        const scoresRef = collection(firestore, 'scores');
+        const scoreData: Score = {
           userId: user.uid,
           username: user.displayName || 'Anonymous',
           score: calculatedScore,
-          completedAt: new Date().toISOString(),
+          testId: test.id,
+          testTitle: decodedTitle,
+          totalQuestionsInTest: questions.length,
+          createdAt: new Date().toISOString(),
         };
-        addDoc(leaderboardScoresRef, scoreData).catch(error => {
+        addDoc(scoresRef, scoreData).catch(error => {
           console.error("Could not write to leaderboard, it might be restricted.", error)
         });
       }

@@ -1,5 +1,5 @@
 'use client';
-import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { collection, query } from 'firebase/firestore';
 import { useMemo } from 'react';
 import type { Score } from '@/lib/types';
@@ -21,6 +21,16 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Trophy } from 'lucide-react';
 import { useTranslation } from '@/hooks/use-translation';
+import { cn } from '@/lib/utils';
+
+interface ProcessedScore {
+  userId: string;
+  username: string;
+  totalScore: number;
+  testsTaken: number;
+  totalQuestions: number;
+  accuracy: number;
+}
 
 export default function LeaderboardPage() {
   const firestore = useFirestore();
@@ -33,7 +43,7 @@ export default function LeaderboardPage() {
   const processedLeaderboard = useMemo(() => {
     if (!allScores) return [];
 
-    const userScores = new Map<string, { username: string; totalScore: number; testsTaken: number }>();
+    const userScores = new Map<string, { username: string; totalScore: number; testsTaken: number; totalQuestions: number }>();
 
     allScores.forEach(score => {
       if (!userScores.has(score.userId)) {
@@ -41,24 +51,39 @@ export default function LeaderboardPage() {
           username: score.username,
           totalScore: 0,
           testsTaken: 0,
+          totalQuestions: 0,
         });
       }
 
       const userData = userScores.get(score.userId)!;
       userData.totalScore += score.score;
       userData.testsTaken += 1;
+      userData.totalQuestions += score.totalQuestionsInTest || 0;
     });
 
-    const leaderboard = Array.from(userScores.entries()).map(([userId, data]) => ({
+    const leaderboard: ProcessedScore[] = Array.from(userScores.entries()).map(([userId, data]) => ({
       userId,
       ...data,
+      accuracy: data.totalQuestions > 0 ? (data.totalScore / data.totalQuestions) * 100 : 0,
     }));
 
-    // Sort by total score descending
-    leaderboard.sort((a, b) => b.totalScore - a.totalScore);
+    // Sort by accuracy descending, then by tests taken descending as a tie-breaker
+    leaderboard.sort((a, b) => {
+        if (b.accuracy !== a.accuracy) {
+            return b.accuracy - a.accuracy;
+        }
+        return b.testsTaken - a.testsTaken;
+    });
 
     return leaderboard;
   }, [allScores]);
+  
+  const getRankClass = (rank: number) => {
+    if (rank === 1) return 'bg-yellow-400/20';
+    if (rank === 2) return 'bg-slate-400/20';
+    if (rank === 3) return 'bg-orange-400/20';
+    return '';
+  }
 
   return (
     <div className="container mx-auto p-4 sm:p-6 md:p-8">
@@ -69,7 +94,7 @@ export default function LeaderboardPage() {
             {t('leaderboard')}
           </CardTitle>
           <CardDescription className="mt-2">
-            See the top performers based on their total score across all tests.
+            See the top performers based on their overall accuracy across all tests.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -82,13 +107,14 @@ export default function LeaderboardPage() {
                   <TableHead className="w-[80px]">தரம்</TableHead>
                   <TableHead>பயனர்</TableHead>
                   <TableHead className="text-center">தேர்வுகள்</TableHead>
-                  <TableHead className="text-right">மொத்த மதிப்பெண்</TableHead>
+                  <TableHead className="text-center">மொத்த மதிப்பெண்</TableHead>
+                  <TableHead className="text-right">துல்லியம்</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {processedLeaderboard.map((user, index) => (
-                  <TableRow key={user.userId}>
-                    <TableCell className="font-bold text-lg">
+                  <TableRow key={user.userId} className={cn(getRankClass(index + 1))}>
+                    <TableCell className="font-bold text-lg text-center">
                       {index + 1}
                     </TableCell>
                     <TableCell>
@@ -102,8 +128,11 @@ export default function LeaderboardPage() {
                       </div>
                     </TableCell>
                     <TableCell className="text-center">{user.testsTaken}</TableCell>
-                    <TableCell className="text-right font-semibold">
+                    <TableCell className="text-center font-medium">
                       {user.totalScore}
+                    </TableCell>
+                    <TableCell className="text-right font-semibold text-lg">
+                      {user.accuracy.toFixed(2)}%
                     </TableCell>
                   </TableRow>
                 ))}

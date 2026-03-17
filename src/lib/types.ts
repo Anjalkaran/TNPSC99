@@ -147,6 +147,7 @@ export interface Score {
   score: number;
   testId: string;
   testTitle: string;
+  totalQuestionsInTest: number;
   createdAt: string;
   classId?: string;
   subjectId?: string;
