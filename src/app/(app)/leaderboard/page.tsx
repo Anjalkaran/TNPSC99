@@ -36,8 +36,8 @@ export default function LeaderboardPage() {
   const firestore = useFirestore();
   const { t } = useTranslation();
 
-  // To clear the leaderboard, we simply don't fetch any scores.
-  const { data: allScores, isLoading } = useCollection<Score>(null);
+  const scoresQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'scores')) : null, [firestore]);
+  const { data: allScores, isLoading } = useCollection<Score>(scoresQuery);
 
   const processedLeaderboard = useMemo(() => {
     if (!allScores) return [];
@@ -74,13 +74,11 @@ export default function LeaderboardPage() {
         }
         const userData = userScores.get(score.userId)!;
         
-        // Always count this as a test taken
-        userData.testsTaken += 1;
-
-        // But only include it in accuracy calculations if the data is valid
+        // Only include valid attempts in our calculation
         const isValidScore = typeof score.totalQuestionsInTest === 'number' && score.totalQuestionsInTest > 0 && typeof score.score === 'number' && score.score <= score.totalQuestionsInTest;
         
         if (isValidScore) {
+          userData.testsTaken += 1;
           userData.totalScore += score.score;
           userData.totalQuestions += score.totalQuestionsInTest;
         }
