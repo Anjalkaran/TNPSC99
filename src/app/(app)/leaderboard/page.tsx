@@ -64,20 +64,19 @@ export default function LeaderboardPage() {
             return;
         }
 
-        if (!userScores.has(score.userId)) {
-            userScores.set(score.userId, {
-              username: score.username,
-              totalScore: 0,
-              testsTaken: 0,
-              totalQuestions: 0,
-            });
-        }
-        const userData = userScores.get(score.userId)!;
-        
         // Only include valid attempts in our calculation
         const isValidScore = typeof score.totalQuestionsInTest === 'number' && score.totalQuestionsInTest > 0 && typeof score.score === 'number' && score.score <= score.totalQuestionsInTest;
         
         if (isValidScore) {
+          if (!userScores.has(score.userId)) {
+              userScores.set(score.userId, {
+                username: score.username,
+                totalScore: 0,
+                testsTaken: 0,
+                totalQuestions: 0,
+              });
+          }
+          const userData = userScores.get(score.userId)!;
           userData.testsTaken += 1;
           userData.totalScore += score.score;
           userData.totalQuestions += score.totalQuestionsInTest;
@@ -89,16 +88,18 @@ export default function LeaderboardPage() {
       ...data,
       accuracy: data.totalQuestions > 0 ? (data.totalScore / data.totalQuestions) * 100 : 0,
     }));
+    
+    const filteredLeaderboard = leaderboard.filter(user => user.accuracy > 0);
 
     // Sort by accuracy descending, then by tests taken descending as a tie-breaker
-    leaderboard.sort((a, b) => {
+    filteredLeaderboard.sort((a, b) => {
         if (b.accuracy !== a.accuracy) {
             return b.accuracy - a.accuracy;
         }
         return b.testsTaken - a.testsTaken;
     });
 
-    return leaderboard;
+    return filteredLeaderboard;
   }, [allScores]);
   
   const getRankClass = (rank: number) => {
