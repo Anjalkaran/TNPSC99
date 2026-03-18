@@ -56,10 +56,15 @@ export default function LeaderboardPage() {
         }
     });
 
-    // 2. Aggregate scores from first attempts only
+    // 2. Aggregate scores from first attempts only, excluding certain users
     const userScores = new Map<string, { username: string; totalScore: number; testsTaken: number; totalQuestions: number }>();
 
     firstAttempts.forEach(score => {
+        // Exclude Admin and Anonymous users from the leaderboard
+        if (score.username === 'Admin' || score.username === 'Anonymous') {
+            return;
+        }
+
         if (!userScores.has(score.userId)) {
             userScores.set(score.userId, {
               username: score.username,
