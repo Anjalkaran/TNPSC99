@@ -74,9 +74,17 @@ export default function LeaderboardPage() {
             });
         }
         const userData = userScores.get(score.userId)!;
-        userData.totalScore += score.score;
+        
+        // Always count this as a test taken
         userData.testsTaken += 1;
-        userData.totalQuestions += score.totalQuestionsInTest || 0;
+
+        // But only include it in accuracy calculations if the data is valid
+        const isValidScore = typeof score.totalQuestionsInTest === 'number' && score.totalQuestionsInTest > 0 && typeof score.score === 'number' && score.score <= score.totalQuestionsInTest;
+        
+        if (isValidScore) {
+          userData.totalScore += score.score;
+          userData.totalQuestions += score.totalQuestionsInTest;
+        }
     });
 
     const leaderboard: ProcessedScore[] = Array.from(userScores.entries()).map(([userId, data]) => ({
