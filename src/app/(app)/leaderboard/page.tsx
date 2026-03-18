@@ -43,22 +43,35 @@ export default function LeaderboardPage() {
   const processedLeaderboard = useMemo(() => {
     if (!allScores) return [];
 
+    // 1. Filter for first attempts for each user and test
+    const firstAttempts = new Map<string, Score>();
+    
+    // Sort scores by creation date to easily find the first one
+    const sortedScores = [...allScores].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+
+    sortedScores.forEach(score => {
+        const key = `${score.userId}-${score.testId}`;
+        if (!firstAttempts.has(key)) {
+            firstAttempts.set(key, score);
+        }
+    });
+
+    // 2. Aggregate scores from first attempts only
     const userScores = new Map<string, { username: string; totalScore: number; testsTaken: number; totalQuestions: number }>();
 
-    allScores.forEach(score => {
-      if (!userScores.has(score.userId)) {
-        userScores.set(score.userId, {
-          username: score.username,
-          totalScore: 0,
-          testsTaken: 0,
-          totalQuestions: 0,
-        });
-      }
-
-      const userData = userScores.get(score.userId)!;
-      userData.totalScore += score.score;
-      userData.testsTaken += 1;
-      userData.totalQuestions += score.totalQuestionsInTest || 0;
+    firstAttempts.forEach(score => {
+        if (!userScores.has(score.userId)) {
+            userScores.set(score.userId, {
+              username: score.username,
+              totalScore: 0,
+              testsTaken: 0,
+              totalQuestions: 0,
+            });
+        }
+        const userData = userScores.get(score.userId)!;
+        userData.totalScore += score.score;
+        userData.testsTaken += 1;
+        userData.totalQuestions += score.totalQuestionsInTest || 0;
     });
 
     const leaderboard: ProcessedScore[] = Array.from(userScores.entries()).map(([userId, data]) => ({
@@ -107,7 +120,7 @@ export default function LeaderboardPage() {
                   <TableHead className="w-[80px]">தரம்</TableHead>
                   <TableHead>பயனர்</TableHead>
                   <TableHead className="text-center">தேர்வுகள்</TableHead>
-                  <TableHead className="text-center">மொத்த மதிப்பெண்</TableHead>
+                  <TableHead className="text-center">கேள்விகள்</TableHead>
                   <TableHead className="text-right">துல்லியம்</TableHead>
                 </TableRow>
               </TableHeader>
@@ -129,7 +142,7 @@ export default function LeaderboardPage() {
                     </TableCell>
                     <TableCell className="text-center">{user.testsTaken}</TableCell>
                     <TableCell className="text-center font-medium">
-                      {user.totalScore}
+                      {user.totalQuestions}
                     </TableCell>
                     <TableCell className="text-right font-semibold text-lg">
                       {user.accuracy.toFixed(2)}%
