@@ -89,7 +89,7 @@ export default function LeaderboardPage() {
       accuracy: data.totalQuestions > 0 ? (data.totalScore / data.totalQuestions) * 100 : 0,
     }));
     
-    const filteredLeaderboard = leaderboard.filter(user => user.accuracy > 0);
+    const filteredLeaderboard = leaderboard.filter(user => user.testsTaken > 0 && user.accuracy > 0);
 
     // Sort by accuracy descending, then by tests taken descending as a tie-breaker
     filteredLeaderboard.sort((a, b) => {
