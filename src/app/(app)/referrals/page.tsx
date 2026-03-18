@@ -67,7 +67,7 @@ export default function ReferralsPage() {
 
   const copyToClipboard = () => {
     if (userProfile?.referralCode) {
-      const referralLink = `${window.location.origin}/signup?ref=${userProfile.referralCode}`;
+      const referralLink = `https://tnpsc99.com/signup?ref=${userProfile.referralCode}`;
       navigator.clipboard.writeText(referralLink);
       toast({
         title: 'Referral Link Copied!',
@@ -78,7 +78,7 @@ export default function ReferralsPage() {
 
   const handleShare = async () => {
     if (userProfile?.referralCode) {
-      const referralLink = `${window.location.origin}/signup?ref=${userProfile.referralCode}`;
+      const referralLink = `https://tnpsc99.com/signup?ref=${userProfile.referralCode}`;
       const shareData = {
         title: 'Join me on TNPSC99!',
         text: `Use my referral code to sign up for TNPSC99 and get started with your exam preparation.`,
