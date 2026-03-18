@@ -36,9 +36,8 @@ export default function LeaderboardPage() {
   const firestore = useFirestore();
   const { t } = useTranslation();
 
-  const scoresCollection = useMemoFirebase(() => (firestore ? collection(firestore, 'scores') : null), [firestore]);
-  const scoresQuery = useMemoFirebase(() => (scoresCollection ? query(scoresCollection) : null), [scoresCollection]);
-  const { data: allScores, isLoading } = useCollection<Score>(scoresQuery);
+  // To clear the leaderboard, we simply don't fetch any scores.
+  const { data: allScores, isLoading } = useCollection<Score>(null);
 
   const processedLeaderboard = useMemo(() => {
     if (!allScores) return [];
