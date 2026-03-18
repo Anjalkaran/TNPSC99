@@ -79,7 +79,7 @@ export function AppSidebar() {
       { href: '/study-material', label: t('study_material'), icon: Library },
       { href: '/bookmarks', label: 'Bookmarks', icon: Bookmark },
       { href: '/subscription', label: 'Subscription', icon: Crown },
-      { href: '/referrals', label: 'Referrals', icon: Gift, adminOnly: true },
+      { href: '/referrals', label: 'Referrals', icon: Gift },
       { href: '/ask-your-doubt', label: t('ask_your_doubt'), icon: HelpCircle, adminOnly: true, comingSoon: true },
       { href: '/profile', label: t('profile'), icon: User },
       { href: '/exam-history', label: t('exam_history'), icon: History },
