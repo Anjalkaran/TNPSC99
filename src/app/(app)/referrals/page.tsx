@@ -26,6 +26,25 @@ export default function ReferralsPage() {
   const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
   
   useEffect(() => {
+    // When profile is loaded, check if referralCode exists. If not, create it.
+    if (userProfile && !userProfile.referralCode && userProfileRef && user) {
+      const generateReferralCode = async () => {
+        const newReferralCode = user.uid.slice(0, 8);
+        try {
+          await updateDoc(userProfileRef, { referralCode: newReferralCode });
+          toast({
+            title: "Referral Code Generated!",
+            description: "Your unique referral code has been created.",
+          });
+        } catch (error) {
+          console.error("Failed to update user with referral code", error);
+        }
+      };
+      generateReferralCode();
+    }
+  }, [userProfile, userProfileRef, user, toast]);
+
+  useEffect(() => {
     if (userProfile && userProfile.referralCount >= REFERRAL_GOAL && userProfile.subscriptionStatus !== 'premium') {
       const grantReferralAccess = async () => {
         if (userProfileRef) {
@@ -120,7 +139,7 @@ export default function ReferralsPage() {
               <div>
                 <label htmlFor="referral-code" className="text-sm font-medium">Your Unique Referral Code</label>
                 <div className="flex w-full items-center space-x-2 mt-1">
-                  <Input id="referral-code" value={userProfile.referralCode} readOnly />
+                  <Input id="referral-code" value={userProfile.referralCode || ''} readOnly />
                   <Button type="button" size="icon" onClick={copyToClipboard} aria-label="Copy referral link">
                     <Copy className="h-4 w-4" />
                   </Button>
