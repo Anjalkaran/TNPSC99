@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
-import { Copy, Gift } from 'lucide-react';
+import { Copy, Gift, Share2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useEffect } from 'react';
@@ -48,11 +48,41 @@ export default function ReferralsPage() {
 
   const copyToClipboard = () => {
     if (userProfile?.referralCode) {
-      navigator.clipboard.writeText(userProfile.referralCode);
+      const referralLink = `${window.location.origin}/signup?ref=${userProfile.referralCode}`;
+      navigator.clipboard.writeText(referralLink);
       toast({
-        title: 'Code Copied!',
-        description: 'Your referral code has been copied to the clipboard.',
+        title: 'Referral Link Copied!',
+        description: 'Your referral link has been copied to the clipboard.',
       });
+    }
+  };
+
+  const handleShare = async () => {
+    if (userProfile?.referralCode) {
+      const referralLink = `${window.location.origin}/signup?ref=${userProfile.referralCode}`;
+      const shareData = {
+        title: 'Join me on TNPSC99!',
+        text: `Use my referral code to sign up for TNPSC99 and get started with your exam preparation.`,
+        url: referralLink,
+      };
+
+      if (navigator.share) {
+        try {
+          await navigator.share(shareData);
+          toast({
+            title: 'Link Shared!',
+            description: 'Thank you for sharing!',
+          });
+        } catch (error) {
+          console.log('Share was cancelled or failed', error);
+        }
+      } else {
+        navigator.clipboard.writeText(referralLink);
+        toast({
+          title: 'Link Copied!',
+          description: 'Your referral link has been copied to the clipboard. Share it with your friends!',
+        });
+      }
     }
   };
 
@@ -73,7 +103,7 @@ export default function ReferralsPage() {
             User Referral Program
           </CardTitle>
           <CardDescription>
-            Invite 10 friends to get a one month free subscription to all tests. Share your code and track your progress here.
+            Invite 10 friends to get a one month free subscription to all tests. Share your referral link and track your progress here.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -91,8 +121,11 @@ export default function ReferralsPage() {
                 <label htmlFor="referral-code" className="text-sm font-medium">Your Unique Referral Code</label>
                 <div className="flex w-full items-center space-x-2 mt-1">
                   <Input id="referral-code" value={userProfile.referralCode} readOnly />
-                  <Button type="button" size="icon" onClick={copyToClipboard} aria-label="Copy code">
+                  <Button type="button" size="icon" onClick={copyToClipboard} aria-label="Copy referral link">
                     <Copy className="h-4 w-4" />
+                  </Button>
+                  <Button type="button" size="icon" onClick={handleShare} aria-label="Share referral link">
+                    <Share2 className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
