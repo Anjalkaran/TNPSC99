@@ -6,7 +6,8 @@ import type { Test } from '@/lib/types';
 
 const CATEGORIES_TO_MERGE = [
     'கூற்று - காரணம்',
-    'தவறான இணையைக் கண்டறிக'
+    'தவறான இணையைக் கண்டறிக',
+    'பொருத்துக'
 ];
 
 async function mergeDuplicateCategoryTests() {
