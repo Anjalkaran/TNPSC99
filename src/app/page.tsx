@@ -52,26 +52,26 @@ export default function PublicHomePage() {
 
   const features = [
     {
-      icon: <BookOpenCheck className="h-8 w-8 text-orange-500" />,
+      icon: <BookOpenCheck className="h-10 w-10 text-orange-500" />,
       title: 'Syllabus wise test',
       description: 'Detailed Course Map',
       href: '/subject-wise'
     },
     {
-      icon: <FileText className="h-8 w-8 text-red-500" />,
+      icon: <FileText className="h-10 w-10 text-red-500" />,
       title: 'PDF Notes',
       description: 'Coming Soon',
       href: '#',
       comingSoon: true
     },
     {
-      icon: <Archive className="h-8 w-8 text-indigo-500" />,
+      icon: <Archive className="h-10 w-10 text-indigo-500" />,
       title: 'Previous Year',
       description: 'Exam Patterns',
       href: '/previous-year'
     },
     {
-        icon: <Newspaper className="h-8 w-8 text-teal-500" />,
+        icon: <Newspaper className="h-10 w-10 text-teal-500" />,
         title: 'Current Affairs',
         description: 'Coming Soon',
         href: '#',
@@ -84,19 +84,19 @@ export default function PublicHomePage() {
       title: t('group_1_tests'),
       description: t('group_1_tests_short_desc'),
       href: '/exam-wise/group-1', // Assuming this path
-      icon: <BookOpenCheck className="h-8 w-8 text-blue-500" />,
+      icon: <BookOpenCheck className="h-10 w-10 text-blue-500" />,
     },
     {
       title: t('group_2_tests'),
       description: t('group_2_tests_short_desc'),
       href: '/exam-wise/group-2',
-      icon: <BookOpenCheck className="h-8 w-8 text-green-500" />,
+      icon: <BookOpenCheck className="h-10 w-10 text-green-500" />,
     },
     {
       title: t('group_4_tests'),
       description: t('group_4_tests_short_desc'),
       href: '/exam-wise/group-4',
-      icon: <BookOpenCheck className="h-8 w-8 text-red-500" />,
+      icon: <BookOpenCheck className="h-10 w-10 text-red-500" />,
     },
   ];
 
@@ -153,10 +153,10 @@ export default function PublicHomePage() {
                         <div className="p-3 bg-gray-100 rounded-lg mb-4">
                             {category.icon}
                         </div>
-                        <h3 className="text-md md:text-lg font-semibold mb-1 text-gray-800">
+                        <h3 className="text-lg font-semibold mb-1 text-gray-800">
                           {category.title}
                         </h3>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-sm text-gray-500">
                           {category.description}
                         </p>
                     </CardContent>
@@ -185,10 +185,10 @@ export default function PublicHomePage() {
                         <div className="p-3 bg-gray-100 rounded-lg mb-4">
                             {feature.icon}
                         </div>
-                        <h3 className="text-md md:text-lg font-semibold mb-1 text-gray-800">
+                        <h3 className="text-lg font-semibold mb-1 text-gray-800">
                           {feature.title}
                         </h3>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-sm text-gray-500">
                           {feature.description}
                         </p>
                     </CardContent>

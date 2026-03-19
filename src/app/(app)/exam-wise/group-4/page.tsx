@@ -11,17 +11,17 @@ export default function Group4Page() {
     {
       title: t('previous_year_papers'),
       href: '/previous-year/group-4',
-      icon: <Archive className="h-8 w-8 text-amber-500" />,
+      icon: <Archive className="h-10 w-10 text-amber-500" />,
     },
     {
       title: t('syllabus_wise_tests'),
       href: '/subject-wise?examGroup=Group%20IV',
-      icon: <BookOpenCheck className="h-8 w-8 text-blue-500" />,
+      icon: <BookOpenCheck className="h-10 w-10 text-blue-500" />,
     },
     {
       title: t('mock_tests'),
       href: '/mock-test/group-4',
-      icon: <ClipboardList className="h-8 w-8 text-purple-500" />,
+      icon: <ClipboardList className="h-10 w-10 text-purple-500" />,
     }
   ];
 
@@ -40,7 +40,7 @@ export default function Group4Page() {
             <Card className="flex h-full flex-col overflow-hidden transition-all duration-300 hover:shadow-xl group hover:ring-1 hover:ring-primary">
               <CardContent className="flex flex-grow flex-col items-center justify-center p-6 gap-4 text-center">
                  {category.icon}
-                <CardTitle className="text-xl">{category.title}</CardTitle>
+                <CardTitle className="text-xl md:text-2xl">{category.title}</CardTitle>
               </CardContent>
               <CardFooter className="justify-center">
                  <div className="flex items-center text-sm font-medium text-primary group-hover:underline">

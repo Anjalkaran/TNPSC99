@@ -8,9 +8,9 @@ export default function PreviousYearPapersPage() {
   const { t } = useTranslation();
 
   const examGroups = [
-    { name: 'Group I', href: '/previous-year/group-1', icon: <Flame className="h-8 w-8 text-red-500" /> },
-    { name: 'Group II', href: '/previous-year/group-2', icon: <BookCopy className="h-8 w-8 text-green-500" /> },
-    { name: 'Group IV', href: '/previous-year/group-4', icon: <Archive className="h-8 w-8 text-amber-500" /> },
+    { name: 'Group I', href: '/previous-year/group-1', icon: <Flame className="h-10 w-10 text-red-500" /> },
+    { name: 'Group II', href: '/previous-year/group-2', icon: <BookCopy className="h-10 w-10 text-green-500" /> },
+    { name: 'Group IV', href: '/previous-year/group-4', icon: <Archive className="h-10 w-10 text-amber-500" /> },
   ];
 
   return (
@@ -28,7 +28,7 @@ export default function PreviousYearPapersPage() {
             <Card className="flex h-full flex-col overflow-hidden transition-all duration-300 hover:shadow-xl group hover:ring-1 hover:ring-primary">
               <CardContent className="flex flex-grow flex-col items-center justify-center p-6 gap-4 text-center">
                  {group.icon}
-                <CardTitle className="text-xl">{group.name}</CardTitle>
+                <CardTitle className="text-xl md:text-2xl">{group.name}</CardTitle>
               </CardContent>
                <CardFooter className="justify-center">
                  <div className="flex items-center text-sm font-medium text-primary group-hover:underline">

@@ -80,7 +80,7 @@ export default function OnlineTestsPage() {
                 <Card className="flex h-full flex-col overflow-hidden transition-all duration-300 hover:shadow-xl text-center group-hover:ring-1 group-hover:ring-primary">
                   <CardContent className="flex-grow p-6 flex flex-col items-center justify-center gap-4">
                     <Book className={cn("w-10 h-10", iconColors[index % iconColors.length])} />
-                    <CardTitle className="text-xl">{cls.name_ta || cls.name}</CardTitle>
+                    <CardTitle className="text-xl md:text-2xl">{cls.name_ta || cls.name}</CardTitle>
                   </CardContent>
                   <CardFooter className="justify-center">
                     <div className="flex items-center text-sm font-medium text-primary group-hover:underline">

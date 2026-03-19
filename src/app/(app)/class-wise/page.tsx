@@ -20,7 +20,7 @@ export default function ClassWiseTestsPage() {
         <Link href="/online-tests" className="block hover:no-underline group">
           <Card className="flex flex-col overflow-hidden hover:shadow-xl hover:shadow-accent/20 transition-all duration-300 h-full group-hover:ring-1 group-hover:ring-primary">
               <CardHeader className="flex-row items-center gap-4">
-                  <BookCopy className="h-8 w-8 text-primary" />
+                  <BookCopy className="h-10 w-10 text-primary" />
                   <div>
                       <CardTitle>Samacheer Kalvi Books</CardTitle>
                       <CardDescription>Tests based on the current Samacheer Kalvi curriculum.</CardDescription>
@@ -36,7 +36,7 @@ export default function ClassWiseTestsPage() {
         <Link href="/online-tests?bookType=old" className="block hover:no-underline group">
             <Card className="flex flex-col overflow-hidden hover:shadow-xl hover:shadow-accent/20 transition-all duration-300 h-full group-hover:ring-1 group-hover:ring-primary">
                 <CardHeader className="flex-row items-center gap-4">
-                    <Archive className="h-8 w-8 text-primary" />
+                    <Archive className="h-10 w-10 text-primary" />
                     <div>
                         <CardTitle>Old Books</CardTitle>
                         <CardDescription>Practice tests from older syllabus books.</CardDescription>

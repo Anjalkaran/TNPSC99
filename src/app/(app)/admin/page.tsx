@@ -32,8 +32,8 @@ export default function AdminPage() {
                 <Link key={section.label} href={section.href} className={section.comingSoon ? "pointer-events-none" : ""}>
                     <Card className="h-full hover:border-primary hover:ring-1 hover:ring-primary transition-all">
                         <CardContent className="p-4 flex flex-col items-center justify-center text-center gap-2">
-                            <div className="text-primary">{section.icon}</div>
-                            <span className="font-semibold">{section.label}</span>
+                            <div className="text-primary text-4xl">{section.icon}</div>
+                            <h3 className="font-semibold text-lg">{section.label}</h3>
                             {section.comingSoon && <span className="text-xs text-muted-foreground">({t('coming_soon')})</span>}
                         </CardContent>
                     </Card>
