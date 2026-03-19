@@ -7,8 +7,11 @@ import type { Test } from '@/lib/types';
 const renames = [
     { from: 'தவறான இணையைத் தேர்க', to: 'தவறான இணையைக் கண்டறிக' },
     { from: 'Assertion-Reason', to: 'கூற்று - காரணம்' },
+    { from: 'assertion-reason', to: 'கூற்று - காரணம்' },
     { from: 'Find the Incorrect Pair', to: 'தவறான இணையைக் கண்டறிக' },
-    { from: 'Matching', to: 'பொருத்துக' }
+    { from: 'Find-Incorrect', to: 'தவறான இணையைக் கண்டறிக' },
+    { from: 'Matching', to: 'பொருத்துக' },
+    { from: 'matching', to: 'பொருத்துக' }
 ];
 
 async function fixCategoryNames() {
