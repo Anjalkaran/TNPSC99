@@ -324,7 +324,7 @@ export default function SubjectTestsPage() {
       </div>
       
       {sortedCategoryIds.length > 0 && subjectTests && subjectTests.length > 0 ? (
-         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {sortedCategoryIds.map(catId => {
                 const categoryName = catId === 'uncategorized' ? 'Uncategorized' : categoryMap.get(catId) || 'Category';
                 const testCount = testsByCategory[catId]?.length || 0;

@@ -98,7 +98,7 @@ export default function ClassSubjectsPage() {
       {isLoading ? (
         <p>Loading subjects...</p>
       ) : subjects.length > 0 ? (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {subjects.map(subject => {
             const isTamilSubject = subject.id === 'tamil';
             const href = isTamilSubject

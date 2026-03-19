@@ -27,7 +27,7 @@ export default function AdminPage() {
             <p className="text-muted-foreground">{t('admin_panel_desc')}</p>
         </div>
         
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {adminSections.map(section => (
                 <Link key={section.label} href={section.href} className={section.comingSoon ? "pointer-events-none" : ""}>
                     <Card className="h-full hover:border-primary hover:ring-1 hover:ring-primary transition-all">

@@ -177,7 +177,7 @@ export default function PublicHomePage() {
               <h2 className="text-3xl md:text-4xl font-bold text-green-700">Our Core Features</h2>
               <p className="mt-2 text-gray-500">Everything you need to succeed in one place</p>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
               {features.map((feature, index) => (
                 <Link href={feature.href} key={index} className={cn("block hover:no-underline group", feature.comingSoon && "pointer-events-none opacity-60")}>
                   <Card className="text-center h-full transition-all group-hover:shadow-lg group-hover:ring-1 group-hover:ring-primary">

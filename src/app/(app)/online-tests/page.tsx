@@ -73,7 +73,7 @@ export default function OnlineTestsPage() {
       {isLoading && <p>Loading classes...</p>}
 
       {!isLoading && sortedClasses && sortedClasses.length > 0 ? (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {sortedClasses.map((cls, index) => {
             return (
               <Link key={cls.id} href={`/class/${cls.id}?bookType=${bookType}`} className="block hover:no-underline group">

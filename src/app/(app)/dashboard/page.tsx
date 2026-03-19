@@ -73,7 +73,7 @@ export default function DashboardPage() {
         </form>
       </section>
 
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 max-w-5xl mx-auto">
+      <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 max-w-5xl mx-auto">
         {categories.map((category) => (
            <Link href={category.href} key={category.title} className="block hover:no-underline group">
             <Card className="flex h-full flex-col overflow-hidden transition-all duration-300 hover:shadow-xl group-hover:ring-1 group-hover:ring-primary">
