@@ -37,22 +37,22 @@ export default function DashboardPage() {
     {
       title: t('class_wise_tests'),
       href: '/class-wise',
-      icon: <Book className="h-10 w-10 text-blue-500" />,
+      icon: <Book className="h-12 w-12 text-blue-500" />,
     },
     {
       title: t('group_1_tests'),
       href: '/exam-wise/group-1',
-      icon: <Flame className="h-10 w-10 text-red-500" />,
+      icon: <Flame className="h-12 w-12 text-red-500" />,
     },
     {
       title: t('group_2_tests'),
       href: '/exam-wise/group-2',
-      icon: <BookCopy className="h-10 w-10 text-green-500" />,
+      icon: <BookCopy className="h-12 w-12 text-green-500" />,
     },
     {
       title: t('group_4_tests'),
       href: '/exam-wise/group-4',
-      icon: <Archive className="h-10 w-10 text-amber-500" />,
+      icon: <Archive className="h-12 w-12 text-amber-500" />,
     },
   ];
 
@@ -76,12 +76,12 @@ export default function DashboardPage() {
       <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 max-w-5xl mx-auto">
         {categories.map((category) => (
            <Link href={category.href} key={category.title} className="block hover:no-underline group">
-            <Card className="flex h-full flex-col overflow-hidden transition-all duration-300 hover:shadow-xl group-hover:ring-1 group-hover:ring-primary">
-              <CardContent className="flex flex-grow flex-col items-center justify-center p-6 gap-4 text-center">
+            <Card className="flex flex-col overflow-hidden transition-all duration-300 hover:shadow-xl group-hover:ring-1 group-hover:ring-primary">
+              <CardContent className="flex flex-grow flex-col items-center justify-center p-4 gap-2 text-center">
                 {category.icon}
-                <CardTitle className="text-xl md:text-2xl">{category.title}</CardTitle>
+                <CardTitle className="text-2xl">{category.title}</CardTitle>
               </CardContent>
-              <CardFooter className="justify-center">
+              <CardFooter className="justify-center p-4 pt-0">
                  <div className="flex items-center text-sm font-medium text-primary group-hover:underline">
                     {t('view_tests')}
                     <ArrowRight className="ml-2 h-4 w-4" />
