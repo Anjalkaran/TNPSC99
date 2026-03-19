@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import { db as firestore } from '@/firebase/admin';
@@ -11,7 +12,9 @@ const renames = [
     { from: 'Find the Incorrect Pair', to: 'தவறான இணையைக் கண்டறிக' },
     { from: 'Find-Incorrect', to: 'தவறான இணையைக் கண்டறிக' },
     { from: 'Matching', to: 'பொருத்துக' },
-    { from: 'matching', to: 'பொருத்துக' }
+    { from: 'matching', to: 'பொருத்துக' },
+    { from: 'find-incorrect', to: 'தவறான இணையைக் கண்டறிக' },
+    { from: 'Find the Incorrect', to: 'தவறான இணையைக் கண்டறிக' }
 ];
 
 async function fixCategoryNames() {
