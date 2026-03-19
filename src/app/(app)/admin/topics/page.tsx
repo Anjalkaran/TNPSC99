@@ -717,6 +717,213 @@ function ExistingUnitsList() {
     );
 }
 
+const categoryFormSchema = z.object({
+  name: z.string().min(1, 'Category name is required.'),
+  name_ta: z.string().optional(),
+});
+type CategoryFormValues = z.infer<typeof categoryFormSchema>;
+
+function EditCategoryForm({ category, onFinished }: { category: Category; onFinished: () => void }) {
+    const firestore = useFirestore();
+    const { toast } = useToast();
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const form = useForm<CategoryFormValues>({
+        resolver: zodResolver(categoryFormSchema),
+        defaultValues: {
+            name: category.name || '',
+            name_ta: category.name_ta || '',
+        },
+    });
+
+    const onSubmit = async (values: CategoryFormValues) => {
+        if (!firestore) return;
+        setIsSubmitting(true);
+        try {
+            const categoryRef = doc(firestore, 'categories', category.id);
+            await updateDoc(categoryRef, {
+                name: values.name,
+                name_ta: values.name_ta,
+            });
+            toast({ title: 'Category Updated' });
+            onFinished();
+        } catch (error: any) {
+            toast({ variant: 'destructive', title: "Error", description: error.message });
+            console.error("Error updating category", error);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+    
+    return (
+        <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Category Name (English)</FormLabel>
+                            <FormControl>
+                                <Input placeholder="e.g., History" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="name_ta"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Category Name (Tamil)</FormLabel>
+                            <FormControl>
+                                <Input placeholder="e.g., வரலாறு" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <DialogFooter>
+                    <DialogClose asChild>
+                        <Button type="button" variant="secondary">Cancel</Button>
+                    </DialogClose>
+                    <Button type="submit" disabled={isSubmitting}>
+                        {isSubmitting ? 'Updating...' : 'Update Category'}
+                    </Button>
+                </DialogFooter>
+            </form>
+        </Form>
+    );
+}
+
+function ExistingCategoriesList() {
+    const { t, language } = useTranslation();
+    const firestore = useFirestore();
+    const { toast } = useToast();
+    const [openDialogs, setOpenDialogs] = useState<Record<string, boolean>>({});
+
+    const categoriesCollection = useMemoFirebase(() => firestore ? collection(firestore, 'categories') : null, [firestore]);
+    const { data: categories, isLoading: categoriesLoading } = useCollection<Category>(categoriesCollection);
+
+    const subjectsCollection = useMemoFirebase(() => firestore ? collection(firestore, 'subjects') : null, [firestore]);
+    const { data: subjects, isLoading: subjectsLoading } = useCollection<Subject>(subjectsCollection);
+
+    const groupedCategories = useMemo(() => {
+        if (!categories || !subjects) return {};
+        const subjectMap = new Map(subjects.map(s => [s.id, s.name_ta || s.name]));
+        
+        return categories.reduce((acc, category) => {
+            const subjectName = subjectMap.get(category.subjectId) || 'Uncategorized';
+            if (!acc[subjectName]) {
+                acc[subjectName] = [];
+            }
+            acc[subjectName].push(category);
+            return acc;
+        }, {} as Record<string, Category[]>);
+    }, [categories, subjects, language]);
+
+    const handleDelete = async (categoryId: string) => {
+        if (!firestore) return;
+        
+        // Check if any units are using this category
+        const unitsRef = collection(firestore, 'units');
+        const q = query(unitsRef, where('categoryId', '==', categoryId));
+        const snapshot = await getDocs(q);
+        
+        if (!snapshot.empty) {
+            toast({
+                variant: 'destructive',
+                title: 'Cannot Delete Category',
+                description: `This category is being used by ${snapshot.size} unit(s). Please reassign them before deleting.`,
+            });
+            return;
+        }
+
+        try {
+            await deleteDoc(doc(firestore, 'categories', categoryId));
+            toast({ title: 'Category Deleted' });
+        } catch (error: any) {
+            toast({ variant: 'destructive', title: 'Error', description: error.message });
+            console.error('Error deleting category', error);
+        }
+    };
+
+    const setDialogState = (categoryId: string, isOpen: boolean) => {
+        setOpenDialogs(prev => ({ ...prev, [categoryId]: isOpen }));
+    };
+
+    if (categoriesLoading || subjectsLoading) {
+        return <p>Loading categories...</p>;
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Existing Categories</CardTitle>
+                <CardDescription>Manage or delete existing categories.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {Object.keys(groupedCategories).length > 0 ? (
+                    <Accordion type="multiple" className="w-full">
+                        {Object.entries(groupedCategories).sort(([a], [b]) => a.localeCompare(b)).map(([subjectName, cats]) => (
+                            <AccordionItem value={subjectName} key={subjectName}>
+                                <AccordionTrigger>{subjectName}</AccordionTrigger>
+                                <AccordionContent>
+                                    <ul className="space-y-2 pl-4">
+                                        {cats.sort((a,b) => (a.name_ta || a.name).localeCompare(b.name_ta || b.name)).map(cat => (
+                                            <li key={cat.id} className="flex justify-between items-center p-2 border-b">
+                                                <div>
+                                                    <p className="font-medium">{cat.name_ta || cat.name}</p>
+                                                    <p className="text-xs text-muted-foreground">{cat.name}</p>
+                                                </div>
+                                                <div className="flex items-center">
+                                                    <Dialog open={openDialogs[cat.id] || false} onOpenChange={(isOpen) => setDialogState(cat.id, isOpen)}>
+                                                        <DialogTrigger asChild>
+                                                            <Button variant="ghost" size="icon"><Edit className="h-4 w-4" /></Button>
+                                                        </DialogTrigger>
+                                                        <DialogContent>
+                                                            <DialogHeader>
+                                                                <DialogTitle>Edit Category</DialogTitle>
+                                                                <DialogDescription>Update the category names.</DialogDescription>
+                                                            </DialogHeader>
+                                                            <EditCategoryForm category={cat} onFinished={() => setDialogState(cat.id, false)} />
+                                                        </DialogContent>
+                                                    </Dialog>
+                                                    <AlertDialog>
+                                                        <AlertDialogTrigger asChild>
+                                                            <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive"><Trash className="h-4 w-4" /></Button>
+                                                        </AlertDialogTrigger>
+                                                        <AlertDialogContent>
+                                                            <AlertDialogHeader>
+                                                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                                <AlertDialogDescription>
+                                                                    This action will permanently delete the category '{cat.name_ta || cat.name}'. You can only delete categories that are not assigned to any units.
+                                                                </AlertDialogDescription>
+                                                            </AlertDialogHeader>
+                                                            <AlertDialogFooter>
+                                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                <AlertDialogAction onClick={() => handleDelete(cat.id)}>Delete</AlertDialogAction>
+                                                            </AlertDialogFooter>
+                                                        </AlertDialogContent>
+                                                    </AlertDialog>
+                                                </div>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </AccordionContent>
+                            </AccordionItem>
+                        ))}
+                    </Accordion>
+                ) : (
+                    <p className="text-muted-foreground text-center p-4">No categories created yet.</p>
+                )}
+            </CardContent>
+        </Card>
+    );
+}
+
+
 export default function TopicManagementPage() {
   const { t, language } = useTranslation();
   const firestore = useFirestore();
@@ -1116,6 +1323,7 @@ export default function TopicManagementPage() {
 
         <div className="md:col-span-2 space-y-8">
             <ExistingUnitsList />
+            <ExistingCategoriesList />
         </div>
       </div>
     </div>
