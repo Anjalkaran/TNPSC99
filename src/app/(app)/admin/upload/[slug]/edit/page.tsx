@@ -46,6 +46,7 @@ export default function EditTestPage() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [allCategories, setAllCategories] = useState<string[]>([]);
 
   const form = useForm<TestEditFormValues>({
     resolver: zodResolver(testEditSchema),
@@ -115,6 +116,24 @@ export default function EditTestPage() {
 
     fetchTestAndQuestions();
   }, [testId, toast, firestore, t, form]);
+
+    useEffect(() => {
+        if (!firestore || !test) return;
+        const fetchCategories = async () => {
+            const testsRef = collection(firestore, 'tests');
+            const q = query(testsRef, where('examGroup', '==', test.examGroup));
+            const snapshot = await getDocs(q);
+            const categories = new Set<string>();
+            snapshot.forEach(doc => {
+                const testData = doc.data() as Test;
+                if (testData.syllabusCategory) {
+                    categories.add(testData.syllabusCategory);
+                }
+            });
+            setAllCategories(Array.from(categories).sort());
+        };
+        fetchCategories();
+    }, [firestore, test]);
 
   const onTestDetailsUpdate = async (values: TestEditFormValues) => {
     if (!testRef || !test) return;
@@ -230,10 +249,17 @@ export default function EditTestPage() {
                           <FormItem>
                             <FormLabel>Syllabus Category</FormLabel>
                             <FormControl>
-                              <Input placeholder="e.g., kootru kaarani" {...field} />
+                               <Input 
+                                  placeholder="e.g., kootru kaarani" 
+                                  {...field} 
+                                  list="syllabus-categories"
+                                />
                             </FormControl>
+                             <datalist id="syllabus-categories">
+                                {allCategories.map(cat => <option key={cat} value={cat} />)}
+                            </datalist>
                              <FormDescription>
-                                This is the category shown in the syllabus test lists.
+                                Choose an existing category from the list or type a new one.
                              </FormDescription>
                             <FormMessage />
                           </FormItem>
