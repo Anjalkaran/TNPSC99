@@ -1,48 +1,56 @@
+
 'use server';
 
-import { initializeFirebaseServer } from '@/firebase/server-init';
-import { collection, getDocs, writeBatch } from 'firebase/firestore';
-import type { Category } from '@/lib/types';
+import { db as firestore } from '@/firebase/admin';
+import type { Test } from '@/lib/types';
 
-const categoryTranslations: { [key: string]: string } = {
-  'History': 'வரலாறு',
-  'Geography': 'புவியியல்',
-  'Civics': 'குடிமையியல்',
-  'Economics': 'பொருளியல்',
-};
+const renames = [
+    { from: 'தவறான இணையைத் தேர்க', to: 'தவறான இணையைக் கண்டறிக' },
+    { from: 'Assertion-Reason', to: 'கூற்று - காரணம்' }
+];
 
 async function fixCategoryNames() {
-  console.log('Starting to fix category names...');
-  const { firestore } = initializeFirebaseServer();
-  const batch = writeBatch(firestore);
-  let categoriesToUpdate = 0;
+  console.log('Starting migration to fix category names...');
+
+  const testsRef = firestore.collection('tests');
+  const batch = firestore.batch();
+  let updatedCount = 0;
 
   try {
-    const categoriesRef = collection(firestore, 'categories');
-    const categoriesSnapshot = await getDocs(categoriesRef);
-    console.log(`Found ${categoriesSnapshot.size} total categories to inspect.`);
+    const allTestsSnapshot = await testsRef.get();
+    console.log(`Found ${allTestsSnapshot.size} total tests to inspect.`);
 
-    categoriesSnapshot.forEach((doc) => {
-      const category = doc.data() as Category;
+    allTestsSnapshot.forEach(doc => {
+      const test = doc.data() as Test;
+      let needsUpdate = false;
+      const updatePayload: { syllabusCategory?: string, title?: string } = {};
+
+      renames.forEach(rename => {
+        if (test.syllabusCategory === rename.from) {
+          updatePayload.syllabusCategory = rename.to;
+          if (test.title.includes(rename.from)) {
+            updatePayload.title = test.title.replace(rename.from, rename.to);
+          }
+          needsUpdate = true;
+        }
+      });
       
-      // Check if name_ta is missing and if we have a translation for the English name
-      if (!category.name_ta && category.name in categoryTranslations) {
-        const tamilName = categoryTranslations[category.name];
-        console.log(`- Updating category "${category.name}" (ID: ${doc.id}) with Tamil name: ${tamilName}`);
-        batch.update(doc.ref, { name_ta: tamilName });
-        categoriesToUpdate++;
+      if (needsUpdate) {
+        console.log(`- Updating test "${test.title}" (ID: ${doc.id})`);
+        batch.update(doc.ref, updatePayload);
+        updatedCount++;
       }
     });
 
-    if (categoriesToUpdate > 0) {
+    if (updatedCount > 0) {
       await batch.commit();
-      console.log(`\nSuccessfully updated ${categoriesToUpdate} categories with Tamil names.`);
+      console.log(`\nMigration successful! Updated ${updatedCount} test banks.`);
     } else {
-      console.log('\nNo categories needed updating. All seem to have Tamil names already.');
+      console.log('\nNo test banks found with the specified categories. No changes needed.');
     }
 
   } catch (error) {
-    console.error('An error occurred during the category name update process:', error);
+    console.error('An error occurred during the category renaming migration:', error);
   }
 }
 
