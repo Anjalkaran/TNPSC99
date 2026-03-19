@@ -54,13 +54,13 @@ export default function OnlineTestsPage() {
   }, [classes, language]);
   
   const iconColors = [
-    "text-blue-500",
-    "text-green-500",
-    "text-red-500",
-    "text-yellow-500",
-    "text-indigo-500",
-    "text-purple-500",
-    "text-pink-500",
+    "text-emerald-500",
+    "text-sky-500",
+    "text-amber-500",
+    "text-violet-500",
+    "text-rose-500",
+    "text-cyan-500",
+    "text-fuchsia-500",
   ];
 
   return (
@@ -73,7 +73,7 @@ export default function OnlineTestsPage() {
       {isLoading && <p>Loading classes...</p>}
 
       {!isLoading && sortedClasses && sortedClasses.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
           {sortedClasses.map((cls, index) => {
             return (
               <Link key={cls.id} href={`/class/${cls.id}?bookType=${bookType}`} className="block hover:no-underline group">
