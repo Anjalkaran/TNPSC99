@@ -1,7 +1,7 @@
 'use client';
 import { notFound, useParams } from 'next/navigation';
 import { useFirestore, useMemoFirebase, useCollection } from '@/firebase';
-import { collection, query, where, getDocs, doc, getDoc, writeBatch } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc, writeBatch, updateDoc } from 'firebase/firestore';
 import { useEffect, useState, useMemo } from 'react';
 import type { Test, Question } from '@/lib/types';
 import { useTranslation } from '@/hooks/use-translation';
@@ -23,7 +23,17 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
+const testEditSchema = z.object({
+  title: z.string().min(3, "Title must be at least 3 characters."),
+  syllabusCategory: z.string().optional(),
+});
+type TestEditFormValues = z.infer<typeof testEditSchema>;
 
 export default function EditTestPage() {
   const { slug: testId } = useParams();
@@ -36,6 +46,14 @@ export default function EditTestPage() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+
+  const form = useForm<TestEditFormValues>({
+    resolver: zodResolver(testEditSchema),
+    defaultValues: {
+      title: '',
+      syllabusCategory: '',
+    },
+  });
 
 
   useEffect(() => {
@@ -57,6 +75,10 @@ export default function EditTestPage() {
         const testData = { id: testDocSnap.id, ...testDocSnap.data() } as Test;
         setTest(testData);
         setTestRef(testDocSnap.ref);
+        form.reset({
+            title: testData.title,
+            syllabusCategory: testData.syllabusCategory || ''
+        });
 
 
         const fetchedQuestions: Question[] = [];
@@ -92,7 +114,36 @@ export default function EditTestPage() {
     };
 
     fetchTestAndQuestions();
-  }, [testId, toast, firestore, t]);
+  }, [testId, toast, firestore, t, form]);
+
+  const onTestDetailsUpdate = async (values: TestEditFormValues) => {
+    if (!testRef || !test) return;
+    
+    const updatePayload: { title: string; syllabusCategory?: string } = {
+        title: values.title
+    };
+
+    // Only include syllabusCategory if it's a syllabus-based test
+    if (test.syllabusTopic) {
+        updatePayload.syllabusCategory = values.syllabusCategory;
+    }
+
+    try {
+      await updateDoc(testRef, updatePayload);
+      toast({
+        title: "Test Updated",
+        description: "The test details have been successfully updated.",
+      });
+      // Update local state to reflect change immediately in the UI
+      setTest(prev => prev ? { ...prev, ...updatePayload } : null);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Update Failed",
+        description: "Could not update the test details.",
+      });
+    }
+  };
 
   const filteredQuestions = useMemo(() => {
     if (!questions) return [];
@@ -152,6 +203,51 @@ export default function EditTestPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+           <Accordion type="single" collapsible className="w-full mb-6">
+            <AccordionItem value="item-1">
+              <AccordionTrigger>Edit Test Details</AccordionTrigger>
+              <AccordionContent>
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onTestDetailsUpdate)} className="space-y-4 pt-4">
+                    <FormField
+                      control={form.control}
+                      name="title"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Test Title</FormLabel>
+                          <FormControl>
+                            <Input {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    {test.syllabusTopic && (
+                      <FormField
+                        control={form.control}
+                        name="syllabusCategory"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Syllabus Category</FormLabel>
+                            <FormControl>
+                              <Input placeholder="e.g., kootru kaarani" {...field} />
+                            </FormControl>
+                             <FormDescription>
+                                This is the category shown in the syllabus test lists.
+                             </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+                    <Button type="submit" disabled={form.formState.isSubmitting}>
+                      {form.formState.isSubmitting ? 'Saving...' : 'Save Details'}
+                    </Button>
+                  </form>
+                </Form>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
           <div className="mb-4">
             <Input
               placeholder="Search questions by text..."
