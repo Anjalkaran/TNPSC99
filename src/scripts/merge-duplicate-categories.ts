@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import { db as firestore } from '@/firebase/admin';
@@ -7,7 +8,8 @@ import type { Test } from '@/lib/types';
 const CATEGORIES_TO_MERGE = [
     'கூற்று - காரணம்',
     'தவறான இணையைக் கண்டறிக',
-    'பொருத்துக'
+    'பொருத்துக',
+    'நேரடி வினா'
 ];
 
 async function mergeDuplicateCategoryTests() {
