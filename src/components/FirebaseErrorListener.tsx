@@ -29,10 +29,14 @@ export function FirebaseErrorListener() {
     };
   }, []);
 
-  // On re-render, if an error exists in state, throw it.
+  // On re-render, if an error exists in state, we used to throw it to trigger 
+  // global-error.tsx. However, this is too disruptive for production-like usage.
+  // We'll rely on the specific components to show toasts.
+  /*
   if (error) {
     throw error;
   }
+  */
 
   // This component renders nothing.
   return null;

@@ -4,7 +4,7 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "User",
       "type": "object",
-      "description": "Represents a user of the TNPSC Ace app.",
+      "description": "Represents a user of the TNPSC99 app.",
       "properties": {
         "id": {
           "type": "string",

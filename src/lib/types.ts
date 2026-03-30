@@ -112,9 +112,12 @@ export interface UserProfile {
   city?: string;
   referralCode: string;
   referredBy?: string;
-  referralCount: number;
   subscriptionStatus: 'free' | 'premium';
   subscriptionExpires?: string;
+  currentSessionId?: string;
+  subscriptionCount?: number;
+  referralCount: number;
+  lastSeen?: string;
 }
 
 export interface UserTestAttempt {
@@ -130,6 +133,10 @@ export interface UserTestAttempt {
   testTitle?: string;
   isMockTest?: boolean;
   currentQuestionIndex: number;
+  correctlyAnsweredQuestionIds?: string[];
+  incorrectlyAnsweredQuestionIds?: string[];
+  lastUpdatedDate?: string;
+  examGroup?: 'Group I' | 'Group II' | 'Group IV';
 }
 
 

@@ -4,72 +4,101 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // --- 1. CORE HELPERS ---
+    // Helper functions
     function isSignedIn() {
       return request.auth != null;
     }
 
-    // Safer isAdmin: Only call this if the user is NOT the owner of the document
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
     function isAdmin() {
-      return isSignedIn() && 
-             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+      return isSignedIn() && (
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('isAdmin', false) == true ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', 'user') == 'admin')) ||
+        request.auth.token.email.matches('.*@tnpsc99\\.com$')
+      );
     }
 
-    // --- 2. USER DATA & SUBCOLLECTIONS ---
+    // Rules for the users collection and its subcollections
     match /users/{userId} {
-      // These rules apply to the user document itself.
-      // Separate allow statements prevent the isAdmin() 'get' call from failing the rule for the owner.
-      allow read, write: if isSignedIn() && request.auth.uid == userId;
-      allow read, write: if isAdmin(); // Admins can manage user profiles.
+      allow read, write: if isOwner(userId) || isAdmin();
 
-      // --- SUBCOLLECTION RULES ---
-      // These rules apply to documents within subcollections like 'testAttempts'.
+      // Explicit rule for testAttempts subcollection
       match /testAttempts/{attemptId} {
-        // Owner can read/write their own test attempts.
-        allow read, write: if isSignedIn() && request.auth.uid == userId;
-        // Admins can read/write any user's test attempts.
-        allow read, write: if isAdmin();
+        allow read, write: if isOwner(userId) || isAdmin();
       }
-      
-      match /bookmarkedQuestions/{bookmarkId} {
-        // Owner can read/write their own bookmarks.
-        allow read, write: if isSignedIn() && request.auth.uid == userId;
-        // Admins can read/write any user's bookmarks.
-        allow read, write: if isAdmin();
+
+      // Explicit rule for bookmarkedQuestions subcollection
+      match /bookmarkedQuestions/{questionId} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+
+      // Catch-all for any other subcollections
+      match /{allSubcollections=**} {
+        allow read, write: if isOwner(userId) || isAdmin();
       }
     }
 
-    // --- 3. TESTS COLLECTION ---
+    // Rules for top-level collections
     match /tests/{testId} {
-      allow read: if isSignedIn();
-      allow write: if isAdmin(); 
+      allow read: if true;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin() || isOwner(resource.data.userId);
     }
 
-    // --- 4. QUESTION BANK ---
     match /questions/{questionId} {
-      allow read: if isSignedIn();
+      allow read: if true;
       allow write: if isAdmin();
     }
 
-    // --- 5. APP CONTENT ---
-    match /classes/{id} { allow read: if true; allow write: if isAdmin(); }
-    match /subjects/{id} { allow read: if true; allow write: if isAdmin(); }
-    match /units/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
-    match /categories/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
-    match /syllabus/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
-    match /studyMaterials/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
+    match /subjects/{subjectId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
 
-    // --- 6. USER GENERATED CONTENT ---
-    match /scores/{id} {
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /units/{unitId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /classes/{classId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /scores/{scoreId} {
       allow read: if isSignedIn();
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn();
       allow update, delete: if isAdmin();
     }
+
+    match /syllabus/{syllabusId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
     
+    match /settings/{settingId} {
+        allow read: if true;
+        allow write: if isAdmin();
+    }
+
+    match /studyMaterials/{docId} {
+        allow read: if isSignedIn();
+        allow write: if isAdmin();
+    }
+
     match /questionComments/{id} {
-      allow read, create: if isSignedIn();
-      allow update, delete: if isAdmin();
+        allow read, create: if isSignedIn();
+        allow update, delete: if isAdmin();
+        allow write: if isAdmin();
     }
   }
 }

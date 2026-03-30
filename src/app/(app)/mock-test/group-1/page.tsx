@@ -53,7 +53,7 @@ export default function Group1MockTestPage() {
     const { toast } = useToast();
     const [isPending, startTransition] = useTransition();
     const [isChecking, setIsChecking] = useState(false);
-    const [inProgressTest, setInProgressTest] = useState<{testId: string, attemptId: string} | null>(null);
+    const [inProgressTest, setInProgressTest] = useState<{testId: string, attemptId: string, testTitle?: string, isMockTest?: boolean} | null>(null);
 
     const proceedToGenerateTest = () => {
         startTransition(async () => {
@@ -167,7 +167,13 @@ export default function Group1MockTestPage() {
         
         if (!querySnapshot.empty) {
             const attempt = querySnapshot.docs[0];
-            setInProgressTest({ testId: attempt.data().testId, attemptId: attempt.id });
+            const data = attempt.data();
+            setInProgressTest({ 
+                testId: data.testId, 
+                attemptId: attempt.id,
+                testTitle: data.testTitle,
+                isMockTest: data.isMockTest
+            });
         } else {
             proceedToGenerateTest();
         }
@@ -176,7 +182,7 @@ export default function Group1MockTestPage() {
 
     const handleResume = () => {
         if (inProgressTest) {
-            router.push(`/test/${inProgressTest.testId}`);
+            router.push(`/test/${inProgressTest.testId}?resume=true`);
         }
         setInProgressTest(null);
     };
@@ -184,23 +190,31 @@ export default function Group1MockTestPage() {
     const handleStartNew = async () => {
       if (inProgressTest && firestore && user) {
         try {
-          const testDocRef = doc(firestore, 'tests', inProgressTest.testId);
-          await deleteDoc(testDocRef);
+          // 1. Delete the attempt doc first (it's in the user's subcollection, they own it)
+          const attemptDocRef = doc(firestore, `users/${user.uid}/testAttempts`, inProgressTest.attemptId);
+          await deleteDoc(attemptDocRef);
+
+          // 2. Only attempt to delete the tests doc IF it's a dynamic mock test created by this user
+          if (inProgressTest.isMockTest) {
+              const testDocRef = doc(firestore, 'tests', inProgressTest.testId);
+              await deleteDoc(testDocRef).catch(err => {
+                  console.warn("Could not delete dynamic test document, but attempt was removed:", err);
+              });
+          }
           
           toast({
             title: 'Starting Fresh',
-            description: 'Your previous unfinished mock test has been discarded.',
+            description: 'Your previous unfinished session has been discarded.',
           });
         } catch (error: any) {
-          console.error('Error deleting old mock test:', error);
+          console.error('Error during cleanup:', error);
           toast({
             variant: 'destructive',
             title: 'Cleanup Failed',
-            description:
-              'Could not remove the old in-progress test. Please ask an admin to check permissions.',
+            description: 'Could not remove the old in-progress session. Please try again or contact support.',
           });
           setInProgressTest(null);
-          return; // Stop if we can't clean up
+          return;
         }
       }
       setInProgressTest(null);
@@ -247,9 +261,10 @@ export default function Group1MockTestPage() {
             <AlertDialog open={!!inProgressTest} onOpenChange={(isOpen) => !isOpen && setInProgressTest(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Resume In-Progress Mock Test?</AlertDialogTitle>
+                        <AlertDialogTitle>Resume Unfinished Test?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            You have an unfinished mock test. Would you like to resume it, or discard it and start a new one?
+                            You have an unfinished test: <strong>{inProgressTest?.testTitle}</strong>. 
+                            Would you like to resume it, or discard it and start a new one?
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

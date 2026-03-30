@@ -3,7 +3,7 @@ import { notFound, useParams, useSearchParams } from 'next/navigation';
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ArrowLeft } from "lucide-react";
+import { ArrowRight, ArrowLeft, History, Globe, Scale, Banknote, Zap, Beaker, Microscope, SpellCheck, BookOpen, Feather, FileText, GraduationCap } from "lucide-react";
 import { useCollection, useFirestore, useMemoFirebase, useDoc, useUser } from "@/firebase";
 import { collection, query, where, doc, getDocs, getDoc } from "firebase/firestore";
 import type { Test, Subject, UserTestAttempt, Unit, Class, Category } from "@/lib/types";
@@ -17,6 +17,7 @@ import {
 import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from "@/hooks/use-translation";
 import { Badge } from '@/components/ui/badge';
+import { cn } from "@/lib/utils";
 
 
 function TestStartControl({ test }: { test: Test }) {
@@ -28,15 +29,15 @@ function TestStartControl({ test }: { test: Test }) {
   return (
     <div className="flex flex-col sm:flex-row gap-2 w-full justify-end">
       <Select onValueChange={setLimit} value={limit}>
-        <SelectTrigger className="w-full sm:w-[180px]">
+        <SelectTrigger className="w-full sm:w-[200px] h-11 text-base">
           <SelectValue placeholder={t('select_questions')} />
         </SelectTrigger>
         <SelectContent>
           {options.map(opt => <SelectItem key={opt} value={String(opt)}>{t('questions_count', { count: opt })}</SelectItem>)}
-          <SelectItem value={String(questionCount)}>{t('all_questions', { count: questionCount })}</SelectItem>
+          <SelectItem value={String(questionCount)}>{t('all_questions')}</SelectItem>
         </SelectContent>
       </Select>
-      <Button asChild className="w-full sm:w-auto" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
+      <Button asChild className="w-full sm:w-auto h-11 text-base font-bold" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
         <Link href={`/test/${test.id}${limit ? `?limit=${limit}` : ''}`}>
           {t('start_test')} <ArrowRight className="ml-2 h-4 w-4" />
         </Link>
@@ -135,7 +136,9 @@ export default function SubjectTestsPage() {
   
   const subjectTests = useMemo(() => {
       if (!allSubjectTests) return null;
-      return allSubjectTests.filter(test => (test.bookType || 'samacheer') === bookType);
+      return allSubjectTests.filter(test => 
+          (test.bookType || 'samacheer') === bookType && !test.isMockTest
+      );
   }, [allSubjectTests, bookType]);
   
   const categoriesCollection = useMemoFirebase(() => collection(firestore, 'categories'), [firestore]);
@@ -225,8 +228,12 @@ export default function SubjectTestsPage() {
     fetchMetadata();
   }, [firestore, classId, subjectId, language]);
 
+  const cleanTitle = (title: string) => {
+    return title.replace(/^Group\s+II\s*-\s*/i, '').replace(/^Group\s+II\s*/i, '').trim();
+  };
+
   const getShortTestTitle = (test: Test) => {
-    let title = test.title;
+    let title = cleanTitle(test.title || '');
     if (test.unitNumber && test.unitName) {
       title = `இயல் ${test.unitNumber}: ${test.unitName}`;
       if (test.term && test.term !== 'Full Book') {
@@ -291,8 +298,8 @@ export default function SubjectTestsPage() {
                             <Card key={test.id}>
                                 <CardContent className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
                                     <div className="flex-grow">
-                                        <p className="font-medium">{getShortTestTitle(test)}</p>
-                                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                        <p className="font-semibold text-lg">{getShortTestTitle(test)}</p>
+                                        <div className="flex items-center gap-2 text-base text-muted-foreground mt-1">
                                             <span>{test.questionIds.length} {t('questions')}</span>
                                             <TestProgressBadge testId={test.id} />
                                         </div>
@@ -325,7 +332,7 @@ export default function SubjectTestsPage() {
       
       {sortedCategoryIds.length > 0 && subjectTests && subjectTests.length > 0 ? (
          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {sortedCategoryIds.map(catId => {
+            {sortedCategoryIds.map((catId, index) => {
                 const categoryName = catId === 'uncategorized' ? 'Uncategorized' : categoryMap.get(catId) || 'Category';
                 const testCount = testsByCategory[catId]?.length || 0;
                 if (testCount === 0) return null;
@@ -339,7 +346,7 @@ export default function SubjectTestsPage() {
                         <CardFooter className="mt-auto">
                             <Button asChild className="w-full" style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
                                 <Link href={`/class/${classId}/subject/${subjectId}?category=${catId}&bookType=${bookType}`}>
-                                    View Tests <ArrowRight className="ml-2 h-4 w-4" />
+                                    {t('go')} <ArrowRight className="ml-2 h-4 w-4" />
                                 </Link>
                             </Button>
                         </CardFooter>

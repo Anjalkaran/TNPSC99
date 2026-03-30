@@ -604,7 +604,7 @@ function ExistingSyllabusMcqBanks() {
                                                                                                         <TableBody>
                                                                                                             {topicTests.map((test) => (
                                                                                                                 <TableRow key={test.id}>
-                                                                                                                    <TableCell>{test.syllabusCategory || 'General'}</TableCell>
+                                                                                                                    <TableCell>{test.syllabusCategory || 'நேரடி வினா'}</TableCell>
                                                                                                                     <TableCell>
                                                                                                                         <Badge variant="outline">{test.medium}</Badge>
                                                                                                                         <span className="text-sm text-muted-foreground ml-2">({test.questionIds.length} Qs)</span>
@@ -989,7 +989,7 @@ function SyllabusMcqUploadForm() {
                     const isPartB = selectedPart === 'பகுதி ஆ';
 
                     const questionsByCategory: Record<string, any[]> = questions.reduce((acc, q) => {
-                        const category = isPartB ? 'General' : (q.category || values.syllabusCategory || 'General');
+                        const category = isPartB ? 'நேரடி வினா' : (q.category || values.syllabusCategory || 'நேரடி வினா');
                         if (!acc[category]) acc[category] = [];
                         acc[category].push(q);
                         return acc;

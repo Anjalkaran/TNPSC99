@@ -116,11 +116,14 @@ export default function SignupPage() {
             };
 
             setDoc(userDocRef, userProfile).catch((error) => {
-                errorEmitter.emit('permission-error', new FirestorePermissionError({
-                    path: userDocRef.path,
-                    operation: 'create',
-                    requestResourceData: userProfile,
-                }));
+                console.error('Error creating user profile:', error);
+                if (error?.code === 'permission-denied') {
+                    errorEmitter.emit('permission-error', new FirestorePermissionError({
+                        path: userDocRef.path,
+                        operation: 'create',
+                        requestResourceData: userProfile,
+                    }));
+                }
             });
         }
         
@@ -187,14 +190,17 @@ export default function SignupPage() {
       const userDocRef = doc(firestore, 'users', newUser.uid);
 
       setDoc(userDocRef, userProfile).catch((error) => {
-        errorEmitter.emit(
-          'permission-error',
-          new FirestorePermissionError({
-            path: userDocRef.path,
-            operation: 'create',
-            requestResourceData: userProfile,
-          })
-        );
+        console.error('Error creating user profile:', error);
+        if (error?.code === 'permission-denied') {
+          errorEmitter.emit(
+            'permission-error',
+            new FirestorePermissionError({
+              path: userDocRef.path,
+              operation: 'create',
+              requestResourceData: userProfile,
+            })
+          );
+        }
       });
 
       toast({
@@ -226,109 +232,163 @@ export default function SignupPage() {
   }
 
   return (
-    <Card className="w-full max-w-sm text-white bg-black/40 backdrop-blur-lg border-white/20">
-      <CardHeader>
-        <CardTitle>{t('create_new_account')}</CardTitle>
-        <CardDescription className="text-gray-300">
+    <div className="w-full max-w-md px-4 py-8 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+      <div className="text-center mb-8">
+        <h1 className="text-3xl md:text-4xl font-black text-slate-900 mb-2 tracking-tight">
+          Join <span className="text-primary italic">TNPSC99</span>
+        </h1>
+        <p className="text-slate-600 font-medium">
           {t('enter_details_to_start')}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="username"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('username')}</FormLabel>
-                  <FormControl>
-                    <Input className="bg-transparent placeholder:text-gray-400" placeholder="Your Name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('email')}</FormLabel>
-                  <FormControl>
-                    <Input className="bg-transparent placeholder:text-gray-400" placeholder="name@example.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('password')}</FormLabel>
-                  <FormControl>
-                    <Input className="bg-transparent placeholder:text-gray-400" type="password" placeholder="••••••••" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="confirmPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('confirm_password')}</FormLabel>
-                  <FormControl>
-                    <Input className="bg-transparent placeholder:text-gray-400" type="password" placeholder="••••••••" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="referralCode"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('referral_code_optional')}</FormLabel>
-                  <FormControl>
-                    <Input className="bg-transparent placeholder:text-gray-400" placeholder="Enter code from a friend" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? t('creating_account') : t('create_account')}
-            </Button>
-          </form>
-        </Form>
-        <div className="relative my-4">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-white/30" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-black/30 px-2 text-gray-400">
-              OR
-            </span>
-          </div>
-        </div>
-        <Button variant="outline" className="w-full bg-transparent hover:bg-white/10" onClick={handleGoogleSignUp} disabled={isSubmitting}>
-          <GoogleIcon className="mr-2 h-4 w-4" />
-          Continue with Gmail
-        </Button>
-      </CardContent>
-      <CardFooter className="flex justify-center">
-        <p className="text-sm text-gray-400">
-          {t('already_have_account')}{' '}
-          <Link href="/login" className="text-orange-500 hover:text-orange-400 hover:underline">
-            {t('login')}
-          </Link>
         </p>
-      </CardFooter>
-    </Card>
+      </div>
+
+      <Card className="w-full bg-white/40 backdrop-blur-2xl border-slate-200/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden relative">
+        {/* Subtle top glow line */}
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+
+        <CardHeader className="space-y-1 pb-4">
+          <CardTitle className="text-2xl font-bold text-slate-900">{t('create_new_account')}</CardTitle>
+        </CardHeader>
+
+        <CardContent className="space-y-5">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="username"
+                render={({ field }) => (
+                  <FormItem className="space-y-1">
+                    <FormLabel className="text-slate-700 font-semibold text-sm ml-1">{t('username')}</FormLabel>
+                    <FormControl>
+                      <Input
+                        className="h-11 bg-white/60 border-slate-200 focus:border-primary/50 placeholder:text-slate-400 rounded-xl transition-all"
+                        placeholder="Your Name"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className="text-red-500 text-xs" />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem className="space-y-1">
+                    <FormLabel className="text-slate-700 font-semibold text-sm ml-1">{t('email')}</FormLabel>
+                    <FormControl>
+                      <Input
+                        className="h-11 bg-white/60 border-slate-200 focus:border-primary/50 placeholder:text-slate-400 rounded-xl transition-all"
+                        placeholder="name@example.com"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className="text-red-500 text-xs" />
+                  </FormItem>
+                )}
+              />
+              <div className="grid grid-cols-2 gap-3">
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1">
+                      <FormLabel className="text-slate-700 font-semibold text-sm ml-1">{t('password')}</FormLabel>
+                      <FormControl>
+                        <Input
+                          className="h-11 bg-white/60 border-slate-200 focus:border-primary/50 placeholder:text-slate-400 rounded-xl transition-all"
+                          type="password"
+                          placeholder="••••••••"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-red-500 text-xs" />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1">
+                      <FormLabel className="text-slate-700 font-semibold text-sm ml-1">{t('confirm_password')}</FormLabel>
+                      <FormControl>
+                        <Input
+                          className="h-11 bg-white/60 border-slate-200 focus:border-primary/50 placeholder:text-slate-400 rounded-xl transition-all"
+                          type="password"
+                          placeholder="••••••••"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage className="text-red-500 text-xs" />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <FormField
+                control={form.control}
+                name="referralCode"
+                render={({ field }) => (
+                  <FormItem className="space-y-1">
+                    <FormLabel className="text-slate-700 font-semibold text-sm ml-1">{t('referral_code_optional')}</FormLabel>
+                    <FormControl>
+                      <Input
+                        className="h-11 bg-white/60 border-slate-200 focus:border-primary/50 placeholder:text-slate-400 rounded-xl transition-all"
+                        placeholder="Enter code from a friend"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage className="text-red-500 text-xs" />
+                  </FormItem>
+                )}
+              />
+
+              <Button
+                type="submit"
+                className="w-full h-12 bg-primary text-white hover:bg-primary/90 transition-all duration-300 font-black text-base rounded-xl shadow-lg shadow-primary/20 active:scale-[0.98]"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <div className="flex items-center gap-2">
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    {t('creating_account')}
+                  </div>
+                ) : t('create_account')}
+              </Button>
+            </form>
+          </Form>
+
+          <div className="relative py-1">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-slate-200" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase tracking-widest font-bold">
+              <span className="bg-white/10 backdrop-blur-sm px-3 text-slate-400">
+                OR
+              </span>
+            </div>
+          </div>
+
+          <Button
+            variant="outline"
+            className="w-full h-12 bg-white border-slate-200 hover:bg-slate-50 text-slate-900 hover:text-slate-900 transition-all duration-300 font-bold rounded-xl active:scale-[0.98]"
+            onClick={handleGoogleSignUp}
+            disabled={isSubmitting}
+          >
+            <GoogleIcon className="mr-3 h-5 w-5" />
+            Continue with Google
+          </Button>
+        </CardContent>
+
+        <CardFooter className="flex justify-center pb-8 pt-2">
+          <p className="text-sm text-slate-600 font-medium">
+            {t('already_have_account')}{' '}
+            <Link href="/login" className="text-brand-orange hover:text-brand-orange/80 font-black hover:underline transition-colors ml-1">
+              {t('login')}
+            </Link>
+          </p>
+        </CardFooter>
+      </Card>
+    </div>
   );
 }

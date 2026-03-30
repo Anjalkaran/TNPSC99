@@ -2,12 +2,13 @@
 
 import { useFirestore, useMemoFirebase, useUser } from '@/firebase';
 import { collection, query, where, getDocs, doc, setDoc } from 'firebase/firestore';
-import { useMemo, useState, useEffect, useTransition } from 'react';
+import { useMemo, useState, useEffect, useTransition, Suspense } from 'react';
 import type { Test, UserTestAttempt } from '@/lib/types';
 import { useTranslation } from '@/hooks/use-translation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import {
   Accordion,
@@ -40,35 +41,62 @@ function shuffleArray<T>(array: T[]): T[] {
 
 function TopicContent({ tests }: { tests: Test[] }) {
     const { t } = useTranslation();
-    const [selectedTestId, setSelectedTestId] = useState<string>('');
+    const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
     const [limit, setLimit] = useState<string>('');
     const router = useRouter();
     const firestore = useFirestore();
     const { user } = useUser();
+    const { toast } = useToast();
     const [isGenerating, startTransition] = useTransition();
 
+    const filteredTests = useMemo(() => tests.filter(test => !test.isMockTest), [tests]);
+
     const allQuestionsCount = useMemo(() => {
-        return tests.reduce((sum, test) => sum + test.questionIds.length, 0);
+        return filteredTests.reduce((sum, test) => sum + (test.questionIds?.length || 0), 0);
+    }, [filteredTests]);
+
+    const groupedCategoryTests = useMemo(() => {
+        const grouped: Record<string, Test[]> = {};
+        filteredTests.forEach(test => {
+            const cat = test.syllabusCategory || 'நேரடி வினா';
+            if (!grouped[cat]) grouped[cat] = [];
+            grouped[cat].push(test);
+        });
+        return grouped;
     }, [tests]);
 
+    const categories = useMemo(() => Object.keys(groupedCategoryTests).sort(), [groupedCategoryTests]);
+
     const selectedTest = useMemo(() => {
-        if (selectedTestId === 'all') {
-            const allQuestionIds = tests.flatMap(t => t.questionIds);
+        if (selectedCategoryId === 'all') {
+            const allQuestionIds = Array.from(new Set(filteredTests.flatMap(t => t.questionIds || [])));
             return {
                 id: 'all',
                 title: 'All Categories',
                 questionIds: allQuestionIds,
             } as Partial<Test> & { id: string };
         }
-        return tests.find(test => test.id === selectedTestId);
-    }, [tests, selectedTestId]);
+        if (!selectedCategoryId) return null;
+        
+        const categoryTests = groupedCategoryTests[selectedCategoryId];
+        if (categoryTests) {
+            const allQuestionIds = Array.from(new Set(categoryTests.flatMap(t => t.questionIds || [])));
+            return {
+                ...categoryTests[0],
+                id: selectedCategoryId,
+                title: selectedCategoryId,
+                questionIds: allQuestionIds,
+            } as Partial<Test> & { id: string };
+        }
+        return null;
+    }, [tests, selectedCategoryId, groupedCategoryTests]);
 
     useEffect(() => {
         setLimit('');
-    }, [selectedTestId]);
+    }, [selectedCategoryId]);
 
     const limitOptions = useMemo(() => {
-        if (!selectedTest) return [];
+        if (!selectedTest || !selectedTest.questionIds) return [];
         const questionCount = selectedTest.questionIds.length;
         if (questionCount === 0) return [];
         
@@ -80,79 +108,97 @@ function TopicContent({ tests }: { tests: Test[] }) {
     }, [selectedTest]);
 
     const handleStartTest = () => {
-        if (!limit || !selectedTestId) return;
+        if (!limit || !selectedCategoryId) return;
 
-        if (selectedTestId === 'all') {
-            startTransition(async () => {
-                if (!user || !firestore || !tests.length) return;
+        startTransition(async () => {
+            if (!user || !firestore || !tests.length || !selectedTest) return;
+            
+            try {
+                // We always generate a temporary test if it's 'all' or a merged category
+                // Or even a single test for consistency
+                const allQuestionIds = selectedTest.questionIds || [];
+                if (allQuestionIds.length === 0) {
+                    toast({
+                        title: t('error_title'),
+                        description: "No questions found.",
+                        variant: "destructive"
+                    });
+                    return;
+                }
                 
-                const allQuestionIds = tests.flatMap(t => t.questionIds);
                 const shuffledIds = shuffleArray(allQuestionIds);
                 const finalIds = limit ? shuffledIds.slice(0, parseInt(limit, 10)) : shuffledIds;
 
                 const newTestRef = doc(collection(firestore, 'tests'));
-                const firstTest = tests[0];
+                const baseTest = tests[0];
                 const newMockTest: Partial<Test> = {
                     id: newTestRef.id,
-                    title: `${firstTest.syllabusTopic || 'Mixed'} - All Categories`,
-                    description: `A temporary test with questions from all categories for ${firstTest.syllabusTopic}.`,
+                    title: selectedCategoryId === 'all' 
+                        ? `${baseTest.syllabusTopic || 'Mixed'} - All Categories` 
+                        : `${baseTest.syllabusTopic || ''} - ${selectedCategoryId}`,
+                    description: `A temporary test for ${baseTest.syllabusTopic} - ${selectedCategoryId}.`,
                     questionIds: finalIds,
-                    examGroup: firstTest.examGroup,
-                    syllabusPart: firstTest.syllabusPart,
-                    syllabusUnit: firstTest.syllabusUnit,
-                    syllabusUnitName: firstTest.syllabusUnitName,
-                    syllabusTopic: firstTest.syllabusTopic,
-                    isMockTest: true, // Mark as a temporary/mock test
-                    userId: user.uid, // Associate with user for potential cleanup
+                    examGroup: baseTest.examGroup,
+                    syllabusPart: baseTest.syllabusPart,
+                    syllabusUnit: baseTest.syllabusUnit,
+                    syllabusUnitName: baseTest.syllabusUnitName,
+                    syllabusTopic: baseTest.syllabusTopic,
+                    syllabusCategory: selectedCategoryId === 'all' ? 'Mixed' : selectedCategoryId,
+                    isMockTest: true,
+                    userId: user.uid,
                 };
 
                 await setDoc(newTestRef, newMockTest);
                 router.push(`/test/${newTestRef.id}`);
-            });
-        } else {
-            const startHref = selectedTest ? `/test/${selectedTest.id}${limit ? `?limit=${limit}` : ''}` : '#';
-            if (startHref !== '#') {
-                router.push(startHref);
+            } catch (error: any) {
+                console.error("[SubjectWise] Failed to generate test:", error);
+                toast({
+                    title: t('error_title'),
+                    description: "Failed to generate test. Please try again or contact support.",
+                    variant: "destructive"
+                });
             }
-        }
+        });
     };
     
     const showAllOption = tests.length > 1;
 
     return (
         <div className="space-y-3">
-             <div className="text-sm text-muted-foreground">
+             <div className="text-base text-muted-foreground pb-2">
                 <span>Total of {allQuestionsCount} {t('questions')} available.</span>
             </div>
             <div className="flex flex-col sm:flex-row items-center justify-end gap-2 w-full">
-                <Select onValueChange={setSelectedTestId} value={selectedTestId}>
-                    <SelectTrigger className="w-full sm:w-[180px]">
+                <Select onValueChange={setSelectedCategoryId} value={selectedCategoryId}>
+                    <SelectTrigger className="w-full sm:w-[200px] h-11 text-base">
                         <SelectValue placeholder="Select Category" />
                     </SelectTrigger>
                     <SelectContent>
                         {showAllOption && <SelectItem value="all">All Categories</SelectItem>}
-                        {tests.map(test => (
-                            <SelectItem key={test.id} value={test.id}>
-                                {test.syllabusCategory || 'General'}
+                        {categories.map(cat => (
+                            <SelectItem key={cat} value={cat}>
+                                {cat}
                             </SelectItem>
                         ))}
                     </SelectContent>
                 </Select>
+        
 
                 <Select onValueChange={setLimit} value={limit} disabled={!selectedTest}>
-                    <SelectTrigger className="w-full sm:w-[180px]">
-                        <SelectValue placeholder={selectedTest ? `Questions (${selectedTest.questionIds.length})` : 'Select Questions'} />
+                    <SelectTrigger className="w-full sm:w-[200px] h-11 text-base">
+                        <SelectValue placeholder={t('select_questions')} />
                     </SelectTrigger>
                     <SelectContent>
                         {selectedTest && limitOptions.map(opt => (
                             <SelectItem key={opt} value={String(opt)}>
-                                {opt === selectedTest.questionIds.length ? t('all_questions', { count: opt }) : t('questions_count', { count: opt })}
+                                {opt === (selectedTest.questionIds?.length || 0) ? t('all_questions') : t('questions_count', { count: opt })}
                             </SelectItem>
                         ))}
                     </SelectContent>
                 </Select>
                 
-                <Button onClick={handleStartTest} className="w-full sm:w-auto" disabled={!selectedTestId || !limit || isGenerating} style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
+                
+                <Button onClick={handleStartTest} className="w-full sm:w-auto h-11 text-base font-bold" disabled={!selectedCategoryId || !limit || isGenerating} style={{ backgroundColor: 'hsl(var(--accent))', color: 'hsl(var(--accent-foreground))' }}>
                      {isGenerating ? (
                         <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -169,8 +215,7 @@ function TopicContent({ tests }: { tests: Test[] }) {
     );
 }
 
-
-export default function SubjectWiseTestsPage() {
+function SubjectWiseContent() {
   const { t } = useTranslation();
   const firestore = useFirestore();
   const searchParams = useSearchParams();
@@ -187,56 +232,74 @@ export default function SubjectWiseTestsPage() {
 
     const fetchTests = async () => {
       setIsLoading(true);
-      const fetchedTests: Test[] = [];
-      const testsRef = collection(firestore, 'tests');
+      try {
+        const fetchedTests: Test[] = [];
+        const testsRef = collection(firestore, 'tests');
 
-      // Query 1: Get tests for the primary exam group
-      if (examGroup) {
-        const q1 = query(testsRef, where('examGroup', '==', examGroup));
-        const querySnapshot1 = await getDocs(q1);
-        querySnapshot1.forEach((doc) => {
-          fetchedTests.push({ id: doc.id, ...doc.data() } as Test);
-        });
-      } else {
-        // If no exam group, fetch all syllabus tests
-         const qAll = query(testsRef, where('syllabusUnitName', '!=', null));
-         const querySnapshotAll = await getDocs(qAll);
-         querySnapshotAll.forEach((doc) => {
-            fetchedTests.push({ id: doc.id, ...doc.data() } as Test);
-         });
-      }
+        console.log("[SubjectWise] Fetching tests for examGroup:", examGroup);
 
-      // Query 2: If Group II, also get Group IV Part C tests
-      if (examGroup === 'Group II') {
-        const q2 = query(testsRef, 
-          where('examGroup', '==', 'Group IV'),
-          where('syllabusPart', '==', 'பகுதி இ')
-        );
-        const querySnapshot2 = await getDocs(q2);
-        querySnapshot2.forEach((doc) => {
-          // Avoid duplicates if a test somehow matches both
-          if (!fetchedTests.some(t => t.id === doc.id)) {
+        // Query 1: Get tests for the primary exam group
+        if (examGroup) {
+          const q1 = query(testsRef, where('examGroup', '==', examGroup));
+          const querySnapshot1 = await getDocs(q1);
+          console.log(`[SubjectWise] Q1 returned ${querySnapshot1.size} docs`);
+          querySnapshot1.forEach((doc) => {
             fetchedTests.push({ id: doc.id, ...doc.data() } as Test);
-          }
-        });
+          });
+        } else {
+          // If no exam group, fetch all syllabus tests
+          const qAll = query(testsRef, where('syllabusUnitName', '!=', null));
+          const querySnapshotAll = await getDocs(qAll);
+          console.log(`[SubjectWise] QAll returned ${querySnapshotAll.size} docs`);
+          querySnapshotAll.forEach((doc) => {
+              fetchedTests.push({ id: doc.id, ...doc.data() } as Test);
+          });
+        }
+
+        // Query 2: If Group II, also get Group IV Part C tests
+        if (examGroup === 'Group II') {
+          console.log("[SubjectWise] Group II detected, fetching extra Group IV Part C tests...");
+          const q2 = query(testsRef, 
+            where('examGroup', '==', 'Group IV'),
+            where('syllabusPart', '==', 'பகுதி இ')
+          );
+          const querySnapshot2 = await getDocs(q2);
+          console.log(`[SubjectWise] Q2 returned ${querySnapshot2.size} docs`);
+          querySnapshot2.forEach((doc) => {
+            if (!fetchedTests.some(t => t.id === doc.id)) {
+              fetchedTests.push({ id: doc.id, ...doc.data() } as Test);
+            }
+          });
+        }
+        
+        // Query 3: If Group I, also get Group II Part B tests
+        if (examGroup === 'Group I') {
+          console.log("[SubjectWise] Group I detected, fetching extra Group II Part B tests...");
+          const q3 = query(testsRef, 
+            where('examGroup', '==', 'Group II'),
+            where('syllabusPart', '==', 'பகுதி ஆ')
+          );
+          const querySnapshot3 = await getDocs(q3);
+          console.log(`[SubjectWise] Q3 returned ${querySnapshot3.size} docs`);
+          querySnapshot3.forEach((doc) => {
+            if (!fetchedTests.some(t => t.id === doc.id)) {
+              fetchedTests.push({ id: doc.id, ...doc.data() } as Test);
+            }
+          });
+        }
+        
+        console.log(`[SubjectWise] Total fetched tests: ${fetchedTests.length}`);
+        setTests(fetchedTests);
+      } catch (error: any) {
+        console.error("[SubjectWise] Failed to fetch tests:", error);
+        // Do not swallow the error if it's a critical crash, 
+        // but log it so we can see it in the browser console.
+        if (error.code === 'failed-precondition') {
+          console.warn("[SubjectWise] Missing Firestore Index! Check the link in the error above.");
+        }
+      } finally {
+        setIsLoading(false);
       }
-      
-      // Query 3: If Group I, also get Group II Part B tests
-      if (examGroup === 'Group I') {
-        const q3 = query(testsRef, 
-          where('examGroup', '==', 'Group II'),
-          where('syllabusPart', '==', 'பகுதி ஆ')
-        );
-        const querySnapshot3 = await getDocs(q3);
-        querySnapshot3.forEach((doc) => {
-          if (!fetchedTests.some(t => t.id === doc.id)) {
-            fetchedTests.push({ id: doc.id, ...doc.data() } as Test);
-          }
-        });
-      }
-      
-      setTests(fetchedTests);
-      setIsLoading(false);
     };
 
     fetchTests();
@@ -245,9 +308,9 @@ export default function SubjectWiseTestsPage() {
   const groupedSyllabusTests = useMemo(() => {
     if (!tests) return {};
   
-    const validTests = tests.filter(t => t.syllabusUnitName != null);
+    const validTests = tests.filter(t => t.syllabusUnitName != null && !t.isMockTest);
     
-    let grouped: Record<string, any>;
+    let grouped: Record<string, Record<string, Record<string, Record<string, Test[]>>>>;
   
     if (examGroup) {
       // Group all tests under the main exam group, merging parts from other groups.
@@ -287,7 +350,7 @@ export default function SubjectWiseTestsPage() {
         for (const p in grouped[eg]) {
             for (const uk in grouped[eg][p]) {
                 for (const tk in grouped[eg][p][uk]) {
-                    grouped[eg][p][uk][tk].sort((a: Test, b: Test) => (a.syllabusCategory || '').localeCompare(b.syllabusCategory || ''));
+                    grouped[eg][p][uk][tk].sort((a: Test, b: Test) => (a.syllabusCategory || 'நேரடி வினா').localeCompare(b.syllabusCategory || 'நேரடி வினா'));
                 }
             }
         }
@@ -419,4 +482,12 @@ export default function SubjectWiseTestsPage() {
       )}
     </div>
   );
+}
+
+export default function SubjectWiseTestsPage() {
+    return (
+        <Suspense fallback={<div>Loading syllabus tests...</div>}>
+            <SubjectWiseContent />
+        </Suspense>
+    );
 }

@@ -116,9 +116,9 @@ export default function PreviousYearGroupPage() {
     <div className="container mx-auto px-4 py-8 md:py-12">
       <div className="mb-8">
         <Button asChild variant="ghost" className="mb-4">
-            <Link href="/previous-year">
+            <Link href={`/exam-wise/${examGroupSlug}`}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Exam Groups
+                Back to {examGroup} Pack
             </Link>
         </Button>
         <h1 className="text-3xl md:text-4xl font-bold capitalize">{pageTitle}</h1>
@@ -133,8 +133,8 @@ export default function PreviousYearGroupPage() {
             <Card key={paper.id}>
               <CardContent className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex-grow">
-                  <p className="font-medium">{paper.title}</p>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <p className="font-semibold text-lg">{paper.title}</p>
+                  <div className="flex items-center gap-2 text-base text-muted-foreground mt-1">
                     <span>{paper.questionIds.length} {t('questions')}</span>
                     <TestProgressBadge testId={paper.id} />
                   </div>

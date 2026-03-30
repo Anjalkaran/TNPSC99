@@ -37,7 +37,7 @@ export function getSdks(firebaseApp: FirebaseApp) {
     firebaseApp,
     auth: getAuth(firebaseApp),
     firestore: initializeFirestore(firebaseApp, {
-      experimentalForceLongPolling: true,
+      ignoreUndefinedProperties: true
     })
   };
 }

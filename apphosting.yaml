@@ -2,6 +2,19 @@
 # https://firebase.google.com/docs/app-hosting/configure
 
 runConfig:
-  # Increase this value if you'd like to automatically spin up
-  # more instances in response to increased traffic.
   maxInstances: 100
+
+env:
+  - variable: NEXT_PUBLIC_RAZORPAY_KEY_ID
+    value: rzp_live_SOacQ2xgFRMZ9y
+    availability: [BUILD, RUNTIME]
+  - variable: FIREBASE_PROJECT_ID
+    value: studio-5029416251-928dd
+  - variable: FIREBASE_CLIENT_EMAIL
+    value: firebase-adminsdk-fbsvc@studio-5029416251-928dd.iam.gserviceaccount.com
+  - variable: FIREBASE_PRIVATE_KEY
+    secret: FIREBASE_PRIVATE_KEY
+  - variable: RAZORPAY_KEY_SECRET
+    secret: RAZORPAY_KEY_SECRET
+  - variable: GEMINI_API_KEY
+    secret: GEMINI_API_KEY

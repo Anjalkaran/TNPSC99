@@ -3,7 +3,7 @@
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query } from 'firebase/firestore';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, Suspense } from 'react';
 import type { Test } from '@/lib/types';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { useTranslation } from '@/hooks/use-translation';
 import { Input } from '@/components/ui/input';
 
-export default function SearchPage() {
+function SearchContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const firestore = useFirestore();
@@ -30,10 +30,11 @@ export default function SearchPage() {
         if (!isLoading && allTests && searchTerm) {
             const lowerCaseQuery = searchTerm.toLowerCase();
             const filteredTests = allTests.filter(test => 
-                test.title.toLowerCase().includes(lowerCaseQuery) ||
+                (test.title.toLowerCase().includes(lowerCaseQuery) ||
                 (test.description && test.description.toLowerCase().includes(lowerCaseQuery)) ||
                 (test.syllabusTopic && test.syllabusTopic.toLowerCase().includes(lowerCaseQuery)) ||
-                (test.unitName && test.unitName.toLowerCase().includes(lowerCaseQuery))
+                (test.unitName && test.unitName.toLowerCase().includes(lowerCaseQuery))) &&
+                !test.isMockTest
             );
             setResults(filteredTests);
         } else {
@@ -90,8 +91,8 @@ export default function SearchPage() {
                          <Card key={test.id}>
                             <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                                 <div className="flex-grow">
-                                    <p className="font-medium">{test.title}</p>
-                                    <div className="flex items-center flex-wrap gap-2 mt-1 text-xs text-muted-foreground">
+                                    <p className="font-semibold text-lg">{test.title}</p>
+                                    <div className="flex items-center flex-wrap gap-2 mt-2 text-sm text-muted-foreground">
                                         {test.classId && <Badge variant="outline">Class {test.classId}</Badge>}
                                         {test.examGroup && <Badge variant="secondary">{test.examGroup}</Badge>}
                                         {test.term && <Badge variant="outline">{test.term}</Badge>}
@@ -109,5 +110,13 @@ export default function SearchPage() {
                  </div>
             )}
         </div>
+    );
+}
+
+export default function SearchPage() {
+    return (
+      <Suspense fallback={<div>Loading search...</div>}>
+          <SearchContent />
+      </Suspense>
     );
 }

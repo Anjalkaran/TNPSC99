@@ -67,20 +67,24 @@ export default function TestPage() {
       }
 
       const userProfile = userDocSnap.data() as UserProfile;
+      const isAdminEmail = user.email?.endsWith('@tnpsc99.com');
+      const isAdmin = userProfile.isAdmin || isAdminEmail;
 
-      if (!userProfile.isAdmin) {
+      if (!isAdmin) {
           const isPremium = userProfile.subscriptionStatus === 'premium';
           const expires = userProfile.subscriptionExpires ? new Date(userProfile.subscriptionExpires) : null;
           const hasExpired = expires ? expires < new Date() : false;
 
-          if (!isPremium || hasExpired) {
+          // Only redirect if explicit premium check fails AND it's not a mock test (optional, but good for trial)
+          if (!isPremium && hasExpired) {
+              console.log("[Access] User is not premium and subscription has expired. Redirecting.");
               toast({
                   title: 'Subscription Required',
-                  description: 'Your trial has ended or your subscription is inactive. Please subscribe to access tests.',
+                  description: 'Your subscription has expired. Please subscribe to access tests.',
                   variant: 'destructive',
               });
               router.push('/subscription');
-              return; // Stop execution
+              return;
           }
       }
 
@@ -110,17 +114,50 @@ export default function TestPage() {
       if (!inProgressSnap.empty) {
         loadedAttempt = { id: inProgressSnap.docs[0].id, ...inProgressSnap.docs[0].data() } as UserTestAttempt;
         
-        userChoice = await new Promise((resolve) => {
-            setResolveResume(() => resolve);
-            setShowResumePrompt(true);
-        });
-        
-        setShowResumePrompt(false);
-        setResolveResume(null);
+        const autoResume = searchParams.get('resume') === 'true';
+
+        if (autoResume) {
+            userChoice = 'resume';
+        } else {
+            userChoice = await new Promise((resolve) => {
+                setResolveResume(() => resolve);
+                setShowResumePrompt(true);
+            });
+            
+            setShowResumePrompt(false);
+            setResolveResume(null);
+        }
 
         if (userChoice === 'new' && loadedAttempt) {
-            await deleteDoc(doc(firestore, `users/${user.uid}/testAttempts`, loadedAttempt.id));
-            loadedAttempt = null;
+            try {
+              // 1. Always delete the attempt record first (user owns this)
+              const attemptDocRef = doc(firestore, `users/${user.uid}/testAttempts`, loadedAttempt.id);
+              await deleteDoc(attemptDocRef);
+              
+              // 2. If it's a dynamic mock test, also try to delete the test record
+              if (test.isMockTest) {
+                const testDocRef = doc(firestore, 'tests', test.id);
+                await deleteDoc(testDocRef).catch(err => {
+                  console.warn("Could not delete dynamic test document, but attempt was removed:", err);
+                });
+              }
+              
+              loadedAttempt = null;
+              toast({ 
+                title: t('starting_fresh') || "Starting Fresh",
+                description: t('starting_fresh_desc') || "Your previous unfinished session has been discarded." 
+              });
+            } catch (err) {
+              console.error("Cleanup failed:", err);
+              toast({
+                variant: 'destructive',
+                title: 'Cleanup Failed',
+                description: 'Could not remove the old session. Please try again.',
+              });
+              // Hard stop to avoid weird state
+              setIsLoading(false);
+              return;
+            }
         }
       }
 
@@ -140,14 +177,22 @@ export default function TestPage() {
         for (const attemptDoc of completedAttemptsSnapshot.docs) {
           const attemptData = attemptDoc.data();
           if (attemptData.questionIds && attemptData.questionIds.length > 0) {
-            const qSnapshot = await getDocs(query(collection(firestore, 'questions'), where(documentId(), 'in', attemptData.questionIds)));
-            qSnapshot.forEach((qDoc) => {
-              const qData = qDoc.data() as Question;
-              const questionIndex = attemptData.questionIds.indexOf(qDoc.id);
-              if (questionIndex !== -1 && qData.answerOptions[attemptData.answers[questionIndex]] === qData.correctAnswer) {
-                correctlyAnsweredIds.add(qDoc.id);
-              }
-            });
+            // Firestore 'in' has a 30 item limit. Chunking the IDs.
+            const idChunks: string[][] = [];
+            for (let i = 0; i < attemptData.questionIds.length; i += 30) {
+              idChunks.push(attemptData.questionIds.slice(i, i + 30));
+            }
+
+            for (const chunk of idChunks) {
+              const qSnapshot = await getDocs(query(collection(firestore, 'questions'), where(documentId(), 'in', chunk)));
+              qSnapshot.forEach((qDoc) => {
+                const qData = qDoc.data() as Question;
+                const questionIndex = attemptData.questionIds.indexOf(qDoc.id);
+                if (questionIndex !== -1 && qData.answerOptions[attemptData.answers[questionIndex]] === qData.correctAnswer) {
+                  correctlyAnsweredIds.add(qDoc.id);
+                }
+              });
+            }
           }
         }
         setAnsweredQuestionsCount(correctlyAnsweredIds.size);
@@ -221,7 +266,8 @@ export default function TestPage() {
                     <AlertDialogHeader>
                         <AlertDialogTitle>{t('resume_test_title')}</AlertDialogTitle>
                         <AlertDialogDescription>
-                            {t('resume_test_desc')}
+                            {testData?.title && <div><strong>{testData.title}</strong></div>}
+                            <div className="mt-2">{t('resume_test_desc')}</div>
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

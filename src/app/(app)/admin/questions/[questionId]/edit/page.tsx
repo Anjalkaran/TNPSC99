@@ -16,7 +16,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Trash } from 'lucide-react';
+import { Trash, ArrowLeft } from 'lucide-react';
 import { useEffect } from 'react';
 import {
   AlertDialog,
@@ -189,7 +189,13 @@ export default function EditQuestionPage() {
   }
 
   return (
-    <div className="container mx-auto p-4 sm:p-6 md:p-8">
+    <div className="container mx-auto p-4 sm:p-6 md:p-8 space-y-4">
+      <div className="flex items-center">
+        <Button variant="ghost" onClick={() => router.back()} className="gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            Back
+        </Button>
+      </div>
       <Card>
         <CardHeader>
           <CardTitle>Edit Question</CardTitle>

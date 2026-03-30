@@ -90,14 +90,16 @@ export default function EditUserPage() {
       router.push('/admin/users');
     } catch (error: any) {
       console.error('Error updating user:', error);
-      errorEmitter.emit(
-        'permission-error',
-        new FirestorePermissionError({
-          path: userRef.path,
-          operation: 'update',
-          requestResourceData: valuesToSubmit,
-        })
-      );
+      if (error?.code === 'permission-denied') {
+        errorEmitter.emit(
+          'permission-error',
+          new FirestorePermissionError({
+            path: userRef.path,
+            operation: 'update',
+            requestResourceData: valuesToSubmit,
+          })
+        );
+      }
       toast({
         variant: 'destructive',
         title: 'Update Failed',

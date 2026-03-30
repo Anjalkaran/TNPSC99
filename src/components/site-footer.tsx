@@ -9,6 +9,7 @@ export function SiteFooter() {
           © {new Date().getFullYear()} tnpsc99.com. All Rights Reserved.
         </p>
         <div className="flex items-center gap-x-4">
+          <Link href="https://instagram.com/tnpsc99_com" target="_blank" className="text-sm text-muted-foreground hover:text-foreground">Instagram</Link>
           <Link href="/about-us" className="text-sm text-muted-foreground hover:text-foreground">About Us</Link>
           <Link href="/privacy-policy" className="text-sm text-muted-foreground hover:text-foreground">Privacy Policy</Link>
           <Link href="/terms-and-conditions" className="text-sm text-muted-foreground hover:text-foreground">Terms & Conditions</Link>

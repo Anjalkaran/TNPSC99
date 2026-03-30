@@ -121,54 +121,66 @@ if (process.env.GEMINI_API_KEY) {
 
 
 export async function analyzePerformance(input: PerformanceInput): Promise<PerformanceOutput> {
-  if (!performanceAnalysisFlow) {
-    console.warn("GEMINI_API_KEY is not set. Using fallback AI performance analysis.");
-    
-    if (input.language === 'ta') {
-        return {
-            strengths: [],
-            weaknesses: [],
-            recommendations: [],
-            overallSummary: "AI நுண்ணறிவு விரைவில் கிடைக்கும். உங்கள் தயாரிப்பைத் தொடரவும்.",
-        };
+  // If flow is defined and we have an API key, use it
+  if (performanceAnalysisFlow && process.env.GEMINI_API_KEY) {
+    try {
+        return await performanceAnalysisFlow(input);
+    } catch (error) {
+        console.error("Genkit flow failed, falling back to manual analysis:", error);
     }
-    
-    const allItems = [
-      ...input.subjects.map(s => ({ ...s, type: 'Subject' })),
-      ...input.categories.map(c => ({ ...c, type: 'Category' })),
-      ...input.units.map(u => ({ ...u, type: 'Unit' })),
-    ];
-
-    const strengths = allItems
-      .filter(item => item.proficiency >= 80)
-      .sort((a, b) => b.proficiency - a.proficiency)
-      .slice(0, 2)
-      .map(s => `You are strong in ${s.name} (${s.proficiency.toFixed(0)}%)`);
-
-    const weaknesses = allItems
-      .filter(item => item.proficiency < 60)
-      .sort((a, b) => a.proficiency - b.proficiency)
-      .slice(0, 3);
-      
-    const formattedWeaknesses = weaknesses.map(w => `Focus more on ${w.name} (${w.proficiency.toFixed(0)}%)`);
-
-    const recommendations = weaknesses.length > 0
-        ? [
-            ...weaknesses.map(w => `Review study materials and take more practice tests for '${w.name}'.`),
-            "Practice 10 MCQs daily in your weakest areas."
-          ].slice(0,4)
-        : ["Continue practicing consistently across all subjects to maintain your performance."];
-
-    const overallSummary = weaknesses.length > 0
-        ? "You have a good grasp of some subjects, and with targeted practice on your weaker areas, you can see significant improvement."
-        : "You are performing well across the board. Keep up the great work!";
-
-    return {
-        strengths,
-        weaknesses: formattedWeaknesses,
-        recommendations,
-        overallSummary,
-    };
   }
-  return await performanceAnalysisFlow(input);
+
+  // Fallback / Manual Analysis logic
+  const allItems = [
+    ...input.subjects.map(s => ({ ...s, type: 'Subject' })),
+    ...input.categories.map(c => ({ ...c, type: 'Category' })),
+    ...input.units.map(u => ({ ...u, type: 'Unit' })),
+  ];
+
+  const language = input.language;
+
+  const strengths = allItems
+    .filter(item => item.proficiency >= 80)
+    .sort((a, b) => b.proficiency - a.proficiency)
+    .slice(0, 2)
+    .map(s => language === 'ta' 
+        ? `${s.name} பாடத்தில் நீங்கள் வலுவாக உள்ளீர்கள் (${s.proficiency.toFixed(0)}%)`
+        : `You are strong in ${s.name} (${s.proficiency.toFixed(0)}%)`);
+
+  const weaknesses = allItems
+    .filter(item => item.proficiency < 60)
+    .sort((a, b) => a.proficiency - b.proficiency)
+    .slice(0, 3);
+    
+  const formattedWeaknesses = weaknesses.map(w => language === 'ta'
+    ? `${w.name} பகுதியில் அதிக கவனம் தேவை (${w.proficiency.toFixed(0)}%)`
+    : `Focus more on ${w.name} (${w.proficiency.toFixed(0)}%)`);
+
+  const recommendations = weaknesses.length > 0
+      ? [
+          ...weaknesses.map(w => language === 'ta'
+            ? `'${w.name}' பாடப் பொருட்களை மீண்டும் படித்து அதிக பயிற்சித் தேர்வுகளை எழுதுங்கள்.`
+            : `Review study materials and take more practice tests for '${w.name}'.`),
+          language === 'ta' 
+            ? "உங்கள் பலவீனமான பகுதிகளில் தினமும் 10 வினாக்களுக்கு பயிற்சி பெறுங்கள்."
+            : "Practice 10 MCQs daily in your weakest areas."
+        ].slice(0,4)
+      : [language === 'ta'
+          ? "உங்கள் செயல்திறனைத் தக்கவைக்க அனைத்து பாடங்களிலும் தொடர்ந்து பயிற்சி செய்யுங்கள்."
+          : "Continue practicing consistently across all subjects to maintain your performance."];
+
+  const overallSummary = weaknesses.length > 0
+      ? (language === 'ta'
+          ? "சில பாடங்களில் உங்களுக்கு நல்ல புரிதல் உள்ளது, மேலும் உங்கள் பலவீனமான பகுதிகளில் தீவிர பயிற்சி அளிப்பதன் மூலம் நீங்கள் குறிப்பிடத்தக்க முன்னேற்றத்தைக் காணலாம்."
+          : "You have a good grasp of some subjects, and with targeted practice on your weaker areas, you can see significant improvement.")
+      : (language === 'ta'
+          ? "நீங்கள் அனைத்துத் துறைகளிலும் சிறப்பாகச் செயல்படுகிறீர்கள். சிறந்த வேலையைத் தொடருங்கள்!"
+          : "You are performing well across the board. Keep up the great work!");
+
+  return {
+    strengths,
+    weaknesses: formattedWeaknesses,
+    recommendations,
+    overallSummary,
+  };
 }

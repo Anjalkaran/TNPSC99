@@ -37,6 +37,9 @@
     --sidebar-accent-foreground: 145 20% 95%;
     --sidebar-border: 145 50% 25%;
     --sidebar-ring: 145 63% 49%;
+    --brand-green: 120 73% 75%;
+    --brand-orange: 29 100% 58%;
+    --brand-bg: 120 67% 93%;
   }
  
   .dark {
@@ -73,6 +76,9 @@
     --sidebar-accent-foreground: 145 20% 95%;
     --sidebar-border: 145 50% 25%;
     --sidebar-ring: 145 63% 49%;
+    --brand-green: 120 73% 75%;
+    --brand-orange: 29 100% 58%;
+    --brand-bg: 120 67% 10%;
   }
 }
 
@@ -81,6 +87,6 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground overflow-x-hidden;
   }
 }

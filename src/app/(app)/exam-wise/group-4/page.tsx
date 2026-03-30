@@ -2,7 +2,8 @@
 import { useTranslation } from '@/hooks/use-translation';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Archive, ArrowRight, BookOpenCheck, ClipboardList } from 'lucide-react';
+import { Archive, ArrowRight, ArrowLeft, BookOpenCheck, ClipboardList } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function Group4Page() {
     const { t } = useTranslation();
@@ -27,6 +28,12 @@ export default function Group4Page() {
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
+      <Button asChild variant="ghost" className="mb-8">
+        <Link href="/online-tests">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          {t('back_to_online_tests')}
+        </Link>
+      </Button>
       <div className="text-center mb-12">
         <h1 className="text-4xl font-extrabold tracking-tight">{t('group_4_tests')}</h1>
         <p className="mt-4 text-lg text-muted-foreground">

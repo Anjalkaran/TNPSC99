@@ -1,8 +1,9 @@
 'use client';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, Flame, BookCopy, Archive } from 'lucide-react';
+import { ArrowRight, Flame, BookCopy, Archive, ArrowLeft } from 'lucide-react';
 import { useTranslation } from '@/hooks/use-translation';
+import { Button } from '@/components/ui/button';
 
 export default function PreviousYearPapersPage() {
   const { t } = useTranslation();
@@ -15,6 +16,12 @@ export default function PreviousYearPapersPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
+      <Button asChild variant="ghost" className="mb-8">
+        <Link href="/dashboard">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Dashboard
+        </Link>
+      </Button>
       <div className="text-center mb-12">
         <h1 className="text-4xl font-extrabold tracking-tight">{t('previous_year_papers')}</h1>
         <p className="mt-4 text-lg text-muted-foreground">

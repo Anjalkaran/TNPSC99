@@ -21,16 +21,17 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import Link from 'next/link';
-import { useAuth, useUser, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { useAuth, useUser } from '@/firebase';
 import {
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
   GoogleAuthProvider,
   signInWithPopup,
 } from 'firebase/auth';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState, Suspense } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { Eye, EyeOff } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -56,14 +57,16 @@ const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
     </svg>
   );
 
-export default function LoginPage() {
+function LoginContent() {
   const auth = useAuth();
   const router = useRouter();
-  const { user, isUserLoading } = useUser();
+  const searchParams = useSearchParams();
+  const { user, isUserLoading, pendingSessionConflict, isSessionLoading } = useUser();
   const { toast } = useToast();
   const { t } = useTranslation();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const loginSchema = z.object({
     email: z.string().email(t('invalid_email')),
@@ -81,10 +84,23 @@ export default function LoginPage() {
   });
 
   useEffect(() => {
-    if (!isUserLoading && user) {
+    if (!isUserLoading && user && !pendingSessionConflict && !isSessionLoading) {
       router.push('/');
     }
-  }, [user, isUserLoading, router]);
+  }, [user, isUserLoading, router, pendingSessionConflict, isSessionLoading]);
+
+  useEffect(() => {
+    const reason = searchParams.get('reason');
+    if (reason === 'multi_device') {
+      toast({
+        variant: 'destructive',
+        title: t('security_notice'),
+        description: t('logout_reason_multi_device'),
+      });
+      // Gently clean up the URL without a full reload
+      router.replace('/login');
+    }
+  }, [searchParams, toast, router]);
 
   const handlePasswordReset = async () => {
     if (!resetEmail) {
@@ -157,6 +173,7 @@ export default function LoginPage() {
         if (needsUpdate) {
             await updateDoc(userDocRef, update);
         }
+        sessionStorage.setItem('show_sidebar_hint', 'true');
     } else {
         // New user (e.g., first sign-in with Google, or email sign-in without sign-up)
         const subscriptionExpires = new Date();
@@ -174,6 +191,7 @@ export default function LoginPage() {
             subscriptionExpires: subscriptionExpires.toISOString(),
         };
         await setDoc(userDocRef, newUserProfile);
+        sessionStorage.setItem('show_sidebar_hint', 'true');
     }
   };
 
@@ -236,105 +254,167 @@ export default function LoginPage() {
   }
 
   return (
-    <Card className="w-full max-w-sm text-white bg-black/40 backdrop-blur-lg border-white/20">
-      <CardHeader>
-        <CardTitle>{t('login')}</CardTitle>
-        <CardDescription className="text-gray-300">
+    <div className="w-full max-w-md px-4 py-8 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+      <div className="text-center mb-10">
+        <h1 className="text-3xl md:text-4xl font-black text-foreground mb-2 tracking-tight">
+          Welcome back to <span className="text-primary italic">TNPSC99</span>
+        </h1>
+        <p className="text-muted-foreground font-medium">
           {t('login_to_continue')}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('email')}</FormLabel>
-                  <FormControl>
-                    <Input className="bg-transparent placeholder:text-gray-400" placeholder="name@example.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <div className="flex items-center justify-between">
-                    <FormLabel>{t('password')}</FormLabel>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
+        </p>
+      </div>
+
+      <Card className="w-full bg-card/40 backdrop-blur-2xl border-border/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden relative">
+        {/* Subtle top glow line */}
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+        
+        <CardHeader className="space-y-1 pb-4">
+          <CardTitle className="text-2xl font-bold text-foreground">{t('login')}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem className="space-y-2">
+                    <FormLabel className="text-foreground/80 font-semibold text-sm ml-1">{t('email')}</FormLabel>
+                    <FormControl>
+                      <Input 
+                        className="h-12 bg-muted/30 border-border focus:border-primary/50 focus:ring-primary/20 placeholder:text-muted-foreground/50 rounded-xl transition-all" 
+                        placeholder={t('email_placeholder')} 
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage className="text-red-500 text-xs" />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem className="space-y-2">
+                    <div className="flex items-center justify-between ml-1">
+                      <FormLabel className="text-foreground/80 font-semibold text-sm">{t('password')}</FormLabel>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="link"
+                            className="p-0 h-auto text-xs text-brand-orange hover:text-brand-orange/80 hover:underline font-bold"
+                          >
+                            {t('forgot_password')}
+                          </Button>
+                        </AlertDialogTrigger>
+                         <AlertDialogContent className="bg-card border-border text-foreground">
+                          <AlertDialogHeader>
+                            <AlertDialogTitle className="text-xl font-bold">
+                              {t('reset_password')}
+                            </AlertDialogTitle>
+                            <AlertDialogDescription className="text-muted-foreground">
+                              {t('reset_password_desc')}
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <Input
+                            type="email"
+                            placeholder="name@example.com"
+                            value={resetEmail}
+                            onChange={(e) => setResetEmail(e.target.value)}
+                            className="bg-muted/30 border-border focus:border-primary/50"
+                          />
+                          <AlertDialogFooter>
+                            <AlertDialogCancel className="bg-muted border-none text-foreground hover:bg-muted/80 transition-colors">
+                                {t('cancel')}
+                            </AlertDialogCancel>
+                            <AlertDialogAction onClick={handlePasswordReset} className="bg-primary hover:bg-primary/90 text-white font-bold">
+                              {t('send_link')}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                    <FormControl>
+                      <div className="relative group">
+                        <Input 
+                          className="h-12 bg-muted/30 border-border focus:border-primary/50 focus:ring-primary/20 placeholder:text-muted-foreground/50 pr-12 rounded-xl transition-all" 
+                          type={showPassword ? 'text' : 'password'} 
+                          placeholder={t('password_placeholder')} 
+                          {...field} 
+                        />
                         <Button
                           type="button"
-                          variant="link"
-                          className="p-0 h-auto text-xs text-orange-500 hover:text-orange-400 hover:underline"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-1 top-1 h-10 w-10 p-0 hover:bg-muted text-muted-foreground/60 hover:text-foreground rounded-lg transition-colors"
+                          onClick={() => setShowPassword(!showPassword)}
                         >
-                          {t('forgot_password')}
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
                         </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>
-                            {t('reset_password')}
-                          </AlertDialogTitle>
-                          <AlertDialogDescription>
-                            {t('reset_password_desc')}
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <Input
-                          type="email"
-                          placeholder="name@example.com"
-                          value={resetEmail}
-                          onChange={(e) => setResetEmail(e.target.value)}
-                        />
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                          <AlertDialogAction onClick={handlePasswordReset}>
-                            {t('send_link')}
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
-                  <FormControl>
-                    <Input className="bg-transparent placeholder:text-gray-400" type="password" placeholder="••••••••" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? t('logging_in') : t('login')}
-            </Button>
-          </form>
-        </Form>
-        <div className="relative my-4">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-white/30" />
+                      </div>
+                    </FormControl>
+                    <FormMessage className="text-red-500 text-xs" />
+                  </FormItem>
+                )}
+              />
+              <Button 
+                  type="submit" 
+                  className="w-full h-12 bg-primary text-white hover:bg-primary/90 transition-all duration-300 font-black text-base rounded-xl shadow-lg shadow-primary/20 active:scale-[0.98]" 
+                  disabled={isSubmitting}
+                >
+                {isSubmitting ? (
+                    <div className="flex items-center gap-2">
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                        {t('logging_in')}
+                    </div>
+                ) : t('login')}
+              </Button>
+            </form>
+          </Form>
+
+          <div className="relative py-2">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase tracking-widest font-bold">
+              <span className="bg-background/10 backdrop-blur-sm px-3 text-muted-foreground">
+                OR
+              </span>
+            </div>
           </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-black/30 px-2 text-gray-400">
-              OR
-            </span>
-          </div>
-        </div>
-        <Button variant="outline" className="w-full bg-transparent hover:bg-white/10" onClick={handleGoogleSignIn} disabled={isSubmitting}>
-          <GoogleIcon className="mr-2 h-4 w-4" />
-          Continue with Gmail
-        </Button>
-      </CardContent>
-      <CardFooter className="flex justify-center">
-        <p className="text-sm text-gray-400">
-          {t('no_account')}{' '}
-          <Link href="/signup" className="text-orange-500 hover:text-orange-400 hover:underline">
-            {t('register')}
-          </Link>
-        </p>
-      </CardFooter>
-    </Card>
+
+          <Button 
+            variant="outline" 
+            className="w-full h-12 bg-muted/30 border-border hover:bg-muted/50 text-foreground hover:text-foreground transition-all duration-300 font-bold rounded-xl active:scale-[0.98]" 
+            onClick={handleGoogleSignIn} 
+            disabled={isSubmitting}
+          >
+            <GoogleIcon className="mr-3 h-5 w-5" />
+            {t('continue_with_google')}
+          </Button>
+        </CardContent>
+        <CardFooter className="flex justify-center pb-8 pt-2">
+          <p className="text-sm text-muted-foreground font-medium">
+            {t('no_account')}{' '}
+            <Link href="/signup" className="text-brand-orange hover:text-brand-orange/80 font-black hover:underline transition-colors ml-1">
+              {t('register')}
+            </Link>
+          </p>
+        </CardFooter>
+      </Card>
+    </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center">Loading...</div>}>
+      <LoginContent />
+    </Suspense>
   );
 }

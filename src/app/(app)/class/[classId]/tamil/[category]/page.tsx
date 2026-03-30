@@ -6,7 +6,7 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
 import { collection, query, where, getDoc, doc, getDocs } from "firebase/firestore";
 import type { Test, Subject, Class, UserTestAttempt, Category } from "@/lib/types";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { useEffect, useState, useMemo } from "react";
 import {
   Select,
@@ -100,8 +100,10 @@ function TestProgressBadge({ testId }: { testId: string }) {
 
 export default function TamilCategoryTestsPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const firestore = useFirestore();
   const { t, language } = useTranslation();
+  const bookType = searchParams.get('bookType');
 
   const [pageTitle, setPageTitle] = useState('');
   const [subjectId, setSubjectId] = useState('');
@@ -209,7 +211,12 @@ export default function TamilCategoryTestsPage() {
     });
   }, [tests]);
 
+  const cleanTitle = (title: string) => {
+    return title.replace(/^Group\s+II\s*-\s*/i, '').replace(/^Group\s+II\s*/i, '').trim();
+  };
+
   const getShortTestTitle = (test: Test) => {
+    let title = cleanTitle(test.title || '');
     if (test.unitNumber && test.unitName) {
         let title = `இயல் ${test.unitNumber}: ${test.unitName}`;
         if (test.term) {
@@ -237,7 +244,7 @@ export default function TamilCategoryTestsPage() {
     <div className="container mx-auto px-4 py-8 md:py-12">
       <div className="mb-8">
         <Button asChild variant="ghost" className="mb-4">
-            <Link href={`/class/${classId}/tamil`}>
+            <Link href={`/class/${classId}/tamil${bookType ? `?bookType=${bookType}` : ''}`}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 {t('back_to_categories')}
             </Link>

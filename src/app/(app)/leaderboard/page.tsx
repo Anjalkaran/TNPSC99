@@ -1,8 +1,9 @@
 'use client';
 import { useFirestore, useCollection, useMemoFirebase, useUser } from '@/firebase';
 import { collection, query } from 'firebase/firestore';
-import { useMemo } from 'react';
-import type { Score } from '@/lib/types';
+import { useState, useMemo } from 'react';
+import type { Score, Test } from '@/lib/types';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Card,
   CardContent,
@@ -36,8 +37,24 @@ export default function LeaderboardPage() {
   const firestore = useFirestore();
   const { t } = useTranslation();
 
+  const [activeTab, setActiveTab] = useState('overall');
+  const [activeMockGroup, setActiveMockGroup] = useState('Group IV');
+
   const scoresQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'scores')) : null, [firestore]);
-  const { data: allScores, isLoading } = useCollection<Score>(scoresQuery);
+  const { data: allScores, isLoading: scoresLoading } = useCollection<Score>(scoresQuery);
+
+  const testsQuery = useMemoFirebase(() => firestore ? query(collection(firestore, 'tests')) : null, [firestore]);
+  const { data: allTests, isLoading: testsLoading } = useCollection<Test>(testsQuery);
+
+  const isLoading = scoresLoading || testsLoading;
+
+  const testsMetadata = useMemo(() => {
+    if (!allTests) return new Map<string, { isMockTest: boolean; examGroup: string }>();
+    return new Map(allTests.map(test => [
+      test.id,
+      { isMockTest: !!test.isMockTest, examGroup: test.examGroup || '' }
+    ]));
+  }, [allTests]);
 
   const processedLeaderboard = useMemo(() => {
     if (!allScores) return [];
@@ -62,6 +79,13 @@ export default function LeaderboardPage() {
         // Exclude Admin and Anonymous users from the leaderboard
         if (score.username === 'Admin' || score.username === 'Anonymous') {
             return;
+        }
+
+        // Filter based on active tab
+        if (activeTab === 'mock-tests') {
+          const testMeta = testsMetadata.get(score.testId);
+          if (!testMeta || !testMeta.isMockTest) return; // Must be a mock test
+          if (testMeta.examGroup !== activeMockGroup) return; // Must match the selected exam group
         }
 
         // Only include valid attempts in our calculation
@@ -100,7 +124,7 @@ export default function LeaderboardPage() {
     });
 
     return filteredLeaderboard;
-  }, [allScores]);
+  }, [allScores, activeTab, activeMockGroup, testsMetadata]);
   
   const getRankClass = (rank: number) => {
     if (rank === 1) return 'bg-yellow-400/20';
@@ -113,13 +137,35 @@ export default function LeaderboardPage() {
     <div className="container mx-auto p-4 sm:p-6 md:p-8">
       <Card>
         <CardHeader>
-          <CardTitle className="text-3xl font-bold flex items-center gap-2">
-            <Trophy className="text-yellow-500" />
-            {t('leaderboard')}
-          </CardTitle>
-          <CardDescription className="mt-2">
-            See the top performers based on their overall accuracy across all tests.
-          </CardDescription>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <CardTitle className="text-3xl font-bold flex items-center gap-2">
+                <Trophy className="text-yellow-500" />
+                {t('leaderboard')}
+              </CardTitle>
+              <CardDescription className="mt-2">
+                See the top performers based on their overall accuracy.
+              </CardDescription>
+            </div>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full md:w-auto">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="overall" className="font-semibold">{t('overall')}</TabsTrigger>
+                <TabsTrigger value="mock-tests" className="font-semibold">{t('mock_tests')}</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+          
+          {activeTab === 'mock-tests' && (
+            <div className="mt-4 pt-4 border-t">
+              <Tabs value={activeMockGroup} onValueChange={setActiveMockGroup} className="w-full max-w-md">
+                <TabsList className="grid w-full grid-cols-3 bg-muted/50">
+                  <TabsTrigger value="Group I" className="text-sm">Group I</TabsTrigger>
+                  <TabsTrigger value="Group II" className="text-sm">Group II</TabsTrigger>
+                  <TabsTrigger value="Group IV" className="text-sm">Group IV</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           {isLoading ? (

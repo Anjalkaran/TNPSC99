@@ -35,6 +35,14 @@ const nextConfig = {
       }
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: '/__/auth/:path*',
+        destination: `https://studio-5029416251-928dd.firebaseapp.com/__/auth/:path*`,
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;

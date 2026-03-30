@@ -1,15 +1,17 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import type { Test, UserTestAttempt, Score, Question, BookmarkedQuestion } from '@/lib/types';
+import type { Test, UserTestAttempt, Score, Question, BookmarkedQuestion, UserProfile } from '@/lib/types';
+
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { ArrowLeft, ArrowRight, CheckCircle2, XCircle, RotateCw, Timer, Info, Bookmark, Save, MessageSquareQuote } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, XCircle, RotateCw, Timer, Info, Bookmark, Save, MessageSquareQuote, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
-import { useFirestore, useUser } from '@/firebase';
+import { useFirestore, useUser, useDoc, useMemoFirebase } from '@/firebase';
+
 import { addDoc, collection, doc, setDoc, getDocs, query, where, deleteDoc, writeBatch, documentId } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -30,7 +32,14 @@ import {
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/hooks/use-translation';
 import { CommentDialog } from './comment-dialog';
+import { useStudyMaterialUrl } from '@/hooks/use-study-material-url';
+import { BookOpen } from 'lucide-react';
 
+
+// Function to clean the title
+const cleanTitle = (title: string) => {
+    return title.replace(/^Group\s+II\s*-\s*/i, '').replace(/^Group\s+II\s*/i, '').trim();
+};
 
 const formatQuestionText = (text: string) => {
     if (!text) {
@@ -75,9 +84,18 @@ export function McqTest({
   const { user } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
+
+  const userProfileRef = useMemoFirebase(
+    () => (user && firestore ? doc(firestore, 'users', user.uid) : null),
+    [user, firestore]
+  );
+  const { data: userProfile } = useDoc<UserProfile>(userProfileRef);
+
   
-  const decodedTitle = decodeURIComponent(test.title);
+  const decodedTitle = cleanTitle(decodeURIComponent(test.title));
   const currentQuestion = questions[currentQuestionIndex];
+
+  const { downloadURL, isLoading: materialLoading } = useStudyMaterialUrl(test);
 
   const handleOpenCommentDialog = (question: Question) => {
     setCommentQuestion(question);
@@ -149,6 +167,7 @@ export function McqTest({
       questionIds: questions.map(q => q.id),
       score: status === 'completed' ? calculatedScore : 0,
       isMockTest: test.isMockTest || false,
+      examGroup: test.examGroup,
     };
 
     if (status === 'completed') {
@@ -178,30 +197,45 @@ export function McqTest({
         });
       }
       isSavingRef.current = false;
-      return attemptDocRef.id;
+      return true;
   
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving test attempt: ", error);
-      errorEmitter.emit(
-        'permission-error',
-        new FirestorePermissionError({
+      
+      const isPermissionError = error?.code === 'permission-denied';
+      
+      toast({ 
+        title: isPermissionError ? "Permission Denied" : t('error_title'),
+        description: isPermissionError 
+          ? "You don't have permission to save progress. Please ensure you are signed in correctly."
+          : (error?.message || t('save_error_desc')),
+        variant: "destructive"
+      });
+
+      // Emit for the global listener if it's a permission error
+      if (isPermissionError) {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: attemptDocRef.path,
-          operation: 'write',
+          operation: 'update',
           requestResourceData: attemptData,
-        })
-      )
+        }));
+      }
+
       isSavingRef.current = false;
-      return null;
+      return false;
     }
   }, [user, firestore, questions, answers, test, decodedTitle, currentQuestionIndex, attemptId]);
   
   const handleExit = useCallback(async () => {
     if (isExitingIntentionally.current) return;
-    isExitingIntentionally.current = true;
-    await saveProgress('in-progress');
-    toast({ description: t('progress_saved') });
-    router.push(getReturnHref());
-  }, [saveProgress, toast, router, getReturnHref, t]);
+    
+    const saved = await saveProgress('in-progress');
+    if (saved) {
+      isExitingIntentionally.current = true;
+      toast({ description: t('progress_saved') });
+      router.back();
+    }
+  }, [saveProgress, toast, router, t]);
 
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -212,8 +246,19 @@ export function McqTest({
     
     document.addEventListener('visibilitychange', handleVisibilityChange);
     
+    // Warn before leaving page if test is in progress
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (!isSubmitted && !isExitingIntentionally.current) {
+        e.preventDefault();
+        e.returnValue = ''; // Required for some browsers
+        return '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, [saveProgress, isSubmitted, isExitingIntentionally]);
 
@@ -246,10 +291,18 @@ export function McqTest({
         setBookmarks(bookmarks.filter(id => id !== questionId));
         toast({ description: "Bookmark removed." });
       }).catch(error => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-          path: bookmarksRef.path,
-          operation: 'delete'
-        }));
+        console.error("Error removing bookmark:", error);
+        if (error?.code === 'permission-denied') {
+          errorEmitter.emit('permission-error', new FirestorePermissionError({
+            path: bookmarksRef.path,
+            operation: 'delete'
+          }));
+        } else {
+          toast({
+            variant: 'destructive',
+            description: "Could not remove bookmark. Please try again."
+          });
+        }
       });
 
     } else {
@@ -263,11 +316,19 @@ export function McqTest({
         setBookmarks([...bookmarks, questionId]);
         toast({ description: "Question bookmarked!" });
       }).catch(error => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-          path: bookmarksRef.path,
-          operation: 'create',
-          requestResourceData: newBookmark
-        }));
+        console.error("Error adding bookmark:", error);
+        if (error?.code === 'permission-denied') {
+          errorEmitter.emit('permission-error', new FirestorePermissionError({
+            path: bookmarksRef.path,
+            operation: 'create',
+            requestResourceData: newBookmark
+          }));
+        } else {
+          toast({
+            variant: 'destructive',
+            description: "Could not add bookmark. Please try again."
+          });
+        }
       });
     }
   };
@@ -292,6 +353,39 @@ export function McqTest({
         description: "உங்கள் மதிப்பெண் சேமிக்கப்பட்டது.",
     });
   }, [saveProgress, toast]);
+
+  const handleViewReference = async () => {
+    if (!currentQuestion.referenceUrl && !downloadURL) return;
+    const url = currentQuestion.referenceUrl || downloadURL || '';
+    const page = currentQuestion.referencePage || 1;
+    const offset = test?.referencePageOffset || 0;
+    
+    // Save progress before navigating
+    await saveProgress('in-progress');
+    
+    // Navigate in the same tab
+    router.push(`/pdf-viewer?url=${encodeURIComponent(url)}&page=${page}&offset=${offset}`);
+  };
+
+  // Prefetch PDF when current question has a reference
+  useEffect(() => {
+    if ((currentQuestion.referenceUrl || downloadURL) && currentQuestion.referencePage) {
+        const url = currentQuestion.referenceUrl || downloadURL;
+        if (url) {
+            // Simple prefetch hint
+            const link = document.createElement('link');
+            link.rel = 'prefetch';
+            link.href = url;
+            document.head.appendChild(link);
+            
+            // Also prefetch the worker script if possible
+            const workerLink = document.createElement('link');
+            workerLink.rel = 'prefetch';
+            workerLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+            document.head.appendChild(workerLink);
+        }
+    }
+  }, [currentQuestion, downloadURL]);
 
   useEffect(() => {
     if (isSubmitted) {
@@ -367,8 +461,8 @@ export function McqTest({
             <RotateCw className="mr-2 h-4 w-4" />
             மீண்டும் முயற்சிக்கவும்
           </Button>
-          <Button asChild variant="outline" className="w-full sm:w-auto">
-            <Link href={returnHref}>முகப்புக்குத் திரும்பு</Link>
+          <Button onClick={() => router.back()} variant="outline" className="w-full sm:w-auto">
+            பின் செல்
           </Button>
         </CardFooter>
       </Card>
@@ -436,8 +530,8 @@ export function McqTest({
             <RotateCw className="mr-2 h-4 w-4" />
             மீண்டும் முயற்சிக்கவும்
           </Button>
-          <Button asChild variant="outline" className="w-full sm:w-auto">
-            <Link href={returnHref}>முகப்புக்குத் திரும்பு</Link>
+          <Button onClick={() => router.back()} variant="outline" className="w-full sm:w-auto">
+            பின் செல்
           </Button>
         </CardFooter>
       </Card>
@@ -448,6 +542,7 @@ export function McqTest({
     <>
       <Card className="w-full max-w-2xl">
         <CardHeader>
+          {/* Back button removed as Save & Exit is available */}
           <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
               <div className="w-full sm:w-auto">
                   <CardTitle>{decodedTitle}</CardTitle>
@@ -459,10 +554,10 @@ export function McqTest({
                   </div>
               </div>
               <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                   <div className={cn("flex items-center gap-2 font-mono text-xl sm:text-2xl p-2 rounded-md", totalTimeLeft < 60 ? "text-destructive-foreground bg-destructive" : "bg-muted")}>
-                      <Timer className="h-5 w-5 sm:h-6 sm:w-6" />
-                      <span>{formatTime(totalTimeLeft)}</span>
-                  </div>
+                    <div className={cn("flex items-center gap-2 font-mono text-xl sm:text-2xl p-2 rounded-md", totalTimeLeft < 60 ? "text-destructive-foreground bg-destructive" : "bg-muted")}>
+                       <Timer className="h-6 w-6 sm:h-7 sm:w-7" />
+                       <span>{formatTime(totalTimeLeft)}</span>
+                   </div>
                    <AlertDialog>
                       <AlertDialogTrigger asChild>
                          <Button variant="outline" className="w-full flex-1 sm:w-auto sm:flex-none">
@@ -504,7 +599,7 @@ export function McqTest({
               </div>
             )}
           <div className="flex justify-between items-start">
-              <p className="font-semibold text-lg mb-6 flex-1 whitespace-pre-line">{formatQuestionText(currentQuestion.text)}</p>
+              <p className="font-semibold text-lg md:text-xl mb-6 flex-1 whitespace-pre-line">{formatQuestionText(currentQuestion.text)}</p>
               <div className="flex items-center">
                 <Button variant="ghost" size="icon" onClick={() => toggleBookmark(currentQuestion.id)}>
                     <Bookmark className={cn("h-6 w-6", bookmarks.includes(currentQuestion.id) ? "fill-primary text-primary" : "text-muted-foreground")} />
@@ -535,9 +630,9 @@ export function McqTest({
                 return (
                 <Label key={option} className={cn("flex items-center space-x-3 p-4 border rounded-lg transition-colors cursor-pointer", getOptionClass())}>
                   <RadioGroupItem value={index.toString()} id={option} />
-                  <span className='whitespace-pre-line'>{option}</span>
-                  {isAnswered && isCorrect && <CheckCircle2 className="ml-auto text-green-600"/>}
-                  {isAnswered && isSelected && !isCorrect && <XCircle className="ml-auto text-red-600"/>}
+                  <span className='whitespace-pre-line text-sm md:text-base'>{option}</span>
+                  {isAnswered && isCorrect && <CheckCircle2 className="ml-auto text-green-600 h-5 w-5 md:h-6 md:w-6"/>}
+                  {isAnswered && isSelected && !isCorrect && <XCircle className="ml-auto text-red-600 h-5 w-5 md:h-6 md:w-6"/>}
                 </Label>
               )})}
             </div>
@@ -566,20 +661,35 @@ export function McqTest({
           </div>
 
           {(isAnswered && (currentQuestion.reference || currentQuestion.explanation)) && (
-              <div className="mt-4 p-4 bg-muted/50 rounded-lg space-y-3">
+              <div className="mt-4 p-5 bg-primary/5 border border-primary/20 rounded-lg space-y-4">
                   {currentQuestion.reference && (
                       <div>
-                          <p className="text-sm font-semibold">குறிப்பு</p>
-                           <p className="text-sm text-muted-foreground whitespace-pre-line">{currentQuestion.reference}</p>
+                           <p className="text-base font-bold text-primary mb-1">குறிப்பு</p>
+                           <p className="text-base text-foreground whitespace-pre-line leading-relaxed">{currentQuestion.reference}</p>
                       </div>
                   )}
                   
                   {currentQuestion.explanation && (
                       <div>
-                          <p className="text-sm font-semibold">விளக்கம்</p>
-                          <p className="text-sm text-muted-foreground whitespace-pre-line">{currentQuestion.explanation}</p>
+                          <p className="text-base font-bold text-primary mb-1">விளக்கம்</p>
+                           <p className="text-base text-foreground whitespace-pre-line leading-relaxed">{currentQuestion.explanation}</p>
                       </div>
                   )}
+
+                                     {userProfile?.isAdmin && (currentQuestion.referenceUrl || downloadURL) && currentQuestion.referencePage && (
+                       <div className="pt-2">
+                           <Button 
+                               onClick={handleViewReference}
+                               size="sm" 
+                               variant="outline" 
+                               className="w-full sm:w-auto"
+                               type="button"
+                           >
+                               <BookOpen className="mr-2 h-4 w-4" />
+                               புத்தகத்தைப் பார்க்க (பக்கம் {currentQuestion.referencePage})
+                           </Button>
+                       </div>
+                   )}
               </div>
           )}
         </CardContent>

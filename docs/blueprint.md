@@ -1,4 +1,4 @@
-# **App Name**: TNPSC Ace
+# **App Name**: TNPSC99
 
 ## Core Features:
 

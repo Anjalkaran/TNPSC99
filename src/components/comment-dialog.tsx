@@ -61,17 +61,25 @@ export function CommentDialog({ isOpen, onOpenChange, question }: CommentDialogP
       });
       form.reset();
       onOpenChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error submitting comment:", error);
-      errorEmitter.emit('permission-error', new FirestorePermissionError({
-        path: commentsCollectionRef.path,
-        operation: 'create',
-        requestResourceData: newComment,
-      }));
+      
+      const isPermissionError = error?.code === 'permission-denied';
+      
+      if (isPermissionError) {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: commentsCollectionRef.path,
+          operation: 'create',
+          requestResourceData: newComment,
+        }));
+      }
+
       toast({
         variant: 'destructive',
-        title: "Submission Failed",
-        description: "Could not submit your comment. You may not have permission to perform this action.",
+        title: isPermissionError ? "Permission Denied" : "Submission Failed",
+        description: isPermissionError 
+          ? "You don't have permission to submit comments. This might be due to outdated security rules on the server."
+          : (error?.message || "Could not submit your comment. Please try again later."),
       });
     } finally {
       setIsSubmitting(false);

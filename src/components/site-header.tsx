@@ -6,8 +6,16 @@ import {
   User as UserIcon,
   LogOut,
   LayoutDashboard,
+  Menu,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -111,21 +119,53 @@ export function SiteHeader() {
     <header className="sticky top-0 z-50 w-full border-b bg-background shadow-sm">
       <div className="container flex h-16 items-center justify-between px-4 md:px-6">
         <Link href="/">
-          <Image src="https://firebasestorage.googleapis.com/v0/b/studio-5029416251-928dd.firebasestorage.app/o/final%20tnpsc99.png?alt=media&token=45dc292d-a09c-49de-aa14-9ed0ae769c47" alt="TNPSC99 Logo" width={150} height={40} />
+          <Image src="/logo.png" alt="TNPSC99 Logo" width={180} height={48} className="h-10 w-auto object-contain" priority />
         </Link>
-        <div className="flex items-center gap-2 md:gap-4">
-            <Button asChild variant="ghost" className="hidden md:inline-flex">
-              <Link href="/">{t('home')}</Link>
-            </Button>
-            <Button asChild variant="ghost" className="hidden md:inline-flex">
-              <Link href="/about-us">{t('about_us')}</Link>
-            </Button>
-            <Button asChild variant="ghost" className="hidden md:inline-flex">
-              <Link href="/contact">{t('contact_us')}</Link>
-            </Button>
-            <UserNav />
-            <LanguageSwitcher />
-            <ThemeSwitcher />
+        <div className="flex items-center gap-2">
+            <nav className="hidden md:flex items-center gap-4">
+                <Button asChild variant="ghost">
+                  <Link href="/">{t('home')}</Link>
+                </Button>
+                <Button asChild variant="ghost">
+                  <Link href="/about-us">{t('about_us')}</Link>
+                </Button>
+                <Button asChild variant="ghost">
+                  <Link href="/contact">{t('contact_us')}</Link>
+                </Button>
+            </nav>
+            
+            <div className="flex items-center gap-2">
+                <UserNav />
+                <LanguageSwitcher />
+                <ThemeSwitcher />
+                
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button variant="ghost" size="icon" className="md:hidden">
+                      <Menu className="h-5 w-5" />
+                      <span className="sr-only">Toggle menu</span>
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+                    <SheetHeader>
+                      <SheetTitle className="text-left">
+                        <Image src="/logo.png" alt="TNPSC99 Logo" width={140} height={36} className="h-8 w-auto object-contain" />
+                      </SheetTitle>
+                    </SheetHeader>
+                    <nav className="flex flex-col gap-4 mt-8">
+                      <Link href="/" className="text-lg font-medium hover:text-brand-green transition-colors">
+                        {t('home')}
+                      </Link>
+                      <Link href="/about-us" className="text-lg font-medium hover:text-brand-green transition-colors">
+                        {t('about_us')}
+                      </Link>
+                      <Link href="/contact" className="text-lg font-medium hover:text-brand-green transition-colors">
+                        {t('contact_us')}
+                      </Link>
+                    </nav>
+                  </SheetContent>
+                </Sheet>
+            </div>
         </div>
       </div>
     </header>
