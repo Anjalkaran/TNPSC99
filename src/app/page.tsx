@@ -108,13 +108,13 @@ export default function PublicHomePage() {
   ];
 
   const mcqAcademyFeatures = [
-    "Unlimited practice across all Classes 6–10 School Textbook test series",
+    "School textbook-based MCQ test series mapped to syllabus topics",
     "Dual Testing Modes: Instant-Feedback Practice Mode & Timed Exam Mode",
-    "Every question mapped to authentic Samacheer Kalvi printed page citations",
-    "Detailed bilingual explanations for every single question",
-    "Complete coverage tailored for TNPSC Group I, Group II/IIA, and Group IV/VAO",
-    "Subject-wise & chapter-wise performance analytics to target weak areas",
-    "Unlimited bookmarking for rapid last-minute revision",
+    "Textbook references & printed page citations for supporting textbook passages",
+    "Detailed explanations and rationale with bilingual question support",
+    "Targeted syllabus practice for TNPSC Group I, Group II/IIA, and Group IV/VAO",
+    "Topic-wise performance analytics to identify and strengthen weak areas",
+    "Question bookmarking for convenient pre-exam revision drills",
     "100% Ad-Free learning experience on all devices"
   ];
 
@@ -149,7 +149,7 @@ export default function PublicHomePage() {
 
             {/* Subhead */}
             <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed font-normal">
-              Practice authentic questions mapped directly to <strong className="text-foreground font-semibold">Classes 6 to 10 Samacheer Kalvi textbooks</strong>. Prepare for <strong className="text-foreground font-semibold">Group I, II, and IV</strong> with instant explanations, printed page citations, and real-time timed mock tests.
+              Practice topic-based questions mapped to <strong className="text-foreground font-semibold">Classes 6 to 10 Samacheer Kalvi school textbooks</strong>. Prepare for <strong className="text-foreground font-semibold">Group I, II, and IV</strong> with instant explanations, textbook citations, and real-time timed mock tests.
             </p>
 
             {/* Hero CTAs */}
@@ -307,7 +307,7 @@ export default function PublicHomePage() {
                     </li>
                     <li className="flex items-start gap-2.5">
                       <Check className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
-                      <span><strong className="text-foreground">Textbook Page References:</strong> Verified printed page numbers from the school book to verify each answer.</span>
+                      <span><strong className="text-foreground">Textbook References:</strong> Printed page numbers and references from textbooks to locate supporting study passages.</span>
                     </li>
                     <li className="flex items-start gap-2.5">
                       <Check className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
@@ -357,7 +357,7 @@ export default function PublicHomePage() {
                     </li>
                     <li className="flex items-start gap-2.5">
                       <Check className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
-                      <span><strong className="text-foreground">Comprehensive Scorecard:</strong> In-depth accuracy percentage, time spent per question, and rank.</span>
+                      <span><strong className="text-foreground">Performance Scorecard:</strong> In-depth accuracy breakdown, time spent per question, and topic insights.</span>
                     </li>
                     <li className="flex items-start gap-2.5">
                       <Check className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
@@ -389,7 +389,7 @@ export default function PublicHomePage() {
                 Curriculum Aligned with Samacheer Kalvi
               </h2>
               <p className="text-sm sm:text-base text-muted-foreground">
-                90%+ of TNPSC Group IV and Group II questions originate directly from Tamil Nadu State Board textbooks. We organize our question banks by school standard, unit, and chapter.
+                The TNPSC syllabus draws extensively from Tamil Nadu State Board school textbooks. Our practice modules are organized by standard, unit, and core topics.
               </p>
             </div>
 

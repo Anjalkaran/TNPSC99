@@ -138,12 +138,12 @@ export default function SubscriptionPage() {
     };
 
     const features = [
-        { icon: Zap, label: "All Test Series", desc: "Group I, II, IV — unlimited practice" },
-        { icon: BarChart2, label: "AI Performance Analysis", desc: "Deep insights on strengths & gaps" },
-        { icon: BookOpen, label: "Previous Year Papers", desc: "Full access to all question archives" },
-        { icon: Bookmark, label: "Unlimited Bookmarks", desc: "Save & review any question anytime" },
+        { icon: Zap, label: "Targeted Test Series", desc: "Group I, II, IV practice questions" },
+        { icon: BarChart2, label: "Performance Analytics", desc: "In-depth insights on strengths & weak areas" },
+        { icon: BookOpen, label: "Curated Question Sets", desc: "School textbook question modules" },
+        { icon: Bookmark, label: "Question Bookmarks", desc: "Save & review questions anytime" },
         { icon: Shield, label: "Ad-Free Experience", desc: "Zero interruptions, pure focus" },
-        { icon: Star, label: "Priority Support", desc: "Get help when you need it most" },
+        { icon: Star, label: "Dedicated Support", desc: "Help when you need it most" },
     ];
 
     if (isLoading) {
