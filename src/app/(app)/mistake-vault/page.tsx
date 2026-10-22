@@ -77,21 +77,6 @@ export default function MistakeVaultPage() {
     });
   }, [mistakes, statusFilter, searchQuery]);
 
-  // Handle Mark as Mastered toggle
-  const handleToggleResolved = async (item: MistakeVaultItem) => {
-    if (!user || !firestore) return;
-    const itemRef = doc(firestore, `users/${user.uid}/mistakeVault`, item.questionId);
-    const newStatus = item.status === 'unresolved' ? 'mastered' : 'unresolved';
-    try {
-      await updateDoc(itemRef, {
-        status: newStatus,
-        resolvedAt: newStatus === 'mastered' ? new Date().toISOString() : null,
-      });
-    } catch (err) {
-      console.error('Failed to update mistake status:', err);
-    }
-  };
-
   if (isUserLoading || isLoading) {
     return (
       <div className="container mx-auto p-6 max-w-5xl">
@@ -295,14 +280,15 @@ export default function MistakeVaultPage() {
                       </Button>
                     )}
 
-                    <Button
-                      variant={isUnresolved ? 'outline' : 'secondary'}
-                      size="sm"
-                      onClick={() => handleToggleResolved(item)}
-                      className="text-xs font-bold"
-                    >
-                      {isUnresolved ? 'தேர்ச்சி என மாற்றுக' : 'மறுபரிசீலனைக்கு மாற்று'}
-                    </Button>
+                    <Link href={`/revision?source=mistake_vault&count=10`}>
+                      <Button
+                        size="sm"
+                        className="bg-[#1e3a8a] hover:bg-[#1e3a8a]/90 text-white text-xs font-bold flex items-center gap-1.5"
+                      >
+                        <RotateCcw className="h-3.5 w-3.5" />
+                        திருப்புதல் தேர்வு எழுது
+                      </Button>
+                    </Link>
                   </div>
                 </CardFooter>
               </Card>

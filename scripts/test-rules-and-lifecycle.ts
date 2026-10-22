@@ -37,9 +37,10 @@ async function runTests() {
 
   assert(rootRules === srcRules, 'Root and src/firestore.rules are strictly identical');
   assert(rootRules.includes("request.resource.data.get('status', 'in-progress') == 'in-progress'"), 'Enforces in-progress on attempt create');
-  assert(rootRules.includes("resource.data.get('status', 'in-progress') != 'completed'"), 'Prevents modifying or rescoring completed attempts');
-  assert(rootRules.includes("request.resource.data.get('score', 0) <= request.resource.data.get('questionIds', []).size()"), 'Prevents score inflation beyond total questions');
-  assert(rootRules.includes("in ['unresolved', 'revised', 'mastered']"), 'Constrains mistake vault status to valid 3-stage enum');
+  assert(rootRules.includes("request.resource.data.get('score', 0) == 0"), 'Enforces zero score on attempt create');
+  assert(rootRules.includes("resource.data.get('status', 'in-progress') == 'in-progress'"), 'Prevents modifying completed attempts');
+  assert(rootRules.includes("!request.resource.data.diff(resource.data).affectedKeys().hasAny"), 'Blocks students from modifying authoritative scoring and deadline fields');
+  assert(rootRules.includes("match /mistakeVault/{questionId}") && rootRules.includes("allow write: if isAdmin();"), 'Protects Mistake Vault with admin-only authoritative writes');
 
   // ---------------------------------------------------------------------------
   // 2. 3-Stage Mistake Vault Progression Logic Check

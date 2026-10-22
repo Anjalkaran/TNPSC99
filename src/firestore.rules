@@ -59,34 +59,48 @@ service cloud.firestore {
       
       allow delete: if isAdmin();
 
-      // Student attempt logs (owned by student, immutable once completed)
+      // Student attempt logs (owned by student, authoritative finalization via server API only)
       match /testAttempts/{attemptId} {
         allow read: if isOwner(userId) || isAdmin();
-        // Students can only create in-progress attempts for themselves
+        
+        // Students can only create in-progress attempts for themselves with score: 0
         allow create: if (
           isOwner(userId) &&
           request.resource.data.get('userId', '') == request.auth.uid &&
-          request.resource.data.get('status', 'in-progress') == 'in-progress'
+          request.resource.data.get('status', 'in-progress') == 'in-progress' &&
+          request.resource.data.get('score', 0) == 0 &&
+          !request.resource.data.keys().hasAny([
+            'completedAt', 
+            'correctlyAnsweredQuestionIds', 
+            'incorrectlyAnsweredQuestionIds'
+          ])
         ) || isAdmin();
-        // Prevent rescoring, score-inflation, tampering or modifying once completed
+
+        // Students can ONLY update in-progress state (answers, currentQuestionIndex, markedForReviewIds, timeSpentSeconds)
+        // Students CANNOT complete, rescore, alter deadlines, or tamper with authoritative fields directly
         allow update: if (
           isOwner(userId) &&
-          resource.data.get('status', 'in-progress') != 'completed' &&
-          request.resource.data.get('score', 0) >= 0 &&
-          request.resource.data.get('score', 0) <= request.resource.data.get('questionIds', []).size()
+          resource.data.get('status', 'in-progress') == 'in-progress' &&
+          request.resource.data.get('status', 'in-progress') == 'in-progress' &&
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+            'status', 
+            'score', 
+            'completedAt', 
+            'correctlyAnsweredQuestionIds', 
+            'incorrectlyAnsweredQuestionIds',
+            'examDeadline'
+          ])
         ) || isAdmin();
-        allow delete: if (isOwner(userId) && resource.data.get('status', 'in-progress') != 'completed') || isAdmin();
+
+        // Once completed, attempts cannot be deleted by students
+        allow delete: if (isOwner(userId) && resource.data.get('status', 'in-progress') == 'in-progress') || isAdmin();
       }
 
-      // Student Mistake Vault (owned by student)
+      // Student Mistake Vault (authoritative writes derived strictly from trusted completed attempts)
       match /mistakeVault/{questionId} {
         allow read: if isOwner(userId) || isAdmin();
-        allow create, update: if (
-          isOwner(userId) &&
-          request.resource.data.get('failureCount', 1) >= 1 &&
-          request.resource.data.get('status', 'unresolved') in ['unresolved', 'revised', 'mastered']
-        ) || isAdmin();
-        allow delete: if isOwner(userId) || isAdmin();
+        // Prevent direct student writes from forging mastery states, resolvedAt, or failureCount
+        allow write: if isAdmin();
       }
 
       // Student bookmarks (owned by student)
@@ -99,25 +113,17 @@ service cloud.firestore {
         allow read: if isOwner(userId) || isAdmin();
         allow write: if isAdmin();
       }
-
-      // Fallback for other student subcollections
-      match /{allSubcollections=**} {
-        allow read, write: if isOwner(userId) || isAdmin();
-      }
     }
 
     // --- Payment Records Collection (Audit Trail) ---
     match /payments/{paymentId} {
-      // Students can only view their own completed payment receipts
       allow read: if isSignedIn() && (resource.data.get('userId', '') == request.auth.uid || isAdmin());
-      // Only server-side Firebase Admin SDK can create or modify payment audit records
       allow write: if isAdmin();
     }
 
     // --- Tests Collection ---
     match /tests/{testId} {
       allow read: if isSignedIn();
-      // Allow administrators full test management, and students to generate on-the-fly personal mock tests
       allow create: if isAdmin() || (isSignedIn() && request.resource.data.get('userId', '') == request.auth.uid);
       allow update, delete: if isAdmin() || (isSignedIn() && resource.data.get('userId', '') == request.auth.uid);
     }
@@ -164,10 +170,10 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Leaderboard Scores: Authoritative writes only via server finalization API
     match /scores/{scoreId} {
       allow read: if isSignedIn();
-      allow create: if isSignedIn() && request.resource.data.get('userId', '') == request.auth.uid;
-      allow update, delete: if isAdmin();
+      allow write: if isAdmin();
     }
 
     match /questionComments/{id} {

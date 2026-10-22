@@ -319,22 +319,15 @@ export function McqTest({
 
       const markedIds = questions.filter((_, idx) => markedForReview[idx]).map(q => q.id);
 
-      const isDeadlinePassed = Boolean(
-        mode === 'exam' &&
-        examDeadlineRef.current &&
-        new Date(examDeadlineRef.current).getTime() <= Date.now()
-      );
-      const effectiveStatus = (isDeadlinePassed || status === 'completed') ? 'completed' : status;
-
       const attemptData: Partial<UserTestAttempt> = {
         userId: user.uid,
         testId: test.id,
         testTitle: decodedTitle,
-        status: effectiveStatus,
+        status: 'in-progress',
         currentQuestionIndex,
         answers: answers.map(a => (a === undefined ? -1 : a)),
         questionIds: questions.map(q => q.id),
-        score: calculatedScore,
+        score: 0, // Authoritative score is calculated strictly server-side upon finalization
         isMockTest: test.isMockTest || false,
         examGroup: test.examGroup,
         mode: mode || 'practice',
@@ -344,42 +337,12 @@ export function McqTest({
         lastUpdatedDate: new Date().toISOString(),
       };
 
-      if (effectiveStatus === 'completed') {
-        attemptData.completedAt = new Date().toISOString();
-        attemptData.correctlyAnsweredQuestionIds = correctlyAnsweredIds;
-        attemptData.incorrectlyAnsweredQuestionIds = incorrectlyAnsweredIds;
-      }
-
       try {
         await setDoc(attemptDocRef, attemptData, { merge: true });
-
-        // Update leaderboard score and sync mistakes if completed
-        if (effectiveStatus === 'completed') {
-          syncMistakesToVault(firestore, user.uid, test, attemptDocRef.id, questions, answers).catch(err => {
-            console.warn('Mistake vault sync skipped:', err);
-          });
-
-          const scoresRef = collection(firestore, 'scores');
-          const scoreData: Score = {
-            userId: user.uid,
-            username: user.displayName || 'Aspirant',
-            score: calculatedScore,
-            testId: test.id,
-            testTitle: decodedTitle,
-            totalQuestionsInTest: questions.length,
-            createdAt: new Date().toISOString(),
-            classId: test.classId,
-            subjectId: test.subjectId,
-          };
-          addDoc(scoresRef, scoreData).catch(err => {
-            console.warn('Leaderboard record write skipped:', err);
-          });
-        }
-
         isSavingRef.current = false;
         return true;
       } catch (err: any) {
-        console.error('Error saving test attempt:', err);
+        console.error('Error saving in-progress test attempt:', err);
         isSavingRef.current = false;
         return false;
       }
@@ -402,7 +365,7 @@ export function McqTest({
   );
 
   // ---------------------------------------------------------------------------
-  // 7. SUBMISSION HANDLERS
+  // 7. SUBMISSION HANDLERS (SERVER-AUTHORITATIVE FINALIZATION)
   // ---------------------------------------------------------------------------
   const handleFinalSubmit = useCallback(async (isAutomatic = false) => {
     if (isSubmittingRef.current || isSubmitted) return;
@@ -411,17 +374,68 @@ export function McqTest({
 
     if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
 
-    // Compute final score
-    let finalScore = 0;
-    questions.forEach((q, idx) => {
-      const a = answers[idx];
-      if (a !== undefined && a !== -1 && q.answerOptions[a] === q.correctAnswer) {
-        finalScore++;
-      }
-    });
-    setScore(finalScore);
+    const totalTimeSpent =
+      mode === 'exam'
+        ? Math.max(0, defaultExamDurationSeconds - timeLeft)
+        : timeElapsedSeconds;
 
-    await saveProgress('completed');
+    // First ensure latest answers are persisted to the in-progress attempt
+    await saveProgress('in-progress');
+
+    let finalScore = 0;
+
+    // Authenticated Server-Authoritative Finalization
+    if (user && attemptId) {
+      try {
+        const idToken = await user.getIdToken();
+        const response = await fetch('/api/test/submit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`,
+          },
+          body: JSON.stringify({
+            attemptId,
+            testId: test.id,
+            answers: answers.map(a => (a === undefined ? -1 : a)),
+            timeSpentSeconds: totalTimeSpent,
+            mode: mode || 'practice',
+          }),
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          finalScore = result.score ?? 0;
+        } else {
+          console.warn('Server finalization returned error status:', response.status);
+          // Fallback in-memory score calculation if API error
+          questions.forEach((q, idx) => {
+            const a = answers[idx];
+            if (a !== undefined && a !== -1 && q.answerOptions[a] === q.correctAnswer) {
+              finalScore++;
+            }
+          });
+        }
+      } catch (submitErr) {
+        console.error('Server finalization request failed:', submitErr);
+        questions.forEach((q, idx) => {
+          const a = answers[idx];
+          if (a !== undefined && a !== -1 && q.answerOptions[a] === q.correctAnswer) {
+            finalScore++;
+          }
+        });
+      }
+    } else {
+      // In-memory calculation for unauthenticated preview mode
+      questions.forEach((q, idx) => {
+        const a = answers[idx];
+        if (a !== undefined && a !== -1 && q.answerOptions[a] === q.correctAnswer) {
+          finalScore++;
+        }
+      });
+    }
+
+    setScore(finalScore);
     setIsSubmitted(true);
     setShowSubmitConfirm(false);
 
@@ -429,7 +443,20 @@ export function McqTest({
       title: isAutomatic ? "Time Expired — Exam Submitted" : "Examination Submitted Successfully",
       description: `Your final score is ${finalScore} / ${questions.length}. Review detailed explanations below.`,
     });
-  }, [answers, questions, isSubmitted, saveProgress, toast]);
+  }, [
+    answers,
+    questions,
+    isSubmitted,
+    saveProgress,
+    toast,
+    user,
+    attemptId,
+    test.id,
+    mode,
+    defaultExamDurationSeconds,
+    timeLeft,
+    timeElapsedSeconds,
+  ]);
 
   const handleAutoSubmit = useCallback(() => {
     handleFinalSubmit(true);
