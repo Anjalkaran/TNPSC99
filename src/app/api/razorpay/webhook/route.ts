@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { 
   verifyRazorpayWebhookSignature, 
-  processSubscriptionActivation 
+  processSubscriptionActivation,
+  processSubscriptionRevocation,
+  recordFailedPayment
 } from '@/lib/server-payment';
 
 export async function POST(req: NextRequest) {
@@ -30,7 +32,7 @@ export async function POST(req: NextRequest) {
     const event = JSON.parse(rawBody);
     console.log(`[Razorpay Webhook] Received validated event: ${event.event}`);
 
-    // We process successful payment captures and order settlements
+    // 1. Successful payment captures & order settlements
     if (event.event === 'payment.captured' || event.event === 'order.paid') {
       const paymentEntity = event.payload?.payment?.entity || event.payload?.order?.entity;
       
@@ -67,6 +69,39 @@ export async function POST(req: NextRequest) {
       });
 
       console.log(`[Razorpay Webhook] Result for user ${userId}:`, result);
+    } 
+    // 2. Refund events (immediately revoke subscription and update ledger)
+    else if (event.event === 'refund.processed' || event.event === 'refund.created') {
+      const paymentEntity = event.payload?.payment?.entity;
+      const refundEntity = event.payload?.refund?.entity;
+      const paymentId = paymentEntity?.id || refundEntity?.payment_id;
+      const userId = paymentEntity?.notes?.userId || refundEntity?.notes?.userId;
+
+      if (userId && paymentId) {
+        await processSubscriptionRevocation({
+          userId,
+          paymentId,
+          refundId: refundEntity?.id,
+          reason: 'refund',
+        });
+      }
+    }
+    // 3. Failed payment events (record failure, zero entitlement granted)
+    else if (event.event === 'payment.failed') {
+      const paymentEntity = event.payload?.payment?.entity;
+      const paymentId = paymentEntity?.id;
+      const userId = paymentEntity?.notes?.userId;
+
+      if (paymentId) {
+        await recordFailedPayment({
+          userId,
+          paymentId,
+          orderId: paymentEntity?.order_id,
+          amount: (paymentEntity?.amount || 9900) / 100,
+          currency: paymentEntity?.currency || 'INR',
+          errorDescription: paymentEntity?.error_description || 'Payment failed at gateway',
+        });
+      }
     }
 
     return NextResponse.json({ status: 'ok', received: true });

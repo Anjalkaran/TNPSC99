@@ -189,3 +189,67 @@ export async function processSubscriptionActivation(params: {
     subscriptionExpires: newExpiryIso,
   };
 }
+
+/**
+ * Revokes a user's premium subscription upon refund, cancellation, or dispute.
+ * Idempotently updates the user profile to 'free' and records the refund in payments.
+ */
+export async function processSubscriptionRevocation(params: {
+  userId: string;
+  paymentId: string;
+  refundId?: string;
+  reason: 'refund' | 'chargeback' | 'cancellation';
+}): Promise<void> {
+  const { userId, paymentId, refundId, reason } = params;
+  if (!db || !userId) return;
+
+  const userRef = db.collection('users').doc(userId);
+  const paymentRef = db.collection('payments').doc(paymentId);
+  const nowIso = new Date().toISOString();
+
+  const batch = db.batch();
+  batch.update(userRef, {
+    subscriptionStatus: 'free',
+    subscriptionExpires: null,
+    updatedAt: nowIso,
+  });
+
+  batch.set(paymentRef, {
+    status: 'refunded',
+    refundId: refundId || null,
+    refundReason: reason,
+    refundedAt: nowIso,
+  }, { merge: true });
+
+  await batch.commit();
+  console.log(`[Subscription Revoked] User ${userId} subscription revoked due to ${reason}`);
+}
+
+/**
+ * Records failed payment transactions in the payment audit ledger.
+ * Ensures failed payments never grant subscription access.
+ */
+export async function recordFailedPayment(params: {
+  userId?: string;
+  paymentId: string;
+  orderId?: string;
+  amount: number;
+  currency: string;
+  errorDescription?: string;
+}): Promise<void> {
+  const { userId, paymentId, orderId, amount, currency, errorDescription } = params;
+  if (!db || !paymentId) return;
+
+  const paymentRef = db.collection('payments').doc(paymentId);
+  await paymentRef.set({
+    paymentId,
+    orderId: orderId || null,
+    userId: userId || null,
+    amount,
+    currency,
+    status: 'failed',
+    failureReason: errorDescription || 'Payment transaction failed',
+    attemptedAt: new Date().toISOString(),
+  }, { merge: true });
+}
+

@@ -187,6 +187,19 @@ export async function POST(req: NextRequest) {
         }
       }
 
+      // Document update time verification (Defense-in-Depth Layer 2):
+      // If the Firestore document was modified after the official deadline (+ tolerance),
+      // the answers saved in the document cannot be trusted as genuine pre-deadline answers!
+      let isLateFirestoreDocumentWrite = false;
+      if (attemptData.mode === 'exam' && attemptSnap.updateTime) {
+        const docUpdateTimeMs = (attemptSnap.updateTime as any).toMillis 
+          ? (attemptSnap.updateTime as any).toMillis() 
+          : (attemptSnap.updateTime as any).toDate().getTime();
+        if (docUpdateTimeMs > effectiveDeadlineMs + 15000) {
+          isLateFirestoreDocumentWrite = true;
+        }
+      }
+
       // -----------------------------------------------------------------------
       // 6. Fetch Trusted Authoritative Questions
       // -----------------------------------------------------------------------
@@ -238,7 +251,8 @@ export async function POST(req: NextRequest) {
         if (isPastOfficialDeadline) {
           // Late submission beyond official deadline: STRICTLY accept ONLY answers saved before deadline expired!
           // Any answer modified after deadline in submitted body receives ZERO marks.
-          selectedIdx = preDeadlineSavedIdx;
+          // If the Firestore document itself was updated after deadline, its answers are untrusted and receive ZERO marks.
+          selectedIdx = isLateFirestoreDocumentWrite ? -1 : preDeadlineSavedIdx;
         } else {
           // On-time or within grace window: use submitted answer if provided, fallback to saved
           selectedIdx = submittedIdx !== undefined ? submittedIdx : preDeadlineSavedIdx;

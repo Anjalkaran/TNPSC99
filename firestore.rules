@@ -73,15 +73,23 @@ service cloud.firestore {
             'completedAt', 
             'correctlyAnsweredQuestionIds', 
             'incorrectlyAnsweredQuestionIds'
-          ])
+          ]) &&
+          (!request.resource.data.keys().hasAny(['examDeadlineMillis']) ||
+           request.resource.data.get('examDeadlineMillis', 0) <= request.time.toMillis() + (request.resource.data.get('durationMinutes', 180) * 60 * 1000) + 60000)
         ) || isAdmin();
 
         // Students can ONLY update in-progress state (answers, currentQuestionIndex, markedForReviewIds, timeSpentSeconds)
         // Students CANNOT complete, rescore, alter deadlines, or tamper with authoritative fields directly
+        // Students CANNOT save or modify answers in Firestore after the official exam deadline has passed
         allow update: if (
           isOwner(userId) &&
           resource.data.get('status', 'in-progress') == 'in-progress' &&
           request.resource.data.get('status', 'in-progress') == 'in-progress' &&
+          (
+            resource.data.get('mode', 'practice') != 'exam' ||
+            !resource.data.keys().hasAny(['examDeadlineMillis']) ||
+            request.time.toMillis() <= (resource.data.get('examDeadlineMillis', 0) + 10000)
+          ) &&
           !request.resource.data.diff(resource.data).affectedKeys().hasAny([
             'status', 
             'score', 
@@ -89,6 +97,7 @@ service cloud.firestore {
             'correctlyAnsweredQuestionIds', 
             'incorrectlyAnsweredQuestionIds',
             'examDeadline',
+            'examDeadlineMillis',
             'startedAt',
             'durationMinutes'
           ])

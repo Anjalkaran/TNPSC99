@@ -79,7 +79,7 @@ Perform the following smoke tests on the live production URL immediately followi
 
 | Test ID | Area | Action | Expected Behavior |
 | :--- | :--- | :--- | :--- |
-| **ST-01** | Public Homepage | Visit `https://studio-5029416251-928dd.web.app` | Homepage loads with ₹99/mo Academy hero, no console errors |
+| **ST-01** | Public Homepage | Visit `https://studio--studio-5029416251-928dd.us-central1.hosted.app` | Homepage loads with ₹99/mo Academy hero, no console errors |
 | **ST-02** | Security Headers | Inspect response headers | HSTS, X-Content-Type-Options, CSP present |
 | **ST-03** | Auth Redirect | Click "Take Exam" while logged out | Redirects cleanly to `/login` |
 | **ST-04** | Free Preview | Attempt free demo test without subscription | Permitted, explanation displays |

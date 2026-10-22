@@ -341,6 +341,7 @@ export function McqTest({
         startedAt: inProgressAttempt?.startedAt || new Date().toISOString(),
         durationMinutes: Math.round(defaultExamDurationSeconds / 60),
         examDeadline: examDeadlineRef.current || undefined,
+        examDeadlineMillis: examDeadlineRef.current ? new Date(examDeadlineRef.current).getTime() : undefined,
         timeSpentSeconds: totalTimeSpent,
         lastUpdatedDate: new Date().toISOString(),
       };

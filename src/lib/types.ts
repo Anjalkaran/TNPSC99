@@ -144,6 +144,7 @@ export interface UserTestAttempt {
   mode?: 'practice' | 'exam';
   markedForReviewIds?: string[];
   examDeadline?: string;
+  examDeadlineMillis?: number;
   timeSpentSeconds?: number;
 }
 
