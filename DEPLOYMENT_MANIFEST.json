@@ -1,0 +1,57 @@
+{
+  "manifestVersion": "1.0.0",
+  "application": "TNPSC Ace (TNPSC99 MCQ Academy)",
+  "releaseTag": "v1.0.0-rc.1",
+  "commitSha": "f58841e",
+  "branch": "phase-3c-learning-progress-mistake-vault",
+  "timestamp": "2026-10-23T02:45:00+05:30",
+  "targetEnvironment": {
+    "provider": "Firebase App Hosting",
+    "projectId": "studio-5029416251-928dd",
+    "backendId": "studio",
+    "primaryRegion": "us-central1",
+    "productionUrl": "https://studio--studio-5029416251-928dd.us-central1.hosted.app",
+    "deploymentMode": "cli-source",
+    "deployCommand": "firebase deploy --only apphosting --project studio-5029416251-928dd"
+  },
+  "database": {
+    "service": "Cloud Firestore",
+    "databaseId": "(default)",
+    "rulesFile": "firestore.rules",
+    "indexesFile": "firestore.indexes.json",
+    "rulesDeployCommand": "firebase deploy --only firestore:rules,firestore:indexes --project studio-5029416251-928dd"
+  },
+  "pricing": {
+    "plan": "MCQ Academy Monthly Subscription",
+    "priceInPaise": 9900,
+    "priceInInr": 99,
+    "currency": "INR",
+    "gateway": "Razorpay Standard Checkout",
+    "paymentAuditCollection": "payments"
+  },
+  "security": {
+    "scoringEngine": "server-authoritative",
+    "submissionEndpoint": "/api/test/submit",
+    "mistakeVault": "admin-authoritative-3-stage",
+    "zeroToleranceExamDeadline": true,
+    "modeImmutabilityEnforced": true,
+    "paidAiInference": 0
+  },
+  "buildArtifacts": {
+    "framework": "Next.js 14.2.35",
+    "totalRoutes": 56,
+    "staticPages": 44,
+    "dynamicEndpoints": 12
+  },
+  "verificationStatus": {
+    "phase2Security": "14/14 passed",
+    "phase3bEngine": "26/26 passed",
+    "phase3bIntegration": "44/44 passed",
+    "phase3cSuite": "36/36 passed",
+    "phase4aValidation": "18/18 passed",
+    "phase4bReadiness": "18/18 passed",
+    "phase4bClosure": "17/17 passed",
+    "nextjsBuild": "passed (exit 0)",
+    "overallStatus": "RELEASE_CANDIDATE_READY"
+  }
+}
