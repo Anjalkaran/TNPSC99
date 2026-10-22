@@ -70,20 +70,57 @@ export async function POST(req: NextRequest) {
 
       console.log(`[Razorpay Webhook] Result for user ${userId}:`, result);
     } 
-    // 2. Refund events (immediately revoke subscription and update ledger)
-    else if (event.event === 'refund.processed' || event.event === 'refund.created') {
+    // 2. Processed refund event (settled by bank)
+    else if (event.event === 'refund.processed') {
       const paymentEntity = event.payload?.payment?.entity;
       const refundEntity = event.payload?.refund?.entity;
       const paymentId = paymentEntity?.id || refundEntity?.payment_id;
       const userId = paymentEntity?.notes?.userId || refundEntity?.notes?.userId;
+
+      const paymentAmountPaise = paymentEntity?.amount || 9900;
+      const refundAmountPaise = refundEntity?.amount || paymentAmountPaise;
+      const isPartialRefund = refundAmountPaise < paymentAmountPaise;
 
       if (userId && paymentId) {
         await processSubscriptionRevocation({
           userId,
           paymentId,
           refundId: refundEntity?.id,
+          refundAmount: refundAmountPaise / 100,
+          isPartialRefund,
           reason: 'refund',
         });
+      }
+    }
+    // 3. Refund created event (initiated but not yet processed)
+    else if (event.event === 'refund.created') {
+      const refundEntity = event.payload?.refund?.entity;
+      const paymentId = refundEntity?.payment_id;
+      if (paymentId) {
+        const { db } = await import('@/firebase/admin');
+        if (db) {
+          await db.collection('payments').doc(paymentId).set({
+            pendingRefundId: refundEntity?.id,
+            refundStatus: 'pending',
+            pendingRefundAmount: (refundEntity?.amount || 0) / 100,
+            refundInitiatedAt: new Date().toISOString(),
+          }, { merge: true });
+        }
+      }
+    }
+    // 4. Refund failed event (gateway error)
+    else if (event.event === 'refund.failed') {
+      const refundEntity = event.payload?.refund?.entity;
+      const paymentId = refundEntity?.payment_id;
+      if (paymentId) {
+        const { db } = await import('@/firebase/admin');
+        if (db) {
+          await db.collection('payments').doc(paymentId).set({
+            refundStatus: 'failed',
+            refundFailureReason: refundEntity?.error_description || 'Refund failed at gateway',
+            refundFailedAt: new Date().toISOString(),
+          }, { merge: true });
+        }
       }
     }
     // 3. Failed payment events (record failure, zero entitlement granted)

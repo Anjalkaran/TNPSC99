@@ -101,18 +101,31 @@ export async function processSubscriptionActivation(params: {
     return { success: false, error: 'Missing mandatory payment identification fields.' };
   }
 
-  // 1. Check idempotency: check if payment record already exists
+  // 1. Check idempotency & out-of-order event delivery
   const paymentRef = db.collection('payments').doc(paymentId);
   const existingPayment = await paymentRef.get();
 
-  if (existingPayment.exists && existingPayment.data()?.status === 'captured') {
-    console.log(`[Payment Idempotency] Payment ${paymentId} already processed.`);
-    return {
-      success: true,
-      message: 'Payment already processed and subscription is active.',
-      alreadyProcessed: true,
-      subscriptionExpires: existingPayment.data()?.subscriptionExpires,
-    };
+  if (existingPayment.exists) {
+    const existingData = existingPayment.data();
+    // Out-of-order protection: If payment was already refunded, do not reactivate!
+    if (existingData?.status === 'refunded') {
+      console.warn(`[Payment Out-of-Order] Payment ${paymentId} was already refunded. Rejecting late activation.`);
+      return {
+        success: false,
+        error: 'Payment has already been refunded.',
+        alreadyProcessed: true,
+      };
+    }
+
+    if (existingData?.status === 'captured') {
+      console.log(`[Payment Idempotency] Payment ${paymentId} already processed.`);
+      return {
+        success: true,
+        message: 'Payment already processed and subscription is active.',
+        alreadyProcessed: true,
+        subscriptionExpires: existingData?.subscriptionExpires,
+      };
+    }
   }
 
   // 2. Locate user record
@@ -190,39 +203,88 @@ export async function processSubscriptionActivation(params: {
   };
 }
 
+export interface SubscriptionRevocationResult {
+  success: boolean;
+  message?: string;
+  alreadyProcessed?: boolean;
+  subscriptionRevoked: boolean;
+  reason?: string;
+}
+
 /**
- * Revokes a user's premium subscription upon refund, cancellation, or dispute.
- * Idempotently updates the user profile to 'free' and records the refund in payments.
+ * Revokes or adjusts a user's premium subscription upon refund, cancellation, or dispute.
+ * Fully audit-trailed, supports full vs partial refunds, older payment renewal protection, and idempotency.
  */
 export async function processSubscriptionRevocation(params: {
   userId: string;
   paymentId: string;
   refundId?: string;
+  refundAmount?: number;
+  isPartialRefund?: boolean;
   reason: 'refund' | 'chargeback' | 'cancellation';
-}): Promise<void> {
-  const { userId, paymentId, refundId, reason } = params;
-  if (!db || !userId) return;
+}): Promise<SubscriptionRevocationResult> {
+  const { userId, paymentId, refundId, refundAmount, isPartialRefund, reason } = params;
+  if (!db || !userId || !paymentId) {
+    return { success: false, subscriptionRevoked: false, reason: 'Missing mandatory fields' };
+  }
 
   const userRef = db.collection('users').doc(userId);
   const paymentRef = db.collection('payments').doc(paymentId);
   const nowIso = new Date().toISOString();
 
+  const [userDoc, paymentDoc] = await Promise.all([
+    userRef.get(),
+    paymentRef.get()
+  ]);
+
+  const paymentData = paymentDoc.data();
+  // Duplicate refund check (Idempotency)
+  if (paymentData?.status === 'refunded' && !isPartialRefund) {
+    console.log(`[Refund Idempotency] Payment ${paymentId} already marked as refunded.`);
+    return { success: true, alreadyProcessed: true, subscriptionRevoked: false, message: 'Refund already processed.' };
+  }
+
   const batch = db.batch();
-  batch.update(userRef, {
-    subscriptionStatus: 'free',
-    subscriptionExpires: null,
-    updatedAt: nowIso,
-  });
+  const userData = userDoc.data();
+  
+  // Check if this payment is the student's current active subscription payment
+  // If the student already renewed with a newer payment, lastPaymentId !== paymentId
+  const isLatestPayment = !userData?.lastPaymentId || userData.lastPaymentId === paymentId;
+  let subscriptionRevoked = false;
+
+  if (isPartialRefund) {
+    // Partial refund: student retains subscription, record partial refund in payments
+    console.log(`[Partial Refund] Partial refund of ₹${refundAmount} for user ${userId}. Subscription retained.`);
+  } else if (!isLatestPayment) {
+    // Older payment refunded after successful renewal: student retains current subscription!
+    console.log(`[Renewal Protected] Older payment ${paymentId} refunded after user ${userId} renewed via ${userData?.lastPaymentId}. Subscription retained.`);
+  } else {
+    // Full refund on current payment: revoke active subscription
+    batch.update(userRef, {
+      subscriptionStatus: 'free',
+      subscriptionExpires: null,
+      updatedAt: nowIso,
+    });
+    subscriptionRevoked = true;
+    console.log(`[Subscription Revoked] User ${userId} subscription revoked due to full ${reason}`);
+  }
 
   batch.set(paymentRef, {
-    status: 'refunded',
+    status: isPartialRefund ? 'partially_refunded' : 'refunded',
     refundId: refundId || null,
+    refundAmount: refundAmount || null,
+    isPartialRefund: Boolean(isPartialRefund),
     refundReason: reason,
     refundedAt: nowIso,
   }, { merge: true });
 
   await batch.commit();
-  console.log(`[Subscription Revoked] User ${userId} subscription revoked due to ${reason}`);
+
+  return {
+    success: true,
+    alreadyProcessed: false,
+    subscriptionRevoked,
+  };
 }
 
 /**

@@ -325,6 +325,13 @@ export function McqTest({
 
       const markedIds = questions.filter((_, idx) => markedForReview[idx]).map(q => q.id);
 
+      let effectiveDeadlineIso = examDeadlineRef.current || inProgressAttempt?.examDeadline;
+      if (!effectiveDeadlineIso && mode === 'exam') {
+        effectiveDeadlineIso = new Date(Date.now() + defaultExamDurationSeconds * 1000).toISOString();
+        examDeadlineRef.current = effectiveDeadlineIso;
+      }
+      const effectiveDeadlineMillis = effectiveDeadlineIso ? new Date(effectiveDeadlineIso).getTime() : undefined;
+
       const attemptData: Partial<UserTestAttempt> = {
         userId: user.uid,
         testId: test.id,
@@ -340,8 +347,8 @@ export function McqTest({
         markedForReviewIds: markedIds,
         startedAt: inProgressAttempt?.startedAt || new Date().toISOString(),
         durationMinutes: Math.round(defaultExamDurationSeconds / 60),
-        examDeadline: examDeadlineRef.current || undefined,
-        examDeadlineMillis: examDeadlineRef.current ? new Date(examDeadlineRef.current).getTime() : undefined,
+        examDeadline: effectiveDeadlineIso || undefined,
+        examDeadlineMillis: effectiveDeadlineMillis || undefined,
         timeSpentSeconds: totalTimeSpent,
         lastUpdatedDate: new Date().toISOString(),
       };

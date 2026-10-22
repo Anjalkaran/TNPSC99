@@ -74,13 +74,22 @@ service cloud.firestore {
             'correctlyAnsweredQuestionIds', 
             'incorrectlyAnsweredQuestionIds'
           ]) &&
+          // New Exam Mode attempts MUST provide examDeadlineMillis (cannot omit)
+          (request.resource.data.get('mode', 'practice') != 'exam' ||
+           request.resource.data.keys().hasAll(['examDeadlineMillis'])) &&
+          // Exam deadline must not be in past and cannot exceed authorized duration
           (!request.resource.data.keys().hasAny(['examDeadlineMillis']) ||
-           request.resource.data.get('examDeadlineMillis', 0) <= request.time.toMillis() + (request.resource.data.get('durationMinutes', 180) * 60 * 1000) + 60000)
+           (
+             request.resource.data.get('durationMinutes', 30) > 0 &&
+             request.resource.data.get('durationMinutes', 30) <= 180 &&
+             request.resource.data.get('examDeadlineMillis', 0) >= request.time.toMillis() &&
+             request.resource.data.get('examDeadlineMillis', 0) <= request.time.toMillis() + (request.resource.data.get('durationMinutes', 30) * 60 * 1000) + 5000
+           ))
         ) || isAdmin();
 
         // Students can ONLY update in-progress state (answers, currentQuestionIndex, markedForReviewIds, timeSpentSeconds)
         // Students CANNOT complete, rescore, alter deadlines, or tamper with authoritative fields directly
-        // Students CANNOT save or modify answers in Firestore after the official exam deadline has passed
+        // ZERO TOLERANCE: No late answer can be saved after deadline (strictly request.time.toMillis() <= examDeadlineMillis)
         allow update: if (
           isOwner(userId) &&
           resource.data.get('status', 'in-progress') == 'in-progress' &&
@@ -88,7 +97,7 @@ service cloud.firestore {
           (
             resource.data.get('mode', 'practice') != 'exam' ||
             !resource.data.keys().hasAny(['examDeadlineMillis']) ||
-            request.time.toMillis() <= (resource.data.get('examDeadlineMillis', 0) + 10000)
+            request.time.toMillis() <= resource.data.examDeadlineMillis
           ) &&
           !request.resource.data.diff(resource.data).affectedKeys().hasAny([
             'status', 
