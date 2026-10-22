@@ -17,8 +17,10 @@ export default {
     },
     extend: {
       fontFamily: {
-        body: ['Inter', 'sans-serif'],
-        headline: ['Inter', 'sans-serif'],
+        sans: ['var(--font-inter)', 'var(--font-noto-tamil)', 'Inter', 'Noto Sans Tamil', 'sans-serif'],
+        tamil: ['var(--font-noto-tamil)', 'Noto Sans Tamil', 'sans-serif'],
+        body: ['var(--font-inter)', 'var(--font-noto-tamil)', 'Inter', 'sans-serif'],
+        headline: ['var(--font-inter)', 'var(--font-noto-tamil)', 'Inter', 'sans-serif'],
         code: ['monospace'],
       },
       colors: {
@@ -39,6 +41,10 @@ export default {
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',
           foreground: 'hsl(var(--secondary-foreground))',
+        },
+        success: {
+          DEFAULT: 'hsl(var(--success))',
+          foreground: 'hsl(var(--success-foreground))',
         },
         muted: {
           DEFAULT: 'hsl(var(--muted))',
@@ -79,6 +85,10 @@ export default {
         },
       },
       borderRadius: {
+        card: '1rem', // 16px standard card radius
+        btn: '0.75rem', // 12px standard button radius
+        '2xl': '1rem',
+        xl: '0.75rem',
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',

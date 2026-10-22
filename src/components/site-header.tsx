@@ -122,9 +122,12 @@ export function SiteHeader() {
           <Image src="/logo.png" alt="TNPSC99 Logo" width={180} height={48} className="h-10 w-auto object-contain" priority />
         </Link>
         <div className="flex items-center gap-2">
-            <nav className="hidden md:flex items-center gap-4">
+            <nav className="hidden md:flex items-center gap-2 lg:gap-4">
                 <Button asChild variant="ghost">
                   <Link href="/">{t('home')}</Link>
+                </Button>
+                <Button asChild variant="ghost" className="text-primary font-bold">
+                  <Link href="/subscription">MCQ Academy (₹99)</Link>
                 </Button>
                 <Button asChild variant="ghost">
                   <Link href="/about-us">{t('about_us')}</Link>
@@ -153,13 +156,17 @@ export function SiteHeader() {
                       </SheetTitle>
                     </SheetHeader>
                     <nav className="flex flex-col gap-4 mt-8">
-                      <Link href="/" className="text-lg font-medium hover:text-brand-green transition-colors">
+                      <Link href="/" className="text-lg font-medium hover:text-primary transition-colors">
                         {t('home')}
                       </Link>
-                      <Link href="/about-us" className="text-lg font-medium hover:text-brand-green transition-colors">
+                      <Link href="/subscription" className="text-lg font-bold text-primary flex items-center justify-between">
+                        <span>MCQ Academy (₹99)</span>
+                        <span className="text-xs bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-bold">₹99/mo</span>
+                      </Link>
+                      <Link href="/about-us" className="text-lg font-medium hover:text-primary transition-colors">
                         {t('about_us')}
                       </Link>
-                      <Link href="/contact" className="text-lg font-medium hover:text-brand-green transition-colors">
+                      <Link href="/contact" className="text-lg font-medium hover:text-primary transition-colors">
                         {t('contact_us')}
                       </Link>
                     </nav>

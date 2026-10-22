@@ -1,4 +1,5 @@
 import { UserProfile } from './types';
+export type { UserProfile };
 
 export const TRIAL_DAYS = 1;
 

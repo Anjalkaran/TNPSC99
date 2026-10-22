@@ -20,12 +20,22 @@ import { LogOut } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import Link from 'next/link';
 import { SiteFooter } from '@/components/site-footer';
+import { SiteHeader } from '@/components/site-header';
 import type { UserProfile } from '@/lib/types';
 import { doc } from 'firebase/firestore';
 import { ThemeSwitcher } from '@/components/theme-switcher';
 import { cn } from '@/lib/utils';
 
 import { getSubscriptionStatus } from '@/lib/subscription-utils';
+
+const PUBLIC_PATHS = [
+  '/subscription', 
+  '/contact', 
+  '/about-us', 
+  '/terms-and-conditions', 
+  '/privacy-policy', 
+  '/refund-policy'
+];
 
 export default function AppLayout({
   children,
@@ -39,6 +49,8 @@ export default function AppLayout({
   const { t } = useTranslation();
   const firestore = useFirestore();
   const [showHint, setShowHint] = useState(false);
+
+  const isAllowedPath = PUBLIC_PATHS.some(path => pathname === path || pathname.startsWith(path));
 
   useEffect(() => {
     // Check for login hint to show sidebar highlight on mobile
@@ -55,12 +67,14 @@ export default function AppLayout({
   const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userProfileRef);
 
   useEffect(() => {
-    if (isUserLoading || isProfileLoading) {
+    if (isUserLoading || (user && isProfileLoading)) {
         return; // Wait until user and profile data have loaded
     }
 
     if (!user) {
-      router.push('/login');
+      if (!isAllowedPath) {
+        router.push('/login');
+      }
       return;
     }
 
@@ -71,24 +85,12 @@ export default function AppLayout({
         return;
       }
 
-      // Allowed paths even if expired
-      const publicPaths = [
-        '/subscription', 
-        '/contact', 
-        '/about-us', 
-        '/terms-and-conditions', 
-        '/privacy-policy', 
-        '/refund-policy'
-      ];
-      
-      const isAllowedPath = publicPaths.some(path => pathname === path || pathname.startsWith(path));
-
       // Force redirect to subscription if expired and not on an allowed path
       if (isExpired && !isAllowedPath) {
         router.push('/subscription');
       }
     }
-  }, [user, isUserLoading, userProfile, isProfileLoading, pathname, router]);
+  }, [user, isUserLoading, userProfile, isProfileLoading, pathname, router, isAllowedPath]);
 
   const handleLogout = async () => {
     if (auth) {
@@ -102,10 +104,28 @@ export default function AppLayout({
     }
   };
 
-  if (isUserLoading || !user || isProfileLoading) {
+  if (isUserLoading || (user && isProfileLoading)) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        Loading...
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
+  // Allow unauthenticated visitors to view public pages (e.g., /subscription, /about-us) with public navigation
+  if (!user) {
+    if (isAllowedPath) {
+      return (
+        <div className="flex min-h-screen flex-col bg-background">
+          <SiteHeader />
+          <main className="flex-1">{children}</main>
+          <SiteFooter />
+        </div>
+      );
+    }
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
       </div>
     );
   }

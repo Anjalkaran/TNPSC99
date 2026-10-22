@@ -1,12 +1,24 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, Noto_Sans_Tamil } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { LanguageProvider } from '@/hooks/use-translation';
 import { ThemeProvider } from '@/components/theme-provider';
+import { cn } from '@/lib/utils';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+
+const notoSansTamil = Noto_Sans_Tamil({
+  subsets: ['tamil'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-noto-tamil',
+  display: 'swap',
+});
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -58,7 +70,7 @@ export default function RootLayout({
         />
         <link rel="manifest" href="/manifest.json" />
       </head>
-      <body className={inter.className}>
+      <body className={cn(inter.variable, notoSansTamil.variable, "font-sans antialiased")}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

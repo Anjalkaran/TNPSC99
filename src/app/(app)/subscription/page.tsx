@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Check, Zap, BarChart2, BookOpen, Bookmark, Shield, Star } from "lucide-react";
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
@@ -19,7 +20,8 @@ declare global {
 
 export default function SubscriptionPage() {
     const { toast } = useToast();
-    const { user } = useUser();
+    const router = useRouter();
+    const { user, isUserLoading } = useUser();
     const firestore = useFirestore();
     const userProfileRef = useMemoFirebase(
       () => (user ? doc(firestore, 'users', user.uid) : null),
@@ -29,12 +31,17 @@ export default function SubscriptionPage() {
     const subStatus = getSubscriptionStatus(userProfile);
 
     const handleSubscribe = async (plan: string, amount: number) => {
-        if (!window.Razorpay) {
-            toast({ variant: 'destructive', title: 'Payment Gateway Not Ready', description: 'Please wait a moment and try again.' });
+        if (!user || !userProfile) {
+            toast({ 
+                title: 'Sign in to Subscribe', 
+                description: 'Please log in or create an account to start your ₹99/month MCQ Academy subscription.',
+            });
+            router.push('/login?redirect=/subscription');
             return;
         }
-        if (!user || !userProfile) {
-            toast({ title: 'Please log in', description: 'You need to be logged in to subscribe.', variant: 'destructive' });
+
+        if (!window.Razorpay) {
+            toast({ variant: 'destructive', title: 'Payment Gateway Not Ready', description: 'Please wait a moment and try again.' });
             return;
         }
 
@@ -165,7 +172,7 @@ export default function SubscriptionPage() {
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,rgba(16,185,129,0.08),transparent_50%)] pointer-events-none" />
                 <div className="container mx-auto px-4 py-8 md:py-20 text-center relative">
                     
-                    {isTrialExpired && (
+                    {isTrialExpired && user && (
                         <div className="inline-flex items-center gap-2 bg-destructive/10 border border-destructive/30 rounded-full px-4 py-1.5 mb-6 backdrop-blur-sm">
                            <Shield className="h-4 w-4 text-destructive" />
                            <span className="text-destructive-foreground text-sm font-bold">Trial Period Expired</span>
@@ -173,24 +180,24 @@ export default function SubscriptionPage() {
                     )}
 
                     {/* Badge */}
-                    {!isTrialExpired && (
+                    {(!isTrialExpired || !user) && (
                         <div className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-400/30 rounded-full px-3 py-1 mb-4 backdrop-blur-sm">
                             <span className="relative flex h-2 w-2">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                                 <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-400"></span>
                             </span>
-                            <span className="text-blue-300 text-xs font-semibold tracking-wide">Limited Time Offer — Ends April 30th</span>
+                            <span className="text-blue-300 text-xs font-semibold tracking-wide">MCQ Academy — ₹99/month Flat Rate</span>
                         </div>
                     )}
 
                     <h1 className="text-2xl md:text-5xl lg:text-6xl font-black tracking-tight mb-2 md:mb-4">
-                        {isTrialExpired ? 'Your Trial Has Ended' : 'Supercharge Your'}{' '}
+                        {(isTrialExpired && user) ? 'Your Trial Has Ended' : 'Supercharge Your'}{' '}
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">TNPSC Prep</span>
                     </h1>
                     <p className="text-slate-300 text-sm md:text-xl max-w-2xl mx-auto mb-4 md:mb-8">
-                        {isTrialExpired 
+                        {(isTrialExpired && user) 
                           ? 'Your 1-day free trial has expired. Subscribe to continue accessing all tests and features.' 
-                          : 'One subscription. All tests, all insights, all the tools you need to crack your exam.'}
+                          : 'One subscription. All textbook MCQs, practice & exam modes, and textbook page citations to crack your exam.'}
                     </p>
 
                     {hasActiveSubscription ? (
