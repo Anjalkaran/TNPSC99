@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import type { Test, UserTestAttempt, Score, Question, BookmarkedQuestion, UserProfile } from '@/lib/types';
+import { hasActiveSubscription } from '@/lib/subscription-utils';
 
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -676,7 +677,7 @@ export function McqTest({
                       </div>
                   )}
 
-                                     {userProfile?.isAdmin && (currentQuestion.referenceUrl || downloadURL) && currentQuestion.referencePage && (
+                  {(userProfile?.isAdmin || hasActiveSubscription(userProfile)) && (currentQuestion.referenceUrl || downloadURL) && currentQuestion.referencePage && (
                        <div className="pt-2">
                            <Button 
                                onClick={handleViewReference}

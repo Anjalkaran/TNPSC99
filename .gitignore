@@ -43,3 +43,8 @@ next-env.d.ts
 # firebase
 firebase-debug.log
 firestore-debug.log
+
+# temporary artifacts and screenshots
+screenshots/
+*.png
+capture_page.js

@@ -1,65 +1,152 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // --- 1. CORE HELPERS ---
+    // --- Helper Functions ---
     function isSignedIn() {
       return request.auth != null;
     }
-    
-    function isAdmin() {
-      return isSignedIn() && 
-        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true ||
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
     }
 
-    // --- 2. USER DATA (RECURSIVE) ---
+    function isAdmin() {
+      return isSignedIn() && (
+        (request.auth.token.get('admin', false) == true) ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('isAdmin', false) == true ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', 'user') == 'admin'))
+      );
+    }
+
+    // Sensitive profile keys that regular users are forbidden from creating or updating
+    function hasNoPrivilegeEscalationOnCreate() {
+      let data = request.resource.data;
+      return (!data.keys().hasAny(['isAdmin', 'admin']) || data.get('isAdmin', false) == false)
+          && (!data.keys().hasAny(['role']) || data.get('role', 'student') in ['student', 'user'])
+          && (!data.keys().hasAny(['subscriptionStatus']) || data.get('subscriptionStatus', 'free') == 'free')
+          && (!data.keys().hasAny(['subscriptionExpires']) || data.get('subscriptionExpires', null) == null)
+          && (!data.keys().hasAny(['aiCredits']) || data.get('aiCredits', 0) == 0)
+          && (!data.keys().hasAny(['lastPaymentId', 'lastOrderId']));
+    }
+
+    function hasNoPrivilegeEscalationOnUpdate() {
+      let diff = request.resource.data.diff(resource.data).affectedKeys();
+      return !diff.hasAny([
+        'isAdmin', 
+        'admin', 
+        'role', 
+        'subscriptionStatus', 
+        'subscriptionExpires', 
+        'aiCredits', 
+        'lastPaymentId', 
+        'lastOrderId'
+      ]);
+    }
+
+    // --- Users Collection & Subcollections ---
     match /users/{userId} {
-      allow read, write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow read: if isOwner(userId) || isAdmin();
       
-      // Recursive match for all subcollections (testAttempts, bookmarkedQuestions, etc.)
+      // Allow initial registration if sensitive keys are not elevated
+      allow create: if isOwner(userId) && hasNoPrivilegeEscalationOnCreate();
+      
+      // Allow updating standard profile attributes (displayName, phoneNumber, language, etc.)
+      // Prevent privilege escalation
+      allow update: if (isOwner(userId) && hasNoPrivilegeEscalationOnUpdate()) || isAdmin();
+      
+      allow delete: if isAdmin();
+
+      // Student attempt logs (owned by student)
+      match /testAttempts/{attemptId} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+
+      // Student bookmarks (owned by student)
+      match /bookmarkedQuestions/{questionId} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+
+      // Read-only audit log of credits (only admin/functions can write)
+      match /credit_ledger/{txId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if isAdmin();
+      }
+
+      // Fallback for other student subcollections
       match /{allSubcollections=**} {
-        allow read, write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+        allow read, write: if isOwner(userId) || isAdmin();
       }
     }
 
-    // --- 3. TESTS COLLECTION ---
-    match /tests/{testId} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn() && 
-                    request.resource.data.isMockTest == true && 
-                    request.resource.data.userId == request.auth.uid;
-      allow update, delete: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+    // --- Payment Records Collection (Audit Trail) ---
+    match /payments/{paymentId} {
+      allow read: if isSignedIn() && (resource.data.get('userId', '') == request.auth.uid || isAdmin());
       allow write: if isAdmin();
     }
 
-    // --- 4. QUESTION BANK ---
+    // --- Tests Collection ---
+    match /tests/{testId} {
+      allow read: if isSignedIn();
+      // Allow administrators full test management, and students to generate on-the-fly personal mock tests
+      allow create: if isAdmin() || (isSignedIn() && request.resource.data.get('userId', '') == request.auth.uid);
+      allow update, delete: if isAdmin() || (isSignedIn() && resource.data.get('userId', '') == request.auth.uid);
+    }
+
+    // --- Question Bank (Protected from unauthenticated scraping) ---
     match /questions/{questionId} {
       allow read: if isSignedIn();
       allow write: if isAdmin();
     }
 
-    // --- 5. APP CONTENT ---
-    match /classes/{id} { allow read: if true; allow write: if isAdmin(); }
-    match /subjects/{id} { allow read: if true; allow write: if isAdmin(); }
-    match /units/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
-    match /categories/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
-    match /syllabus/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
-    match /studyMaterials/{id} { allow read: if isSignedIn(); allow write: if isAdmin(); }
+    // --- Curriculum & Metadata Collections ---
+    match /classes/{classId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
 
-    // --- 6. USER GENERATED CONTENT ---
-    match /scores/{id} {
+    match /subjects/{subjectId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /units/{unitId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /syllabus/{syllabusId} {
       allow read: if isSignedIn();
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow write: if isAdmin();
+    }
+
+    match /studyMaterials/{docId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /scores/{scoreId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.get('userId', '') == request.auth.uid;
       allow update, delete: if isAdmin();
     }
-    
+
     match /questionComments/{id} {
-      allow read, create: if isSignedIn();
-      allow update, delete: if isAdmin();
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.get('userId', '') == request.auth.uid;
+      allow update, delete: if isAdmin() || (isSignedIn() && resource.data.get('userId', '') == request.auth.uid);
     }
   }
 }

@@ -5,6 +5,7 @@ import { useUser, useFirestore } from '@/firebase';
 import { collection, query, where, getDocs, doc, getDoc, deleteDoc, documentId } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import type { Test, Question, UserTestAttempt, UserProfile } from '@/lib/types';
+import { getSubscriptionStatus } from '@/lib/subscription-utils';
 import { useTranslation } from '@/hooks/use-translation';
 import {
   AlertDialog,
@@ -67,30 +68,23 @@ export default function TestPage() {
       }
 
       const userProfile = userDocSnap.data() as UserProfile;
-      const isAdminEmail = user.email?.endsWith('@tnpsc99.com');
-      const isAdmin = userProfile.isAdmin || isAdminEmail;
+      const testId = Array.isArray(slug) ? slug[0] : decodeURIComponent(slug);
+      const isFreeDemo = testId.startsWith('demo-') || testId.startsWith('sample-') || testId.startsWith('free-');
 
-      if (!isAdmin) {
-          const isPremium = userProfile.subscriptionStatus === 'premium';
-          const expires = userProfile.subscriptionExpires ? new Date(userProfile.subscriptionExpires) : null;
-          const hasExpired = expires ? expires < new Date() : false;
+      const { isExpired, status: subTier } = getSubscriptionStatus(userProfile);
 
-          // Only redirect if explicit premium check fails AND it's not a mock test (optional, but good for trial)
-          if (!isPremium && hasExpired) {
-              console.log("[Access] User is not premium and subscription has expired. Redirecting.");
-              toast({
-                  title: 'Subscription Required',
-                  description: 'Your subscription has expired. Please subscribe to access tests.',
-                  variant: 'destructive',
-              });
-              router.push('/subscription');
-              return;
-          }
+      if (isExpired && !isFreeDemo) {
+          console.log(`[Access Control] User ${user.uid} denied access to test ${testId} (Tier: ${subTier}, Expired: true). Redirecting to subscription.`);
+          toast({
+              title: 'Subscription Required',
+              description: 'An active ₹99 monthly subscription is required to access full tests.',
+              variant: 'destructive',
+          });
+          router.push('/subscription');
+          return;
       }
 
       // If we reach here, user has access. Now fetch test data.
-      const testId = Array.isArray(slug) ? slug[0] : decodeURIComponent(slug);
-      
       const testDocRef = doc(firestore, 'tests', testId);
       const testDocSnap = await getDoc(testDocRef);
 

@@ -32,9 +32,19 @@ if (!admin.apps.length) {
       try { admin.initializeApp(); } catch(err) { console.error('Fall-back init failed', err); }
     } else {
       console.log('Local development requires FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY in .env');
+      if (!admin.apps.length) {
+        try {
+          admin.initializeApp({
+            projectId: process.env.FIREBASE_PROJECT_ID || 'studio-5029416251-928dd',
+          });
+        } catch (initErr) {
+          console.warn('Fallback app init failed:', initErr);
+        }
+      }
     }
   }
 }
 
-export const db = admin.firestore();
+export const db = admin.apps.length ? admin.firestore() : (null as unknown as admin.firestore.Firestore);
+export const adminAuth = admin.apps.length ? admin.auth() : (null as unknown as admin.auth.Auth);
 export default admin;

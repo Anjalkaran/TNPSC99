@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
+import { hasActiveSubscription } from '@/lib/subscription-utils';
 
 function PdfViewerContent() {
   const searchParams = useSearchParams();
@@ -25,8 +26,10 @@ function PdfViewerContent() {
   const { data: userProfile, isLoading: profileLoading } = useDoc<UserProfile>(userProfileRef);
 
   useEffect(() => {
-    if (!isUserLoading && !profileLoading && userProfile && !userProfile.isAdmin) {
-      router.replace('/dashboard');
+    if (!isUserLoading && !profileLoading && userProfile) {
+      if (!userProfile.isAdmin && !hasActiveSubscription(userProfile)) {
+        router.replace('/subscription');
+      }
     }
   }, [isUserLoading, profileLoading, userProfile, router]);
 

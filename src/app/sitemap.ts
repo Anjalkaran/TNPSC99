@@ -22,10 +22,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const uniqueRoutes = new Set<string>();
 
-  // Dynamic Pages from Tests
+  // Dynamic Pages from Tests with a 3-second timeout to prevent build-time hangs
   try {
     const testsCollection = collection(firestore, 'tests');
-    const testsSnapshot = await getDocs(testsCollection);
+    const testsSnapshot = await Promise.race([
+      getDocs(testsCollection),
+      new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Sitemap fetch timeout')), 3000))
+    ]);
     
     testsSnapshot.docs.forEach(doc => {
       const test = doc.data() as Test;

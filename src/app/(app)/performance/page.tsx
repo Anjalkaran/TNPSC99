@@ -19,6 +19,7 @@ import {
 } from 'recharts';
 import { format, parseISO, subDays, startOfDay } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
+import { computeDeterministicPerformance } from '@/lib/deterministic-analytics';
 
 interface PerformanceMetric {
   id: string;
@@ -72,62 +73,33 @@ function AiAnalysis({
             return;
         }
 
-        const runAnalysis = async () => {
-            setIsLoading(true);
-            try {
-                const input: PerformanceInput = {
-                    subjects: subjectPerformance.map(p => ({
-                        name: p.name,
-                        proficiency: p.proficiency,
-                        attempts: p.totalAttempts,
-                    })),
-                    categories: categoryPerformance.map(p => ({
-                        name: p.name,
-                        subjectName: p.subjectName,
-                        proficiency: p.proficiency,
-                        attempts: p.totalAttempts,
-                    })),
-                    units: unitPerformance.map(p => ({
-                        name: p.name,
-                        className: p.className,
-                        subjectName: p.subjectName,
-                        term: p.term,
-                        unitNumber: p.unitNumber,
-                        proficiency: p.proficiency,
-                        attempts: p.totalAttempts,
-                    })),
-                    language: language,
-                };
-                
-                const response = await fetch('/api/genkit/performanceAnalysisFlow', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ data: input }),
-                });
+        // 100% Deterministic, local mathematical analytics (Zero paid AI / LLM API calls)
+        const result = computeDeterministicPerformance({
+            subjects: subjectPerformance.map(p => ({
+                name: p.name,
+                proficiency: p.proficiency,
+                attempts: p.totalAttempts,
+            })),
+            categories: categoryPerformance.map(p => ({
+                name: p.name,
+                subjectName: p.subjectName,
+                proficiency: p.proficiency,
+                attempts: p.totalAttempts,
+            })),
+            units: unitPerformance.map(p => ({
+                name: p.name,
+                className: p.className,
+                subjectName: p.subjectName,
+                term: p.term,
+                unitNumber: p.unitNumber,
+                proficiency: p.proficiency,
+                attempts: p.totalAttempts,
+            })),
+            language: language as 'en' | 'ta',
+        });
 
-                if (!response.ok) {
-                    throw new Error(`API request failed with status ${response.status}`);
-                }
-
-                const result: PerformanceOutput = await response.json();
-                setAnalysis(result);
-            } catch (error) {
-                console.error("Error analyzing performance:", error);
-                const summary = language === 'ta' 
-                    ? "AI நுண்ணறிவு விரைவில் கிடைக்கும்." 
-                    : "AI insights will be available soon.";
-                setAnalysis({
-                    strengths: [],
-                    weaknesses: [],
-                    recommendations: [],
-                    overallSummary: summary,
-                });
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        runAnalysis();
+        setAnalysis(result);
+        setIsLoading(false);
     }, [subjectPerformance, categoryPerformance, unitPerformance, language]);
     
     if (isLoading) {

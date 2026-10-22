@@ -108,12 +108,16 @@ export interface UserProfile {
   email: string;
   registrationDate: string;
   isAdmin?: boolean;
+  role?: 'admin' | 'student' | 'user';
   phone?: string;
   city?: string;
   referralCode: string;
   referredBy?: string;
   subscriptionStatus: 'free' | 'premium';
   subscriptionExpires?: string;
+  createdAt?: string;
+  lastPaymentId?: string;
+  lastOrderId?: string;
   currentSessionId?: string;
   subscriptionCount?: number;
   referralCount: number;

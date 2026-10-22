@@ -16,6 +16,10 @@ export function initializeFirebase() {
     try {
       // Attempt to initialize via Firebase App Hosting environment variables
       firebaseApp = initializeApp();
+      // Ensure authDomain is correct for custom domain branding
+      if (typeof window !== "undefined" && firebaseConfig.authDomain && firebaseApp.options.authDomain !== firebaseConfig.authDomain) {
+        (firebaseApp.options as any).authDomain = firebaseConfig.authDomain;
+      }
     } catch (e) {
       // Only warn in production because it's normal to use the firebaseConfig to initialize
       // during development

@@ -41,10 +41,15 @@ export default function SubscriptionPage() {
         try {
             toast({ title: 'Processing...', description: 'Creating your subscription order.' });
             
+            const idToken = await user.getIdToken();
+
             // 1. Create Order on Backend
             const orderRes = await fetch('/api/razorpay/order', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${idToken}`
+                },
                 body: JSON.stringify({ amount, plan }),
             });
 
@@ -72,16 +77,19 @@ export default function SubscriptionPage() {
 
                         console.log('Razorpay Verification Response:', response);
 
+                        const currentToken = await user.getIdToken();
+
                         // 3. Verify Payment on Backend
                         const verifyRes = await fetch('/api/razorpay/verify', {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
+                            headers: { 
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${currentToken}`
+                            },
                             body: JSON.stringify({
                                 razorpay_order_id: response.razorpay_order_id,
                                 razorpay_payment_id: response.razorpay_payment_id,
                                 razorpay_signature: response.razorpay_signature,
-                                userId: user.uid,
-                                plan: plan
                             }),
                         });
 
