@@ -141,6 +141,10 @@ export interface UserTestAttempt {
   incorrectlyAnsweredQuestionIds?: string[];
   lastUpdatedDate?: string;
   examGroup?: 'Group I' | 'Group II' | 'Group IV';
+  mode?: 'practice' | 'exam';
+  markedForReviewIds?: string[];
+  examDeadline?: string;
+  timeSpentSeconds?: number;
 }
 
 

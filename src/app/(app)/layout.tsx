@@ -34,7 +34,8 @@ const PUBLIC_PATHS = [
   '/about-us', 
   '/terms-and-conditions', 
   '/privacy-policy', 
-  '/refund-policy'
+  '/refund-policy',
+  '/test-preview'
 ];
 
 export default function AppLayout({
