@@ -205,6 +205,13 @@ async function run() {
   });
   console.log('  ✅ On-time answer [0] saved before deadline');
 
+  // Case 2.1b: Mode switching strictly forbidden (cannot switch exam to practice to bypass deadline)
+  await expectPermissionDenied(async () => {
+    await updateDoc(onTimeRef, {
+      mode: 'practice',
+    });
+  }, 'Student attempted to switch mode from exam to practice');
+
   // Case 2.2: Answer update 1 second after deadline -> REJECTED
   const pastDeadline1s = now - 1000; // 1s ago
   const attemptPast1sId = 'att_expired_1s';
