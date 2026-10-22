@@ -75,6 +75,7 @@ import { ModeSelectDialog, type TestMode } from './test/mode-select-dialog';
 import { QuestionPalette } from './test/question-palette';
 import { TextbookReferenceDrawer } from './test/textbook-reference-drawer';
 import { TestResultsView } from './test/test-results-view';
+import { syncMistakesToVault } from '@/lib/mistake-vault-service';
 
 // Clean test title helper
 const cleanTitle = (title: string) => {
@@ -352,8 +353,12 @@ export function McqTest({
       try {
         await setDoc(attemptDocRef, attemptData, { merge: true });
 
-        // Update leaderboard score if completed
+        // Update leaderboard score and sync mistakes if completed
         if (effectiveStatus === 'completed') {
+          syncMistakesToVault(firestore, user.uid, test, attemptDocRef.id, questions, answers).catch(err => {
+            console.warn('Mistake vault sync skipped:', err);
+          });
+
           const scoresRef = collection(firestore, 'scores');
           const scoreData: Score = {
             userId: user.uid,

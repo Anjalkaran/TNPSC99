@@ -35,7 +35,8 @@ const PUBLIC_PATHS = [
   '/terms-and-conditions', 
   '/privacy-policy', 
   '/refund-policy',
-  '/test-preview'
+  '/test-preview',
+  '/phase3c-preview'
 ];
 
 export default function AppLayout({

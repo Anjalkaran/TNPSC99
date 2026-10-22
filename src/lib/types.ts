@@ -199,3 +199,82 @@ export interface StudyMaterial {
   storagePath: string;
   createdAt: string;
 }
+
+// -----------------------------------------------------------------------------
+// PHASE 3C: STUDENT PROGRESS, MISTAKE VAULT & REVISION TYPES
+// -----------------------------------------------------------------------------
+
+export type MistakeStatus = 'unresolved' | 'revised' | 'mastered';
+
+export interface MistakeVaultItem {
+  id?: string;
+  questionId: string;
+  testId: string;
+  testTitle: string;
+  subjectId?: string;
+  classId?: string;
+  chapterName?: string;
+  questionText: string;
+  answerOptions: string[];
+  correctAnswer: string;
+  selectedOptionIndex: number;
+  explanation: string;
+  referencePage?: number;
+  referencePageOffset?: number;
+  lastFailedDate: string;
+  failureCount: number;
+  status: MistakeStatus;
+  resolvedAt?: string;
+  lastAttemptId?: string;
+}
+
+export type MasteryStatus = 'mastered' | 'practicing' | 'needs_focus' | 'unattempted';
+export type ConfidenceLevel = 'high' | 'moderate' | 'low' | 'insufficient_data';
+
+export interface ChapterProgress {
+  chapterId: string;
+  chapterName: string;
+  subjectId?: string;
+  classId?: string;
+  totalQuestions: number;
+  attemptedQuestions: number;
+  correctQuestions: number;
+  accuracy: number; // percentage (0 - 100)
+  coverage: number; // percentage (attempted / total)
+  repetition: number; // attempt count
+  confidence: ConfidenceLevel;
+  masteryStatus: MasteryStatus;
+  lastPracticedDate?: string;
+}
+
+export interface SubjectProgress {
+  subjectId: string;
+  subjectName: string;
+  totalChapters: number;
+  masteredChapters: number;
+  averageAccuracy: number;
+  totalAttempts: number;
+  chapters: ChapterProgress[];
+}
+
+export interface RecommendedRevision {
+  type: 'mistake_vault' | 'weak_chapter' | 'subject';
+  title: string;
+  description: string;
+  targetChapterId?: string;
+  targetSubjectId?: string;
+  availableQuestionCount: number;
+}
+
+export interface StudentProgressSummary {
+  totalAttempts: number;
+  completedAttempts: number;
+  totalQuestionsAttempted: number;
+  totalCorrect: number;
+  overallAccuracy: number;
+  unresolvedMistakesCount: number;
+  subjects: SubjectProgress[];
+  weakChapters: ChapterProgress[];
+  recommendedRevision?: RecommendedRevision;
+}
+

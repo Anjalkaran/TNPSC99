@@ -124,6 +124,7 @@ export function AppSidebar() {
 
   const learningLinks: SidebarLink[] = [
       { href: '/study-material', label: t('study_material'), icon: Library },
+      { href: '/mistake-vault', label: 'Mistake Vault (தவறு பெட்டகம்)', icon: BookOpen },
       { href: '/bookmarks', label: 'Bookmarks', icon: Bookmark },
       { href: '/exam-history', label: t('exam_history'), icon: History },
   ];

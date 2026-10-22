@@ -59,9 +59,20 @@ service cloud.firestore {
       
       allow delete: if isAdmin();
 
-      // Student attempt logs (owned by student)
+      // Student attempt logs (owned by student, immutable once completed)
       match /testAttempts/{attemptId} {
-        allow read, write: if isOwner(userId) || isAdmin();
+        allow read: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) || isAdmin();
+        // Prevent rescoring, tampering or overwriting once an attempt is completed
+        allow update: if (isOwner(userId) && resource.data.get('status', 'in-progress') != 'completed') || isAdmin();
+        allow delete: if (isOwner(userId) && resource.data.get('status', 'in-progress') != 'completed') || isAdmin();
+      }
+
+      // Student Mistake Vault (owned by student)
+      match /mistakeVault/{questionId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow create, update: if isOwner(userId) || isAdmin();
+        allow delete: if isOwner(userId) || isAdmin();
       }
 
       // Student bookmarks (owned by student)
