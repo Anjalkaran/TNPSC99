@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { notFound } from 'next/navigation';
 import type { MistakeVaultItem, UserTestAttempt, Test, Question } from '@/lib/types';
 import { computeStudentProgress } from '@/lib/deterministic-progress';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -109,6 +110,10 @@ const mockMistakes: MistakeVaultItem[] = [
 ];
 
 export default function Phase3CPreviewPage() {
+  if (process.env.NODE_ENV === 'production') {
+    notFound();
+  }
+
   const [activeTab, setActiveTab] = useState<'dashboard' | 'mistake-vault' | 'revision'>('dashboard');
   const [selectedReference, setSelectedReference] = useState<{
     referencePage: number;

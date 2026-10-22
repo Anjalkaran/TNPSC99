@@ -224,6 +224,7 @@ export interface MistakeVaultItem {
   lastFailedDate: string;
   failureCount: number;
   status: MistakeStatus;
+  revisedAt?: string;
   resolvedAt?: string;
   lastAttemptId?: string;
 }

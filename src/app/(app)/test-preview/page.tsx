@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { notFound } from 'next/navigation';
 import { McqTest } from '@/components/mcq-test';
 import type { Test, Question } from '@/lib/types';
 
@@ -67,6 +68,10 @@ const previewTest: Test = {
 };
 
 export default function TestPreviewPage() {
+  if (process.env.NODE_ENV === 'production') {
+    notFound();
+  }
+
   return (
     <div className="container mx-auto px-4 py-6 md:py-8">
       <McqTest
