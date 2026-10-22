@@ -114,6 +114,9 @@ export async function POST(req: NextRequest) {
         const testSnap = await transaction.get(db.doc(`tests/${effectiveTestId}`));
         if (testSnap.exists) {
           const testDoc = testSnap.data() as Test;
+          if (testDoc.userId && testDoc.userId !== uid) {
+            throw new Error('FORBIDDEN: Test belongs to another student');
+          }
           if (testDoc.duration && testDoc.duration > 0) {
             trustedDurationMinutes = testDoc.duration;
           } else {
@@ -144,7 +147,26 @@ export async function POST(req: NextRequest) {
       if (attemptData.mode === 'exam') {
         // Compute trusted maximum deadline based on server-verified start time & duration
         const startTimeStr = attemptData.startedAt || attemptData.createdAt || attemptData.lastUpdatedDate;
-        const startedAtMs = startTimeStr ? new Date(startTimeStr).getTime() : now - (trustedDurationMinutes * 60 * 1000);
+        let startedAtMs = now - (trustedDurationMinutes * 60 * 1000);
+
+        if (startTimeStr) {
+          const parsedStartedAt = new Date(startTimeStr).getTime();
+          // SECURITY HARDENING: startedAt cannot be in the future (tampering attempt to extend deadline)
+          if (parsedStartedAt > now + 5000) { // allow 5s clock skew tolerance
+            throw new Error('BAD_REQUEST: Attempt start time cannot be in the future');
+          }
+          startedAtMs = Math.min(parsedStartedAt, now);
+        }
+
+        // Cross-check with Firestore document createTime if available
+        if (attemptSnap.createTime) {
+          const serverCreatedMs = (attemptSnap.createTime as any).toMillis 
+            ? (attemptSnap.createTime as any).toMillis() 
+            : (attemptSnap.createTime as any).toDate().getTime();
+          // startedAt cannot be later than server createTime
+          startedAtMs = Math.min(startedAtMs, serverCreatedMs);
+        }
+
         const maxTrustedDeadlineMs = startedAtMs + (trustedDurationMinutes * 60 * 1000);
 
         // Clamped deadline: cannot exceed max trusted duration even if client forged examDeadline: 2099
@@ -213,8 +235,8 @@ export async function POST(req: NextRequest) {
 
         let selectedIdx: number | undefined;
 
-        if (isTimeExpired) {
-          // Late submission beyond grace: STRICTLY accept ONLY answers saved before deadline expired!
+        if (isPastOfficialDeadline) {
+          // Late submission beyond official deadline: STRICTLY accept ONLY answers saved before deadline expired!
           // Any answer modified after deadline in submitted body receives ZERO marks.
           selectedIdx = preDeadlineSavedIdx;
         } else {
