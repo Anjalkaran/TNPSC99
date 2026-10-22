@@ -197,6 +197,7 @@ export function McqTest({
   );
   const [score, setScore] = useState<number>(inProgressAttempt?.score || 0);
   const [attemptId, setAttemptId] = useState<string | null>(inProgressAttempt?.id || null);
+  const attemptIdRef = useRef<string | null>(inProgressAttempt?.id || null);
   const isSavingRef = useRef(false);
   const isSubmittingRef = useRef(false);
   const isExitingIntentionally = useRef(false);
@@ -292,8 +293,13 @@ export function McqTest({
       isSavingRef.current = true;
 
       const attemptCollectionRef = collection(firestore, `users/${user.uid}/testAttempts`);
-      let attemptDocRef = attemptId ? doc(attemptCollectionRef, attemptId) : doc(attemptCollectionRef);
-      if (!attemptId) setAttemptId(attemptDocRef.id);
+      let effectiveId = attemptId || attemptIdRef.current;
+      let attemptDocRef = effectiveId ? doc(attemptCollectionRef, effectiveId) : doc(attemptCollectionRef);
+      if (!effectiveId) {
+        effectiveId = attemptDocRef.id;
+        setAttemptId(effectiveId);
+        attemptIdRef.current = effectiveId;
+      }
 
       // Compute score
       let calculatedScore = 0;
@@ -332,6 +338,8 @@ export function McqTest({
         examGroup: test.examGroup,
         mode: mode || 'practice',
         markedForReviewIds: markedIds,
+        startedAt: inProgressAttempt?.startedAt || new Date().toISOString(),
+        durationMinutes: Math.round(defaultExamDurationSeconds / 60),
         examDeadline: examDeadlineRef.current || undefined,
         timeSpentSeconds: totalTimeSpent,
         lastUpdatedDate: new Date().toISOString(),
@@ -340,11 +348,11 @@ export function McqTest({
       try {
         await setDoc(attemptDocRef, attemptData, { merge: true });
         isSavingRef.current = false;
-        return true;
+        return effectiveId;
       } catch (err: any) {
         console.error('Error saving in-progress test attempt:', err);
         isSavingRef.current = false;
-        return false;
+        return effectiveId || null;
       }
     },
     [
@@ -380,12 +388,12 @@ export function McqTest({
         : timeElapsedSeconds;
 
     // First ensure latest answers are persisted to the in-progress attempt
-    await saveProgress('in-progress');
+    const effectiveAttemptId = (await saveProgress('in-progress')) || attemptIdRef.current || attemptId;
 
     let finalScore = 0;
 
     // Authenticated Server-Authoritative Finalization
-    if (user && attemptId) {
+    if (user && effectiveAttemptId) {
       try {
         const idToken = await user.getIdToken();
         const response = await fetch('/api/test/submit', {
@@ -395,7 +403,7 @@ export function McqTest({
             'Authorization': `Bearer ${idToken}`,
           },
           body: JSON.stringify({
-            attemptId,
+            attemptId: effectiveAttemptId,
             testId: test.id,
             answers: answers.map(a => (a === undefined ? -1 : a)),
             timeSpentSeconds: totalTimeSpent,
@@ -407,8 +415,8 @@ export function McqTest({
           const result = await response.json();
           finalScore = result.score ?? 0;
         } else {
-          console.warn('Server finalization returned error status:', response.status);
-          // Fallback in-memory score calculation if API error
+          console.warn('Server finalization returned non-OK status:', response.status);
+          // In-memory score fallback
           questions.forEach((q, idx) => {
             const a = answers[idx];
             if (a !== undefined && a !== -1 && q.answerOptions[a] === q.correctAnswer) {

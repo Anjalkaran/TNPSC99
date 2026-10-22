@@ -103,21 +103,70 @@ export async function POST(req: NextRequest) {
         throw new Error('BAD_REQUEST: Attempt contains no question IDs');
       }
 
-      // Deadline validation for Exam Mode
+      // -----------------------------------------------------------------------
+      // 4. Validate Trusted Test & Duration
+      // -----------------------------------------------------------------------
+      const effectiveTestId = testId || attemptData.testId;
+      let trustedDurationMinutes = 30; // default 30 mins
+      let authorizedQuestionSet: Set<string> | null = null;
+
+      if (effectiveTestId) {
+        const testSnap = await transaction.get(db.doc(`tests/${effectiveTestId}`));
+        if (testSnap.exists) {
+          const testDoc = testSnap.data() as Test;
+          if (testDoc.duration && testDoc.duration > 0) {
+            trustedDurationMinutes = testDoc.duration;
+          } else {
+            trustedDurationMinutes = Math.max(5, Math.ceil(questionIds.length * 1.5));
+          }
+          if (testDoc.questionIds && Array.isArray(testDoc.questionIds) && testDoc.questionIds.length > 0) {
+            authorizedQuestionSet = new Set(testDoc.questionIds);
+          }
+        }
+      }
+
+      // Check for question set authorization (if standard test with defined questionIds)
+      if (authorizedQuestionSet && !effectiveTestId?.startsWith('rev-')) {
+        const hasUnauthorizedQuestions = questionIds.some(qid => !authorizedQuestionSet!.has(qid));
+        if (hasUnauthorizedQuestions) {
+          throw new Error('FORBIDDEN: Attempt contains unauthorized question IDs not present in test definition');
+        }
+      }
+
+      // -----------------------------------------------------------------------
+      // 5. Enforce Trusted Exam Deadlines & Strict Grace Policy
+      // -----------------------------------------------------------------------
       const now = Date.now();
       const examDeadlineStr = attemptData.examDeadline;
       let isTimeExpired = false;
+      let isPastOfficialDeadline = false;
 
-      if (attemptData.mode === 'exam' && examDeadlineStr) {
-        const deadlineMs = new Date(examDeadlineStr).getTime();
-        // Allow a 60-second grace buffer for network transit
-        if (now > deadlineMs + 60000) {
+      if (attemptData.mode === 'exam') {
+        // Compute trusted maximum deadline based on server-verified start time & duration
+        const startTimeStr = attemptData.startedAt || attemptData.createdAt || attemptData.lastUpdatedDate;
+        const startedAtMs = startTimeStr ? new Date(startTimeStr).getTime() : now - (trustedDurationMinutes * 60 * 1000);
+        const maxTrustedDeadlineMs = startedAtMs + (trustedDurationMinutes * 60 * 1000);
+
+        // Clamped deadline: cannot exceed max trusted duration even if client forged examDeadline: 2099
+        let effectiveDeadlineMs = maxTrustedDeadlineMs;
+        if (examDeadlineStr) {
+          const clientDeadlineMs = new Date(examDeadlineStr).getTime();
+          effectiveDeadlineMs = Math.min(clientDeadlineMs, maxTrustedDeadlineMs);
+        }
+
+        // Official deadline check
+        if (now > effectiveDeadlineMs) {
+          isPastOfficialDeadline = true;
+        }
+
+        // 60-second network grace buffer check
+        if (now > effectiveDeadlineMs + 60000) {
           isTimeExpired = true;
         }
       }
 
       // -----------------------------------------------------------------------
-      // 4. Fetch Trusted Authoritative Questions
+      // 6. Fetch Trusted Authoritative Questions
       // -----------------------------------------------------------------------
       const questionsMap = new Map<string, Question>();
 
@@ -134,25 +183,23 @@ export async function POST(req: NextRequest) {
 
       // Fallback: If questions were embedded in the test document (e.g. revision or mock test)
       const missingQids = questionIds.filter((qid) => !questionsMap.has(qid));
-      if (missingQids.length > 0) {
-        const effectiveTestId = testId || attemptData.testId;
-        if (effectiveTestId) {
-          const testSnap = await transaction.get(db.doc(`tests/${effectiveTestId}`));
-          if (testSnap.exists) {
-            const testDoc = testSnap.data() as Test;
-            if (testDoc.questions && Array.isArray(testDoc.questions)) {
-              testDoc.questions.forEach((q) => {
-                if (q && q.id && !questionsMap.has(q.id)) {
-                  questionsMap.set(q.id, q);
-                }
-              });
-            }
+      if (missingQids.length > 0 && effectiveTestId) {
+        const testSnap = await transaction.get(db.doc(`tests/${effectiveTestId}`));
+        if (testSnap.exists) {
+          const testDoc = testSnap.data() as Test;
+          if (testDoc.questions && Array.isArray(testDoc.questions)) {
+            testDoc.questions.forEach((q) => {
+              if (q && q.id && !questionsMap.has(q.id)) {
+                questionsMap.set(q.id, q);
+              }
+            });
           }
         }
       }
 
       // -----------------------------------------------------------------------
-      // 5. Authoritative Score Calculation (Never Client-Supplied)
+      // 7. Authoritative Score Calculation (Never Client-Supplied)
+      //    CRITICAL: Answers modified after official deadline cannot receive marks
       // -----------------------------------------------------------------------
       let authoritativeScore = 0;
       const correctlyAnsweredIds: string[] = [];
@@ -161,7 +208,20 @@ export async function POST(req: NextRequest) {
       const correctQuestionsData: Question[] = [];
 
       questionIds.forEach((qid, idx) => {
-        const selectedIdx = answers[idx] !== undefined ? answers[idx] : attemptData.answers?.[idx];
+        const preDeadlineSavedIdx = attemptData.answers?.[idx];
+        const submittedIdx = answers[idx];
+
+        let selectedIdx: number | undefined;
+
+        if (isTimeExpired) {
+          // Late submission beyond grace: STRICTLY accept ONLY answers saved before deadline expired!
+          // Any answer modified after deadline in submitted body receives ZERO marks.
+          selectedIdx = preDeadlineSavedIdx;
+        } else {
+          // On-time or within grace window: use submitted answer if provided, fallback to saved
+          selectedIdx = submittedIdx !== undefined ? submittedIdx : preDeadlineSavedIdx;
+        }
+
         const qData = questionsMap.get(qid);
 
         if (!qData) {
