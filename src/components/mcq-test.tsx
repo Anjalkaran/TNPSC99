@@ -170,7 +170,18 @@ export function McqTest({
     return Math.max(60, questions.length * 60);
   }, [test.duration, test.isPreviousYearPaper, questions.length]);
 
-  const [timeLeft, setTimeLeft] = useState<number>(defaultExamDurationSeconds);
+  const isInitialExpired = Boolean(
+    inProgressAttempt?.mode === 'exam' &&
+    inProgressAttempt?.examDeadline &&
+    new Date(inProgressAttempt.examDeadline).getTime() <= Date.now()
+  );
+
+  const [timeLeft, setTimeLeft] = useState<number>(() => {
+    if (inProgressAttempt?.mode === 'exam' && inProgressAttempt.examDeadline) {
+      return Math.max(0, Math.round((new Date(inProgressAttempt.examDeadline).getTime() - Date.now()) / 1000));
+    }
+    return defaultExamDurationSeconds;
+  });
   const [timeElapsedSeconds, setTimeElapsedSeconds] = useState<number>(
     inProgressAttempt?.timeSpentSeconds || 0
   );
@@ -180,7 +191,9 @@ export function McqTest({
   // ---------------------------------------------------------------------------
   // 4. SUBMISSION & RESULTS STATE
   // ---------------------------------------------------------------------------
-  const [isSubmitted, setIsSubmitted] = useState<boolean>(inProgressAttempt?.status === 'completed');
+  const [isSubmitted, setIsSubmitted] = useState<boolean>(
+    inProgressAttempt?.status === 'completed' || isInitialExpired
+  );
   const [score, setScore] = useState<number>(inProgressAttempt?.score || 0);
   const [attemptId, setAttemptId] = useState<string | null>(inProgressAttempt?.id || null);
   const isSavingRef = useRef(false);
@@ -305,11 +318,18 @@ export function McqTest({
 
       const markedIds = questions.filter((_, idx) => markedForReview[idx]).map(q => q.id);
 
+      const isDeadlinePassed = Boolean(
+        mode === 'exam' &&
+        examDeadlineRef.current &&
+        new Date(examDeadlineRef.current).getTime() <= Date.now()
+      );
+      const effectiveStatus = (isDeadlinePassed || status === 'completed') ? 'completed' : status;
+
       const attemptData: Partial<UserTestAttempt> = {
         userId: user.uid,
         testId: test.id,
         testTitle: decodedTitle,
-        status,
+        status: effectiveStatus,
         currentQuestionIndex,
         answers: answers.map(a => (a === undefined ? -1 : a)),
         questionIds: questions.map(q => q.id),
@@ -323,7 +343,7 @@ export function McqTest({
         lastUpdatedDate: new Date().toISOString(),
       };
 
-      if (status === 'completed') {
+      if (effectiveStatus === 'completed') {
         attemptData.completedAt = new Date().toISOString();
         attemptData.correctlyAnsweredQuestionIds = correctlyAnsweredIds;
         attemptData.incorrectlyAnsweredQuestionIds = incorrectlyAnsweredIds;
@@ -333,7 +353,7 @@ export function McqTest({
         await setDoc(attemptDocRef, attemptData, { merge: true });
 
         // Update leaderboard score if completed
-        if (status === 'completed') {
+        if (effectiveStatus === 'completed') {
           const scoresRef = collection(firestore, 'scores');
           const scoreData: Score = {
             userId: user.uid,
@@ -413,8 +433,17 @@ export function McqTest({
   // ---------------------------------------------------------------------------
   // 8. ANSWER SELECTION & INTERACTION HANDLERS
   // ---------------------------------------------------------------------------
+  const isExamExpired = () => {
+    if (mode !== 'exam') return false;
+    if (timeLeft <= 0) return true;
+    if (examDeadlineRef.current && new Date(examDeadlineRef.current).getTime() <= Date.now()) {
+      return true;
+    }
+    return false;
+  };
+
   const handleAnswerSelect = (optionIndex: number) => {
-    if (isSubmitted) return;
+    if (isSubmitted || isExamExpired()) return;
 
     if (mode === 'practice') {
       // In practice mode, once answered, prevent re-scoring repeatedly
@@ -434,7 +463,7 @@ export function McqTest({
   };
 
   const handleClearAnswer = () => {
-    if (isSubmitted) return;
+    if (isSubmitted || isExamExpired()) return;
     if (mode === 'practice') return; // Cannot clear revealed answer in practice mode
 
     const newAnswers = [...answers];
@@ -443,6 +472,7 @@ export function McqTest({
   };
 
   const toggleMarkForReview = () => {
+    if (isSubmitted || isExamExpired()) return;
     setMarkedForReview(prev => {
       const next = [...prev];
       next[currentQuestionIndex] = !next[currentQuestionIndex];
