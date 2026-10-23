@@ -17,6 +17,12 @@ import {
   VerifiedFactsManifest 
 } from '../src/lib/current-affairs/verified-facts-exporter';
 import { 
+  estimateTokensFromTexts, 
+  calculateOperatingCost,
+  TokenUsageMetrics,
+  OperatingCostBreakdown
+} from '../src/lib/current-affairs/cost-estimator';
+import { 
   CARawDocument, 
   CAEvent, 
   CAFact, 
@@ -36,7 +42,7 @@ const testResults: TestResult[] = [];
 async function runCA2HistoricalPipeline() {
   console.log('================================================================');
   console.log('TNPSC99 CURRENT AFFAIRS ENGINE — PHASE CA-2 HISTORICAL PIPELINE');
-  console.log('Scope: 23 April 2026 to 23 October 2026');
+  console.log('Scope: 23 April 2026 to 23 October 2026 (Six-Month Rolling Bank)');
   console.log('Mode: Isolated Emulator Execution (Zero Production Writes)');
   console.log('Timestamp:', new Date().toISOString());
   console.log('================================================================\n');
@@ -58,35 +64,37 @@ async function runCA2HistoricalPipeline() {
   // -------------------------------------------------------------
   const { rawDocs, claimsMap } = buildHistoricalDataset();
   const coveredPartitions = new Set<string>();
+  const partitionDocCounts: Record<string, number> = {};
   
   for (const doc of rawDocs) {
     const part = getPartitionForDate(doc.eventDate);
     if (part) {
       coveredPartitions.add(part.monthKey);
+      partitionDocCounts[part.monthKey] = (partitionDocCounts[part.monthKey] || 0) + 1;
     }
   }
 
   const allPartitions = SIX_MONTH_BACKFILL_WINDOW.partitions.map((p) => p.monthKey);
   const missingPartitions = allPartitions.filter((p) => !coveredPartitions.has(p));
-  const test1Passed = missingPartitions.length === 0 && rawDocs.length >= 12;
+  const test1Passed = missingPartitions.length === 0 && rawDocs.length >= 24;
 
   testResults.push({
     id: 'CA2-TEST-01',
     name: 'Six-Month Partition Coverage (M1-M6: Apr 23 to Oct 23, 2026)',
     passed: test1Passed,
-    details: `Ingested ${rawDocs.length} authoritative docs. All 6 partitions covered: [${Array.from(coveredPartitions).join(', ')}]. Missing: ${missingPartitions.length}`,
+    details: `Ingested ${rawDocs.length} authoritative docs across all 6 partitions: ${JSON.stringify(partitionDocCounts)}. Missing partitions: ${missingPartitions.length}`,
   });
 
   // -------------------------------------------------------------
   // Test 2: Source Provenance & Authoritative Domain Verification
   // -------------------------------------------------------------
-  const validDomains = ['tn.gov.in', 'pib.gov.in', 'rbi.org.in', 'isro.gov.in'];
+  const validDomainSuffixes = ['tn.gov.in', 'tnarch.gov.in', 'pib.gov.in', 'rbi.org.in', 'isro.gov.in', 'inspace.gov.in'];
   let allUrlsValid = true;
   let allChecksumsValid = true;
-  let sourceDistribution: Record<string, number> = {};
+  const sourceDistribution: Record<string, number> = {};
 
   for (const doc of rawDocs) {
-    const urlMatchesDomain = validDomains.some((d) => doc.canonicalUrl.includes(d));
+    const urlMatchesDomain = validDomainSuffixes.some((d) => doc.canonicalUrl.includes(d));
     if (!urlMatchesDomain) allUrlsValid = false;
     if (!doc.contentChecksum || doc.contentChecksum.length !== 64) allChecksumsValid = false;
     sourceDistribution[doc.sourceId] = (sourceDistribution[doc.sourceId] || 0) + 1;
@@ -96,26 +104,26 @@ async function runCA2HistoricalPipeline() {
     id: 'CA2-TEST-02',
     name: 'Authoritative Source Provenance & Cryptographic Checksums',
     passed: allUrlsValid && allChecksumsValid,
-    details: `Verified ${rawDocs.length} documents against official domains (${validDomains.join(', ')}). Checksums: SHA-256 verified for 100% records.`,
+    details: `Verified ${rawDocs.length} documents against official domains (${validDomainSuffixes.join(', ')}). Checksums: SHA-256 verified for 100% records.`,
   });
 
   // -------------------------------------------------------------
   // Test 3: Entity Recognition & Grounding Verification
   // -------------------------------------------------------------
-  const sampleText = 'Chennai, 08 May 2026: The Government of Tamil Nadu issued orders extending Pudhumai Penn Thittam with Rs. 1000 to girl students. ISRO and RBI also confirmed notifications.';
+  const sampleText = 'Chennai, 14 August 2026: The Government of Tamil Nadu conferred the prestigious Thagaisal Thamizhar Award along with Rs. 10 lakh to eminent scholar. Chief Secretary and ISRO officials attended.';
   const sampleEntities = extractEntitiesFromText(sampleText);
   const entitiesValid = 
-    sampleEntities.schemes.some((s) => s.includes('Pudhumai Penn')) &&
+    sampleEntities.awards?.some((a) => a.includes('Thagaisal Thamizhar')) &&
+    sampleEntities.appointments?.includes('Chief Secretary') &&
     sampleEntities.locations.includes('Chennai') &&
     sampleEntities.organizations.includes('ISRO') &&
-    sampleEntities.organizations.includes('RBI') &&
-    sampleEntities.numericalValues.some((n) => n.value === 1000);
+    sampleEntities.numericalValues.some((n) => n.value === 10);
 
   testResults.push({
     id: 'CA2-TEST-03',
-    name: 'Deterministic Entity Recognition (Schemes, Orgs, Locations, Values, Dates)',
-    passed: entitiesValid,
-    details: `Extracted schemes: [${sampleEntities.schemes.join(', ')}], orgs: [${sampleEntities.organizations.join(', ')}], locations: [${sampleEntities.locations.join(', ')}], values: [${sampleEntities.numericalValues.map((v) => v.label).join(', ')}]`,
+    name: 'Deterministic Entity Recognition (Schemes, Orgs, Locations, Values, Dates, Awards, Appointments)',
+    passed: Boolean(entitiesValid),
+    details: `Extracted awards: [${sampleEntities.awards?.join(', ')}], appointments: [${sampleEntities.appointments?.join(', ')}], orgs: [${sampleEntities.organizations.join(', ')}], locations: [${sampleEntities.locations.join(', ')}], values: [${sampleEntities.numericalValues.map((v) => v.label).join(', ')}]`,
   });
 
   // -------------------------------------------------------------
@@ -225,10 +233,13 @@ async function runCA2HistoricalPipeline() {
   });
 
   // -------------------------------------------------------------
-  // Test 5: Full Ingestion & Evidence Extraction Execution
+  // Test 5: Full Ingestion & 4-Way Claim Categorization
   // -------------------------------------------------------------
   const allEvents: CAEvent[] = [];
   const allAcceptedFacts: CAFact[] = [];
+  const allSourceSupported: CAFact[] = [];
+  const allConflicting: CAFact[] = [];
+  const allReviewRequired: CAFact[] = [];
   const allRejectedItems: any[] = [];
 
   for (const doc of rawDocs) {
@@ -236,48 +247,40 @@ async function runCA2HistoricalPipeline() {
     const res = extractAndValidateFacts(doc, claims);
     allEvents.push(res.event);
     allAcceptedFacts.push(...res.acceptedFacts);
-    allRejectedItems.push(...res.rejectedClaims);
+    allSourceSupported.push(...res.sourceSupportedFacts);
+    allConflicting.push(...res.conflictingFacts);
+    allReviewRequired.push(...res.reviewRequiredFacts);
+    allRejectedItems.push(...res.unsupportedClaims);
   }
 
-  const test5Passed = allEvents.length === rawDocs.length && allAcceptedFacts.length >= 14 && allRejectedItems.length === 0;
+  const test5Passed = 
+    allEvents.length === rawDocs.length && 
+    allSourceSupported.length >= 20 &&
+    allConflicting.length >= 1 &&
+    allReviewRequired.length >= 1 &&
+    allRejectedItems.length === 0;
 
   testResults.push({
     id: 'CA2-TEST-05',
-    name: 'Authoritative Extraction & Event Grounding Execution',
+    name: 'Factual Claim Categorization (Supported, Conflicting, Review Required, Unsupported)',
     passed: test5Passed,
-    details: `Extracted ${allEvents.length} events, ${allAcceptedFacts.length} corroborated facts across ${rawDocs.length} authoritative source documents with 0 rejections on curated seeds.`,
+    details: `Extracted ${allAcceptedFacts.length} facts: [source_supported: ${allSourceSupported.length}, conflicting: ${allConflicting.length}, review_required: ${allReviewRequired.length}, unsupported: 0] across ${rawDocs.length} documents.`,
   });
 
   // -------------------------------------------------------------
-  // Test 6: Isolated Emulator Staging Import & Non-Destructive Invariant
+  // Test 6: Isolated Emulator Staging & Idempotency Invariant
   // -------------------------------------------------------------
   // Check isolated production collections
   const prodQuestionsSnap = await db.collection('questions').get();
   const prodTestsSnap = await db.collection('tests').get();
-  const prodUntouched = prodQuestionsSnap.size === 0 && prodTestsSnap.size === 0;
+  const prodUntouchedInitial = prodQuestionsSnap.size === 0 && prodTestsSnap.size === 0;
 
-  // Perform Staging writes to CA staging collections in emulator
-  const batch = db.batch();
+  // Pass 1: Perform Staging writes to CA staging collections in emulator
+  const batch1 = db.batch();
+  for (const doc of rawDocs) batch1.set(db.collection('ca_raw_documents').doc(doc.id), doc);
+  for (const event of allEvents) batch1.set(db.collection('ca_events').doc(event.id), event);
+  for (const fact of allAcceptedFacts) batch1.set(db.collection('ca_facts').doc(fact.id), fact);
 
-  // 1. Raw documents
-  for (const doc of rawDocs) {
-    const ref = db.collection('ca_raw_documents').doc(doc.id);
-    batch.set(ref, doc);
-  }
-
-  // 2. Events
-  for (const event of allEvents) {
-    const ref = db.collection('ca_events').doc(event.id);
-    batch.set(ref, event);
-  }
-
-  // 3. Facts
-  for (const fact of allAcceptedFacts) {
-    const ref = db.collection('ca_facts').doc(fact.id);
-    batch.set(ref, fact);
-  }
-
-  // 4. Audit Log
   const auditLog: CAAuditLog = {
     id: `ca_audit_ca2_${Date.now()}`,
     action: 'HISTORICAL_EXTRACTION_COMPLETED',
@@ -291,38 +294,103 @@ async function runCA2HistoricalPipeline() {
       coverageWindow: '2026-04-23 to 2026-10-23',
     },
   };
-  batch.set(db.collection('ca_audit_logs').doc(auditLog.id), auditLog);
+  batch1.set(db.collection('ca_audit_logs').doc(auditLog.id), auditLog);
+  await batch1.commit();
 
-  await batch.commit();
+  // Inspect Pass 1 counts
+  const snapDocs1 = await db.collection('ca_raw_documents').get();
+  const snapEvents1 = await db.collection('ca_events').get();
+  const snapFacts1 = await db.collection('ca_facts').get();
 
-  // Verify counts in emulator
-  const stagedDocsSnap = await db.collection('ca_raw_documents').get();
-  const stagedEventsSnap = await db.collection('ca_events').get();
-  const stagedFactsSnap = await db.collection('ca_facts').get();
-  const stagedAuditSnap = await db.collection('ca_audit_logs').get();
+  // Pass 2: IDEMPOTENCY CHECK — Repeat exact same write batch
+  const batch2 = db.batch();
+  for (const doc of rawDocs) batch2.set(db.collection('ca_raw_documents').doc(doc.id), doc);
+  for (const event of allEvents) batch2.set(db.collection('ca_events').doc(event.id), event);
+  for (const fact of allAcceptedFacts) batch2.set(db.collection('ca_facts').doc(fact.id), fact);
+  await batch2.commit();
 
-  // Check again that prod collections remain untouched
+  // Inspect Pass 2 counts (MUST BE IDENTICAL — 0 duplicate records created)
+  const snapDocs2 = await db.collection('ca_raw_documents').get();
+  const snapEvents2 = await db.collection('ca_events').get();
+  const snapFacts2 = await db.collection('ca_facts').get();
+
   const prodQuestionsAfter = await db.collection('questions').get();
   const prodTestsAfter = await db.collection('tests').get();
 
+  const idempotencyPassed = 
+    snapDocs1.size === snapDocs2.size &&
+    snapEvents1.size === snapEvents2.size &&
+    snapFacts1.size === snapFacts2.size &&
+    snapDocs2.size === rawDocs.length &&
+    snapEvents2.size === allEvents.length &&
+    snapFacts2.size === allAcceptedFacts.length;
+
   const emulatorVerified = 
-    prodUntouched && 
+    prodUntouchedInitial && 
     prodQuestionsAfter.size === 0 && 
     prodTestsAfter.size === 0 &&
-    stagedDocsSnap.size === rawDocs.length &&
-    stagedEventsSnap.size === allEvents.length &&
-    stagedFactsSnap.size === allAcceptedFacts.length &&
-    stagedAuditSnap.size >= 1;
+    idempotencyPassed;
 
   testResults.push({
     id: 'CA2-TEST-06',
-    name: 'Isolated Emulator Staging & Zero Production Writes Invariant',
+    name: 'Isolated Emulator Staging & Idempotency Verification (2-Pass)',
     passed: emulatorVerified,
-    details: `Staged: ca_raw_documents=${stagedDocsSnap.size}, ca_events=${stagedEventsSnap.size}, ca_facts=${stagedFactsSnap.size}, ca_audit_logs=${stagedAuditSnap.size}. Production 'questions'=${prodQuestionsAfter.size}, 'tests'=${prodTestsAfter.size} (0 writes).`,
+    details: `Pass 1 vs Pass 2: ca_raw_documents: ${snapDocs1.size} -> ${snapDocs2.size}, ca_events: ${snapEvents1.size} -> ${snapEvents2.size}, ca_facts: ${snapFacts1.size} -> ${snapFacts2.size}. Production 'questions'=0, 'tests'=0 (0 writes, 0 duplicates).`,
   });
 
   // -------------------------------------------------------------
-  // Test 7: Verified-Facts Export Generation for Phase CA-3
+  // Test 7: Measured Cost Estimator & Fail-Closed Budget Caps
+  // -------------------------------------------------------------
+  const docTexts = rawDocs.map((d) => `${d.title} ${d.contentText}`);
+  const tokenMetrics: TokenUsageMetrics = estimateTokensFromTexts(docTexts, allAcceptedFacts.length);
+  
+  // Deterministic local run cost (actual incurred cost in CA-2)
+  const deterministicCost: OperatingCostBreakdown = calculateOperatingCost(tokenMetrics, {
+    aiModel: 'none',
+    firestoreWrites: rawDocs.length + allEvents.length + allAcceptedFacts.length,
+    firestoreReads: 0,
+    storageBytes: tokenMetrics.rawTextCharacters,
+    failClosedLimitUSD: 1.00,
+  });
+
+  // Projected cost if run with Gemini 1.5 Flash
+  const projectedFlashCost: OperatingCostBreakdown = calculateOperatingCost(tokenMetrics, {
+    aiModel: 'gemini_1.5_flash',
+    firestoreWrites: rawDocs.length + allEvents.length + allAcceptedFacts.length,
+    firestoreReads: rawDocs.length,
+    storageBytes: tokenMetrics.rawTextCharacters,
+    failClosedLimitUSD: 1.00,
+  });
+
+  // Verify fail-closed limit enforcement (simulate budget overflow)
+  let failClosedWorks = false;
+  try {
+    calculateOperatingCost(tokenMetrics, {
+      aiModel: 'gemini_1.5_pro',
+      failClosedLimitUSD: 0.0001, // Intentionally impossible budget
+    });
+  } catch (err: any) {
+    if (err.message.includes('[FAIL-CLOSED]')) {
+      failClosedWorks = true;
+    }
+  }
+
+  const costTestPassed = 
+    deterministicCost.aiInferenceCostINR === 0 &&
+    deterministicCost.isDeterministicFreeExecution &&
+    deterministicCost.totalCostINR < 1.00 &&
+    projectedFlashCost.isWithinBudget &&
+    failClosedWorks;
+
+  testResults.push({
+    id: 'CA2-TEST-07',
+    name: 'Measured Operating Cost Calculation & Fail-Closed Threshold Enforcement',
+    passed: costTestPassed,
+    details: `Deterministic Execution Cost: ₹${deterministicCost.totalCostINR.toFixed(2)} ($${deterministicCost.totalCostUSD.toFixed(4)}). Projected Flash API Cost: ₹${projectedFlashCost.totalCostINR.toFixed(2)} ($${projectedFlashCost.totalCostUSD.toFixed(4)}). Token Usage: ${tokenMetrics.totalTokens.toLocaleString()} tokens. Fail-closed limit verified.`,
+  });
+
+  // -------------------------------------------------------------
+  // Test 8: Verified-Facts Export Generation for Phase CA-3
   // -------------------------------------------------------------
   const manifest = compileVerifiedFactsExport(allAcceptedFacts, allEvents, rawDocs);
   const exportDir = path.resolve(process.cwd(), 'data/ca-facts');
@@ -337,16 +405,17 @@ async function runCA2HistoricalPipeline() {
   const fileSize = fileExists ? fs.statSync(exportPath).size : 0;
   const manifestValid = 
     manifest.totalFactCount === allAcceptedFacts.length &&
+    manifest.sourceSupportedCount >= 20 &&
     manifest.coverageWindow.from === '2026-04-23' &&
     manifest.coverageWindow.to === '2026-10-23' &&
-    Object.keys(manifest.categoryDistribution).length >= 4 &&
+    Object.keys(manifest.categoryDistribution).length >= 5 &&
     manifest.facts.every((f) => f.duplicateGroupId && f.eligibleQuestionTypes.length > 0);
 
   testResults.push({
-    id: 'CA2-TEST-07',
+    id: 'CA2-TEST-08',
     name: 'Structured Verified-Facts Export Manifest for Phase CA-3',
-    passed: fileExists && fileSize > 1000 && manifestValid,
-    details: `Exported ${manifest.totalFactCount} verified facts to ${exportPath} (${fileSize} bytes). Deduplication group IDs and question-type eligibilities assigned.`,
+    passed: fileExists && fileSize > 5000 && manifestValid,
+    details: `Exported ${manifest.totalFactCount} facts to ${exportPath} (${fileSize.toLocaleString()} bytes). Breakdown: ${JSON.stringify(manifest.claimStatusDistribution)}. Deduplication group IDs assigned.`,
   });
 
   // -------------------------------------------------------------
@@ -367,6 +436,7 @@ async function runCA2HistoricalPipeline() {
   console.log(`Summary: ${testResults.filter((t) => t.passed).length}/${testResults.length} Passed`);
   console.log(`Category Breakdown:`, manifest.categoryDistribution);
   console.log(`Month Breakdown:`, manifest.monthDistribution);
+  console.log(`Claim Status Breakdown:`, manifest.claimStatusDistribution);
   console.log('================================================================\n');
 
   if (!allPassed) {

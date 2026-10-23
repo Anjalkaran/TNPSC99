@@ -88,6 +88,8 @@ export interface CAEvent {
   status: 'draft' | 'verified' | 'archived';
 }
 
+export type FactClaimStatus = 'source_supported' | 'conflicting' | 'review_required' | 'unsupported';
+
 export interface CAFact {
   id: string;
   eventId: string;
@@ -101,10 +103,15 @@ export interface CAFact {
     dates?: string[];
     numericalValues?: { label: string; value: number | string; unit?: string }[];
     schemes?: string[];
+    awards?: string[];
+    appointments?: string[];
   };
   sourceExcerpt: string;
   pageOrParagraphRef?: string;
-  verificationStatus: 'unverified' | 'corroborated' | 'contradicted';
+  verificationStatus: 'unverified' | 'corroborated' | 'contradicted' | 'source_supported' | 'conflicting' | 'review_required' | 'unsupported';
+  claimStatus?: FactClaimStatus;
+  conflictReason?: string;
+  reviewNotes?: string;
   verifiedBy?: string;
   verifiedAt?: string;
 }

@@ -1,4 +1,4 @@
-import { CAFact, CAEvent, CARawDocument, TNPSCCategory, TNPSCExamGroup } from './types';
+import { CAFact, CAEvent, CARawDocument, TNPSCCategory, TNPSCExamGroup, FactClaimStatus } from './types';
 
 export interface VerifiedFactExportItem {
   factId: string;
@@ -19,8 +19,14 @@ export interface VerifiedFactExportItem {
     locations?: string[];
     numericalValues?: { label: string; value: number | string; unit?: string }[];
     dates?: string[];
+    awards?: string[];
+    appointments?: string[];
+    persons?: string[];
   };
-  verificationStatus: 'corroborated' | 'verified';
+  verificationStatus: string;
+  claimStatus: FactClaimStatus;
+  conflictReason?: string;
+  reviewNotes?: string;
   eligibleQuestionTypes: ('direct' | 'statement_matching' | 'assertion_reason' | 'chronological')[];
   monthKey: string;
 }
@@ -30,9 +36,13 @@ export interface VerifiedFactsManifest {
   generatedAt: string;
   coverageWindow: { from: string; to: string };
   totalFactCount: number;
+  sourceSupportedCount: number;
+  conflictingCount: number;
+  reviewRequiredCount: number;
   facts: VerifiedFactExportItem[];
   categoryDistribution: Record<string, number>;
   monthDistribution: Record<string, number>;
+  claimStatusDistribution: Record<string, number>;
 }
 
 /**
@@ -75,6 +85,11 @@ export function compileVerifiedFactsExport(
 
   const categoryDist: Record<string, number> = {};
   const monthDist: Record<string, number> = {};
+  const claimStatusDist: Record<string, number> = {
+    source_supported: 0,
+    conflicting: 0,
+    review_required: 0,
+  };
 
   const exportItems: VerifiedFactExportItem[] = [];
 
@@ -94,6 +109,9 @@ export function compileVerifiedFactsExport(
     const duplicateGroupId = `group_${event?.id || fact.rawDocumentId}`;
 
     const eligibleTypes = determineEligibleQuestionTypes(category, fact.entities);
+    const claimStatus: FactClaimStatus = fact.claimStatus || 'source_supported';
+
+    claimStatusDist[claimStatus] = (claimStatusDist[claimStatus] || 0) + 1;
 
     exportItems.push({
       factId: fact.id,
@@ -105,10 +123,14 @@ export function compileVerifiedFactsExport(
       statement_ta: fact.statement_ta,
       eventDate,
       publicationDate: pubDate,
+      effectiveDate: event?.eventDate,
       syllabusCategory: category,
       examGroups,
       entities: fact.entities,
-      verificationStatus: 'corroborated',
+      verificationStatus: fact.verificationStatus,
+      claimStatus,
+      conflictReason: fact.conflictReason,
+      reviewNotes: fact.reviewNotes,
       eligibleQuestionTypes: eligibleTypes,
       monthKey,
     });
@@ -118,12 +140,16 @@ export function compileVerifiedFactsExport(
   }
 
   return {
-    version: '1.0.0',
+    version: '2.0.0',
     generatedAt: new Date().toISOString(),
     coverageWindow: { from: '2026-04-23', to: '2026-10-23' },
     totalFactCount: exportItems.length,
+    sourceSupportedCount: claimStatusDist.source_supported || 0,
+    conflictingCount: claimStatusDist.conflicting || 0,
+    reviewRequiredCount: claimStatusDist.review_required || 0,
     facts: exportItems,
     categoryDistribution: categoryDist,
     monthDistribution: monthDist,
+    claimStatusDistribution: claimStatusDist,
   };
 }
