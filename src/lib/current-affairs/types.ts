@@ -1,6 +1,6 @@
 /**
  * TNPSC99 Current Affairs Intelligence Engine Types
- * Phase CA-1 Specification
+ * Phase CA-1 & Six-Month Backfill Specification
  */
 
 export type SourceReliabilityTier = 1 | 2 | 3 | 4;
@@ -98,12 +98,21 @@ export interface CAFact {
   verifiedAt?: string;
 }
 
+export interface CACorrectionRecord {
+  correctedAt: string;
+  previousCorrectOptionIndex: number;
+  newCorrectOptionIndex: number;
+  reason: string;
+  adminUid: string;
+}
+
 export interface CADraftQuestion {
   id: string;
   factIds: string[];
   eventId: string;
   rawDocumentId: string;
   sourceUrl: string;
+  monthKey: string; // e.g., '2026-05', '2026-06'
   
   // English MCQ
   question_en: string;
@@ -128,21 +137,30 @@ export interface CADraftQuestion {
     tamilEnglishSemanticallyIdentical: boolean;
     hasAuthoritativeCitation: boolean;
   };
-  overallStatus: 'draft' | 'auto_verified' | 'rejected' | 'editor_approved';
+  overallStatus: 'draft' | 'auto_verified' | 'rejected' | 'editor_approved' | 'retracted';
   rejectionReason?: string;
+  correctionHistory?: CACorrectionRecord[];
   createdAt: string;
 }
 
+export type ManifestType = 
+  | 'daily' 
+  | 'weekly' 
+  | 'monthly' 
+  | 'grand_mock_6m' 
+  | 'topic_special';
+
 export interface CAManifest {
   id: string;
-  type: 'daily' | 'weekly' | 'monthly' | 'scheme_special';
+  type: ManifestType;
   title_en: string;
   title_ta: string;
   description_en: string;
   description_ta: string;
-  periodStart: string;
-  periodEnd: string;
-  questionIds: string[];
+  periodStart: string; // YYYY-MM-DD
+  periodEnd: string; // YYYY-MM-DD
+  monthKey?: string; // e.g., '2026-05' for monthly
+  questionIds: string[]; // Canonical IDs
   questionCount: number;
   durationMinutes: number;
   syllabusCategory: 'Current Affairs';
@@ -152,6 +170,22 @@ export interface CAManifest {
   publishedAt?: string;
   publishedBy?: string;
   status: 'draft' | 'ready_for_review' | 'approved' | 'published';
+}
+
+export interface HistoricalPartition {
+  monthKey: string; // '2026-05'
+  name: string; // 'May 2026'
+  name_ta: string; // 'மே 2026'
+  periodStart: string; // '2026-04-23'
+  periodEnd: string; // '2026-05-22'
+  targetMCQCount: number; // 75 - 100
+}
+
+export interface HistoricalBackfillWindow {
+  startDate: string; // '2026-04-23'
+  endDate: string; // '2026-10-23'
+  cutoffDate?: string; // Optional exam cutoff date
+  partitions: HistoricalPartition[];
 }
 
 export interface CAAuditLog {
