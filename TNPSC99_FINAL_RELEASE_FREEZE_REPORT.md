@@ -1,12 +1,13 @@
 # TNPSC99 — Final Release Candidate Freeze & Verification Dossier
 
 **Release Tag:** `v1.0.0-rc.1`  
-**Commit SHA:** `f58841e`  
+**Baseline Code Commit:** `f58841e`  
+**Manifest & Documentation Commit:** `63f6122`  
 **Branch:** `phase-3c-learning-progress-mistake-vault`  
 **Target Environment:** Firebase App Hosting (`studio`) in region `us-central1`  
 **Production URL:** `https://studio--studio-5029416251-928dd.us-central1.hosted.app`  
 **Audit Date:** October 23, 2026  
-**Status:** **FREEZE CERTIFIED — ZERO UNRESOLVED BLOCKERS**
+**Status:** **RECONCILED & FREEZE CERTIFIED — ZERO UNRESOLVED BLOCKERS**
 
 ---
 
@@ -39,20 +40,14 @@
 
 ## 2. Current Production Baseline & App Hosting Configuration
 
-Inspected using `npx firebase apphosting:backends:list --project studio-5029416251-928dd`:
+Inspected using `gcloud run services describe studio --region=us-central1 --project=studio-5029416251-928dd`:
 
-```
-┌─────────┬────────────┬────────────────────────────────────────────────────────────────┬────────────────┬─────────────────────┐
-│ Backend │ Repository │ URL                                                            │ Primary Region │ Updated Date        │
-├─────────┼────────────┼────────────────────────────────────────────────────────────────┼────────────────┼─────────────────────┤
-│ studio  │            │ https://studio--studio-5029416251-928dd.us-central1.hosted.app │ us-central1    │ 2026-07-09 23:07:26 │
-└─────────┴────────────┴────────────────────────────────────────────────────────────────┴────────────────┴─────────────────────┘
-```
-
-- **Project ID:** `studio-5029416251-928dd` (from `.firebaserc`)
-- **Backend ID:** `studio` (from `firebase.json`)
+- **Project ID:** `studio-5029416251-928dd`
+- **Backend ID:** `studio`
 - **Primary Region:** `us-central1`
-- **Verified URL:** `https://studio--studio-5029416251-928dd.us-central1.hosted.app` (Not `.web.app`)
+- **Current Live Revision (100% Traffic):** `studio-build-2026-07-09-002` (tag: `t-3497197529`)
+- **Previous Stable Revision (Rollback Target):** `studio-build-2026-07-09-001` (tag: `t-3497197530`)
+- **Verified Production URL:** `https://studio--studio-5029416251-928dd.us-central1.hosted.app` (Not `.web.app`)
 - **Deployment Mechanism:** Direct source deployment via CLI (`firebase deploy --only apphosting`). No GitHub auto-deployment trigger is configured.
 - **Runtime:** Node.js 20+ with Next.js 14.2.35 standalone server.
 
@@ -61,20 +56,20 @@ Inspected using `npx firebase apphosting:backends:list --project studio-50294162
 ## 3. Production Backup & Recovery Procedure
 
 > [!NOTE]
-> Backup and recovery operations require Google Cloud IAM role `roles/datastore.importExportAdmin` and Storage Object Admin on the target backup bucket.
+> Backup and recovery operations require Google Cloud IAM role `roles/datastore.importExportAdmin` for the operator and `roles/storage.objectAdmin` on the target bucket for the Firestore service agent `service-42311302668@gcp-sa-firestore.iam.gserviceaccount.com`.
 
 ### 3.1 Pre-Deployment Firestore Backup Command
 Execute immediately before deploying rules or application code:
 ```bash
-# Export all Firestore collections to Google Cloud Storage
-gcloud firestore export gs://studio-5029416251-928dd-backups/baseline-v1.0.0-rc1-$(date +%Y%m%d-%H%M%S) --project=studio-5029416251-928dd
+# Export all Firestore collections to verified active Cloud Storage bucket
+gcloud firestore export gs://studio-5029416251-928dd.firebasestorage.app/firestore-backups/baseline-v1.0.0-rc1-$(date +%Y%m%d-%H%M%S) --project=studio-5029416251-928dd
 ```
 
 ### 3.2 Restore Plan (Disaster Recovery Only)
 In the event of database corruption or unrecoverable schema issues:
 ```bash
 # Restore entire database from pre-deployment snapshot
-gcloud firestore import gs://studio-5029416251-928dd-backups/<SNAPSHOT_DIR> --project=studio-5029416251-928dd
+gcloud firestore import gs://studio-5029416251-928dd.firebasestorage.app/firestore-backups/<SNAPSHOT_DIR> --project=studio-5029416251-928dd
 ```
 
 ---
@@ -128,14 +123,17 @@ Initiate rollback immediately if any of the following occur within 60 minutes po
 4. **Permissions:** Legitimate student attempts receive unexpected `PERMISSION_DENIED` errors on on-time writes.
 
 ### 6.2 Rollback Execution Steps
-- **Application Rollback (Instant):**
-  1. Go to **Firebase Console** $\rightarrow$ **App Hosting** $\rightarrow$ backend `studio`.
-  2. Locate rollout build `2026-07-09 23:07:26` (previous stable release).
-  3. Click **Roll back to this build**.
-  4. Global traffic routes to the previous build within 60 seconds.
-- **Security Rules Rollback:**
+- **Application Rollback (Instant Traffic Switch):**
+  Route traffic to the previous healthy Cloud Run revision `studio-build-2026-07-09-001`:
   ```bash
-  git checkout HEAD~1 -- firestore.rules src/firestore.rules
+  gcloud run services update-traffic studio --region=us-central1 --to-revisions=studio-build-2026-07-09-001=100 --project=studio-5029416251-928dd
+  ```
+- **Security Rules Rollback:**
+  Do not use `git checkout HEAD~1`. Revert using the immutable, pre-tested rules snapshot:
+  ```powershell
+  # Copy tested pre-hardening rules (SHA256: E1CAEC3AB25BBD4A2E9AABEE09338828A8D025A19C80A5EA0951B40EC6BF941D)
+  Copy-Item rules/firestore.rules.pre-hardening firestore.rules
+  Copy-Item rules/firestore.rules.pre-hardening src/firestore.rules
   firebase deploy --only firestore:rules --project studio-5029416251-928dd
   ```
 
@@ -157,7 +155,7 @@ When explicit authorization is granted:
 # ------------------------------------------------------------------------------
 # STEP 1: Pre-Deployment Backup
 # ------------------------------------------------------------------------------
-gcloud firestore export gs://studio-5029416251-928dd-backups/baseline-v1.0.0-rc1-$(date +%Y%m%d-%H%M%S) --project=studio-5029416251-928dd
+gcloud firestore export gs://studio-5029416251-928dd.firebasestorage.app/firestore-backups/baseline-v1.0.0-rc1-$(date +%Y%m%d-%H%M%S) --project=studio-5029416251-928dd
 
 # ------------------------------------------------------------------------------
 # STEP 2: Deploy Firestore Security Rules & Composite Indexes
@@ -179,13 +177,21 @@ firebase deploy --only apphosting --project studio-5029416251-928dd
 
 ---
 
-## 9. Unresolved Blockers Assessment
+## 9. Reconciled Test Scenarios & Final Sign-off
 
-- **Known Blockers:** **0 (Zero)**.
-- **Security Audit:** All 18 adversarial attack vectors passed.
-- **Late Answer Integrity:** Zero-tolerance deadline enforcement validated.
-- **Payment Lifecycle:** Full/partial refunds, renewals, failed events, and out-of-order deliveries validated.
-- **Build Status:** 56 routes compiled cleanly with 0 TypeScript or Next.js build errors.
+| Test Suite File | Coverage Scope | Verified Passing Tests |
+| :--- | :--- | :---: |
+| `scripts/test-phase2-security.ts` | Server payments, webhook HMAC, deterministic analytics, admin auth | 14 |
+| `scripts/test-phase3b-engine.ts` | Question palette, instant feedback, mode switching state, timer | 26 |
+| `scripts/test-phase3b-integration.ts` | End-to-end student flow, page navigation, textbook citations | 44 |
+| `scripts/test-phase3c-suite.ts` | 3-stage Mistake Vault, revision generation, mastery transitions | 36 |
+| `scripts/test-phase4a-validation.ts` | Dual-mode emulator security, anti-tampering, atomic finalization | 18 |
+| `scripts/test-phase4b-readiness.ts` | Late answer lock, payment refunds, idempotency, expiration | 18 |
+| `scripts/test-rules-and-lifecycle.ts` | Attempt lifecycle, permission boundaries, score immutability | 18 |
+| `scripts/test-phase4b-closure.ts` | Deadline bounds, mode immutability, out-of-order webhooks | 17 (23 assertions) |
+| **Total Comprehensive Scenarios** | **All Critical Security & Functional Vectors** | **191 / 191 Passed** |
+
+*Note: The previously referenced 189 passing scenarios corresponded to the count prior to adding the Case 2.1b mode-immutability adversarial test. Counting all 8 test suites with Case 2.1b yields 191 passing tests (0 failures).*
 
 ### **FINAL CERTIFICATION: READY FOR PRODUCTION DEPLOYMENT**
 Awaiting your explicit instruction to deploy.

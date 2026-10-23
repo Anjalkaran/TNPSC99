@@ -1,10 +1,15 @@
 {
-  "manifestVersion": "1.0.0",
+  "manifestVersion": "1.1.0",
   "application": "TNPSC Ace (TNPSC99 MCQ Academy)",
   "releaseTag": "v1.0.0-rc.1",
-  "commitSha": "f58841e",
-  "branch": "phase-3c-learning-progress-mistake-vault",
-  "timestamp": "2026-10-23T02:45:00+05:30",
+  "git": {
+    "branch": "phase-3c-learning-progress-mistake-vault",
+    "codeBaselineCommit": "f58841e",
+    "docsFreezeCommit": "63f6122",
+    "tagType": "annotated",
+    "status": "clean"
+  },
+  "timestamp": "2026-10-23T08:35:00+05:30",
   "targetEnvironment": {
     "provider": "Firebase App Hosting",
     "projectId": "studio-5029416251-928dd",
@@ -12,6 +17,10 @@
     "primaryRegion": "us-central1",
     "productionUrl": "https://studio--studio-5029416251-928dd.us-central1.hosted.app",
     "deploymentMode": "cli-source",
+    "liveRevisionId": "studio-build-2026-07-09-002",
+    "liveRevisionTag": "t-3497197529",
+    "previousStableRevisionId": "studio-build-2026-07-09-001",
+    "previousStableRevisionTag": "t-3497197530",
     "deployCommand": "firebase deploy --only apphosting --project studio-5029416251-928dd"
   },
   "database": {
@@ -19,7 +28,20 @@
     "databaseId": "(default)",
     "rulesFile": "firestore.rules",
     "indexesFile": "firestore.indexes.json",
+    "rulesSha256": "EF1903032BE627384587679D64064B11CEBB7B0EF15C1E763AC4F660E79451A3",
+    "versionedReleaseRules": "rules/firestore.rules.v1.0.0-rc1",
+    "versionedRollbackRules": "rules/firestore.rules.pre-hardening",
+    "rollbackRulesSha256": "E1CAEC3AB25BBD4A2E9AABEE09338828A8D025A19C80A5EA0951B40EC6BF941D",
     "rulesDeployCommand": "firebase deploy --only firestore:rules,firestore:indexes --project studio-5029416251-928dd"
+  },
+  "backupAndDisasterRecovery": {
+    "verifiedActiveBucket": "gs://studio-5029416251-928dd.firebasestorage.app",
+    "backupPath": "gs://studio-5029416251-928dd.firebasestorage.app/firestore-backups",
+    "requiredOperatorRole": "roles/datastore.importExportAdmin",
+    "requiredServiceAgentRole": "roles/storage.objectAdmin",
+    "serviceAgent": "service-42311302668@gcp-sa-firestore.iam.gserviceaccount.com",
+    "exportCommand": "gcloud firestore export gs://studio-5029416251-928dd.firebasestorage.app/firestore-backups/baseline-v1.0.0-rc1-$(date +%Y%m%d-%H%M%S) --project=studio-5029416251-928dd",
+    "importCommand": "gcloud firestore import gs://studio-5029416251-928dd.firebasestorage.app/firestore-backups/<SNAPSHOT_DIR> --project=studio-5029416251-928dd"
   },
   "pricing": {
     "plan": "MCQ Academy Monthly Subscription",
@@ -35,23 +57,55 @@
     "mistakeVault": "admin-authoritative-3-stage",
     "zeroToleranceExamDeadline": true,
     "modeImmutabilityEnforced": true,
+    "durationValidationEnforced": true,
     "paidAiInference": 0
   },
   "buildArtifacts": {
     "framework": "Next.js 14.2.35",
     "totalRoutes": 56,
     "staticPages": 44,
-    "dynamicEndpoints": 12
+    "dynamicEndpoints": 12,
+    "buildStatus": "passed (exit 0)"
   },
-  "verificationStatus": {
-    "phase2Security": "14/14 passed",
-    "phase3bEngine": "26/26 passed",
-    "phase3bIntegration": "44/44 passed",
-    "phase3cSuite": "36/36 passed",
-    "phase4aValidation": "18/18 passed",
-    "phase4bReadiness": "18/18 passed",
-    "phase4bClosure": "17/17 passed",
-    "nextjsBuild": "passed (exit 0)",
-    "overallStatus": "RELEASE_CANDIDATE_READY"
-  }
+  "reconciledTestMatrix": {
+    "totalTestsPassing": 191,
+    "totalFailures": 0,
+    "suites": {
+      "phase2Security": {
+        "file": "scripts/test-phase2-security.ts",
+        "tests": 14
+      },
+      "phase3bEngine": {
+        "file": "scripts/test-phase3b-engine.ts",
+        "tests": 26
+      },
+      "phase3bIntegration": {
+        "file": "scripts/test-phase3b-integration.ts",
+        "tests": 44
+      },
+      "phase3cSuite": {
+        "file": "scripts/test-phase3c-suite.ts",
+        "tests": 36
+      },
+      "phase4aValidation": {
+        "file": "scripts/test-phase4a-validation.ts",
+        "tests": 18
+      },
+      "phase4bReadiness": {
+        "file": "scripts/test-phase4b-readiness.ts",
+        "tests": 18
+      },
+      "rulesAndLifecycle": {
+        "file": "scripts/test-rules-and-lifecycle.ts",
+        "tests": 18
+      },
+      "phase4bClosure": {
+        "file": "scripts/test-phase4b-closure.ts",
+        "tests": 17,
+        "assertions": 23
+      }
+    },
+    "reconciliationNote": "Previously reported 189 passing scenarios accounted for the baseline prior to Case 2.1b (mode immutability check in closure suite). Adding Case 2.1b and counting all 8 suites brings verified passed tests to 191."
+  },
+  "releaseStatus": "RECONCILED_RELEASE_CANDIDATE_READY"
 }
