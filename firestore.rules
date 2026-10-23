@@ -21,6 +21,14 @@ service cloud.firestore {
       );
     }
 
+    function isSubscribed() {
+      return isSignedIn() && (
+        isAdmin() ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('subscriptionStatus', 'free') in ['premium', 'active']))
+      );
+    }
+
     // Sensitive profile keys that regular users are forbidden from creating or updating
     function hasNoPrivilegeEscalationOnCreate() {
       let data = request.resource.data;
@@ -204,14 +212,30 @@ service cloud.firestore {
     }
 
     // --- Current Affairs Intelligence Engine Collections ---
-    // Published questions are readable by authenticated students; drafts/review items are Admin only
+    // Strict multi-tier read authorization:
+    // 1. Admins have unrestricted access to all stages, editorial reviews, and question drafts
+    // 2. Drafts, Review-Required items, and Rejected questions are strictly blocked from student access
+    // 3. Approved public content (isFree == true or accessLevel == 'free') can be read publicly
+    // 4. Premium published content requires an active subscription
+    // 5. Writes (including answer keys) are strictly Admin-only (zero student privilege escalation)
     match /currentAffairsQuestions/{questionId} {
-      allow read: if (isSignedIn() && resource.data.get('status', '') == 'PUBLISHED') || isAdmin();
+      allow read: if isAdmin() || (
+        resource.data.get('status', '') == 'PUBLISHED' && (
+          (resource.data.get('isFree', false) == true || resource.data.get('accessLevel', 'free') == 'free') ||
+          isSubscribed()
+        )
+      );
       allow write: if isAdmin();
     }
 
     match /ca_manifests/{manifestId} {
-      allow read: if (isSignedIn() && resource.data.get('status', '') == 'published') || isAdmin();
+      // Published manifests are public for approved free daily tests; premium manifests require subscription; drafts are admin-only
+      allow read: if isAdmin() || (
+        resource.data.get('status', '') == 'published' && (
+          resource.data.get('isFree', true) == true ||
+          isSubscribed()
+        )
+      );
       allow write: if isAdmin();
     }
 
