@@ -1,6 +1,10 @@
 import { CAManifest, CADraftQuestion, TNPSCExamGroup, TNPSCCategory, HistoricalPartition } from './types';
 import { SIX_MONTH_BACKFILL_WINDOW } from './historical-backfill-service';
 
+function isEligibleForTest(status: string): boolean {
+  return ['APPROVED', 'editor_approved', 'auto_verified', 'PUBLISHED'].includes(status);
+}
+
 /**
  * Compiles a Daily Current Affairs Test Manifest (10 - 15 MCQs).
  */
@@ -11,8 +15,7 @@ export function compileDailyManifest(
 ): CAManifest {
   // Filter questions for the specific date
   const filtered = availableQuestions.filter(
-    (q) => (q.overallStatus === 'editor_approved' || q.overallStatus === 'auto_verified') &&
-           q.createdAt.startsWith(date)
+    (q) => isEligibleForTest(q.overallStatus) && q.createdAt.startsWith(date)
   );
 
   const selected = filtered.slice(0, 15);
@@ -49,7 +52,7 @@ export function compileWeeklyManifest(
   examGroup: TNPSCExamGroup = 'Group II'
 ): CAManifest {
   const filtered = availableQuestions.filter(
-    (q) => (q.overallStatus === 'editor_approved' || q.overallStatus === 'auto_verified') &&
+    (q) => isEligibleForTest(q.overallStatus) &&
            q.createdAt >= startDate && q.createdAt <= `${endDate}T23:59:59Z`
   );
 
@@ -84,7 +87,7 @@ export function compileMonthlyManifest(
   examGroup: TNPSCExamGroup = 'Group II'
 ): CAManifest {
   const filtered = availableQuestions.filter(
-    (q) => (q.overallStatus === 'editor_approved' || q.overallStatus === 'auto_verified') &&
+    (q) => isEligibleForTest(q.overallStatus) &&
            q.monthKey === partition.monthKey
   );
 
@@ -120,7 +123,7 @@ export function compileSixMonthGrandMockManifest(
   examGroup: TNPSCExamGroup = 'Group I'
 ): CAManifest {
   const approved = availableQuestions.filter(
-    (q) => q.overallStatus === 'editor_approved' || q.overallStatus === 'auto_verified'
+    (q) => isEligibleForTest(q.overallStatus)
   );
 
   // Group by partition and take ~16-17 questions per month to reach 100

@@ -1,6 +1,6 @@
 /**
  * TNPSC99 Current Affairs Intelligence Engine Types
- * Phase CA-1 & Six-Month Backfill Specification
+ * Phase CA-1, Six-Month Backfill, and Fully Automated Publishing Specification
  */
 
 export type SourceReliabilityTier = 1 | 2 | 3 | 4;
@@ -19,6 +19,17 @@ export type TNPSCCategory =
   | 'sports_awards_appointments';
 
 export type TNPSCExamGroup = 'Group I' | 'Group II' | 'Group IV';
+
+export type QuestionRiskLevel = 'LOW_RISK' | 'MEDIUM_RISK' | 'HIGH_RISK';
+
+export type QuestionEditorialStatus = 
+  | 'DRAFT' 
+  | 'REVIEW_REQUIRED' 
+  | 'AUTO_VERIFIED' 
+  | 'APPROVED' 
+  | 'PUBLISHED' 
+  | 'REJECTED' 
+  | 'RETRACTED';
 
 export interface CASource {
   id: string;
@@ -43,7 +54,7 @@ export interface CARawDocument {
   title: string;
   title_ta?: string;
   publicationDate: string; // YYYY-MM-DD
-  eventDate?: string; // YYYY-MM-DD (extracted if different from pub date)
+  eventDate?: string; // YYYY-MM-DD
   ingestedAt: string; // ISO 8601 UTC
   contentRaw: string;
   contentText: string; // Sanitized, text-only
@@ -106,8 +117,26 @@ export interface CACorrectionRecord {
   adminUid: string;
 }
 
+export interface CAVerificationReport {
+  timestamp: string;
+  factualConsistency: boolean;
+  unambiguousCorrectAnswer: boolean;
+  distractorQualityPassed: boolean;
+  tamilEnglishSemanticallyIdentical: boolean;
+  hasAuthoritativeCitation: boolean;
+  blindSolverResult?: {
+    independentlySolved: boolean;
+    predictedOptionIndex: number;
+    solverConfidence: number;
+  };
+  riskLevel: QuestionRiskLevel;
+  overallScore: number; // 0 to 100
+  canAutoPublish: boolean;
+  rejectionReasons: string[];
+}
+
 export interface CADraftQuestion {
-  id: string;
+  id: string; // e.g. ca26_xxxxxxxxxxxx
   factIds: string[];
   eventId: string;
   rawDocumentId: string;
@@ -116,13 +145,13 @@ export interface CADraftQuestion {
   
   // English MCQ
   question_en: string;
-  options_en: string[];
+  options_en: string[]; // exactly 4
   correctOptionIndex: number;
   explanation_en: string;
 
   // Tamil MCQ
   question_ta: string;
-  options_ta: string[];
+  options_ta: string[]; // exactly 4
   explanation_ta: string;
 
   category: TNPSCCategory;
@@ -130,17 +159,17 @@ export interface CADraftQuestion {
   examType: TNPSCExamGroup;
   questionType: 'direct' | 'statement_matching' | 'assertion_reason' | 'chronological';
 
-  verificationChecks: {
-    factualConsistency: boolean;
-    unambiguousCorrectAnswer: boolean;
-    distractorQualityPassed: boolean;
-    tamilEnglishSemanticallyIdentical: boolean;
-    hasAuthoritativeCitation: boolean;
-  };
-  overallStatus: 'draft' | 'auto_verified' | 'rejected' | 'editor_approved' | 'retracted';
+  verificationReport: CAVerificationReport;
+  overallStatus: QuestionEditorialStatus;
   rejectionReason?: string;
+  editorialApproval?: {
+    approvedBy: string; // Admin UID or 'AUTO_PIPELINE'
+    approvedAt: string;
+    notes?: string;
+  } | null;
   correctionHistory?: CACorrectionRecord[];
   createdAt: string;
+  publishedAt?: string;
 }
 
 export type ManifestType = 
@@ -173,18 +202,18 @@ export interface CAManifest {
 }
 
 export interface HistoricalPartition {
-  monthKey: string; // '2026-05'
-  name: string; // 'May 2026'
-  name_ta: string; // 'மே 2026'
-  periodStart: string; // '2026-04-23'
-  periodEnd: string; // '2026-05-22'
-  targetMCQCount: number; // 75 - 100
+  monthKey: string;
+  name: string;
+  name_ta: string;
+  periodStart: string;
+  periodEnd: string;
+  targetMCQCount: number;
 }
 
 export interface HistoricalBackfillWindow {
-  startDate: string; // '2026-04-23'
-  endDate: string; // '2026-10-23'
-  cutoffDate?: string; // Optional exam cutoff date
+  startDate: string;
+  endDate: string;
+  cutoffDate?: string;
   partitions: HistoricalPartition[];
 }
 
@@ -199,10 +228,67 @@ export interface CAAuditLog {
     | 'AUTO_REJECTED' 
     | 'EDITOR_APPROVED' 
     | 'TEST_PUBLISHED' 
-    | 'QUESTION_RETRACTED';
+    | 'QUESTION_RETRACTED'
+    | 'PIPELINE_RUN';
   entityId: string;
   entityCollection: string;
   actor: 'SYSTEM_BOT' | 'AI_ENGINE' | string;
   metadata: Record<string, any>;
   ipAddress?: string;
 }
+
+export interface CAPipelineRun {
+  id: string; // e.g., 'run_2026_10_23_daily'
+  runDate: string; // YYYY-MM-DD
+  startedAt: string;
+  completedAt?: string;
+  status: 'RUNNING' | 'COMPLETED' | 'FAILED' | 'CIRCUIT_BREAKER_TRIGGERED';
+  stageTimings: {
+    sourceIngestionMs?: number;
+    eventDeduplicationMs?: number;
+    factExtractionMs?: number;
+    mcqGenerationMs?: number;
+    independentVerificationMs?: number;
+    publicationGateMs?: number;
+    dailyTestAssemblyMs?: number;
+  };
+  metrics: {
+    sourcesMonitored: number;
+    sourcesFailed: number;
+    rawDocumentsIngested: number;
+    duplicatesSkipped: number;
+    eventsExtracted: number;
+    draftsGenerated: number;
+    verifiedCount: number;
+    rejectedCount: number;
+    routedToReviewCount: number;
+    autoPublishedCount: number;
+    inputTokensConsumed: number;
+    outputTokensConsumed: number;
+    estimatedCostUSD: number;
+    estimatedCostINR: number;
+  };
+  errors: string[];
+  autoPublishEnabled: boolean;
+  createdManifestId?: string;
+}
+
+export interface PipelineConfig {
+  autoPublishEnabled: boolean; // default: false
+  dailyAiSpendingCapUSD: number; // default: $1.00 (~₹84)
+  retryLimit: number; // default: 3
+  minVerificationScoreForAutoPublish: number; // default: 95
+  dailyTestTargetCount: number; // default: 15
+  weeklyTestTargetCount: number; // default: 50
+  timezone: string; // 'Asia/Kolkata'
+}
+
+export const DEFAULT_PIPELINE_CONFIG: PipelineConfig = {
+  autoPublishEnabled: false, // Strict default: REVIEW_REQUIRED
+  dailyAiSpendingCapUSD: 1.00, // $1.00 / day hard limit
+  retryLimit: 3,
+  minVerificationScoreForAutoPublish: 95,
+  dailyTestTargetCount: 15,
+  weeklyTestTargetCount: 50,
+  timezone: 'Asia/Kolkata',
+};
