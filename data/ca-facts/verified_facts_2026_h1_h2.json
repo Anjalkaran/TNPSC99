@@ -1,0 +1,700 @@
+{
+  "version": "1.0.0",
+  "generatedAt": "2026-10-23T15:28:40.815Z",
+  "coverageWindow": {
+    "from": "2026-04-23",
+    "to": "2026-10-23"
+  },
+  "totalFactCount": 14,
+  "facts": [
+    {
+      "factId": "ca_fact_b4b569d7_01",
+      "duplicateGroupId": "group_ca_ev_b4b569d7f239",
+      "sourceUrl": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2255963&lang=1&reg=3",
+      "publisher": "SRC_GOI_PIB_TAMIL",
+      "evidenceExcerpt": "India and New Zealand formally signed a bilateral Free Trade Agreement in New Delhi to eliminate customs tariffs on over 85 percent of tariff lines over the next five years.",
+      "statement_en": "India and New Zealand signed a bilateral Free Trade Agreement eliminating tariffs on over 85% of trade lines.",
+      "statement_ta": "இந்தியா மற்றும் நியூசிலாந்து இடையே 85 சதவீத வர்த்தகப் பிரிவுகளில் தீர்வைகளை நீக்கும் தடையற்ற வர்த்தக ஒப்பந்தம் கையெழுத்தானது.",
+      "eventDate": "2026-04-27",
+      "publicationDate": "2026-04-27",
+      "syllabusCategory": "international",
+      "examGroups": [
+        "Group II"
+      ],
+      "entities": {
+        "persons": [],
+        "organizations": [],
+        "locations": [
+          "New Delhi"
+        ],
+        "dates": [],
+        "numericalValues": [
+          {
+            "label": "85%",
+            "value": 85,
+            "unit": "%"
+          },
+          {
+            "label": "85 percent",
+            "value": 85,
+            "unit": "percent"
+          }
+        ],
+        "schemes": [],
+        "awards": [],
+        "appointments": []
+      },
+      "verificationStatus": "corroborated",
+      "eligibleQuestionTypes": [
+        "direct",
+        "statement_matching"
+      ],
+      "monthKey": "2026-04"
+    },
+    {
+      "factId": "ca_fact_a25f1758_01",
+      "duplicateGroupId": "group_ca_ev_a25f17583f9b",
+      "sourceUrl": "https://www.tn.gov.in/pressrelease/2026/05/pudhumai-penn-phase-expansion",
+      "publisher": "SRC_TN_DIPR_PRESS",
+      "evidenceExcerpt": "The Government of Tamil Nadu issued orders extending the Pudhumai Penn monthly financial assistance of Rs. 1,000 to girl students who studied in Tamil-medium government-aided schools.",
+      "statement_en": "Tamil Nadu Government extended Rs. 1,000 monthly financial aid under Pudhumai Penn scheme to Tamil-medium government-aided school students.",
+      "statement_ta": "புதுமைப் பெண் திட்டத்தின் கீழ் மாதம் ரூ. 1,000 நிதியுதவி அரசு உதவிபெறும் தமிழ்வழிப் பள்ளி மாணவிகளுக்கும் விரிவுபடுத்தப்பட்டுள்ளது.",
+      "eventDate": "2026-05-08",
+      "publicationDate": "2026-05-08",
+      "syllabusCategory": "welfare_schemes",
+      "examGroups": [
+        "Group IV",
+        "Group II",
+        "Group I"
+      ],
+      "entities": {
+        "persons": [],
+        "organizations": [],
+        "locations": [],
+        "dates": [],
+        "numericalValues": [
+          {
+            "label": "Rs. 1,000",
+            "value": 1000
+          },
+          {
+            "label": "Rs. 1,000",
+            "value": 1000
+          }
+        ],
+        "schemes": [],
+        "awards": [],
+        "appointments": []
+      },
+      "verificationStatus": "corroborated",
+      "eligibleQuestionTypes": [
+        "direct",
+        "statement_matching"
+      ],
+      "monthKey": "2026-05"
+    },
+    {
+      "factId": "ca_fact_b25f9b9e_01",
+      "duplicateGroupId": "group_ca_ev_b25f9b9ec31a",
+      "sourceUrl": "https://www.isro.gov.in/Updates/2026/05/sslv-d3-launch-success",
+      "publisher": "SRC_ISRO_MISSIONS",
+      "evidenceExcerpt": "ISRO successfully launched the third developmental flight of Small Satellite Launch Vehicle (SSLV-D3), placing Earth Observation Satellite EOS-08 into a 475 km circular orbit.",
+      "statement_en": "ISRO SSLV-D3 successfully injected Earth Observation Satellite EOS-08 into a 475 km circular orbit from Sriharikota.",
+      "statement_ta": "ஸ்ரீஹரிகோட்டாவிலிருந்து செலுத்தப்பட்ட இஸ்ரோவின் எஸ்.எஸ்.எல்.வி-டி3 விண்கலம் இ.ஓ.எஸ்-08 செயற்கைக்கோளை 475 கி.மீ வட்டப்பாதையில் வெற்றிகரமாக நிலைநிறுத்தியது.",
+      "eventDate": "2026-05-18",
+      "publicationDate": "2026-05-18",
+      "syllabusCategory": "science_tech",
+      "examGroups": [
+        "Group II",
+        "Group I"
+      ],
+      "entities": {
+        "persons": [],
+        "organizations": [
+          "ISRO"
+        ],
+        "locations": [],
+        "dates": [],
+        "numericalValues": [
+          {
+            "label": "3",
+            "value": 3
+          },
+          {
+            "label": "08",
+            "value": 8
+          },
+          {
+            "label": "475 km",
+            "value": 475,
+            "unit": "km"
+          },
+          {
+            "label": "3",
+            "value": 3
+          },
+          {
+            "label": "08",
+            "value": 8
+          },
+          {
+            "label": "475 km",
+            "value": 475,
+            "unit": "km"
+          }
+        ],
+        "schemes": [],
+        "awards": [],
+        "appointments": []
+      },
+      "verificationStatus": "corroborated",
+      "eligibleQuestionTypes": [
+        "direct",
+        "statement_matching",
+        "assertion_reason"
+      ],
+      "monthKey": "2026-05"
+    },
+    {
+      "factId": "ca_fact_321e1f8c_01",
+      "duplicateGroupId": "group_ca_ev_321e1f8c0dea",
+      "sourceUrl": "https://www.tn.gov.in/pressrelease/2026/06/magalir-urimai-1500cr",
+      "publisher": "SRC_TN_DIPR_PRESS",
+      "evidenceExcerpt": "Chief Minister announced that 1.5 lakh additional eligible women have been integrated into the Kalaignar Magalir Urimai Thittam, with monthly disbursement of Rs 1000 through direct benefit transfer.",
+      "statement_en": "Kalaignar Magalir Urimai Thittam enrolled 1.5 lakh additional eligible women for Rs 1,000 monthly direct cash transfers.",
+      "statement_ta": "கலைஞர் மகளிர் உரிமைத் திட்டத்தின் கீழ் கூடுதலாக 1.5 லட்சம் தகுதியான மகளிருக்கு மாதம் ரூ. 1,000 நேரடி பணப்பரிமாற்றம் தொடங்கப்பட்டுள்ளது.",
+      "eventDate": "2026-06-04",
+      "publicationDate": "2026-06-04",
+      "syllabusCategory": "welfare_schemes",
+      "examGroups": [
+        "Group IV",
+        "Group II",
+        "Group I"
+      ],
+      "entities": {
+        "persons": [],
+        "organizations": [],
+        "locations": [],
+        "dates": [],
+        "numericalValues": [
+          {
+            "label": "1.5 lakh",
+            "value": 1.5,
+            "unit": "lakh"
+          },
+          {
+            "label": "Rs 1,000",
+            "value": 1000
+          },
+          {
+            "label": "1.5 lakh",
+            "value": 1.5,
+            "unit": "lakh"
+          },
+          {
+            "label": "Rs 1000",
+            "value": 1000
+          }
+        ],
+        "schemes": [
+          "Kalaignar Magalir Urimai Thittam"
+        ],
+        "awards": [],
+        "appointments": []
+      },
+      "verificationStatus": "corroborated",
+      "eligibleQuestionTypes": [
+        "direct",
+        "statement_matching"
+      ],
+      "monthKey": "2026-06"
+    },
+    {
+      "factId": "ca_fact_d6da52b9_01",
+      "duplicateGroupId": "group_ca_ev_d6da52b901c5",
+      "sourceUrl": "https://rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=58120",
+      "publisher": "SRC_RBI_NOTICES",
+      "evidenceExcerpt": "The Monetary Policy Committee (MPC) of the Reserve Bank of India decided to keep the policy repo rate unchanged at 6.50 percent, maintaining focus on withdrawal of accommodation to align inflation to target.",
+      "statement_en": "Reserve Bank of India Monetary Policy Committee maintained the policy repo rate unchanged at 6.50 percent.",
+      "statement_ta": "ரிசர்வ் வங்கியின் நாணயக் கொள்கைக் குழு பாலிசி ரெப்போ விகிதத்தை 6.50 சதவீதமாக மாற்றமின்றி தொடர தீர்மானித்தது.",
+      "eventDate": "2026-06-07",
+      "publicationDate": "2026-06-07",
+      "syllabusCategory": "economy",
+      "examGroups": [
+        "Group II",
+        "Group I"
+      ],
+      "entities": {
+        "persons": [],
+        "organizations": [],
+        "locations": [],
+        "dates": [],
+        "numericalValues": [
+          {
+            "label": "6.50 percent",
+            "value": 6.5,
+            "unit": "percent"
+          },
+          {
+            "label": "6.50 percent",
+            "value": 6.5,
+            "unit": "percent"
+          }
+        ],
+        "schemes": [],
+        "awards": [],
+        "appointments": []
+      },
+      "verificationStatus": "corroborated",
+      "eligibleQuestionTypes": [
+        "direct",
+        "statement_matching",
+        "assertion_reason"
+      ],
+      "monthKey": "2026-06"
+    },
+    {
+      "factId": "ca_fact_eef493b6_01",
+      "duplicateGroupId": "group_ca_ev_eef493b6f0cc",
+      "sourceUrl": "https://www.tn.gov.in/pressrelease/2026/06/keeladi-phase-10-findings",
+      "publisher": "SRC_TN_DIPR_PRESS",
+      "evidenceExcerpt": "Tamil Nadu State Department of Archaeology unearths sophisticated underground terracotta water drainage channels in the ongoing 10th phase of excavations at Keeladi in Sivaganga district.",
+      "statement_en": "Underground terracotta water drainage systems from the Sangam era were unearthed in Phase 10 of Keeladi excavations in Sivaganga district.",
+      "statement_ta": "சிவகங்கை மாவட்டம் கீழடியில் நடைபெற்று வரும் 10-ஆம் கட்ட அகழாய்வில் சங்க கால சுடுமண் வடிகால் அமைப்புகள் கண்டறியப்பட்டுள்ளன.",
+      "eventDate": "2026-06-19",
+      "publicationDate": "2026-06-19",
+      "syllabusCategory": "tamil_nadu",
+      "examGroups": [
+        "Group IV",
+        "Group II"
+      ],
+      "entities": {
+        "persons": [],
+        "organizations": [],
+        "locations": [
+          "Keeladi"
+        ],
+        "dates": [],
+        "numericalValues": [
+          {
+            "label": "10",
+            "value": 10
+          },
+          {
+            "label": "10",
+            "value": 10
+          }
+        ],
+        "schemes": [],
+        "awards": [],
+        "appointments": []
+      },
+      "verificationStatus": "corroborated",
+      "eligibleQuestionTypes": [
+        "direct",
+        "statement_matching"
+      ],
+      "monthKey": "2026-06"
+    },
+    {
+      "factId": "ca_fact_9cb7d2c0_01",
+      "duplicateGroupId": "group_ca_ev_9cb7d2c06ecc",
+      "sourceUrl": "https://www.tn.gov.in/pressrelease/2026/07/breakfast-scheme-hill-schools",
+      "publisher": "SRC_TN_DIPR_PRESS",
+      "evidenceExcerpt": "The Chief Ministers Breakfast Scheme was formally expanded to cover all state-run schools located in tribal settlements and hill areas across 14 districts in Tamil Nadu.",
+      "statement_en": "Chief Ministers Breakfast Scheme was extended to cover government schools in tribal settlements and hill tracts across 14 districts in Tamil Nadu.",
+      "statement_ta": "தமிழ்நாட்டின் 14 மாவட்டங்களில் உள்ள பழங்குடியினர் குடியிருப்பு மற்றும் மலைப்பகுதி அரசுப் பள்ளிகளுக்கு முதலமைச்சரின் காலை உணவுத் திட்டம் விரிவுபடுத்தப்பட்டது.",
+      "eventDate": "2026-07-02",
+      "publicationDate": "2026-07-02",
+      "syllabusCategory": "tamil_nadu",
+      "examGroups": [
+        "Group IV",
+        "Group II"
+      ],
+      "entities": {
+        "persons": [],
+        "organizations": [],
+        "locations": [],
+        "dates": [],
+        "numericalValues": [
+          {
+            "label": "14",
+            "value": 14
+          },
+          {
+            "label": "14",
+            "value": 14
+          }
+        ],
+        "schemes": [
+          "Chief Ministers Breakfast Scheme",
+          "The Chief Ministers Breakfast Scheme"
+        ],
+        "awards": [],
+        "appointments": []
+      },
+      "verificationStatus": "corroborated",
+      "eligibleQuestionTypes": [
+        "direct",
+        "statement_matching"
+      ],
+      "monthKey": "2026-07"
+    },
+    {
+      "factId": "ca_fact_f0bddb83_01",
+      "duplicateGroupId": "group_ca_ev_f0bddb833894",
+      "sourceUrl": "https://pib.gov.in/PressReleasePage.aspx?PRID=2261042&lang=1",
+      "publisher": "SRC_GOI_PIB_TAMIL",
+      "evidenceExcerpt": "The Economic Survey presented in Parliament projects real Gross Domestic Product (GDP) growth for the fiscal year between 6.8 percent and 7.2 percent, supported by strong capital expenditure.",
+      "statement_en": "Economic Survey projected Indias real GDP growth in the range of 6.8% to 7.2% driven by robust capital expenditure.",
+      "statement_ta": "மத்திய பொருளாதார ஆய்வறிக்கை இந்தியாவின் உண்மையான ஜிடிபி வளர்ச்சியை 6.8% முதல் 7.2% வரை என கணித்துள்ளது.",
+      "eventDate": "2026-07-14",
+      "publicationDate": "2026-07-14",
+      "syllabusCategory": "economy",
+      "examGroups": [
+        "Group II",
+        "Group I"
+      ],
+      "entities": {
+        "persons": [],
+        "organizations": [],
+        "locations": [],
+        "dates": [],
+        "numericalValues": [
+          {
+            "label": "6.8%",
+            "value": 6.8,
+            "unit": "%"
+          },
+          {
+            "label": "7.2%",
+            "value": 7.2,
+            "unit": "%"
+          },
+          {
+            "label": "6.8 percent",
+            "value": 6.8,
+            "unit": "percent"
+          },
+          {
+            "label": "7.2 percent",
+            "value": 7.2,
+            "unit": "percent"
+          }
+        ],
+        "schemes": [],
+        "awards": [],
+        "appointments": []
+      },
+      "verificationStatus": "corroborated",
+      "eligibleQuestionTypes": [
+        "direct",
+        "statement_matching",
+        "assertion_reason"
+      ],
+      "monthKey": "2026-07"
+    },
+    {
+      "factId": "ca_fact_a7804f61_01",
+      "duplicateGroupId": "group_ca_ev_a7804f618d48",
+      "sourceUrl": "https://pib.gov.in/PressReleasePage.aspx?PRID=2268841",
+      "publisher": "SRC_GOI_PIB_ENGLISH",
+      "evidenceExcerpt": "Union Finance Minister announced the India Semiconductor Mission 2.0 with a capital outlay of Rs. 40,000 crore to manufacture indigenous microcontrollers and power management chips.",
+      "statement_en": "Union Budget allocated Rs 40,000 crore for India Semiconductor Mission 2.0 to support commercial chip fabrication and packaging.",
+      "statement_ta": "மத்திய பட்ஜெட்டில் இந்தியா செமிகண்டக்டர் திட்டம் 2.0-க்காக ரூ. 40,000 கோடி நிதி ஒதுக்கீடு செய்யப்பட்டுள்ளது.",
+      "eventDate": "2026-07-28",
+      "publicationDate": "2026-07-28",
+      "syllabusCategory": "science_tech",
+      "examGroups": [
+        "Group II",
+        "Group I"
+      ],
+      "entities": {
+        "persons": [],
+        "organizations": [],
+        "locations": [],
+        "dates": [],
+        "numericalValues": [
+          {
+            "label": "Rs 40,000 crore",
+            "value": 40000,
+            "unit": "crore"
+          },
+          {
+            "label": "2.0",
+            "value": 2
+          },
+          {
+            "label": "2.0",
+            "value": 2
+          },
+          {
+            "label": "Rs. 40,000 crore",
+            "value": 40000,
+            "unit": "crore"
+          }
+        ],
+        "schemes": [
+          "India Semiconductor Mission"
+        ],
+        "awards": [],
+        "appointments": []
+      },
+      "verificationStatus": "corroborated",
+      "eligibleQuestionTypes": [
+        "direct",
+        "statement_matching",
+        "assertion_reason"
+      ],
+      "monthKey": "2026-07"
+    },
+    {
+      "factId": "ca_fact_f232eb6a_01",
+      "duplicateGroupId": "group_ca_ev_f232eb6add95",
+      "sourceUrl": "https://www.tn.gov.in/pressrelease/2026/08/independence-day-state-awards",
+      "publisher": "SRC_TN_DIPR_PRESS",
+      "evidenceExcerpt": "The Government of Tamil Nadu conferred the prestigious Thagaisal Thamizhar Award 2026, comprising a citation and Rs 10 lakh cash prize, for distinguished contribution to Tamil history and public life.",
+      "statement_en": "Tamil Nadu Governments Thagaisal Thamizhar Award 2026 carries a citation and Rs 10 lakh cash award.",
+      "statement_ta": "தமிழ்நாடு அரசின் தகைசால் தமிழர் விருது 2026 ஒரு பாராட்டுச் சான்றிதழ் மற்றும் ரூ. 10 லட்சம் ரொக்கப் பரிசைக் கொண்டுள்ளது.",
+      "eventDate": "2026-08-14",
+      "publicationDate": "2026-08-14",
+      "syllabusCategory": "tamil_nadu",
+      "examGroups": [
+        "Group IV",
+        "Group II"
+      ],
+      "entities": {
+        "persons": [],
+        "organizations": [],
+        "locations": [],
+        "dates": [],
+        "numericalValues": [
+          {
+            "label": "2026",
+            "value": 2026
+          },
+          {
+            "label": "Rs 10 lakh",
+            "value": 10,
+            "unit": "lakh"
+          },
+          {
+            "label": "2026",
+            "value": 2026
+          },
+          {
+            "label": "Rs 10 lakh",
+            "value": 10,
+            "unit": "lakh"
+          }
+        ],
+        "schemes": [],
+        "awards": [],
+        "appointments": []
+      },
+      "verificationStatus": "corroborated",
+      "eligibleQuestionTypes": [
+        "direct",
+        "statement_matching"
+      ],
+      "monthKey": "2026-08"
+    },
+    {
+      "factId": "ca_fact_7854d11b_01",
+      "duplicateGroupId": "group_ca_ev_7854d11b9e1a",
+      "sourceUrl": "https://www.isro.gov.in/Updates/2026/09/chandrayaan-docking-test-pass",
+      "publisher": "SRC_ISRO_MISSIONS",
+      "evidenceExcerpt": "ISRO successfully demonstrated the SPADEX (Space Docking Experiment) capability, completing precision autonomous docking between two small spacecraft in low Earth orbit.",
+      "statement_en": "ISRO demonstrated autonomous in-orbit spacecraft docking under the SPADEX mission to support Chandrayaan-4 lunar sample return.",
+      "statement_ta": "சந்திரயான்-4 திட்டத்திற்கான விண்கல இணைப்புத் திறனை (SPADEX) இஸ்ரோ விண்வெளியில் வெற்றிகரமாக நிலைநிறுத்தியது.",
+      "eventDate": "2026-09-02",
+      "publicationDate": "2026-09-02",
+      "syllabusCategory": "science_tech",
+      "examGroups": [
+        "Group II",
+        "Group I"
+      ],
+      "entities": {
+        "persons": [],
+        "organizations": [
+          "ISRO"
+        ],
+        "locations": [],
+        "dates": [],
+        "numericalValues": [
+          {
+            "label": "4",
+            "value": 4
+          }
+        ],
+        "schemes": [],
+        "awards": [],
+        "appointments": []
+      },
+      "verificationStatus": "corroborated",
+      "eligibleQuestionTypes": [
+        "direct",
+        "assertion_reason"
+      ],
+      "monthKey": "2026-09"
+    },
+    {
+      "factId": "ca_fact_9cd88123_01",
+      "duplicateGroupId": "group_ca_ev_9cd881239e4d",
+      "sourceUrl": "https://www.tn.gov.in/pressrelease/2026/09/hosur-electronics-park-sipcot",
+      "publisher": "SRC_TN_DIPR_PRESS",
+      "evidenceExcerpt": "SIPCOT formally opened its 500-acre dedicated electric vehicle (EV) component and battery assembly park in Hosur, attracting initial private investments of Rs 3,200 crore.",
+      "statement_en": "SIPCOT inaugurated a 500-acre dedicated EV and battery manufacturing park at Hosur with initial investments of Rs 3,200 crore.",
+      "statement_ta": "சிப்காட் நிறுவனம் ஓசூரில் ரூ. 3,200 கோடி முதலீட்டில் 500 ஏக்கர் பரப்பளவிலான மின்சார வாகன உதிரிபாக பூங்காவை திறந்துள்ளது.",
+      "eventDate": "2026-09-17",
+      "publicationDate": "2026-09-17",
+      "syllabusCategory": "tamil_nadu",
+      "examGroups": [
+        "Group IV",
+        "Group II"
+      ],
+      "entities": {
+        "persons": [],
+        "organizations": [
+          "SIPCOT"
+        ],
+        "locations": [
+          "Hosur"
+        ],
+        "dates": [],
+        "numericalValues": [
+          {
+            "label": "500",
+            "value": 500
+          },
+          {
+            "label": "Rs 3,200 crore",
+            "value": 3200,
+            "unit": "crore"
+          },
+          {
+            "label": "500",
+            "value": 500
+          },
+          {
+            "label": "Rs 3,200 crore",
+            "value": 3200,
+            "unit": "crore"
+          }
+        ],
+        "schemes": [],
+        "awards": [],
+        "appointments": []
+      },
+      "verificationStatus": "corroborated",
+      "eligibleQuestionTypes": [
+        "direct",
+        "statement_matching"
+      ],
+      "monthKey": "2026-09"
+    },
+    {
+      "factId": "ca_fact_2eb6f9cb_01",
+      "duplicateGroupId": "group_ca_ev_2eb6f9cb6f72",
+      "sourceUrl": "https://www.tn.gov.in/pressrelease/2026/10/pichavaram-ramsar-conservation-plan",
+      "publisher": "SRC_TN_DIPR_PRESS",
+      "evidenceExcerpt": "The Department of Environment and Forests approved a Rs 45 crore integrated conservation action plan for the Pichavaram mangrove forest and Kazhuveli bird sanctuary Ramsar sites.",
+      "statement_en": "Tamil Nadu Government sanctioned Rs 45 crore eco-restoration plan for Pichavaram mangrove and Kazhuveli Ramsar wetland sites.",
+      "statement_ta": "பிச்சாவரம் அலையாத்தி காடுகள் மற்றும் கழுவெளி ராம்சார் ஈரநிலங்களுக்கான ரூ. 45 கோடி சுற்றுச்சூழல் மீட்புத் திட்டத்திற்கு தமிழ்நாடு அரசு ஒப்புதல் அளித்துள்ளது.",
+      "eventDate": "2026-10-06",
+      "publicationDate": "2026-10-06",
+      "syllabusCategory": "environment_geography",
+      "examGroups": [
+        "Group II",
+        "Group I"
+      ],
+      "entities": {
+        "persons": [],
+        "organizations": [],
+        "locations": [],
+        "dates": [],
+        "numericalValues": [
+          {
+            "label": "Rs 45 crore",
+            "value": 45,
+            "unit": "crore"
+          },
+          {
+            "label": "Rs 45 crore",
+            "value": 45,
+            "unit": "crore"
+          }
+        ],
+        "schemes": [],
+        "awards": [],
+        "appointments": []
+      },
+      "verificationStatus": "corroborated",
+      "eligibleQuestionTypes": [
+        "direct",
+        "statement_matching"
+      ],
+      "monthKey": "2026-10"
+    },
+    {
+      "factId": "ca_fact_a833dd75_01",
+      "duplicateGroupId": "group_ca_ev_a833dd75ea42",
+      "sourceUrl": "https://pib.gov.in/PressReleasePage.aspx?PRID=2274981&lang=1",
+      "publisher": "SRC_GOI_PIB_TAMIL",
+      "evidenceExcerpt": "NITI Aayog released its State Health and Nutrition Index 2026, ranking Tamil Nadu second among large states in comprehensive healthcare delivery and institutional maternal outcomes.",
+      "statement_en": "Tamil Nadu was ranked second among large states in NITI Aayogs State Health and Nutrition Index 2026.",
+      "statement_ta": "நிதி ஆயோக்கின் 2026 மாநில சுகாதாரக் குறியீட்டில் பெரிய மாநிலங்களின் பிரிவில் தமிழ்நாடு 2-வது இடத்தைப் பெற்றுள்ளது.",
+      "eventDate": "2026-10-21",
+      "publicationDate": "2026-10-21",
+      "syllabusCategory": "tamil_nadu",
+      "examGroups": [
+        "Group IV",
+        "Group II"
+      ],
+      "entities": {
+        "persons": [],
+        "organizations": [
+          "NITI AAYOG"
+        ],
+        "locations": [],
+        "dates": [],
+        "numericalValues": [
+          {
+            "label": "2026",
+            "value": 2026
+          },
+          {
+            "label": "2026",
+            "value": 2026
+          }
+        ],
+        "schemes": [],
+        "awards": [],
+        "appointments": []
+      },
+      "verificationStatus": "corroborated",
+      "eligibleQuestionTypes": [
+        "direct",
+        "statement_matching"
+      ],
+      "monthKey": "2026-10"
+    }
+  ],
+  "categoryDistribution": {
+    "international": 1,
+    "welfare_schemes": 2,
+    "science_tech": 3,
+    "economy": 2,
+    "tamil_nadu": 5,
+    "environment_geography": 1
+  },
+  "monthDistribution": {
+    "2026-04": 1,
+    "2026-05": 2,
+    "2026-06": 3,
+    "2026-07": 3,
+    "2026-08": 1,
+    "2026-09": 2,
+    "2026-10": 2
+  }
+}
