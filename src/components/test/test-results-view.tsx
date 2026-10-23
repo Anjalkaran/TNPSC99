@@ -205,7 +205,7 @@ export function TestResultsView({
           onClick={() => setActiveFilter('incorrect')}
           className={cn(
             "px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5",
-            activeFilter === 'incorrect' ? "bg-destructive text-destructive-foreground shadow-sm" : "bg-card border border-border text-destructive hover:bg-destructive/10"
+            activeFilter === 'incorrect' ? "bg-rose-800 text-white shadow-sm" : "bg-card border border-border text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/20"
           )}
         >
           <XCircle className="h-3.5 w-3.5" /> Incorrect ({incorrectCount})
@@ -214,7 +214,7 @@ export function TestResultsView({
           onClick={() => setActiveFilter('correct')}
           className={cn(
             "px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5",
-            activeFilter === 'correct' ? "bg-emerald-600 text-white shadow-sm" : "bg-card border border-border text-emerald-600 hover:bg-emerald-50"
+            activeFilter === 'correct' ? "bg-emerald-800 text-white shadow-sm" : "bg-card border border-border text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"
           )}
         >
           <CheckCircle2 className="h-3.5 w-3.5" /> Correct ({correctCount})
@@ -266,11 +266,11 @@ export function TestResultsView({
                         {index + 1}
                       </span>
                       {isCorrect ? (
-                        <Badge className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-300 text-[10px] font-bold">
-                          <CheckCircle2 className="h-3 w-3 mr-1 text-emerald-600" /> Correct (+1)
+                        <Badge className="bg-emerald-800 hover:bg-emerald-800 text-white text-[10px] font-bold">
+                          <CheckCircle2 className="h-3 w-3 mr-1" /> Correct (+1)
                         </Badge>
                       ) : isAnswered ? (
-                        <Badge variant="destructive" className="text-[10px] font-bold">
+                        <Badge className="bg-rose-800 hover:bg-rose-800 text-white text-[10px] font-bold">
                           <XCircle className="h-3 w-3 mr-1" /> Incorrect
                         </Badge>
                       ) : (
@@ -279,7 +279,7 @@ export function TestResultsView({
                         </Badge>
                       )}
                       {isMarked && (
-                        <Badge variant="outline" className="text-[10px] font-bold text-purple-600 border-purple-300 bg-purple-50">
+                        <Badge variant="outline" className="text-[10px] font-bold text-purple-700 dark:text-purple-300 border-purple-300 bg-purple-50 dark:bg-purple-950/30">
                           <Flag className="h-3 w-3 mr-1" /> Marked
                         </Badge>
                       )}
@@ -291,7 +291,7 @@ export function TestResultsView({
                         size="sm"
                         variant="ghost"
                         onClick={() => setActiveReferenceQuestion(q)}
-                        className="h-7 px-2.5 rounded-lg text-primary text-xs font-bold hover:bg-primary/10"
+                        className="h-7 px-2.5 rounded-lg text-secondary text-xs font-bold hover:bg-secondary/10"
                       >
                         <BookOpen className="h-3.5 w-3.5 mr-1" /> Page {q.referencePage}
                       </Button>
@@ -319,9 +319,9 @@ export function TestResultsView({
                       let optClass = 'border-border bg-card text-foreground/80';
 
                       if (isOptionCorrect) {
-                        optClass = 'border-emerald-500 bg-emerald-500/10 text-emerald-950 dark:text-emerald-100 font-bold';
+                        optClass = 'border-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-950 dark:text-emerald-100 font-bold';
                       } else if (isOptionSelected && !isOptionCorrect) {
-                        optClass = 'border-destructive bg-destructive/10 text-destructive font-semibold';
+                        optClass = 'border-rose-600 bg-rose-50 dark:bg-rose-950/30 text-rose-950 dark:text-rose-100 font-semibold';
                       }
 
                       return (
@@ -341,10 +341,16 @@ export function TestResultsView({
 
                           <div className="flex items-center gap-1.5 shrink-0 ml-2">
                             {isOptionSelected && !isOptionCorrect && (
-                              <Badge variant="destructive" className="text-[10px] px-1.5 py-0.5">Your Choice</Badge>
+                              <Badge className="bg-rose-800 text-white text-[10px] px-1.5 py-0.5 flex items-center gap-1">
+                                <XCircle className="h-3 w-3" />
+                                <span>Your Choice</span>
+                              </Badge>
                             )}
                             {isOptionCorrect && (
-                              <Badge className="bg-emerald-600 text-white text-[10px] px-1.5 py-0.5">Correct Answer</Badge>
+                              <Badge className="bg-emerald-800 text-white text-[10px] px-1.5 py-0.5 flex items-center gap-1">
+                                <CheckCircle2 className="h-3 w-3" />
+                                <span>Correct Answer</span>
+                              </Badge>
                             )}
                           </div>
                         </div>

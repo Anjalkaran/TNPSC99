@@ -4,83 +4,83 @@
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
-    --foreground: 222 47% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --background: 210 40% 98%; /* #F8FAFC Reading Background */
+    --foreground: 215 25% 27%; /* #334155 Slate-700 Body Text (WCAG AAA) */
+    --card: 0 0% 100%; /* #FFFFFF Card Surface */
+    --card-foreground: 215 25% 27%; /* #334155 */
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 224 64% 33%;
+    --popover-foreground: 215 25% 27%;
+    --primary: 224 64% 33%; /* #1E3A8A Primary Academic Blue */
     --primary-foreground: 210 40% 98%;
-    --secondary: 221 83% 53%;
+    --secondary: 175 77% 26%; /* #0F766E Learning Teal */
     --secondary-foreground: 0 0% 100%;
-    --success: 161 94% 30%;
+    --success: 142 76% 24%; /* #166534 Accessible Green 800 */
     --success-foreground: 0 0% 100%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 38 92% 50%;
+    --muted: 210 40% 96%; /* #F1F5F9 Slate-100 */
+    --muted-foreground: 215 16% 47%; /* #64748B Slate-500 */
+    --accent: 38 92% 50%; /* #F59E0B Highlight Amber */
     --accent-foreground: 222 47% 11%;
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 74% 35%; /* #991B1B Accessible Red 800 */
     --destructive-foreground: 210 20% 98%;
-    --border: 214 32% 91%;
+    --border: 214 32% 91%; /* #E2E8F0 Subtle Borders */
     --input: 214 32% 91%;
     --ring: 224 64% 33%;
     --radius: 0.75rem;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    --chart-1: 224 64% 33%;
+    --chart-2: 175 77% 26%;
+    --chart-3: 142 76% 24%;
+    --chart-4: 38 92% 50%;
+    --chart-5: 0 74% 35%;
     --sidebar-background: 224 64% 33%;
     --sidebar-foreground: 210 20% 95%;
-    --sidebar-primary: 221 83% 53%;
+    --sidebar-primary: 175 77% 26%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 224 50% 28%;
     --sidebar-accent-foreground: 210 20% 98%;
     --sidebar-border: 224 50% 25%;
-    --sidebar-ring: 221 83% 53%;
-    --brand-green: 161 94% 30%;
+    --sidebar-ring: 175 77% 26%;
+    --brand-green: 142 76% 24%;
     --brand-orange: 38 92% 50%;
     --brand-bg: 210 40% 98%;
   }
  
   .dark {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
-    --card: 222 47% 14%;
+    --background: 222 47% 11%; /* #0F172A Slate-900 Calm Navy */
+    --foreground: 210 40% 98%; /* #F8FAFC Reading Text */
+    --card: 217 33% 17%; /* #1E293B Slate-800 Card Surface */
     --card-foreground: 210 40% 98%;
-    --popover: 222 47% 14%;
+    --popover: 217 33% 17%;
     --popover-foreground: 210 40% 98%;
-    --primary: 221 83% 53%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 224 64% 45%;
-    --secondary-foreground: 0 0% 100%;
-    --success: 161 94% 36%;
-    --success-foreground: 0 0% 100%;
+    --primary: 217 91% 60%; /* #3B82F6 High-contrast Blue for Dark Mode */
+    --primary-foreground: 222 47% 11%;
+    --secondary: 175 70% 41%; /* #14B8A6 High-contrast Teal for Dark Mode */
+    --secondary-foreground: 222 47% 11%;
+    --success: 142 70% 45%; /* #22C55E Accessible Green for Dark Mode */
+    --success-foreground: 222 47% 11%;
     --muted: 217 33% 17%;
     --muted-foreground: 215 20% 65%;
-    --accent: 38 92% 50%;
+    --accent: 38 92% 50%; /* #F59E0B Highlight Amber */
     --accent-foreground: 222 47% 11%;
-    --destructive: 0 63% 31%;
+    --destructive: 0 74% 50%; /* #EF4444 Accessible Red for Dark Mode */
     --destructive-foreground: 210 40% 98%;
-    --border: 217 33% 20%;
-    --input: 217 33% 20%;
-    --ring: 221 83% 53%;
+    --border: 217 33% 22%; /* #334155 Subtle Slate Border */
+    --input: 217 33% 22%;
+    --ring: 217 91% 60%;
     --radius: 0.75rem;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --chart-1: 217 91% 60%;
+    --chart-2: 175 70% 41%;
+    --chart-3: 142 70% 45%;
+    --chart-4: 38 92% 50%;
+    --chart-5: 0 74% 50%;
     --sidebar-background: 222 47% 14%;
     --sidebar-foreground: 210 20% 90%;
-    --sidebar-primary: 221 83% 53%;
+    --sidebar-primary: 217 91% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 217 33% 20%;
     --sidebar-accent-foreground: 210 20% 95%;
     --sidebar-border: 217 33% 18%;
-    --sidebar-ring: 221 83% 53%;
-    --brand-green: 161 94% 36%;
+    --sidebar-ring: 217 91% 60%;
+    --brand-green: 142 70% 45%;
     --brand-orange: 38 92% 50%;
     --brand-bg: 222 47% 11%;
   }
@@ -92,5 +92,31 @@
   }
   body {
     @apply bg-background text-foreground overflow-x-hidden;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* High contrast accessible focus indicators */
+  *:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+  }
+
+  /* Typography: Equal English and Tamil optical balance */
+  .font-tamil, [lang="ta"] {
+    line-height: 1.75;
+    letter-spacing: 0.01em;
+  }
+
+  /* Respect user reduced-motion preferences */
+  @media (prefers-reduced-motion: reduce) {
+    *, ::before, ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }

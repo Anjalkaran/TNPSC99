@@ -263,9 +263,9 @@ export function FreeLearningHub() {
               className="rounded-xl py-2.5 text-xs sm:text-sm font-bold data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm"
             >
               <div className="flex items-center gap-2">
-                <Flame className="h-4 w-4 text-orange-500" />
+                <BookOpen className="h-4 w-4 text-primary" />
                 <span className="truncate">{language === 'ta' ? 'நடப்பு நிகழ்வுகள்' : 'Current Affairs'}</span>
-                <span className="text-[10px] bg-orange-500/15 text-orange-600 px-1.5 py-0.5 rounded-full font-bold hidden sm:inline">10 Q</span>
+                <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-bold hidden sm:inline">10 Q</span>
               </div>
             </TabsTrigger>
 
@@ -274,31 +274,31 @@ export function FreeLearningHub() {
               className="rounded-xl py-2.5 text-xs sm:text-sm font-bold data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm"
             >
               <div className="flex items-center gap-2">
-                <Award className="h-4 w-4 text-blue-500" />
+                <Award className="h-4 w-4 text-primary" />
                 <span className="truncate">{language === 'ta' ? 'இலவச மாதிரித் தேர்வு' : 'Free Mock Test'}</span>
-                <span className="text-[10px] bg-blue-500/15 text-blue-600 px-1.5 py-0.5 rounded-full font-bold hidden sm:inline">20 Q</span>
+                <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-bold hidden sm:inline">20 Q</span>
               </div>
             </TabsTrigger>
 
             <TabsTrigger
               value="textbook"
-              className="rounded-xl py-2.5 text-xs sm:text-sm font-bold data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm"
+              className="rounded-xl py-2.5 text-xs sm:text-sm font-bold data-[state=active]:bg-card data-[state=active]:text-secondary data-[state=active]:shadow-sm"
             >
               <div className="flex items-center gap-2">
-                <BookOpen className="h-4 w-4 text-emerald-500" />
+                <BookMarked className="h-4 w-4 text-secondary" />
                 <span className="truncate">{language === 'ta' ? 'பாடப்புத்தக பயிற்சி' : 'Textbook Practice'}</span>
-                <span className="text-[10px] bg-emerald-500/15 text-emerald-600 px-1.5 py-0.5 rounded-full font-bold hidden sm:inline">10 Q</span>
+                <span className="text-[10px] bg-secondary/15 text-secondary px-1.5 py-0.5 rounded-full font-bold hidden sm:inline">10 Q</span>
               </div>
             </TabsTrigger>
 
             <TabsTrigger
               value="ai_tutor"
-              className="rounded-xl py-2.5 text-xs sm:text-sm font-bold data-[state=active]:bg-card data-[state=active]:text-accent-foreground data-[state=active]:shadow-sm"
+              className="rounded-xl py-2.5 text-xs sm:text-sm font-bold data-[state=active]:bg-card data-[state=active]:text-amber-800 dark:data-[state=active]:text-amber-200 data-[state=active]:shadow-sm"
             >
               <div className="flex items-center gap-2">
-                <BrainCircuit className="h-4 w-4 text-accent" />
+                <BrainCircuit className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                 <span className="truncate">{language === 'ta' ? 'AI வழிகாட்டி முன்னோட்டம்' : 'AI Tutor Demo'}</span>
-                <span className="text-[10px] bg-amber-500/15 text-accent px-1.5 py-0.5 rounded-full font-bold hidden sm:inline">AI</span>
+                <span className="text-[10px] bg-amber-500/15 text-amber-800 dark:text-amber-300 px-1.5 py-0.5 rounded-full font-bold hidden sm:inline">Demo</span>
               </div>
             </TabsTrigger>
           </TabsList>
@@ -435,38 +435,39 @@ export function FreeLearningHub() {
                             : (language === 'ta' ? 'மேலும் பயிற்சி தேவை. பள்ளிப் பாடப்புத்தக பக்கங்களை மீண்டும் படிக்கவும்.' : 'Good effort! Reinforce key concepts by reviewing Samacheer Kalvi textbook chapters.')}
                         </p>
 
-                        {/* ₹99 Subscription Spotlight Callout */}
-                        <div className="mt-6 rounded-2xl border-2 border-primary/40 bg-gradient-to-r from-blue-50/50 via-background to-blue-50/50 dark:from-slate-900/60 dark:to-slate-900/60 p-6 text-center space-y-4">
-                          <div className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-primary">
-                            <Zap className="h-4 w-4 text-accent fill-accent" />
-                            <span>TNPSC MCQ Academy — ₹99/Month</span>
+                        {/* ₹99 Subscription Spotlight Callout - Respectful Academic Styling */}
+                        <div className="mt-6 rounded-2xl border border-primary/30 bg-card p-6 text-center space-y-4 shadow-sm">
+                          <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-primary bg-primary/5 px-3 py-1 rounded-full border border-primary/20">
+                            <Sparkles className="h-3.5 w-3.5 text-accent" />
+                            <span>TNPSC MCQ Academy — Flat ₹99/Month</span>
                           </div>
                           <h5 className="text-lg sm:text-xl font-bold text-foreground">
                             {language === 'ta'
                               ? '5,000+ பாடப்புத்தக வினாக்களை ₹99-ல் திறக்கவும்'
                               : 'Unlock 5,000+ Samacheer Kalvi MCQs for just ₹99/month'}
                           </h5>
-                          <p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto">
+                          <p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
                             {language === 'ta'
                               ? 'முழுத் தேர்வுத் தொடர், அச்சிடப்பட்ட பாடநூல் பக்க எண்கள், வினா குறிப்பு சேமிப்பு மற்றும் விரிவான விளக்கங்கள்.'
                               : 'Includes full-length mock tests, printed textbook page references, bookmarking, and zero ad interruptions.'}
                           </p>
                           <div className="flex flex-col sm:flex-row justify-center items-center gap-3 pt-2">
-                            <Button asChild size="lg" className="w-full sm:w-auto h-11 px-6 font-bold rounded-xl shadow-md">
+                            <Button asChild size="lg" className="w-full sm:w-auto h-11 px-7 font-bold rounded-xl shadow-sm bg-primary hover:bg-primary/90 text-primary-foreground text-sm">
                               <Link
                                 href="/subscription"
                                 onClick={() => PublicAnalytics.trackCheckoutStart('test_summary_card')}
                                 className="flex items-center gap-2"
                               >
-                                <span>{language === 'ta' ? '₹99 செலுத்தி இணையுங்கள்' : 'Subscribe for ₹99/mo'}</span>
+                                <span>{language === 'ta' ? 'அகாதெமியில் சேரவும் (₹99/mo)' : 'Join MCQ Academy (₹99/mo)'}</span>
                                 <ArrowRight className="h-4 w-4" />
                               </Link>
                             </Button>
                             <Button
                               variant="outline"
                               onClick={handleResetTest}
-                              className="w-full sm:w-auto h-11 px-6 font-semibold rounded-xl"
+                              className="w-full sm:w-auto h-11 px-6 font-semibold rounded-xl text-sm border-border hover:bg-muted"
                             >
+                              <RotateCcw className="h-4 w-4 mr-2" />
                               {language === 'ta' ? 'மீண்டும் தேர்வு எழுதுக' : 'Retake Free Test'}
                             </Button>
                           </div>
@@ -510,18 +511,21 @@ export function FreeLearningHub() {
                                   </div>
                                   <div>
                                     {isCorrect && (
-                                      <Badge className="bg-emerald-600 text-white text-[10px] font-bold">
-                                        {language === 'ta' ? 'சரி' : 'Correct (+1)'}
+                                      <Badge className="bg-emerald-800 hover:bg-emerald-800 text-white text-[10px] font-bold flex items-center gap-1">
+                                        <CheckCircle2 className="h-3 w-3" />
+                                        <span>{language === 'ta' ? 'சரி (+1)' : 'Correct (+1)'}</span>
                                       </Badge>
                                     )}
                                     {!isCorrect && !isUnanswered && (
-                                      <Badge variant="destructive" className="text-[10px] font-bold">
-                                        {language === 'ta' ? 'தவறு' : 'Incorrect (0)'}
+                                      <Badge className="bg-rose-800 hover:bg-rose-800 text-white text-[10px] font-bold flex items-center gap-1">
+                                        <XCircle className="h-3 w-3" />
+                                        <span>{language === 'ta' ? 'தவறு (0)' : 'Incorrect (0)'}</span>
                                       </Badge>
                                     )}
                                     {isUnanswered && (
-                                      <Badge variant="secondary" className="text-[10px]">
-                                        {language === 'ta' ? 'விடையளிக்கவில்லை' : 'Skipped'}
+                                      <Badge variant="outline" className="text-[10px] text-muted-foreground border-border flex items-center gap-1">
+                                        <HelpCircle className="h-3 w-3" />
+                                        <span>{language === 'ta' ? 'விடையளிக்கவில்லை' : 'Skipped'}</span>
                                       </Badge>
                                     )}
                                   </div>
@@ -543,9 +547,9 @@ export function FreeLearningHub() {
                                         className={cn(
                                           "flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium border",
                                           isThisCorrect
-                                            ? "border-emerald-500 bg-emerald-500/15 text-emerald-800 dark:text-emerald-200 font-bold"
+                                            ? "border-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-950 dark:text-emerald-100 font-bold"
                                             : isThisSelected
-                                            ? "border-red-500 bg-red-500/15 text-red-800 dark:text-red-200 line-through"
+                                            ? "border-rose-600 bg-rose-50 dark:bg-rose-950/30 text-rose-950 dark:text-rose-100 line-through"
                                             : "border-border bg-card text-muted-foreground"
                                         )}
                                       >
@@ -553,8 +557,8 @@ export function FreeLearningHub() {
                                           {String.fromCharCode(65 + oIdx)}
                                         </span>
                                         <span className="flex-1">{opt}</span>
-                                        {isThisCorrect && <Check className="h-3.5 w-3.5 text-emerald-600 shrink-0" />}
-                                        {isThisSelected && !isThisCorrect && <XCircle className="h-3.5 w-3.5 text-red-600 shrink-0" />}
+                                        {isThisCorrect && <Check className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-400 shrink-0" />}
+                                        {isThisSelected && !isThisCorrect && <XCircle className="h-3.5 w-3.5 text-rose-700 dark:text-rose-400 shrink-0" />}
                                       </div>
                                     );
                                   })}
@@ -649,18 +653,18 @@ export function FreeLearningHub() {
                               const hasAnswered = selectedAnswers[currentQ.id] !== undefined;
                               const isCorrect = optIndex === currentQ.correctOptionIndex;
 
-                              let optionStyle = "border-border bg-card hover:bg-muted/50 text-foreground";
+                              let optionStyle = "border-border bg-card hover:bg-slate-50 dark:hover:bg-slate-800 text-foreground";
 
                               if (isPractice && hasAnswered) {
                                 if (isCorrect) {
-                                  optionStyle = "border-emerald-500 bg-emerald-500/10 text-emerald-900 dark:text-emerald-200 font-bold";
+                                  optionStyle = "border-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-950 dark:text-emerald-100 font-bold shadow-sm";
                                 } else if (isSelected) {
-                                  optionStyle = "border-red-500 bg-red-500/10 text-red-900 dark:text-red-200";
+                                  optionStyle = "border-rose-600 bg-rose-50 dark:bg-rose-950/30 text-rose-950 dark:text-rose-100 font-semibold";
                                 } else {
                                   optionStyle = "border-border/50 opacity-60 bg-card";
                                 }
                               } else if (isSelected) {
-                                optionStyle = "border-primary bg-primary/10 text-primary font-bold";
+                                optionStyle = "border-primary bg-primary/5 ring-1 ring-primary text-foreground font-semibold";
                               }
 
                               return (
@@ -687,10 +691,16 @@ export function FreeLearningHub() {
                                   <span className="flex-1 leading-relaxed">{optionText}</span>
 
                                   {isPractice && hasAnswered && isCorrect && (
-                                    <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
+                                    <div className="flex items-center gap-1.5 text-emerald-800 dark:text-emerald-300 text-xs font-bold shrink-0">
+                                      <CheckCircle2 className="h-5 w-5 text-emerald-700 dark:text-emerald-400" />
+                                      <span className="hidden sm:inline">{language === 'ta' ? 'சரியான விடை' : 'Correct'}</span>
+                                    </div>
                                   )}
                                   {isPractice && hasAnswered && isSelected && !isCorrect && (
-                                    <XCircle className="h-5 w-5 text-red-600 shrink-0" />
+                                    <div className="flex items-center gap-1.5 text-rose-800 dark:text-rose-300 text-xs font-bold shrink-0">
+                                      <XCircle className="h-5 w-5 text-rose-700 dark:text-rose-400" />
+                                      <span className="hidden sm:inline">{language === 'ta' ? 'தவறான விடை' : 'Incorrect'}</span>
+                                    </div>
                                   )}
                                 </button>
                               );
@@ -699,26 +709,45 @@ export function FreeLearningHub() {
 
                           {/* Instant Explanation in Practice Mode */}
                           {testMode === 'practice' && selectedAnswers[currentQ.id] !== undefined && (
-                            <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 sm:p-5 space-y-3 animate-in fade-in-50 duration-200">
-                              <div className="flex items-center gap-2">
-                                <Lightbulb className="h-4 w-4 text-accent" />
-                                <span className="font-bold text-sm text-foreground">
-                                  {selectedAnswers[currentQ.id] === currentQ.correctOptionIndex
-                                    ? (language === 'ta' ? 'சரியான விடை!' : 'Correct Answer!')
-                                    : (language === 'ta' ? 'தவறான விடை — விளக்கத்தைக் காண்க' : 'Incorrect — Review Rationale')}
-                                </span>
+                            <div className={cn(
+                              "rounded-xl border p-4 sm:p-5 space-y-3 animate-in fade-in-50 duration-200",
+                              selectedAnswers[currentQ.id] === currentQ.correctOptionIndex
+                                ? "border-emerald-300 dark:border-emerald-800 bg-emerald-50/70 dark:bg-emerald-950/30"
+                                : "border-rose-300 dark:border-rose-800 bg-rose-50/70 dark:bg-rose-950/30"
+                            )}>
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  {selectedAnswers[currentQ.id] === currentQ.correctOptionIndex ? (
+                                    <CheckCircle2 className="h-5 w-5 text-emerald-700 dark:text-emerald-400 shrink-0" />
+                                  ) : (
+                                    <XCircle className="h-5 w-5 text-rose-700 dark:text-rose-400 shrink-0" />
+                                  )}
+                                  <span className={cn(
+                                    "font-bold text-sm",
+                                    selectedAnswers[currentQ.id] === currentQ.correctOptionIndex
+                                      ? "text-emerald-900 dark:text-emerald-100"
+                                      : "text-rose-900 dark:text-rose-100"
+                                  )}>
+                                    {selectedAnswers[currentQ.id] === currentQ.correctOptionIndex
+                                      ? (language === 'ta' ? 'சரியான விடை!' : 'Correct Answer!')
+                                      : (language === 'ta' ? 'தவறான விடை — விளக்கத்தைக் காண்க' : 'Incorrect — Review Rationale')}
+                                  </span>
+                                </div>
+                                <Badge variant="outline" className="text-[10px] font-bold border-border bg-card">
+                                  {currentQ.examGroup}
+                                </Badge>
                               </div>
 
-                              <p className="text-xs sm:text-sm text-foreground/90 leading-relaxed">
+                              <p className="text-xs sm:text-sm text-foreground/90 leading-relaxed font-normal">
                                 {language === 'ta' ? currentQ.explanation_ta : currentQ.explanation_en}
                               </p>
 
                               {currentQ.textbookCitation && (
-                                <div className="flex items-center gap-2 text-xs font-semibold text-primary pt-2 border-t border-primary/10">
+                                <div className="flex items-center gap-2 text-xs font-semibold text-secondary pt-2 border-t border-border/40">
                                   <BookMarked className="h-3.5 w-3.5 shrink-0" />
                                   <span>
                                     {currentQ.textbookCitation.standard} {currentQ.textbookCitation.subject}
-                                    {currentQ.textbookCitation.pageNumber ? ` · Page ${currentQ.textbookCitation.pageNumber}` : ''}
+                                    {currentQ.textbookCitation.pageNumber ? ` · பக்கம் ${currentQ.textbookCitation.pageNumber}` : ''}
                                     {currentQ.textbookCitation.lessonName ? ` · ${currentQ.textbookCitation.lessonName}` : ''}
                                   </span>
                                 </div>

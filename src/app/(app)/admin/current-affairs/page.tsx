@@ -125,9 +125,9 @@ export default function CurrentAffairsAdminPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Review Queue</CardDescription>
-            <CardTitle className="text-2xl font-bold text-amber-500 flex items-center justify-between">
+            <CardTitle className="text-2xl font-bold text-amber-700 dark:text-amber-400 flex items-center justify-between">
               {queue.filter((q) => q.status === 'REVIEW_REQUIRED').length}
-              <Clock className="h-5 w-5 text-amber-500" />
+              <Clock className="h-5 w-5 text-amber-700 dark:text-amber-400" />
             </CardTitle>
           </CardHeader>
           <CardContent className="text-xs text-muted-foreground">
@@ -138,9 +138,9 @@ export default function CurrentAffairsAdminPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Approved & Staged</CardDescription>
-            <CardTitle className="text-2xl font-bold text-emerald-500 flex items-center justify-between">
+            <CardTitle className="text-2xl font-bold text-emerald-800 dark:text-emerald-300 flex items-center justify-between">
               {queue.filter((q) => q.status === 'APPROVED').length + 21}
-              <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+              <CheckCircle2 className="h-5 w-5 text-emerald-800 dark:text-emerald-300" />
             </CardTitle>
           </CardHeader>
           <CardContent className="text-xs text-muted-foreground">
@@ -151,9 +151,9 @@ export default function CurrentAffairsAdminPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Daily Schedule Status</CardDescription>
-            <CardTitle className="text-2xl font-bold text-blue-500 flex items-center justify-between">
+            <CardTitle className="text-2xl font-bold text-primary flex items-center justify-between">
               HEALTHY
-              <RefreshCw className="h-5 w-5 text-blue-500" />
+              <RefreshCw className="h-5 w-5 text-primary" />
             </CardTitle>
           </CardHeader>
           <CardContent className="text-xs text-muted-foreground">
@@ -228,7 +228,7 @@ export default function CurrentAffairsAdminPage() {
                       key={idx}
                       className={`p-3 rounded-md text-sm border flex items-start justify-between ${
                         idx === item.correctOptionIndex
-                          ? 'border-emerald-500 bg-emerald-500/10 text-emerald-900 dark:text-emerald-300 font-semibold'
+                          ? 'border-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-950 dark:text-emerald-100 font-bold'
                           : 'border-border text-muted-foreground'
                       }`}
                     >
@@ -237,7 +237,10 @@ export default function CurrentAffairsAdminPage() {
                         {opt.en} / {opt.ta}
                       </span>
                       {idx === item.correctOptionIndex && (
-                        <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                        <div className="flex items-center gap-1 text-emerald-800 dark:text-emerald-300 text-xs font-bold shrink-0">
+                          <CheckCircle2 className="h-4 w-4 text-emerald-700 dark:text-emerald-400" />
+                          <span>Correct</span>
+                        </div>
                       )}
                     </div>
                   ))}

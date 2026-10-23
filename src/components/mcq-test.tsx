@@ -686,11 +686,11 @@ export function McqTest({
             className={cn(
               "text-[10px] font-black uppercase tracking-wider shrink-0",
               mode === 'practice'
-                ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-300"
+                ? "bg-secondary/10 text-secondary border-secondary/30"
                 : "bg-primary/10 text-primary border-primary/30"
             )}
           >
-            {mode === 'practice' ? 'Practice' : 'Exam Mode'}
+            {mode === 'practice' ? 'Practice Mode' : 'Exam Mode'}
           </Badge>
           <h2 className="text-xs sm:text-sm font-bold text-foreground truncate max-w-[140px] sm:max-w-xs md:max-w-md">
             {decodedTitle}
@@ -701,10 +701,10 @@ export function McqTest({
         <div className="flex items-center gap-2">
           <div
             className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-mono text-xs sm:text-sm font-black border transition-colors",
-              mode === 'exam' && timeLeft < 300
-                ? "bg-destructive/15 border-destructive text-destructive animate-pulse"
-                : "bg-muted border-border text-foreground"
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-mono text-xs sm:text-sm font-bold border transition-colors",
+              mode === 'exam' && timeLeft <= 60
+                ? "bg-destructive/15 border-destructive text-destructive"
+                : "bg-card border-border text-foreground"
             )}
           >
             <Timer className="h-4 w-4 shrink-0" />
@@ -855,23 +855,29 @@ export function McqTest({
                   const isSelected = currentAnswerIndex === optIdx;
                   const isCorrect = option === currentQuestion.correctAnswer;
 
-                  let optionBorder = 'border-border hover:border-primary/50 hover:bg-muted/30';
+                  let optionBorder = 'border-border bg-card hover:border-primary/40 hover:bg-slate-50 dark:hover:bg-slate-800 text-foreground';
                   let optionBadge = null;
 
                   if (mode === 'practice' && isQuestionAnsweredInPractice) {
                     if (isCorrect) {
-                      optionBorder = 'border-emerald-500 bg-emerald-500/10 text-emerald-950 dark:text-emerald-100 font-bold';
+                      optionBorder = 'border-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-950 dark:text-emerald-100 font-bold shadow-sm';
                       optionBadge = (
-                        <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0 ml-2" />
+                        <div className="flex items-center gap-1.5 text-emerald-800 dark:text-emerald-300 text-xs font-bold shrink-0 ml-2">
+                          <CheckCircle2 className="h-5 w-5 text-emerald-700 dark:text-emerald-400" />
+                          <span className="hidden sm:inline">சரியான விடை</span>
+                        </div>
                       );
                     } else if (isSelected && !isCorrect) {
-                      optionBorder = 'border-destructive bg-destructive/10 text-destructive font-semibold';
+                      optionBorder = 'border-rose-600 bg-rose-50 dark:bg-rose-950/30 text-rose-950 dark:text-rose-100 font-semibold';
                       optionBadge = (
-                        <XCircle className="h-5 w-5 text-destructive shrink-0 ml-2" />
+                        <div className="flex items-center gap-1.5 text-rose-800 dark:text-rose-300 text-xs font-bold shrink-0 ml-2">
+                          <XCircle className="h-5 w-5 text-rose-700 dark:text-rose-400" />
+                          <span className="hidden sm:inline">தவறான தேர்வு</span>
+                        </div>
                       );
                     }
                   } else if (isSelected) {
-                    optionBorder = 'border-primary bg-primary/10 text-foreground font-semibold shadow-sm';
+                    optionBorder = 'border-primary bg-primary/5 ring-1 ring-primary text-foreground font-semibold shadow-sm';
                   }
 
                   return (
@@ -905,9 +911,9 @@ export function McqTest({
 
               {/* PRACTICE MODE: REVEALED EXPLANATION & REFERENCE */}
               {mode === 'practice' && isQuestionAnsweredInPractice && (
-                <div className="mt-4 p-4 rounded-xl bg-primary/5 border border-primary/20 space-y-3 text-xs animate-in fade-in-50 duration-200">
+                <div className="mt-4 p-4 rounded-xl bg-secondary/5 border border-secondary/20 space-y-3 text-xs animate-in fade-in-50 duration-200">
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-primary flex items-center gap-1.5">
+                    <span className="font-bold text-secondary flex items-center gap-1.5">
                       <Sparkles className="h-3.5 w-3.5 text-accent" />
                       விளக்கம் & பாடநூல் குறிப்பு (Rationale)
                     </span>
@@ -917,7 +923,7 @@ export function McqTest({
                         size="sm"
                         variant="outline"
                         onClick={() => setIsReferenceDrawerOpen(true)}
-                        className="h-7 px-2.5 rounded-lg text-primary border-primary/30 text-xs font-bold hover:bg-primary/10"
+                        className="h-7 px-2.5 rounded-lg text-secondary border-secondary/30 text-xs font-bold hover:bg-secondary/10"
                       >
                         <BookOpen className="h-3.5 w-3.5 mr-1" /> View Textbook Page {currentQuestion.referencePage}
                       </Button>
@@ -931,8 +937,8 @@ export function McqTest({
                   )}
 
                   {currentQuestion.reference && (
-                    <div className="pt-2 border-t border-primary/10">
-                      <p className="font-bold text-primary">பாடநூல் குறிப்பு:</p>
+                    <div className="pt-2 border-t border-secondary/15">
+                      <p className="font-bold text-secondary">பாடநூல் குறிப்பு:</p>
                       <p className="text-foreground/80 mt-0.5 whitespace-pre-line">
                         {currentQuestion.reference}
                       </p>

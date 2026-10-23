@@ -149,38 +149,38 @@ export default function DashboardPage() {
               </div>
             </div>
             <Link href="/subscription" className="w-full md:w-auto">
-              <button className="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-black rounded-2xl shadow-md transition-all active:scale-95 flex items-center justify-center gap-2">
-                <Sparkles className="h-5 w-5" />
-                UPGRADE NOW — ₹99
-              </button>
+              <Button size="lg" className="w-full md:w-auto h-11 px-7 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-sm transition-all active:scale-95 flex items-center justify-center gap-2">
+                <Sparkles className="h-4 w-4 text-accent" />
+                <span>இணைந்திடுக — ₹99/மாதம்</span>
+              </Button>
             </Link>
           </div>
         </section>
       )}
 
       {/* Welcome & Search Section */}
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#1e3a8a] via-[#2563eb] to-indigo-800 p-6 md:p-8 text-white shadow-xl">
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-primary/95 to-slate-900 p-6 md:p-8 text-primary-foreground shadow-lg">
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="text-left w-full md:w-auto">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 rounded-full text-xs font-bold uppercase tracking-wider mb-2 border border-white/10">
-              <Sparkles className="h-3.5 w-3.5 text-amber-300" />
-              TNPSC Academy Dashboard
+              <Sparkles className="h-3.5 w-3.5 text-accent" />
+              <span>TNPSC Academy Dashboard</span>
             </div>
             <h1 className="text-2xl md:text-3xl font-black tracking-tight mb-1">
               வணக்கம், {user?.displayName?.split(' ')[0] || 'மாணவரே'}!
             </h1>
-            <p className="text-blue-100 text-sm md:text-base font-medium max-w-lg">
+            <p className="text-primary-foreground/80 text-sm md:text-base font-medium max-w-lg">
               கற்றல் துல்லியம், தவறு பெட்டகம் மற்றும் பாடவாரியான மாதிரித் தேர்வுகள் மூலம் வெற்றியை நோக்கி முன்னேறுங்கள்.
             </p>
           </div>
 
           <form onSubmit={handleSearch} className="w-full md:w-80 group">
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/70 group-focus-within:text-white transition-colors" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-primary-foreground/60 group-focus-within:text-primary-foreground transition-colors" />
               <Input
                 type="search"
                 placeholder="பாடம் அல்லது தலைப்பைத் தேடுக..."
-                className="w-full pl-11 h-11 text-sm bg-white/15 border-white/20 text-white placeholder:text-white/60 rounded-2xl focus-visible:ring-white/40 shadow-inner backdrop-blur-md"
+                className="w-full pl-11 h-11 text-sm bg-white/10 border-white/20 text-white placeholder:text-white/60 rounded-2xl focus-visible:ring-white/40 shadow-inner backdrop-blur-md"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />

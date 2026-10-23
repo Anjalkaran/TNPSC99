@@ -34,24 +34,30 @@ export function QuestionPalette({
 
   return (
     <div className="flex flex-col h-full space-y-4">
-      {/* Status Legends Bar */}
-      <div className="grid grid-cols-2 gap-2 text-[11px] font-semibold text-muted-foreground p-3 rounded-xl bg-muted/40 border border-border">
+      {/* Status Legends Bar with Non-Colour Indicators */}
+      <div className="grid grid-cols-2 gap-2 text-[11px] font-semibold text-muted-foreground p-3 rounded-xl bg-card border border-border">
         <div className="flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded-md bg-emerald-600 shrink-0" />
+          <span className="h-3.5 w-3.5 rounded-md bg-emerald-800 text-white shrink-0 flex items-center justify-center">
+            <Check className="h-2.5 w-2.5" />
+          </span>
           <span>Answered ({answeredCount})</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded-md bg-card border border-border shrink-0" />
+          <span className="h-3.5 w-3.5 rounded-md bg-card border border-border shrink-0 flex items-center justify-center text-[9px] font-mono text-muted-foreground">
+            –
+          </span>
           <span>Unanswered ({unansweredCount})</span>
         </div>
         {mode === 'exam' && (
           <>
             <div className="flex items-center gap-1.5">
-              <span className="h-3 w-3 rounded-md bg-purple-600 shrink-0" />
+              <span className="h-3.5 w-3.5 rounded-md bg-purple-800 text-white shrink-0 flex items-center justify-center">
+                <Flag className="h-2 w-2" />
+              </span>
               <span>Review ({markedCount})</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="h-3 w-3 rounded-md border-2 border-primary bg-primary/10 shrink-0" />
+              <span className="h-3.5 w-3.5 rounded-md border-2 border-primary bg-primary/20 shrink-0" />
               <span>Current ({currentQuestionIndex + 1})</span>
             </div>
           </>
@@ -66,14 +72,14 @@ export function QuestionPalette({
             const isAnswered = answers[index] !== undefined && answers[index] !== -1;
             const isMarked = markedForReview[index] === true;
 
-            let buttonStyle = 'bg-card text-foreground border-border hover:bg-muted';
+            let buttonStyle = 'bg-card text-foreground border-border hover:bg-slate-50 dark:hover:bg-slate-800';
 
             if (isAnswered && isMarked) {
-              buttonStyle = 'bg-purple-600 text-white border-purple-700 shadow-sm';
+              buttonStyle = 'bg-purple-800 text-white border-purple-900 shadow-sm';
             } else if (isMarked) {
-              buttonStyle = 'bg-purple-100 text-purple-900 border-purple-400 dark:bg-purple-950 dark:text-purple-200';
+              buttonStyle = 'bg-purple-50 text-purple-900 border-purple-400 dark:bg-purple-950/50 dark:text-purple-200';
             } else if (isAnswered) {
-              buttonStyle = 'bg-emerald-600 text-white border-emerald-700 shadow-sm';
+              buttonStyle = 'bg-emerald-800 text-white border-emerald-900 shadow-sm';
             }
 
             return (
@@ -81,12 +87,13 @@ export function QuestionPalette({
                 key={index}
                 type="button"
                 onClick={() => onSelectQuestion(index)}
+                aria-label={`Question ${index + 1}: ${isAnswered ? 'Answered' : 'Unanswered'}${isMarked ? ', Marked for Review' : ''}${isCurrent ? ', Current Question' : ''}`}
                 className={cn(
                   "relative flex items-center justify-center h-10 w-full rounded-xl text-xs font-bold border transition-all duration-150 active:scale-95",
                   buttonStyle,
                   isCurrent && "ring-2 ring-primary ring-offset-2 font-black scale-105 z-10"
                 )}
-                title={`Question ${index + 1}${isAnswered ? ' (Answered)' : ''}${isMarked ? ' (Marked for Review)' : ''}`}
+                title={`Question ${index + 1}${isAnswered ? ' (Answered)' : ' (Unanswered)'}${isMarked ? ' (Marked for Review)' : ''}`}
               >
                 <span>{index + 1}</span>
 

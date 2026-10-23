@@ -24,6 +24,33 @@ export default {
         code: ['monospace'],
       },
       colors: {
+        // Student-Centric Approved Colour Palette Tokens
+        academic: {
+          blue: '#1E3A8A', // Primary Blue: Focus & institutional authority
+          teal: '#0F766E', // Learning Teal: Cognitive stamina & calm persistence
+          bg: '#F8FAFC', // Reading Background: Low-contrast eye-strain reduction
+          card: '#FFFFFF', // Card Surface: Clean paper canvas
+          body: '#334155', // Body Text (Slate-700): WCAG AAA high-contrast legibility
+          amber: '#F59E0B', // Highlight Amber: Warm accents & bookmarks
+          border: '#E2E8F0', // Borders: Subtle spatial delineation
+        },
+        feedback: {
+          correct: {
+            bg: '#F0FDF4',
+            border: '#86EFAC',
+            text: '#166534',
+          },
+          incorrect: {
+            bg: '#FEF2F2',
+            border: '#FCA5A5',
+            text: '#991B1B',
+          },
+          review: {
+            bg: '#F5F3FF',
+            border: '#DDD6FE',
+            text: '#6D28D9',
+          },
+        },
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {
