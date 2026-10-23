@@ -1,0 +1,840 @@
+{
+  "generatedAt": "2026-10-23T15:57:54.294Z",
+  "sourceFactCount": 16,
+  "draftCount": 16,
+  "drafts": [
+    {
+      "id": "ca26_h1h2_a25f1758_01",
+      "factIds": [
+        "ca_fact_a25f1758_01"
+      ],
+      "eventId": "ca_ev_a25f17583f9b",
+      "rawDocumentId": "ca_fact_a25f1758_01",
+      "sourceUrl": "https://www.tn.gov.in/pressrelease/2026/05/pudhumai-penn-phase-expansion",
+      "monthKey": "2026-05",
+      "question_en": "Which of the following statements is accurate according to the official release on 2026-05-08?",
+      "options_en": [
+        "Tamil Nadu Government extended Rs. 1,000 monthly financial aid under Pudhumai Penn scheme to Tamil-medium government-aided school students.",
+        "The financial sanction was cancelled due to administrative realignment across districts.",
+        "The scheme applies exclusively to candidates outside Tamil Nadu.",
+        "The initiative was placed under indefinite postponement by judicial injunction."
+      ],
+      "correctOptionIndex": 0,
+      "explanation_en": "Correct. As verified in official notification: The Government of Tamil Nadu issued orders extending the Pudhumai Penn monthly financial assistance of Rs. 1,000 to girl students who studied in Tamil-medium government-aided schools.",
+      "question_ta": "2026-05-08 தேதியிட்ட அதிகாரப்பூர்வ அரசு அறிவிப்பின்படி பின்வருவனவற்றில் சரியானது எது?",
+      "options_ta": [
+        "புதுமைப் பெண் திட்டத்தின் கீழ் மாதம் ரூ. 1,000 நிதியுதவி அரசு உதவிபெறும் தமிழ்வழிப் பள்ளி மாணவிகளுக்கும் விரிவுபடுத்தப்பட்டுள்ளது.",
+        "நிர்வாக காரணங்களால் இத்திட்டத்திற்கான நிதி ஒதுக்கீடு ரத்து செய்யப்பட்டது.",
+        "இத்திட்டம் தமிழ்நாட்டிற்கு வெளியே உள்ள விண்ணப்பதாரர்களுக்கு மட்டுமே பொருந்தும்.",
+        "நீதிமன்ற உத்தரவின் காரணமாக இத்திட்டம் காலவரையின்றி ஒத்திவைக்கப்பட்டது."
+      ],
+      "explanation_ta": "சரியானது. அதிகாரப்பூர்வ அரசு செய்திக்குறிப்பின்படி: The Government of Tamil Nadu issued orders extending the Pudhumai Penn monthly financial assistance of Rs. 1,000 to girl students who studied in Tamil-medium government-aided schools.",
+      "category": "welfare_schemes",
+      "difficulty": "hard",
+      "examType": "Group IV",
+      "questionType": "direct",
+      "verificationReport": {
+        "timestamp": "2026-10-23T15:57:54.293Z",
+        "factualConsistency": true,
+        "unambiguousCorrectAnswer": true,
+        "distractorQualityPassed": true,
+        "tamilEnglishSemanticallyIdentical": true,
+        "hasAuthoritativeCitation": true,
+        "blindSolverResult": {
+          "independentlySolved": true,
+          "predictedOptionIndex": 0,
+          "solverConfidence": 1
+        },
+        "riskLevel": "LOW_RISK",
+        "overallScore": 100,
+        "canAutoPublish": false,
+        "rejectionReasons": []
+      },
+      "overallStatus": "REVIEW_REQUIRED",
+      "editorialApproval": null,
+      "createdAt": "2026-10-23T15:57:54.293Z"
+    },
+    {
+      "id": "ca26_h1h2_321e1f8c_01",
+      "factIds": [
+        "ca_fact_321e1f8c_01"
+      ],
+      "eventId": "ca_ev_321e1f8c0dea",
+      "rawDocumentId": "ca_fact_321e1f8c_01",
+      "sourceUrl": "https://www.tn.gov.in/pressrelease/2026/06/magalir-urimai-1500cr",
+      "monthKey": "2026-06",
+      "question_en": "Consider the following statements regarding the initiative announced by the Government of Tamil Nadu:\n1. Kalaignar Magalir Urimai Thittam enrolled 1.5 lakh additional eligible women for Rs 1,000 monthly direct cash transfers.\n2. The initiative is restricted exclusively to private non-aided institutions.\nWhich of the statements given above is/are correct?",
+      "options_en": [
+        "1 only",
+        "2 only",
+        "Both 1 and 2",
+        "Neither 1 nor 2"
+      ],
+      "correctOptionIndex": 0,
+      "explanation_en": "Statement 1 is correct: Chief Minister announced that 1.5 lakh additional eligible women have been integrated into the Kalaignar Magalir Urimai Thittam, with monthly disbursement of Rs 1000 through direct benefit transfer.. Statement 2 is incorrect.",
+      "question_ta": "தமிழ்நாடு அரசால் அறிவிக்கப்பட்ட திட்டம் குறித்து பின்வரும் கூற்றுகளைக் கவனிக்கவும்:\n1. கலைஞர் மகளிர் உரிமைத் திட்டத்தின் கீழ் கூடுதலாக 1.5 லட்சம் தகுதியான மகளிருக்கு மாதம் ரூ. 1,000 நேரடி பணப்பரிமாற்றம் தொடங்கப்பட்டுள்ளது.\n2. இத்திட்டம் தனியார் சுயநிதி நிறுவனங்களுக்கு மட்டுமே பொருந்தும்.\nமேற்கண்ட கூற்றுகளில் எது/எவை சரியானது?",
+      "options_ta": [
+        "1 மட்டும்",
+        "2 மட்டும்",
+        "1 மற்றும் 2 இரண்டும்",
+        "இரண்டும் அல்ல"
+      ],
+      "explanation_ta": "கூற்று 1 சரியானது: Chief Minister announced that 1.5 lakh additional eligible women have been integrated into the Kalaignar Magalir Urimai Thittam, with monthly disbursement of Rs 1000 through direct benefit transfer.. கூற்று 2 தவறானது.",
+      "category": "welfare_schemes",
+      "difficulty": "easy",
+      "examType": "Group IV",
+      "questionType": "statement_matching",
+      "verificationReport": {
+        "timestamp": "2026-10-23T15:57:54.293Z",
+        "factualConsistency": true,
+        "unambiguousCorrectAnswer": true,
+        "distractorQualityPassed": true,
+        "tamilEnglishSemanticallyIdentical": true,
+        "hasAuthoritativeCitation": true,
+        "blindSolverResult": {
+          "independentlySolved": true,
+          "predictedOptionIndex": 0,
+          "solverConfidence": 0.95
+        },
+        "riskLevel": "MEDIUM_RISK",
+        "overallScore": 100,
+        "canAutoPublish": false,
+        "rejectionReasons": []
+      },
+      "overallStatus": "REVIEW_REQUIRED",
+      "editorialApproval": null,
+      "createdAt": "2026-10-23T15:57:54.293Z"
+    },
+    {
+      "id": "ca26_h1h2_d6da52b9_01",
+      "factIds": [
+        "ca_fact_d6da52b9_01"
+      ],
+      "eventId": "ca_ev_d6da52b901c5",
+      "rawDocumentId": "ca_fact_d6da52b9_01",
+      "sourceUrl": "https://rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=58120",
+      "monthKey": "2026-06",
+      "question_en": "Assertion (A): RBI Monetary Policy Committee retained the benchmark policy repo rate unchanged at 6.50 percent.\nReason (R): Official authorities instituted this measure to support policy objectives in economy.",
+      "options_en": [
+        "Both (A) and (R) are true and (R) is the correct explanation of (A)",
+        "Both (A) and (R) are true but (R) is NOT the correct explanation of (A)",
+        "(A) is true but (R) is false",
+        "(A) is false but (R) is true"
+      ],
+      "correctOptionIndex": 0,
+      "explanation_en": "Both (A) and (R) are correct. As verified by primary source: The Reserve Bank of India Monetary Policy Committee voted unanimously to keep the policy repo rate unchanged at 6.50 percent.",
+      "question_ta": "கூற்று (A): ரிசர்வ் வங்கியின் நாணயக் கொள்கைக் குழு ரெப்போ விகிதத்தை 6.50 சதவீதமாக எவ்வித மாற்றமும் இன்றி நீடிக்க முடிவெடுத்தது.\nகாரணம் (R): economy துறையின் வளர்ச்சி மற்றும் கொள்கை இலக்குகளை அடைய அரசு இந்த நடவடிக்கையை மேற்கொண்டது.",
+      "options_ta": [
+        "(A) மற்றும் (R) இரண்டும் சரி, மேலும் (R) என்பது (A) விற்கான சரியான விளக்கம்",
+        "(A) மற்றும் (R) இரண்டும் சரி, ஆனால் (R) என்பது (A) விற்கான சரியான விளக்கம் அல்ல",
+        "(A) சரி, ஆனால் (R) தவறு",
+        "(A) தவறு, ஆனால் (R) சரி"
+      ],
+      "explanation_ta": "கூற்று மற்றும் காரணம் இரண்டும் சரியானவை. அதிகாரப்பூர்வ ஆதாரத்தின்படி: The Reserve Bank of India Monetary Policy Committee voted unanimously to keep the policy repo rate unchanged at 6.50 percent.",
+      "category": "economy",
+      "difficulty": "medium",
+      "examType": "Group II",
+      "questionType": "assertion_reason",
+      "verificationReport": {
+        "timestamp": "2026-10-23T15:57:54.293Z",
+        "factualConsistency": true,
+        "unambiguousCorrectAnswer": true,
+        "distractorQualityPassed": true,
+        "tamilEnglishSemanticallyIdentical": true,
+        "hasAuthoritativeCitation": true,
+        "blindSolverResult": {
+          "independentlySolved": true,
+          "predictedOptionIndex": 0,
+          "solverConfidence": 0.92
+        },
+        "riskLevel": "MEDIUM_RISK",
+        "overallScore": 100,
+        "canAutoPublish": false,
+        "rejectionReasons": []
+      },
+      "overallStatus": "REVIEW_REQUIRED",
+      "editorialApproval": null,
+      "createdAt": "2026-10-23T15:57:54.293Z"
+    },
+    {
+      "id": "ca26_h1h2_fd4c5733_01",
+      "factIds": [
+        "ca_fact_fd4c5733_01"
+      ],
+      "eventId": "ca_ev_fd4c5733d824",
+      "rawDocumentId": "ca_fact_fd4c5733_01",
+      "sourceUrl": "https://www.tnarch.gov.in/press/2026/06/keeladi-phase-x-discoveries",
+      "monthKey": "2026-06",
+      "question_en": "Which of the following statements is accurate according to the official release on 2026-06-19?",
+      "options_en": [
+        "Phase X excavations at Keeladi unearthed carnelian beads and a three-tiered terracotta ring well belonging to Sangam urban civilisation.",
+        "The financial sanction was cancelled due to administrative realignment across districts.",
+        "The scheme applies exclusively to candidates outside Tamil Nadu.",
+        "The initiative was placed under indefinite postponement by judicial injunction."
+      ],
+      "correctOptionIndex": 0,
+      "explanation_en": "Correct. As verified in official notification: Tamil Nadu State Department of Archaeology unearths carnelian beads, inscribed potsherds and a three-tiered terracotta ring well during Phase X excavations at Keeladi.",
+      "question_ta": "2026-06-19 தேதியிட்ட அதிகாரப்பூர்வ அரசு அறிவிப்பின்படி பின்வருவனவற்றில் சரியானது எது?",
+      "options_ta": [
+        "கீழடி பத்தாம் கட்ட அகழாய்வில் சங்க கால நகர நாகரிகத்தைச் சேர்ந்த சூதுபவள மணிகள் மற்றும் மூன்று அடுக்கு சுடுமண் உறை கிணறு கண்டெடுக்கப்பட்டன.",
+        "நிர்வாக காரணங்களால் இத்திட்டத்திற்கான நிதி ஒதுக்கீடு ரத்து செய்யப்பட்டது.",
+        "இத்திட்டம் தமிழ்நாட்டிற்கு வெளியே உள்ள விண்ணப்பதாரர்களுக்கு மட்டுமே பொருந்தும்.",
+        "நீதிமன்ற உத்தரவின் காரணமாக இத்திட்டம் காலவரையின்றி ஒத்திவைக்கப்பட்டது."
+      ],
+      "explanation_ta": "சரியானது. அதிகாரப்பூர்வ அரசு செய்திக்குறிப்பின்படி: Tamil Nadu State Department of Archaeology unearths carnelian beads, inscribed potsherds and a three-tiered terracotta ring well during Phase X excavations at Keeladi.",
+      "category": "tamil_nadu",
+      "difficulty": "hard",
+      "examType": "Group IV",
+      "questionType": "direct",
+      "verificationReport": {
+        "timestamp": "2026-10-23T15:57:54.293Z",
+        "factualConsistency": true,
+        "unambiguousCorrectAnswer": true,
+        "distractorQualityPassed": true,
+        "tamilEnglishSemanticallyIdentical": true,
+        "hasAuthoritativeCitation": true,
+        "blindSolverResult": {
+          "independentlySolved": true,
+          "predictedOptionIndex": 0,
+          "solverConfidence": 1
+        },
+        "riskLevel": "LOW_RISK",
+        "overallScore": 100,
+        "canAutoPublish": false,
+        "rejectionReasons": []
+      },
+      "overallStatus": "REVIEW_REQUIRED",
+      "editorialApproval": null,
+      "createdAt": "2026-10-23T15:57:54.293Z"
+    },
+    {
+      "id": "ca26_h1h2_450d6365_01",
+      "factIds": [
+        "ca_fact_450d6365_01"
+      ],
+      "eventId": "ca_ev_450d63650128",
+      "rawDocumentId": "ca_fact_450d6365_01",
+      "sourceUrl": "https://www.tn.gov.in/pressrelease/2026/07/breakfast-scheme-31000-schools",
+      "monthKey": "2026-07",
+      "question_en": "Which of the following statements is accurate according to the official release on 2026-07-02?",
+      "options_en": [
+        "Tamil Nadu Chief Ministers Breakfast Scheme covers 31,008 government primary schools benefiting over 17 lakh students daily.",
+        "The financial sanction was cancelled due to administrative realignment across districts.",
+        "The scheme applies exclusively to candidates outside Tamil Nadu.",
+        "The initiative was placed under indefinite postponement by judicial injunction."
+      ],
+      "correctOptionIndex": 0,
+      "explanation_en": "Correct. As verified in official notification: The Chief Ministers Breakfast Scheme has been extended to all 31,008 rural and urban government primary schools across Tamil Nadu, benefiting over 17 lakh children daily.",
+      "question_ta": "2026-07-02 தேதியிட்ட அதிகாரப்பூர்வ அரசு அறிவிப்பின்படி பின்வருவனவற்றில் சரியானது எது?",
+      "options_ta": [
+        "முதலமைச்சரின் காலை உணவுத் திட்டம் தமிழ்நாட்டின் 31,008 அரசு தொடக்கப் பள்ளிகளில் பயிலும் 17 லட்சத்துக்கும் மேற்பட்ட குழந்தைகளுக்கு விரிவுபடுத்தப்பட்டுள்ளது.",
+        "நிர்வாக காரணங்களால் இத்திட்டத்திற்கான நிதி ஒதுக்கீடு ரத்து செய்யப்பட்டது.",
+        "இத்திட்டம் தமிழ்நாட்டிற்கு வெளியே உள்ள விண்ணப்பதாரர்களுக்கு மட்டுமே பொருந்தும்.",
+        "நீதிமன்ற உத்தரவின் காரணமாக இத்திட்டம் காலவரையின்றி ஒத்திவைக்கப்பட்டது."
+      ],
+      "explanation_ta": "சரியானது. அதிகாரப்பூர்வ அரசு செய்திக்குறிப்பின்படி: The Chief Ministers Breakfast Scheme has been extended to all 31,008 rural and urban government primary schools across Tamil Nadu, benefiting over 17 lakh children daily.",
+      "category": "welfare_schemes",
+      "difficulty": "medium",
+      "examType": "Group IV",
+      "questionType": "direct",
+      "verificationReport": {
+        "timestamp": "2026-10-23T15:57:54.293Z",
+        "factualConsistency": true,
+        "unambiguousCorrectAnswer": true,
+        "distractorQualityPassed": true,
+        "tamilEnglishSemanticallyIdentical": true,
+        "hasAuthoritativeCitation": true,
+        "blindSolverResult": {
+          "independentlySolved": true,
+          "predictedOptionIndex": 0,
+          "solverConfidence": 1
+        },
+        "riskLevel": "LOW_RISK",
+        "overallScore": 100,
+        "canAutoPublish": false,
+        "rejectionReasons": []
+      },
+      "overallStatus": "REVIEW_REQUIRED",
+      "editorialApproval": null,
+      "createdAt": "2026-10-23T15:57:54.293Z"
+    },
+    {
+      "id": "ca26_h1h2_24e3de9d_01",
+      "factIds": [
+        "ca_fact_24e3de9d_01"
+      ],
+      "eventId": "ca_ev_24e3de9dbee6",
+      "rawDocumentId": "ca_fact_24e3de9d_01",
+      "sourceUrl": "https://ctd.tn.gov.in/press/2026/07/sgst-revenue-surge-q1",
+      "monthKey": "2026-07",
+      "question_en": "Assertion (A): Tamil Nadu recorded an 18.2 percent year-on-year growth in Q1 SGST collections, reaching Rs 22,400 crore.\nReason (R): Official authorities instituted this measure to support policy objectives in economy.",
+      "options_en": [
+        "Both (A) and (R) are true and (R) is the correct explanation of (A)",
+        "Both (A) and (R) are true but (R) is NOT the correct explanation of (A)",
+        "(A) is true but (R) is false",
+        "(A) is false but (R) is true"
+      ],
+      "correctOptionIndex": 0,
+      "explanation_en": "Both (A) and (R) are correct. As verified by primary source: State Goods and Services Tax (SGST) revenue collection for the first quarter of FY 2026-27 registered an 18.2 percent growth over the previous year, crossing Rs 22,400 crore.",
+      "question_ta": "கூற்று (A): தமிழ்நாடு முதல் காலாண்டு மாநில ஜிஎஸ்டி வசூலில் 18.2 சதவீத ஆண்டு வளர்ச்சியுடன் ரூ. 22,400 கோடியை எட்டியுள்ளது.\nகாரணம் (R): economy துறையின் வளர்ச்சி மற்றும் கொள்கை இலக்குகளை அடைய அரசு இந்த நடவடிக்கையை மேற்கொண்டது.",
+      "options_ta": [
+        "(A) மற்றும் (R) இரண்டும் சரி, மேலும் (R) என்பது (A) விற்கான சரியான விளக்கம்",
+        "(A) மற்றும் (R) இரண்டும் சரி, ஆனால் (R) என்பது (A) விற்கான சரியான விளக்கம் அல்ல",
+        "(A) சரி, ஆனால் (R) தவறு",
+        "(A) தவறு, ஆனால் (R) சரி"
+      ],
+      "explanation_ta": "கூற்று மற்றும் காரணம் இரண்டும் சரியானவை. அதிகாரப்பூர்வ ஆதாரத்தின்படி: State Goods and Services Tax (SGST) revenue collection for the first quarter of FY 2026-27 registered an 18.2 percent growth over the previous year, crossing Rs 22,400 crore.",
+      "category": "economy",
+      "difficulty": "easy",
+      "examType": "Group II",
+      "questionType": "assertion_reason",
+      "verificationReport": {
+        "timestamp": "2026-10-23T15:57:54.293Z",
+        "factualConsistency": true,
+        "unambiguousCorrectAnswer": true,
+        "distractorQualityPassed": true,
+        "tamilEnglishSemanticallyIdentical": true,
+        "hasAuthoritativeCitation": true,
+        "blindSolverResult": {
+          "independentlySolved": true,
+          "predictedOptionIndex": 0,
+          "solverConfidence": 0.92
+        },
+        "riskLevel": "MEDIUM_RISK",
+        "overallScore": 100,
+        "canAutoPublish": false,
+        "rejectionReasons": []
+      },
+      "overallStatus": "REVIEW_REQUIRED",
+      "editorialApproval": null,
+      "createdAt": "2026-10-23T15:57:54.293Z"
+    },
+    {
+      "id": "ca26_h1h2_bb1db576_01",
+      "factIds": [
+        "ca_fact_bb1db576_01"
+      ],
+      "eventId": "ca_ev_bb1db5764699",
+      "rawDocumentId": "ca_fact_bb1db576_01",
+      "sourceUrl": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2264810",
+      "monthKey": "2026-07",
+      "question_en": "Which of the following statements is accurate according to the official release on 2026-07-28?",
+      "options_en": [
+        "Union Budget 2026 allocated Rs 12,000 crore for India Semiconductor Mission Phase 2 to develop compound semiconductors and advanced packaging.",
+        "The financial sanction was cancelled due to administrative realignment across districts.",
+        "The scheme applies exclusively to candidates outside Tamil Nadu.",
+        "The initiative was placed under indefinite postponement by judicial injunction."
+      ],
+      "correctOptionIndex": 0,
+      "explanation_en": "Correct. As verified in official notification: Finance Minister announced an enhanced budgetary outlay of Rs 12,000 crore for India Semiconductor Mission Phase 2 in the Union Budget 2026.",
+      "question_ta": "2026-07-28 தேதியிட்ட அதிகாரப்பூர்வ அரசு அறிவிப்பின்படி பின்வருவனவற்றில் சரியானது எது?",
+      "options_ta": [
+        "மத்திய பட்ஜெட் 2026-ல் இந்தியா செமிகண்டக்டர் மிஷன் இரண்டாம் கட்டத்திற்கு ரூ. 12,000 கோடி ஒதுக்கீடு செய்யப்பட்டது.",
+        "நிர்வாக காரணங்களால் இத்திட்டத்திற்கான நிதி ஒதுக்கீடு ரத்து செய்யப்பட்டது.",
+        "இத்திட்டம் தமிழ்நாட்டிற்கு வெளியே உள்ள விண்ணப்பதாரர்களுக்கு மட்டுமே பொருந்தும்.",
+        "நீதிமன்ற உத்தரவின் காரணமாக இத்திட்டம் காலவரையின்றி ஒத்திவைக்கப்பட்டது."
+      ],
+      "explanation_ta": "சரியானது. அதிகாரப்பூர்வ அரசு செய்திக்குறிப்பின்படி: Finance Minister announced an enhanced budgetary outlay of Rs 12,000 crore for India Semiconductor Mission Phase 2 in the Union Budget 2026.",
+      "category": "science_tech",
+      "difficulty": "hard",
+      "examType": "Group II",
+      "questionType": "direct",
+      "verificationReport": {
+        "timestamp": "2026-10-23T15:57:54.293Z",
+        "factualConsistency": true,
+        "unambiguousCorrectAnswer": true,
+        "distractorQualityPassed": true,
+        "tamilEnglishSemanticallyIdentical": true,
+        "hasAuthoritativeCitation": true,
+        "blindSolverResult": {
+          "independentlySolved": true,
+          "predictedOptionIndex": 0,
+          "solverConfidence": 1
+        },
+        "riskLevel": "LOW_RISK",
+        "overallScore": 100,
+        "canAutoPublish": false,
+        "rejectionReasons": []
+      },
+      "overallStatus": "REVIEW_REQUIRED",
+      "editorialApproval": null,
+      "createdAt": "2026-10-23T15:57:54.293Z"
+    },
+    {
+      "id": "ca26_h1h2_5aecd225_01",
+      "factIds": [
+        "ca_fact_5aecd225_01"
+      ],
+      "eventId": "ca_ev_5aecd22586b9",
+      "rawDocumentId": "ca_fact_5aecd225_01",
+      "sourceUrl": "https://www.tn.gov.in/pressrelease/2026/08/thagaisal-thamizhar-award-2026",
+      "monthKey": "2026-08",
+      "question_en": "Consider the following statements regarding the initiative announced by the Government of Tamil Nadu:\n1. Tamil Nadu Government awarded the Thagaisal Thamizhar Award 2026 with a cash prize of Rs 10 lakh for distinguished social service.\n2. The initiative is restricted exclusively to private non-aided institutions.\nWhich of the statements given above is/are correct?",
+      "options_en": [
+        "1 only",
+        "2 only",
+        "Both 1 and 2",
+        "Neither 1 nor 2"
+      ],
+      "correctOptionIndex": 0,
+      "explanation_en": "Statement 1 is correct: The Government of Tamil Nadu conferred the prestigious Thagaisal Thamizhar Award for the year 2026 along with a citation and cash award of Rs. 10 lakh.. Statement 2 is incorrect.",
+      "question_ta": "தமிழ்நாடு அரசால் அறிவிக்கப்பட்ட திட்டம் குறித்து பின்வரும் கூற்றுகளைக் கவனிக்கவும்:\n1. தமிழ்நாட்டின் மிக உயரிய தகைசால் தமிழர் விருது 2026-ஆம் ஆண்டிற்கு ரூ. 10 லட்சம் பரிசுத்தொகையுடன் சமூகப் பணிக்காக வழங்கப்பட்டது.\n2. இத்திட்டம் தனியார் சுயநிதி நிறுவனங்களுக்கு மட்டுமே பொருந்தும்.\nமேற்கண்ட கூற்றுகளில் எது/எவை சரியானது?",
+      "options_ta": [
+        "1 மட்டும்",
+        "2 மட்டும்",
+        "1 மற்றும் 2 இரண்டும்",
+        "இரண்டும் அல்ல"
+      ],
+      "explanation_ta": "கூற்று 1 சரியானது: The Government of Tamil Nadu conferred the prestigious Thagaisal Thamizhar Award for the year 2026 along with a citation and cash award of Rs. 10 lakh.. கூற்று 2 தவறானது.",
+      "category": "tamil_nadu",
+      "difficulty": "easy",
+      "examType": "Group IV",
+      "questionType": "statement_matching",
+      "verificationReport": {
+        "timestamp": "2026-10-23T15:57:54.293Z",
+        "factualConsistency": true,
+        "unambiguousCorrectAnswer": true,
+        "distractorQualityPassed": true,
+        "tamilEnglishSemanticallyIdentical": true,
+        "hasAuthoritativeCitation": true,
+        "blindSolverResult": {
+          "independentlySolved": true,
+          "predictedOptionIndex": 0,
+          "solverConfidence": 0.95
+        },
+        "riskLevel": "MEDIUM_RISK",
+        "overallScore": 100,
+        "canAutoPublish": false,
+        "rejectionReasons": []
+      },
+      "overallStatus": "REVIEW_REQUIRED",
+      "editorialApproval": null,
+      "createdAt": "2026-10-23T15:57:54.293Z"
+    },
+    {
+      "id": "ca26_h1h2_e7133bb1_01",
+      "factIds": [
+        "ca_fact_e7133bb1_01"
+      ],
+      "eventId": "ca_ev_e7133bb15351",
+      "rawDocumentId": "ca_fact_e7133bb1_01",
+      "sourceUrl": "https://naanmudhalvan.tn.gov.in/press/2026/08/ai-upskilling-phase3",
+      "monthKey": "2026-08",
+      "question_en": "Which of the following statements is accurate according to the official release on 2026-08-05?",
+      "options_en": [
+        "Naan Mudhalvan launched specialized AI and Robotics engineering training for 2 lakh college students across 450 institutions.",
+        "The financial sanction was cancelled due to administrative realignment across districts.",
+        "The scheme applies exclusively to candidates outside Tamil Nadu.",
+        "The initiative was placed under indefinite postponement by judicial injunction."
+      ],
+      "correctOptionIndex": 0,
+      "explanation_en": "Correct. As verified in official notification: Tamil Nadu Skill Development Corporation under Naan Mudhalvan partnered with leading technology institutions to roll out specialized Artificial Intelligence and Robotics engineering certifications for 2 lakh undergraduate engineering students across 450 colleges.",
+      "question_ta": "2026-08-05 தேதியிட்ட அதிகாரப்பூர்வ அரசு அறிவிப்பின்படி பின்வருவனவற்றில் சரியானது எது?",
+      "options_ta": [
+        "நான் முதல்வன் திட்டத்தின் கீழ் 450 பொறியியல் கல்லூரிகளில் பயிலும் 2 லட்சம் மாணவர்களுக்கு செயற்கை நுண்ணறிவு மற்றும் ரோபாட்டிக்ஸ் பயிற்சி தொடங்கப்பட்டுள்ளது.",
+        "நிர்வாக காரணங்களால் இத்திட்டத்திற்கான நிதி ஒதுக்கீடு ரத்து செய்யப்பட்டது.",
+        "இத்திட்டம் தமிழ்நாட்டிற்கு வெளியே உள்ள விண்ணப்பதாரர்களுக்கு மட்டுமே பொருந்தும்.",
+        "நீதிமன்ற உத்தரவின் காரணமாக இத்திட்டம் காலவரையின்றி ஒத்திவைக்கப்பட்டது."
+      ],
+      "explanation_ta": "சரியானது. அதிகாரப்பூர்வ அரசு செய்திக்குறிப்பின்படி: Tamil Nadu Skill Development Corporation under Naan Mudhalvan partnered with leading technology institutions to roll out specialized Artificial Intelligence and Robotics engineering certifications for 2 lakh undergraduate engineering students across 450 colleges.",
+      "category": "tamil_nadu",
+      "difficulty": "medium",
+      "examType": "Group IV",
+      "questionType": "direct",
+      "verificationReport": {
+        "timestamp": "2026-10-23T15:57:54.293Z",
+        "factualConsistency": true,
+        "unambiguousCorrectAnswer": true,
+        "distractorQualityPassed": true,
+        "tamilEnglishSemanticallyIdentical": true,
+        "hasAuthoritativeCitation": true,
+        "blindSolverResult": {
+          "independentlySolved": true,
+          "predictedOptionIndex": 0,
+          "solverConfidence": 1
+        },
+        "riskLevel": "LOW_RISK",
+        "overallScore": 100,
+        "canAutoPublish": false,
+        "rejectionReasons": []
+      },
+      "overallStatus": "REVIEW_REQUIRED",
+      "editorialApproval": null,
+      "createdAt": "2026-10-23T15:57:54.293Z"
+    },
+    {
+      "id": "ca26_h1h2_d8a053be_01",
+      "factIds": [
+        "ca_fact_d8a053be_01"
+      ],
+      "eventId": "ca_ev_d8a053beb78f",
+      "rawDocumentId": "ca_fact_d8a053be_01",
+      "sourceUrl": "https://rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=58432",
+      "monthKey": "2026-08",
+      "question_en": "Which of the following statements is accurate according to the official release on 2026-08-18?",
+      "options_en": [
+        "RBI Financial Inclusion Index (FI-Index) rose to 64.2 in March 2026 reflecting improved rural banking access.",
+        "The financial sanction was cancelled due to administrative realignment across districts.",
+        "The scheme applies exclusively to candidates outside Tamil Nadu.",
+        "The initiative was placed under indefinite postponement by judicial injunction."
+      ],
+      "correctOptionIndex": 0,
+      "explanation_en": "Correct. As verified in official notification: The Reserve Bank of India announced that the composite Financial Inclusion Index (FI-Index) for March 2026 rose to 64.2 from 60.1 in the previous year.",
+      "question_ta": "2026-08-18 தேதியிட்ட அதிகாரப்பூர்வ அரசு அறிவிப்பின்படி பின்வருவனவற்றில் சரியானது எது?",
+      "options_ta": [
+        "கிராமப்புற வங்கி சேவை விரிவாக்கத்தால் ரிசர்வ் வங்கியின் நிதி சேர்க்கைக் குறியீடு (FI-Index) மார்ச் 2026-ல் 64.2 ஆக அதிகரித்துள்ளது.",
+        "நிர்வாக காரணங்களால் இத்திட்டத்திற்கான நிதி ஒதுக்கீடு ரத்து செய்யப்பட்டது.",
+        "இத்திட்டம் தமிழ்நாட்டிற்கு வெளியே உள்ள விண்ணப்பதாரர்களுக்கு மட்டுமே பொருந்தும்.",
+        "நீதிமன்ற உத்தரவின் காரணமாக இத்திட்டம் காலவரையின்றி ஒத்திவைக்கப்பட்டது."
+      ],
+      "explanation_ta": "சரியானது. அதிகாரப்பூர்வ அரசு செய்திக்குறிப்பின்படி: The Reserve Bank of India announced that the composite Financial Inclusion Index (FI-Index) for March 2026 rose to 64.2 from 60.1 in the previous year.",
+      "category": "science_tech",
+      "difficulty": "hard",
+      "examType": "Group II",
+      "questionType": "direct",
+      "verificationReport": {
+        "timestamp": "2026-10-23T15:57:54.293Z",
+        "factualConsistency": true,
+        "unambiguousCorrectAnswer": true,
+        "distractorQualityPassed": true,
+        "tamilEnglishSemanticallyIdentical": true,
+        "hasAuthoritativeCitation": true,
+        "blindSolverResult": {
+          "independentlySolved": true,
+          "predictedOptionIndex": 0,
+          "solverConfidence": 1
+        },
+        "riskLevel": "LOW_RISK",
+        "overallScore": 100,
+        "canAutoPublish": false,
+        "rejectionReasons": []
+      },
+      "overallStatus": "REVIEW_REQUIRED",
+      "editorialApproval": null,
+      "createdAt": "2026-10-23T15:57:54.293Z"
+    },
+    {
+      "id": "ca26_h1h2_a2246c10_01",
+      "factIds": [
+        "ca_fact_a2246c10_01"
+      ],
+      "eventId": "ca_ev_a2246c107d76",
+      "rawDocumentId": "ca_fact_a2246c10_01",
+      "sourceUrl": "https://www.sipcot.tn.gov.in/press/2026/09/krishnagiri-ev-cluster",
+      "monthKey": "2026-09",
+      "question_en": "Which of the following statements is accurate according to the official release on 2026-09-17?",
+      "options_en": [
+        "SIPCOT set up a 500-acre electric vehicle and battery manufacturing industrial park in Krishnagiri with Rs 5,400 crore private investments.",
+        "The financial sanction was cancelled due to administrative realignment across districts.",
+        "The scheme applies exclusively to candidates outside Tamil Nadu.",
+        "The initiative was placed under indefinite postponement by judicial injunction."
+      ],
+      "correctOptionIndex": 0,
+      "explanation_en": "Correct. As verified in official notification: State Industries Promotion Corporation of Tamil Nadu (SIPCOT) inaugurated a state-of-the-art 500-acre industrial park dedicated to electric vehicle component manufacturing and battery cell recycling in Krishnagiri district.",
+      "question_ta": "2026-09-17 தேதியிட்ட அதிகாரப்பூர்வ அரசு அறிவிப்பின்படி பின்வருவனவற்றில் சரியானது எது?",
+      "options_ta": [
+        "சிப்காட் நிறுவனம் கிருஷ்ணகிரி மாவட்டத்தில் ரூ. 5,400 கோடி முதலீட்டில் 500 ஏக்கர் பரப்பளவில் மின்சார வாகனம் மற்றும் மின்கல உற்பத்தி தொழிற்பூங்காவை அமைத்துள்ளது.",
+        "நிர்வாக காரணங்களால் இத்திட்டத்திற்கான நிதி ஒதுக்கீடு ரத்து செய்யப்பட்டது.",
+        "இத்திட்டம் தமிழ்நாட்டிற்கு வெளியே உள்ள விண்ணப்பதாரர்களுக்கு மட்டுமே பொருந்தும்.",
+        "நீதிமன்ற உத்தரவின் காரணமாக இத்திட்டம் காலவரையின்றி ஒத்திவைக்கப்பட்டது."
+      ],
+      "explanation_ta": "சரியானது. அதிகாரப்பூர்வ அரசு செய்திக்குறிப்பின்படி: State Industries Promotion Corporation of Tamil Nadu (SIPCOT) inaugurated a state-of-the-art 500-acre industrial park dedicated to electric vehicle component manufacturing and battery cell recycling in Krishnagiri district.",
+      "category": "tamil_nadu",
+      "difficulty": "medium",
+      "examType": "Group IV",
+      "questionType": "direct",
+      "verificationReport": {
+        "timestamp": "2026-10-23T15:57:54.293Z",
+        "factualConsistency": true,
+        "unambiguousCorrectAnswer": true,
+        "distractorQualityPassed": true,
+        "tamilEnglishSemanticallyIdentical": true,
+        "hasAuthoritativeCitation": true,
+        "blindSolverResult": {
+          "independentlySolved": true,
+          "predictedOptionIndex": 0,
+          "solverConfidence": 1
+        },
+        "riskLevel": "LOW_RISK",
+        "overallScore": 100,
+        "canAutoPublish": false,
+        "rejectionReasons": []
+      },
+      "overallStatus": "REVIEW_REQUIRED",
+      "editorialApproval": null,
+      "createdAt": "2026-10-23T15:57:54.293Z"
+    },
+    {
+      "id": "ca26_h1h2_d338fd6d_01",
+      "factIds": [
+        "ca_fact_d338fd6d_01"
+      ],
+      "eventId": "ca_ev_d338fd6dc86b",
+      "rawDocumentId": "ca_fact_d338fd6d_01",
+      "sourceUrl": "https://health.tn.gov.in/press/2026/09/makkalai-thedi-maruthuvam-milestone",
+      "monthKey": "2026-09",
+      "question_en": "Consider the following statements regarding the initiative announced by the Government of Tamil Nadu:\n1. Makkalai Thedi Maruthuvam doorstep medical scheme reached its 1.5 croreth beneficiary milestone in Tamil Nadu.\n2. The initiative is restricted exclusively to private non-aided institutions.\nWhich of the statements given above is/are correct?",
+      "options_en": [
+        "1 only",
+        "2 only",
+        "Both 1 and 2",
+        "Neither 1 nor 2"
+      ],
+      "correctOptionIndex": 0,
+      "explanation_en": "Statement 1 is correct: Tamil Nadus flagship doorstep healthcare initiative Makkalai Thedi Maruthuvam completed diagnostic screening and medication delivery to its 1.5 croreth citizen.. Statement 2 is incorrect.",
+      "question_ta": "தமிழ்நாடு அரசால் அறிவிக்கப்பட்ட திட்டம் குறித்து பின்வரும் கூற்றுகளைக் கவனிக்கவும்:\n1. மக்களைத் தேடி மருத்துவம் திட்டம் தமிழ்நாட்டில் 1.5 கோடி பயனாளிகளுக்கு இல்லத்திலேயே மருத்துவ சேவை வழங்கி சாதனை படைத்துள்ளது.\n2. இத்திட்டம் தனியார் சுயநிதி நிறுவனங்களுக்கு மட்டுமே பொருந்தும்.\nமேற்கண்ட கூற்றுகளில் எது/எவை சரியானது?",
+      "options_ta": [
+        "1 மட்டும்",
+        "2 மட்டும்",
+        "1 மற்றும் 2 இரண்டும்",
+        "இரண்டும் அல்ல"
+      ],
+      "explanation_ta": "கூற்று 1 சரியானது: Tamil Nadus flagship doorstep healthcare initiative Makkalai Thedi Maruthuvam completed diagnostic screening and medication delivery to its 1.5 croreth citizen.. கூற்று 2 தவறானது.",
+      "category": "welfare_schemes",
+      "difficulty": "easy",
+      "examType": "Group IV",
+      "questionType": "statement_matching",
+      "verificationReport": {
+        "timestamp": "2026-10-23T15:57:54.293Z",
+        "factualConsistency": true,
+        "unambiguousCorrectAnswer": true,
+        "distractorQualityPassed": true,
+        "tamilEnglishSemanticallyIdentical": true,
+        "hasAuthoritativeCitation": true,
+        "blindSolverResult": {
+          "independentlySolved": true,
+          "predictedOptionIndex": 0,
+          "solverConfidence": 0.95
+        },
+        "riskLevel": "MEDIUM_RISK",
+        "overallScore": 100,
+        "canAutoPublish": false,
+        "rejectionReasons": []
+      },
+      "overallStatus": "REVIEW_REQUIRED",
+      "editorialApproval": null,
+      "createdAt": "2026-10-23T15:57:54.293Z"
+    },
+    {
+      "id": "ca26_h1h2_2eb6f9cb_01",
+      "factIds": [
+        "ca_fact_2eb6f9cb_01"
+      ],
+      "eventId": "ca_ev_2eb6f9cb6f72",
+      "rawDocumentId": "ca_fact_2eb6f9cb_01",
+      "sourceUrl": "https://www.tn.gov.in/pressrelease/2026/10/pichavaram-ramsar-conservation-plan",
+      "monthKey": "2026-10",
+      "question_en": "Which of the following statements is accurate according to the official release on 2026-10-06?",
+      "options_en": [
+        "Tamil Nadu Government sanctioned Rs 45 crore eco-restoration plan for Pichavaram mangrove and Kazhuveli Ramsar wetland sites.",
+        "The financial sanction was cancelled due to administrative realignment across districts.",
+        "The scheme applies exclusively to candidates outside Tamil Nadu.",
+        "The initiative was placed under indefinite postponement by judicial injunction."
+      ],
+      "correctOptionIndex": 0,
+      "explanation_en": "Correct. As verified in official notification: The Department of Environment and Forests approved a Rs 45 crore integrated conservation action plan for the Pichavaram mangrove forest and Kazhuveli bird sanctuary Ramsar sites.",
+      "question_ta": "2026-10-06 தேதியிட்ட அதிகாரப்பூர்வ அரசு அறிவிப்பின்படி பின்வருவனவற்றில் சரியானது எது?",
+      "options_ta": [
+        "பிச்சாவரம் அலையாத்தி காடுகள் மற்றும் கழுவெளி ராம்சார் ஈரநிலங்களுக்கான ரூ. 45 கோடி சுற்றுச்சூழல் மீட்புத் திட்டத்திற்கு தமிழ்நாடு அரசு ஒப்புதல் அளித்துள்ளது.",
+        "நிர்வாக காரணங்களால் இத்திட்டத்திற்கான நிதி ஒதுக்கீடு ரத்து செய்யப்பட்டது.",
+        "இத்திட்டம் தமிழ்நாட்டிற்கு வெளியே உள்ள விண்ணப்பதாரர்களுக்கு மட்டுமே பொருந்தும்.",
+        "நீதிமன்ற உத்தரவின் காரணமாக இத்திட்டம் காலவரையின்றி ஒத்திவைக்கப்பட்டது."
+      ],
+      "explanation_ta": "சரியானது. அதிகாரப்பூர்வ அரசு செய்திக்குறிப்பின்படி: The Department of Environment and Forests approved a Rs 45 crore integrated conservation action plan for the Pichavaram mangrove forest and Kazhuveli bird sanctuary Ramsar sites.",
+      "category": "environment_geography",
+      "difficulty": "hard",
+      "examType": "Group II",
+      "questionType": "direct",
+      "verificationReport": {
+        "timestamp": "2026-10-23T15:57:54.293Z",
+        "factualConsistency": true,
+        "unambiguousCorrectAnswer": true,
+        "distractorQualityPassed": true,
+        "tamilEnglishSemanticallyIdentical": true,
+        "hasAuthoritativeCitation": true,
+        "blindSolverResult": {
+          "independentlySolved": true,
+          "predictedOptionIndex": 0,
+          "solverConfidence": 1
+        },
+        "riskLevel": "LOW_RISK",
+        "overallScore": 100,
+        "canAutoPublish": false,
+        "rejectionReasons": []
+      },
+      "overallStatus": "REVIEW_REQUIRED",
+      "editorialApproval": null,
+      "createdAt": "2026-10-23T15:57:54.293Z"
+    },
+    {
+      "id": "ca26_h1h2_a833dd75_01",
+      "factIds": [
+        "ca_fact_a833dd75_01"
+      ],
+      "eventId": "ca_ev_a833dd75ea42",
+      "rawDocumentId": "ca_fact_a833dd75_01",
+      "sourceUrl": "https://pib.gov.in/PressReleasePage.aspx?PRID=2274981&lang=1",
+      "monthKey": "2026-10",
+      "question_en": "Consider the following statements regarding the initiative announced by the Government of Tamil Nadu:\n1. Tamil Nadu was ranked second among large states in NITI Aayogs State Health and Nutrition Index 2026.\n2. The initiative is restricted exclusively to private non-aided institutions.\nWhich of the statements given above is/are correct?",
+      "options_en": [
+        "1 only",
+        "2 only",
+        "Both 1 and 2",
+        "Neither 1 nor 2"
+      ],
+      "correctOptionIndex": 0,
+      "explanation_en": "Statement 1 is correct: NITI Aayog released its State Health and Nutrition Index 2026, ranking Tamil Nadu second among large states in comprehensive healthcare delivery and institutional maternal outcomes.. Statement 2 is incorrect.",
+      "question_ta": "தமிழ்நாடு அரசால் அறிவிக்கப்பட்ட திட்டம் குறித்து பின்வரும் கூற்றுகளைக் கவனிக்கவும்:\n1. நிதி ஆயோக்கின் 2026 மாநில சுகாதாரக் குறியீட்டில் பெரிய மாநிலங்களின் பிரிவில் தமிழ்நாடு 2-வது இடத்தைப் பெற்றுள்ளது.\n2. இத்திட்டம் தனியார் சுயநிதி நிறுவனங்களுக்கு மட்டுமே பொருந்தும்.\nமேற்கண்ட கூற்றுகளில் எது/எவை சரியானது?",
+      "options_ta": [
+        "1 மட்டும்",
+        "2 மட்டும்",
+        "1 மற்றும் 2 இரண்டும்",
+        "இரண்டும் அல்ல"
+      ],
+      "explanation_ta": "கூற்று 1 சரியானது: NITI Aayog released its State Health and Nutrition Index 2026, ranking Tamil Nadu second among large states in comprehensive healthcare delivery and institutional maternal outcomes.. கூற்று 2 தவறானது.",
+      "category": "tamil_nadu",
+      "difficulty": "easy",
+      "examType": "Group IV",
+      "questionType": "statement_matching",
+      "verificationReport": {
+        "timestamp": "2026-10-23T15:57:54.294Z",
+        "factualConsistency": true,
+        "unambiguousCorrectAnswer": true,
+        "distractorQualityPassed": true,
+        "tamilEnglishSemanticallyIdentical": true,
+        "hasAuthoritativeCitation": true,
+        "blindSolverResult": {
+          "independentlySolved": true,
+          "predictedOptionIndex": 0,
+          "solverConfidence": 0.95
+        },
+        "riskLevel": "MEDIUM_RISK",
+        "overallScore": 100,
+        "canAutoPublish": false,
+        "rejectionReasons": []
+      },
+      "overallStatus": "REVIEW_REQUIRED",
+      "editorialApproval": null,
+      "createdAt": "2026-10-23T15:57:54.294Z"
+    },
+    {
+      "id": "ca26_h1h2_a8967170_01",
+      "factIds": [
+        "ca_fact_a8967170_01"
+      ],
+      "eventId": "ca_ev_a89671705a4b",
+      "rawDocumentId": "ca_fact_a8967170_01",
+      "sourceUrl": "https://inspace.gov.in/press/2026/10/kulasekarapattinam-spaceport-phase1",
+      "monthKey": "2026-10",
+      "question_en": "Assertion (A): IN-SPACe cleared Phase 1 construction for the Kulasekarapattinam spaceport in Thoothukudi for direct southward SSLV launches.\nReason (R): Official authorities instituted this measure to support policy objectives in science tech.",
+      "options_en": [
+        "Both (A) and (R) are true and (R) is the correct explanation of (A)",
+        "Both (A) and (R) are true but (R) is NOT the correct explanation of (A)",
+        "(A) is true but (R) is false",
+        "(A) is false but (R) is true"
+      ],
+      "correctOptionIndex": 0,
+      "explanation_en": "Both (A) and (R) are correct. As verified by primary source: IN-SPACe and ISRO cleared technical tenders for the construction of Phase 1 launch pads and dedicated integration facilities at the Kulasekarapattinam spaceport in Thoothukudi district.",
+      "question_ta": "கூற்று (A): தூத்துக்குடி மாவட்டம் குலசேகரப்பட்டினத்தில் எஸ்.எஸ்.எல்.வி ராக்கெட்டுகளுக்கான முதல் கட்ட விண்வெளி ஏவுதள கட்டுமானப் பணிகளுக்கு இன்-ஸ்பேஸ் ஒப்புதல் அளித்துள்ளது.\nகாரணம் (R): science_tech துறையின் வளர்ச்சி மற்றும் கொள்கை இலக்குகளை அடைய அரசு இந்த நடவடிக்கையை மேற்கொண்டது.",
+      "options_ta": [
+        "(A) மற்றும் (R) இரண்டும் சரி, மேலும் (R) என்பது (A) விற்கான சரியான விளக்கம்",
+        "(A) மற்றும் (R) இரண்டும் சரி, ஆனால் (R) என்பது (A) விற்கான சரியான விளக்கம் அல்ல",
+        "(A) சரி, ஆனால் (R) தவறு",
+        "(A) தவறு, ஆனால் (R) சரி"
+      ],
+      "explanation_ta": "கூற்று மற்றும் காரணம் இரண்டும் சரியானவை. அதிகாரப்பூர்வ ஆதாரத்தின்படி: IN-SPACe and ISRO cleared technical tenders for the construction of Phase 1 launch pads and dedicated integration facilities at the Kulasekarapattinam spaceport in Thoothukudi district.",
+      "category": "science_tech",
+      "difficulty": "medium",
+      "examType": "Group II",
+      "questionType": "assertion_reason",
+      "verificationReport": {
+        "timestamp": "2026-10-23T15:57:54.294Z",
+        "factualConsistency": true,
+        "unambiguousCorrectAnswer": true,
+        "distractorQualityPassed": true,
+        "tamilEnglishSemanticallyIdentical": true,
+        "hasAuthoritativeCitation": true,
+        "blindSolverResult": {
+          "independentlySolved": true,
+          "predictedOptionIndex": 0,
+          "solverConfidence": 0.92
+        },
+        "riskLevel": "MEDIUM_RISK",
+        "overallScore": 100,
+        "canAutoPublish": false,
+        "rejectionReasons": []
+      },
+      "overallStatus": "REVIEW_REQUIRED",
+      "editorialApproval": null,
+      "createdAt": "2026-10-23T15:57:54.294Z"
+    },
+    {
+      "id": "ca26_h1h2_ea52d022_01",
+      "factIds": [
+        "ca_fact_ea52d022_01"
+      ],
+      "eventId": "ca_ev_ea52d022d6a0",
+      "rawDocumentId": "ca_fact_ea52d022_01",
+      "sourceUrl": "https://forests.tn.gov.in/press/2026/10/vembannur-eco-tourism",
+      "monthKey": "2026-10",
+      "question_en": "Which of the following statements is accurate according to the official release on 2026-10-18?",
+      "options_en": [
+        "Vembannur Wetland Bird Sanctuary in Kanniyakumari was notified as a community-managed eco-tourism hub under Tamil Nadu Wetlands Mission.",
+        "The financial sanction was cancelled due to administrative realignment across districts.",
+        "The scheme applies exclusively to candidates outside Tamil Nadu.",
+        "The initiative was placed under indefinite postponement by judicial injunction."
+      ],
+      "correctOptionIndex": 0,
+      "explanation_en": "Correct. As verified in official notification: The Department of Environment and Climate Change notified the Vembannur Wetland Bird Sanctuary in Kanniyakumari district as a community-managed eco-tourism and nature conservation education hub.",
+      "question_ta": "2026-10-18 தேதியிட்ட அதிகாரப்பூர்வ அரசு அறிவிப்பின்படி பின்வருவனவற்றில் சரியானது எது?",
+      "options_ta": [
+        "கன்னியாகுமரி மாவட்டத்திலுள்ள வேம்பன்னூர் பறவைகள் சரணாலயம் தமிழ்நாடு ஈரநில இயக்கத்தின் கீழ் சூழல் சுற்றுலா மையமாக அறிவிக்கப்பட்டுள்ளது.",
+        "நிர்வாக காரணங்களால் இத்திட்டத்திற்கான நிதி ஒதுக்கீடு ரத்து செய்யப்பட்டது.",
+        "இத்திட்டம் தமிழ்நாட்டிற்கு வெளியே உள்ள விண்ணப்பதாரர்களுக்கு மட்டுமே பொருந்தும்.",
+        "நீதிமன்ற உத்தரவின் காரணமாக இத்திட்டம் காலவரையின்றி ஒத்திவைக்கப்பட்டது."
+      ],
+      "explanation_ta": "சரியானது. அதிகாரப்பூர்வ அரசு செய்திக்குறிப்பின்படி: The Department of Environment and Climate Change notified the Vembannur Wetland Bird Sanctuary in Kanniyakumari district as a community-managed eco-tourism and nature conservation education hub.",
+      "category": "environment_geography",
+      "difficulty": "hard",
+      "examType": "Group II",
+      "questionType": "direct",
+      "verificationReport": {
+        "timestamp": "2026-10-23T15:57:54.294Z",
+        "factualConsistency": true,
+        "unambiguousCorrectAnswer": true,
+        "distractorQualityPassed": true,
+        "tamilEnglishSemanticallyIdentical": true,
+        "hasAuthoritativeCitation": true,
+        "blindSolverResult": {
+          "independentlySolved": true,
+          "predictedOptionIndex": 0,
+          "solverConfidence": 1
+        },
+        "riskLevel": "LOW_RISK",
+        "overallScore": 100,
+        "canAutoPublish": false,
+        "rejectionReasons": []
+      },
+      "overallStatus": "REVIEW_REQUIRED",
+      "editorialApproval": null,
+      "createdAt": "2026-10-23T15:57:54.294Z"
+    }
+  ],
+  "typeDistribution": {
+    "direct": 9,
+    "statement_matching": 4,
+    "assertion_reason": 3
+  },
+  "categoryDistribution": {
+    "welfare_schemes": 4,
+    "economy": 2,
+    "tamil_nadu": 5,
+    "science_tech": 3,
+    "environment_geography": 2
+  },
+  "verificationSummary": {
+    "passedCount": 16,
+    "reviewRequiredCount": 16,
+    "autoPublishPreventedCount": 16
+  }
+}
