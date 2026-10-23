@@ -1,63 +1,15 @@
 {
-  "version": "2.0.0",
-  "generatedAt": "2026-10-23T15:36:21.397Z",
+  "version": "2.1.0-corrected",
+  "generatedAt": "2026-10-23T15:53:50.164Z",
   "coverageWindow": {
     "from": "2026-04-23",
     "to": "2026-10-23"
   },
-  "totalFactCount": 25,
-  "sourceSupportedCount": 23,
-  "conflictingCount": 1,
-  "reviewRequiredCount": 1,
+  "originalSourceCount": 24,
+  "validatedSourceCount": 17,
+  "quarantinedRecordCount": 9,
+  "totalEligibleFactCount": 16,
   "facts": [
-    {
-      "factId": "ca_fact_b4b569d7_01",
-      "duplicateGroupId": "group_ca_ev_b4b569d7f239",
-      "sourceUrl": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2255963&lang=1&reg=3",
-      "publisher": "SRC_GOI_PIB_TAMIL",
-      "evidenceExcerpt": "India and New Zealand formally signed a bilateral Free Trade Agreement in New Delhi to eliminate customs tariffs on over 85 percent of tariff lines over the next five years.",
-      "statement_en": "India and New Zealand signed a bilateral Free Trade Agreement eliminating tariffs on over 85% of trade lines.",
-      "statement_ta": "இந்தியா மற்றும் நியூசிலாந்து இடையே 85 சதவீத வர்த்தகப் பிரிவுகளில் தீர்வைகளை நீக்கும் தடையற்ற வர்த்தக ஒப்பந்தம் கையெழுத்தானது.",
-      "eventDate": "2026-04-27",
-      "publicationDate": "2026-04-27",
-      "effectiveDate": "2026-04-27",
-      "syllabusCategory": "economy",
-      "examGroups": [
-        "Group II",
-        "Group I"
-      ],
-      "entities": {
-        "persons": [],
-        "organizations": [],
-        "locations": [
-          "New Delhi"
-        ],
-        "dates": [],
-        "numericalValues": [
-          {
-            "label": "85%",
-            "value": 85,
-            "unit": "%"
-          },
-          {
-            "label": "85 percent",
-            "value": 85,
-            "unit": "percent"
-          }
-        ],
-        "schemes": [],
-        "awards": [],
-        "appointments": []
-      },
-      "verificationStatus": "source_supported",
-      "claimStatus": "source_supported",
-      "eligibleQuestionTypes": [
-        "direct",
-        "statement_matching",
-        "assertion_reason"
-      ],
-      "monthKey": "2026-04"
-    },
     {
       "factId": "ca_fact_a25f1758_01",
       "duplicateGroupId": "group_ca_ev_a25f17583f9b",
@@ -88,133 +40,6 @@
           {
             "label": "Rs. 1,000",
             "value": 1000
-          }
-        ],
-        "schemes": [],
-        "awards": [],
-        "appointments": []
-      },
-      "verificationStatus": "source_supported",
-      "claimStatus": "source_supported",
-      "eligibleQuestionTypes": [
-        "direct",
-        "statement_matching"
-      ],
-      "monthKey": "2026-05"
-    },
-    {
-      "factId": "ca_fact_b25f9b9e_01",
-      "duplicateGroupId": "group_ca_ev_b25f9b9ec31a",
-      "sourceUrl": "https://www.isro.gov.in/Updates/2026/05/sslv-d3-launch-success",
-      "publisher": "SRC_ISRO_MISSIONS",
-      "evidenceExcerpt": "ISRO successfully launched the third developmental flight of Small Satellite Launch Vehicle (SSLV-D3), placing Earth Observation Satellite EOS-08 into a 475 km circular orbit.",
-      "statement_en": "ISRO SSLV-D3 successfully injected Earth Observation Satellite EOS-08 into a 475 km circular orbit from Sriharikota.",
-      "statement_ta": "ஸ்ரீஹரிகோட்டாவிலிருந்து செலுத்தப்பட்ட இஸ்ரோவின் எஸ்.எஸ்.எல்.வி-டி3 விண்கலம் இ.ஓ.எஸ்-08 செயற்கைக்கோளை 475 கி.மீ வட்டப்பாதையில் வெற்றிகரமாக நிலைநிறுத்தியது.",
-      "eventDate": "2026-05-18",
-      "publicationDate": "2026-05-18",
-      "effectiveDate": "2026-05-18",
-      "syllabusCategory": "science_tech",
-      "examGroups": [
-        "Group II",
-        "Group I"
-      ],
-      "entities": {
-        "persons": [],
-        "organizations": [
-          "ISRO"
-        ],
-        "locations": [],
-        "dates": [],
-        "numericalValues": [
-          {
-            "label": "3",
-            "value": 3
-          },
-          {
-            "label": "08",
-            "value": 8
-          },
-          {
-            "label": "475 km",
-            "value": 475,
-            "unit": "km"
-          },
-          {
-            "label": "3",
-            "value": 3
-          },
-          {
-            "label": "08",
-            "value": 8
-          },
-          {
-            "label": "475 km",
-            "value": 475,
-            "unit": "km"
-          }
-        ],
-        "schemes": [],
-        "awards": [],
-        "appointments": []
-      },
-      "verificationStatus": "source_supported",
-      "claimStatus": "source_supported",
-      "eligibleQuestionTypes": [
-        "direct",
-        "statement_matching",
-        "assertion_reason"
-      ],
-      "monthKey": "2026-05"
-    },
-    {
-      "factId": "ca_fact_20c5e89b_01",
-      "duplicateGroupId": "group_ca_ev_20c5e89bfd68",
-      "sourceUrl": "https://www.sdat.tn.gov.in/news/2026/05/cm-trophy-registrations",
-      "publisher": "SRC_TN_DIPR_PRESS",
-      "evidenceExcerpt": "The Sports Development Authority of Tamil Nadu (SDAT) announced portal registrations for the Chief Minister Trophy 2026 games across 38 districts with total cash prizes worth Rs 37 crore.",
-      "statement_en": "SDAT announced CM Trophy 2026 sports competitions with total cash prizes of Rs 37 crore across 38 districts.",
-      "statement_ta": "தமிழ்நாட்டின் 38 மாவட்டங்களிலும் ரூ. 37 கோடி பரிசுத்தொகையுடன் கூடிய 2026 முதல்வர் கோப்பை போட்டிகளை தமிழ்நாடு விளையாட்டு மேம்பாட்டு ஆணையம் அறிவித்துள்ளது.",
-      "eventDate": "2026-05-12",
-      "publicationDate": "2026-05-12",
-      "effectiveDate": "2026-05-12",
-      "syllabusCategory": "tamil_nadu",
-      "examGroups": [
-        "Group IV",
-        "Group II"
-      ],
-      "entities": {
-        "persons": [],
-        "organizations": [
-          "SDAT"
-        ],
-        "locations": [],
-        "dates": [],
-        "numericalValues": [
-          {
-            "label": "2026",
-            "value": 2026
-          },
-          {
-            "label": "Rs 37 crore",
-            "value": 37,
-            "unit": "crore"
-          },
-          {
-            "label": "38",
-            "value": 38
-          },
-          {
-            "label": "2026",
-            "value": 2026
-          },
-          {
-            "label": "38",
-            "value": 38
-          },
-          {
-            "label": "Rs 37 crore",
-            "value": 37,
-            "unit": "crore"
           }
         ],
         "schemes": [],
@@ -279,66 +104,6 @@
       },
       "verificationStatus": "source_supported",
       "claimStatus": "source_supported",
-      "eligibleQuestionTypes": [
-        "direct",
-        "statement_matching"
-      ],
-      "monthKey": "2026-06"
-    },
-    {
-      "factId": "ca_fact_321e1f8c_02",
-      "duplicateGroupId": "group_ca_ev_321e1f8c0dea",
-      "sourceUrl": "https://www.tn.gov.in/pressrelease/2026/06/magalir-urimai-1500cr",
-      "publisher": "SRC_TN_DIPR_PRESS",
-      "evidenceExcerpt": "Chief Minister announced that 1.5 lakh additional eligible women have been integrated into the Kalaignar Magalir Urimai Thittam, with monthly disbursement of Rs 1000 through direct benefit transfer.",
-      "statement_en": "An early ministerial briefing proposed increasing the monthly stipend to Rs 1,200, but Government Order Ms No. 142 reaffirmed the Rs 1,000 benefit while easing electricity consumption limits.",
-      "statement_ta": "மாதாந்திர உதவித்தொகையை ரூ. 1,200 ஆக உயர்த்தும் ஆரம்பக்கட்ட பரிசீலனை இருந்தபோதிலும், அரசாணை எண் 142-ன் படி ரூ. 1,000 தொகையே உறுதிசெய்யப்பட்டது.",
-      "eventDate": "2026-06-04",
-      "publicationDate": "2026-06-04",
-      "effectiveDate": "2026-06-04",
-      "syllabusCategory": "welfare_schemes",
-      "examGroups": [
-        "Group IV",
-        "Group II",
-        "Group I"
-      ],
-      "entities": {
-        "persons": [],
-        "organizations": [],
-        "locations": [],
-        "dates": [],
-        "numericalValues": [
-          {
-            "label": "Rs 1,200",
-            "value": 1200
-          },
-          {
-            "label": "142",
-            "value": 142
-          },
-          {
-            "label": "Rs 1,000",
-            "value": 1000
-          },
-          {
-            "label": "1.5 lakh",
-            "value": 1.5,
-            "unit": "lakh"
-          },
-          {
-            "label": "Rs 1000",
-            "value": 1000
-          }
-        ],
-        "schemes": [
-          "Kalaignar Magalir Urimai Thittam"
-        ],
-        "awards": [],
-        "appointments": []
-      },
-      "verificationStatus": "conflicting",
-      "claimStatus": "conflicting",
-      "conflictReason": "Preliminary ministerial press briefing contrasted with final statutory Government Order G.O. Ms No. 142.",
       "eligibleQuestionTypes": [
         "direct",
         "statement_matching"
@@ -429,71 +194,6 @@
       "monthKey": "2026-06"
     },
     {
-      "factId": "ca_fact_93542f97_01",
-      "duplicateGroupId": "group_ca_ev_93542f9750a5",
-      "sourceUrl": "https://forests.tn.gov.in/press/2026/06/green-tamil-nadu-mission-10cr",
-      "publisher": "SRC_TN_DIPR_PRESS",
-      "evidenceExcerpt": "Tamil Nadu Environment, Climate Change and Forests Department launched the 2026-27 plantation drive targeting 10 crore native species saplings across non-forest lands to increase state tree cover to 33 percent.",
-      "statement_en": "Green Tamil Nadu Mission launched a plantation drive targeting 10 crore native tree saplings to increase forest and tree cover to 33%.",
-      "statement_ta": "மாநிலத்தின் பசுமைப் பரப்பை 33 சதவீதமாக உயர்த்தும் வகையில் 10 கோடி நாட்டு மரக்கன்றுகளை நட பசுமை தமிழ்நாடு இயக்கம் இலக்கு நிர்ணயித்துள்ளது.",
-      "eventDate": "2026-06-05",
-      "publicationDate": "2026-06-05",
-      "effectiveDate": "2026-06-05",
-      "syllabusCategory": "tamil_nadu",
-      "examGroups": [
-        "Group IV",
-        "Group II"
-      ],
-      "entities": {
-        "persons": [],
-        "organizations": [],
-        "locations": [],
-        "dates": [],
-        "numericalValues": [
-          {
-            "label": "10 crore",
-            "value": 10,
-            "unit": "crore"
-          },
-          {
-            "label": "33%",
-            "value": 33,
-            "unit": "%"
-          },
-          {
-            "label": "2026",
-            "value": 2026
-          },
-          {
-            "label": "27",
-            "value": 27
-          },
-          {
-            "label": "10 crore",
-            "value": 10,
-            "unit": "crore"
-          },
-          {
-            "label": "33 percent",
-            "value": 33,
-            "unit": "percent"
-          }
-        ],
-        "schemes": [
-          "Green Tamil Nadu Mission"
-        ],
-        "awards": [],
-        "appointments": []
-      },
-      "verificationStatus": "source_supported",
-      "claimStatus": "source_supported",
-      "eligibleQuestionTypes": [
-        "direct",
-        "statement_matching"
-      ],
-      "monthKey": "2026-06"
-    },
-    {
       "factId": "ca_fact_450d6365_01",
       "duplicateGroupId": "group_ca_ev_450d63650128",
       "sourceUrl": "https://www.tn.gov.in/pressrelease/2026/07/breakfast-scheme-31000-schools",
@@ -547,77 +247,6 @@
       "eligibleQuestionTypes": [
         "direct",
         "statement_matching"
-      ],
-      "monthKey": "2026-07"
-    },
-    {
-      "factId": "ca_fact_3712c084_01",
-      "duplicateGroupId": "group_ca_ev_3712c084b406",
-      "sourceUrl": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2261045&lang=1",
-      "publisher": "SRC_GOI_PIB_TAMIL",
-      "evidenceExcerpt": "The Economic Survey tabled in Parliament projects Indias real GDP growth rate between 6.5 to 7.0 percent with a baseline central estimate of 6.8 percent for the financial year 2026-27.",
-      "statement_en": "Union Economic Survey 2026-27 projected Indias real GDP baseline growth at 6.8 percent.",
-      "statement_ta": "மத்திய பொருளாதார ஆய்வறிக்கை 2026-27-ல் இந்தியாவின் உண்மையான ஜிடிபி வளர்ச்சி 6.8 சதவீதமாக இருக்கும் என கணித்துள்ளது.",
-      "eventDate": "2026-07-14",
-      "publicationDate": "2026-07-14",
-      "effectiveDate": "2026-07-14",
-      "syllabusCategory": "economy",
-      "examGroups": [
-        "Group II",
-        "Group I"
-      ],
-      "entities": {
-        "persons": [],
-        "organizations": [],
-        "locations": [],
-        "dates": [],
-        "numericalValues": [
-          {
-            "label": "2026",
-            "value": 2026
-          },
-          {
-            "label": "27",
-            "value": 27
-          },
-          {
-            "label": "6.8 percent",
-            "value": 6.8,
-            "unit": "percent"
-          },
-          {
-            "label": "6.5",
-            "value": 6.5
-          },
-          {
-            "label": "7.0 percent",
-            "value": 7,
-            "unit": "percent"
-          },
-          {
-            "label": "6.8 percent",
-            "value": 6.8,
-            "unit": "percent"
-          },
-          {
-            "label": "2026",
-            "value": 2026
-          },
-          {
-            "label": "27",
-            "value": 27
-          }
-        ],
-        "schemes": [],
-        "awards": [],
-        "appointments": []
-      },
-      "verificationStatus": "source_supported",
-      "claimStatus": "source_supported",
-      "eligibleQuestionTypes": [
-        "direct",
-        "statement_matching",
-        "assertion_reason"
       ],
       "monthKey": "2026-07"
     },
@@ -686,54 +315,6 @@
         "direct",
         "statement_matching",
         "assertion_reason"
-      ],
-      "monthKey": "2026-07"
-    },
-    {
-      "factId": "ca_fact_f90132a5_01",
-      "duplicateGroupId": "group_ca_ev_f90132a503f7",
-      "sourceUrl": "https://www.tn.gov.in/pressrelease/2026/07/offshore-wind-preliminary-dpr",
-      "publisher": "SRC_TN_DIPR_PRESS",
-      "evidenceExcerpt": "Tamil Nadu Green Energy Corporation and National Institute of Wind Energy prepared a draft Detailed Project Report (DPR) for a 1,000 MW offshore wind farm off the coast of Thoothukudi, subject to union cabinet seabed leasing clearance.",
-      "statement_en": "A draft DPR has been formulated for establishing a 1,000 MW offshore wind farm off Thoothukudi coast.",
-      "statement_ta": "தூத்துக்குடி கடல் பகுதியில் 1,000 மெகாவாட் திறன் கொண்ட கடலோர காற்றாலை மின் பண்ணை அமைப்பதற்கான வரைவு விரிவான திட்ட அறிக்கை தயாரிக்கப்பட்டுள்ளது.",
-      "eventDate": "2026-07-19",
-      "publicationDate": "2026-07-19",
-      "effectiveDate": "2026-07-19",
-      "syllabusCategory": "tamil_nadu",
-      "examGroups": [
-        "Group IV",
-        "Group II"
-      ],
-      "entities": {
-        "persons": [],
-        "organizations": [],
-        "locations": [
-          "Thoothukudi"
-        ],
-        "dates": [],
-        "numericalValues": [
-          {
-            "label": "1,000 MW",
-            "value": 1000,
-            "unit": "mw"
-          },
-          {
-            "label": "1,000 MW",
-            "value": 1000,
-            "unit": "mw"
-          }
-        ],
-        "schemes": [],
-        "awards": [],
-        "appointments": []
-      },
-      "verificationStatus": "review_required",
-      "claimStatus": "review_required",
-      "reviewNotes": "Draft project report pending final Union Cabinet seabed leasing notification and environmental impact clearance.",
-      "eligibleQuestionTypes": [
-        "direct",
-        "statement_matching"
       ],
       "monthKey": "2026-07"
     },
@@ -968,58 +549,6 @@
       "monthKey": "2026-08"
     },
     {
-      "factId": "ca_fact_fe05eab8_01",
-      "duplicateGroupId": "group_ca_ev_fe05eab88ccf",
-      "sourceUrl": "https://www.isro.gov.in/Updates/2026/09/spadex-docking-experiment",
-      "publisher": "SRC_ISRO_MISSIONS",
-      "evidenceExcerpt": "ISRO successfully executed the autonomous Space Docking Experiment (SPADEX) demonstration between two robotic spacecraft modules, achieving rendezvous at 700 km orbit.",
-      "statement_en": "ISRO completed autonomous docking demonstration SPADEX in a 700 km orbit as a key milestone for future Chandrayaan-4 lunar sample return.",
-      "statement_ta": "சந்திரயான்-4 நிலவு மாதிரி சேகரிப்புத் திட்டத்தின் முக்கிய மைல்கல்லாக 700 கி.மீ உயரத்தில் விண்கல இணைப்பு சோதனையை (SPADEX) இஸ்ரோ வெற்றிகரமாக நிறைவு செய்தது.",
-      "eventDate": "2026-09-02",
-      "publicationDate": "2026-09-02",
-      "effectiveDate": "2026-09-02",
-      "syllabusCategory": "science_tech",
-      "examGroups": [
-        "Group II",
-        "Group I"
-      ],
-      "entities": {
-        "persons": [],
-        "organizations": [
-          "ISRO"
-        ],
-        "locations": [],
-        "dates": [],
-        "numericalValues": [
-          {
-            "label": "700 km",
-            "value": 700,
-            "unit": "km"
-          },
-          {
-            "label": "4",
-            "value": 4
-          },
-          {
-            "label": "700 km",
-            "value": 700,
-            "unit": "km"
-          }
-        ],
-        "schemes": [],
-        "awards": [],
-        "appointments": []
-      },
-      "verificationStatus": "source_supported",
-      "claimStatus": "source_supported",
-      "eligibleQuestionTypes": [
-        "direct",
-        "statement_matching",
-        "assertion_reason"
-      ],
-      "monthKey": "2026-09"
-    },
-    {
       "factId": "ca_fact_a2246c10_01",
       "duplicateGroupId": "group_ca_ev_a2246c107d76",
       "sourceUrl": "https://www.sipcot.tn.gov.in/press/2026/09/krishnagiri-ev-cluster",
@@ -1057,53 +586,6 @@
           {
             "label": "500",
             "value": 500
-          }
-        ],
-        "schemes": [],
-        "awards": [],
-        "appointments": []
-      },
-      "verificationStatus": "source_supported",
-      "claimStatus": "source_supported",
-      "eligibleQuestionTypes": [
-        "direct",
-        "statement_matching"
-      ],
-      "monthKey": "2026-09"
-    },
-    {
-      "factId": "ca_fact_96531caf_01",
-      "duplicateGroupId": "group_ca_ev_96531cafc787",
-      "sourceUrl": "https://www.sdat.tn.gov.in/press/2026/09/fide-olympiad-gold-honors",
-      "publisher": "SRC_TN_DIPR_PRESS",
-      "evidenceExcerpt": "Chief Minister felicitated Tamil Nadu Grandmasters who powered the Indian national chess team to historic Gold medal victories in both Open and Women sections at the 45th FIDE Chess Olympiad held in Budapest.",
-      "statement_en": "Tamil Nadu Grandmasters powered India to double Gold medal victories in Open and Women sections at the 45th FIDE Chess Olympiad in Budapest.",
-      "statement_ta": "புடாபெஸ்டில் நடைபெற்ற 45-வது ஃபிடே செஸ் ஒலிம்பியாடில் இந்திய அணி ஓபன் மற்றும் மகளிர் பிரிவுகளில் இரட்டை தங்கம் வெல்ல தமிழ்நாடு கிராண்ட்மாஸ்டர்கள் வழிவகுத்தனர்.",
-      "eventDate": "2026-09-22",
-      "publicationDate": "2026-09-22",
-      "effectiveDate": "2026-09-22",
-      "syllabusCategory": "tamil_nadu",
-      "examGroups": [
-        "Group IV",
-        "Group II"
-      ],
-      "entities": {
-        "persons": [],
-        "organizations": [
-          "FIDE"
-        ],
-        "locations": [
-          "Budapest"
-        ],
-        "dates": [],
-        "numericalValues": [
-          {
-            "label": "45",
-            "value": 45
-          },
-          {
-            "label": "45",
-            "value": 45
           }
         ],
         "schemes": [],
@@ -1276,6 +758,7 @@
       "entities": {
         "persons": [],
         "organizations": [
+          "IN-SPACE",
           "ISRO"
         ],
         "locations": [
@@ -1342,25 +825,108 @@
       "monthKey": "2026-10"
     }
   ],
+  "quarantinedRecords": [
+    {
+      "factId": "ca_fact_b4b569d7_01",
+      "statement_en": "India and New Zealand signed a bilateral Free Trade Agreement eliminating tariffs on over 85% of trade lines.",
+      "sourceUrl": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2255963&lang=1&reg=3",
+      "originalEventDate": "2026-04-27",
+      "actualEventDate": "2026-04-27",
+      "quarantineReason": "SOURCE_UNVERIFIED",
+      "notes": "No authenticated comprehensive bilateral FTA was signed between India and New Zealand on this date; PRID unverified."
+    },
+    {
+      "factId": "ca_fact_b25f9b9e_01",
+      "statement_en": "ISRO SSLV-D3 successfully injected Earth Observation Satellite EOS-08 into a 475 km circular orbit from Sriharikota.",
+      "sourceUrl": "https://www.isro.gov.in/Updates/2026/05/sslv-d3-launch-success",
+      "originalEventDate": "2026-05-18",
+      "actualEventDate": "2026-05-18",
+      "quarantineReason": "DATE_MISMATCH",
+      "notes": "ISRO launched SSLV-D3/EOS-08 on 16 August 2024. Assigning this mission to 2026 is a chronological anomaly."
+    },
+    {
+      "factId": "ca_fact_20c5e89b_01",
+      "statement_en": "SDAT announced CM Trophy 2026 sports competitions with total cash prizes of Rs 37 crore across 38 districts.",
+      "sourceUrl": "https://www.sdat.tn.gov.in/news/2026/05/cm-trophy-registrations",
+      "originalEventDate": "2026-05-12",
+      "actualEventDate": "2026-05-12",
+      "quarantineReason": "SOURCE_UNVERIFIED",
+      "notes": "Placeholder path or generic announcement URL without verifiable official gazette or press notification."
+    },
+    {
+      "factId": "ca_fact_321e1f8c_02",
+      "statement_en": "An early ministerial briefing proposed increasing the monthly stipend to Rs 1,200, but Government Order Ms No. 142 reaffirmed the Rs 1,000 benefit while easing electricity consumption limits.",
+      "sourceUrl": "https://www.tn.gov.in/pressrelease/2026/06/magalir-urimai-1500cr",
+      "originalEventDate": "2026-06-04",
+      "actualEventDate": "2026-06-04",
+      "quarantineReason": "FACT_CONFLICT",
+      "notes": "Preliminary ministerial press briefing contrasted with final statutory Government Order G.O. Ms No. 142."
+    },
+    {
+      "factId": "ca_fact_93542f97_01",
+      "statement_en": "Green Tamil Nadu Mission launched a plantation drive targeting 10 crore native tree saplings to increase forest and tree cover to 33%.",
+      "sourceUrl": "https://forests.tn.gov.in/press/2026/06/green-tamil-nadu-mission-10cr",
+      "originalEventDate": "2026-06-05",
+      "actualEventDate": "2026-06-05",
+      "quarantineReason": "SOURCE_UNVERIFIED",
+      "notes": "Placeholder path or generic announcement URL without verifiable official gazette or press notification."
+    },
+    {
+      "factId": "ca_fact_3712c084_01",
+      "statement_en": "Union Economic Survey 2026-27 projected Indias real GDP baseline growth at 6.8 percent.",
+      "sourceUrl": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2261045&lang=1",
+      "originalEventDate": "2026-07-14",
+      "actualEventDate": "2026-07-14",
+      "quarantineReason": "DATE_MISMATCH",
+      "notes": "PIB released the Economic Survey 2025-26 on 29 January 2026. An Economic Survey 2026-27 was not released in July 2026."
+    },
+    {
+      "factId": "ca_fact_f90132a5_01",
+      "statement_en": "A draft DPR has been formulated for establishing a 1,000 MW offshore wind farm off Thoothukudi coast.",
+      "sourceUrl": "https://www.tn.gov.in/pressrelease/2026/07/offshore-wind-preliminary-dpr",
+      "originalEventDate": "2026-07-19",
+      "actualEventDate": "2026-07-19",
+      "quarantineReason": "REVIEW_REQUIRED",
+      "notes": "Draft project report pending final Union Cabinet seabed leasing notification and environmental impact clearance."
+    },
+    {
+      "factId": "ca_fact_fe05eab8_01",
+      "statement_en": "ISRO completed autonomous docking demonstration SPADEX in a 700 km orbit as a key milestone for future Chandrayaan-4 lunar sample return.",
+      "sourceUrl": "https://www.isro.gov.in/Updates/2026/09/spadex-docking-experiment",
+      "originalEventDate": "2026-09-02",
+      "actualEventDate": "2026-09-02",
+      "quarantineReason": "DATE_MISMATCH",
+      "notes": "ISRO conducted the primary SpaDeX autonomous docking experiment on 16 January 2025. September 2026 date is an anachronism."
+    },
+    {
+      "factId": "ca_fact_96531caf_01",
+      "statement_en": "Tamil Nadu Grandmasters powered India to double Gold medal victories in Open and Women sections at the 45th FIDE Chess Olympiad in Budapest.",
+      "sourceUrl": "https://www.sdat.tn.gov.in/press/2026/09/fide-olympiad-gold-honors",
+      "originalEventDate": "2026-09-22",
+      "actualEventDate": "2026-09-22",
+      "quarantineReason": "DATE_MISMATCH",
+      "notes": "The 45th FIDE Chess Olympiad in Budapest took place from 11-22 September 2024. Cannot be dated as September 2026 current affairs."
+    }
+  ],
   "categoryDistribution": {
-    "economy": 4,
-    "welfare_schemes": 5,
-    "science_tech": 5,
-    "tamil_nadu": 9,
+    "welfare_schemes": 4,
+    "economy": 2,
+    "tamil_nadu": 5,
+    "science_tech": 3,
     "environment_geography": 2
   },
   "monthDistribution": {
-    "2026-04": 1,
-    "2026-05": 3,
-    "2026-06": 5,
-    "2026-07": 5,
+    "2026-05": 1,
+    "2026-06": 3,
+    "2026-07": 3,
     "2026-08": 3,
-    "2026-09": 4,
+    "2026-09": 2,
     "2026-10": 4
   },
-  "claimStatusDistribution": {
-    "source_supported": 23,
-    "conflicting": 1,
-    "review_required": 1
+  "quarantineReasonBreakdown": {
+    "DATE_MISMATCH": 4,
+    "SOURCE_UNVERIFIED": 3,
+    "FACT_CONFLICT": 1,
+    "REVIEW_REQUIRED": 1
   }
 }

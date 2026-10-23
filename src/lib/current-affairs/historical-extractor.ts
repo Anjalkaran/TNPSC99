@@ -1,6 +1,7 @@
-import { CARawDocument, CAEvent, CAFact, FactClaimStatus, TNPSCCategory, TNPSCExamGroup } from './types';
+import { CARawDocument, CAEvent, CAFact, FactClaimStatus, TNPSCCategory, TNPSCExamGroup, QuarantineReasonCode } from './types';
 import { classifyEvent } from './syllabus-classifier';
 import { computeContentChecksum } from './hasher';
+import { validateHistoricalSourceRecord } from './source-validator';
 
 export interface ExtractedEntitySet {
   persons: string[];
@@ -33,9 +34,11 @@ export interface FactualClaimDraft {
 
 export interface ExtractionValidationResult {
   acceptedFacts: CAFact[];
+  eligibleFacts: CAFact[];
   sourceSupportedFacts: CAFact[];
   conflictingFacts: CAFact[];
   reviewRequiredFacts: CAFact[];
+  quarantinedFacts: CAFact[];
   unsupportedClaims: {
     statement: string;
     reason: string;
@@ -64,7 +67,7 @@ export function extractEntitiesFromText(text: string): ExtractedEntitySet {
   }
 
   // 2. Organizations / Statutory Bodies
-  const orgMatches = text.match(/\b(ISRO|RBI|DRDO|TNPSC|DIPR|TIDCO|SIPCOT|TIDEL|NITI Aayog|Election Commission|Madras High Court|Supreme Court|FIDE|AICF|SDAT)\b/gi);
+  const orgMatches = text.match(/\b(ISRO|RBI|DRDO|TNPSC|DIPR|TIDCO|SIPCOT|TIDEL|NITI Aayog|Election Commission|Madras High Court|Supreme Court|FIDE|AICF|SDAT|IN-SPACe)\b/gi);
   if (orgMatches) {
     organizations.push(...Array.from(new Set(orgMatches.map((o) => o.toUpperCase()))));
   }
@@ -167,16 +170,33 @@ export function validateClaimQuality(
 }
 
 /**
- * Processes a raw document, derives a structured event, extracts atomic facts, and categorizes claims into:
- * 1. Source-supported facts (evidence backed and verified)
+ * Processes a raw document, validates source provenance and chronological authenticity,
+ * derives a structured event, extracts atomic facts, and categorizes claims into:
+ * 1. Source-supported & eligible facts (verified, non-quarantined)
  * 2. Conflicting facts (contradictions or superseding policy figures identified)
  * 3. Facts requiring review (tentative figures or awaiting external gazette)
- * 4. Unsupported claims (failed quality checks or missing evidence)
+ * 4. Quarantined facts (DATE_MISMATCH, SOURCE_UNVERIFIED, FACT_CONFLICT, REVIEW_REQUIRED)
+ * 5. Unsupported claims (failed quality checks or missing evidence)
  */
 export function extractAndValidateFacts(
   doc: CARawDocument,
   rawClaims: FactualClaimDraft[]
 ): ExtractionValidationResult {
+  // Execute Permanent Safeguards: Provenance and Chronological Validation
+  const sourceValidation = validateHistoricalSourceRecord(
+    doc.canonicalUrl,
+    doc.title,
+    doc.contentText,
+    doc.eventDate || doc.publicationDate
+  );
+
+  if (!sourceValidation.isValid) {
+    doc.processingStatus = 'quarantined';
+    doc.isQuarantined = true;
+    doc.quarantineReason = sourceValidation.quarantineReason;
+    doc.quarantineNotes = sourceValidation.quarantineNotes;
+  }
+
   const classification = classifyEvent(`${doc.title} ${doc.contentText.slice(0, 600)}`);
   const eventId = `ca_ev_${doc.id.slice(0, 12)}`;
 
@@ -197,13 +217,18 @@ export function extractAndValidateFacts(
     keywords_ta: [],
     extractedFactIds: [],
     createdAt: new Date().toISOString(),
-    status: 'verified',
+    status: doc.isQuarantined ? 'quarantined' : 'verified',
+    isQuarantined: doc.isQuarantined,
+    quarantineReason: doc.quarantineReason,
+    quarantineNotes: doc.quarantineNotes,
   };
 
   const acceptedFacts: CAFact[] = [];
+  const eligibleFacts: CAFact[] = [];
   const sourceSupportedFacts: CAFact[] = [];
   const conflictingFacts: CAFact[] = [];
   const reviewRequiredFacts: CAFact[] = [];
+  const quarantinedFacts: CAFact[] = [];
   const unsupportedClaims: { statement: string; reason: string; sourceUrl: string }[] = [];
 
   for (let idx = 0; idx < rawClaims.length; idx++) {
@@ -214,7 +239,22 @@ export function extractAndValidateFacts(
       const factId = `ca_fact_${doc.id.slice(0, 8)}_${(idx + 1).toString().padStart(2, '0')}`;
       event.extractedFactIds.push(factId);
 
-      const claimStatus: FactClaimStatus = claim.status || (claim.isContradictedOrSuperseded ? 'conflicting' : 'source_supported');
+      const isDocQuarantined = Boolean(doc.isQuarantined);
+      let isFactQuarantined = isDocQuarantined;
+      let factQuarantineReason: QuarantineReasonCode | undefined = doc.quarantineReason;
+      let factQuarantineNotes: string | undefined = doc.quarantineNotes;
+
+      let claimStatus: FactClaimStatus = claim.status || (claim.isContradictedOrSuperseded ? 'conflicting' : 'source_supported');
+
+      if (claimStatus === 'conflicting') {
+        isFactQuarantined = true;
+        factQuarantineReason = 'FACT_CONFLICT';
+        factQuarantineNotes = claim.conflictReason || 'Conflicting figures between preliminary announcement and statutory order';
+      } else if (claimStatus === 'review_required') {
+        isFactQuarantined = true;
+        factQuarantineReason = 'REVIEW_REQUIRED';
+        factQuarantineNotes = claim.reviewNotes || 'Pending statutory gazette or cabinet clearance';
+      }
 
       const fact: CAFact = {
         id: factId,
@@ -225,19 +265,28 @@ export function extractAndValidateFacts(
         entities: claim.entities,
         sourceExcerpt: claim.sourceExcerpt,
         pageOrParagraphRef: claim.pageOrParagraphRef,
-        verificationStatus: claimStatus,
+        verificationStatus: isFactQuarantined ? (factQuarantineReason as any) : 'source_supported',
         claimStatus,
         conflictReason: claim.conflictReason || claim.contradictionNotes,
         reviewNotes: claim.reviewNotes,
-        verifiedBy: 'deterministic_evidence_gate_v1',
+        verifiedBy: isFactQuarantined ? undefined : 'deterministic_evidence_gate_v2',
         verifiedAt: new Date().toISOString(),
+        isQuarantined: isFactQuarantined,
+        quarantineReason: factQuarantineReason,
+        quarantineNotes: factQuarantineNotes,
+        eligibleForMcqGeneration: !isFactQuarantined,
       };
 
       acceptedFacts.push(fact);
 
-      if (claimStatus === 'source_supported') {
+      if (isFactQuarantined) {
+        quarantinedFacts.push(fact);
+      } else {
+        eligibleFacts.push(fact);
         sourceSupportedFacts.push(fact);
-      } else if (claimStatus === 'conflicting') {
+      }
+
+      if (claimStatus === 'conflicting') {
         conflictingFacts.push(fact);
       } else if (claimStatus === 'review_required') {
         reviewRequiredFacts.push(fact);
@@ -253,9 +302,11 @@ export function extractAndValidateFacts(
 
   return {
     acceptedFacts,
+    eligibleFacts,
     sourceSupportedFacts,
     conflictingFacts,
     reviewRequiredFacts,
+    quarantinedFacts,
     unsupportedClaims,
     event,
   };

@@ -1,4 +1,4 @@
-import { CAFact, CAEvent, CARawDocument, TNPSCCategory, TNPSCExamGroup, FactClaimStatus } from './types';
+import { CAFact, CAEvent, CARawDocument, TNPSCCategory, TNPSCExamGroup, FactClaimStatus, QuarantineReasonCode } from './types';
 
 export interface VerifiedFactExportItem {
   factId: string;
@@ -25,24 +25,33 @@ export interface VerifiedFactExportItem {
   };
   verificationStatus: string;
   claimStatus: FactClaimStatus;
-  conflictReason?: string;
-  reviewNotes?: string;
   eligibleQuestionTypes: ('direct' | 'statement_matching' | 'assertion_reason' | 'chronological')[];
   monthKey: string;
+}
+
+export interface QuarantinedFactItem {
+  factId: string;
+  statement_en: string;
+  sourceUrl: string;
+  originalEventDate: string;
+  actualEventDate?: string;
+  quarantineReason: QuarantineReasonCode;
+  notes: string;
 }
 
 export interface VerifiedFactsManifest {
   version: string;
   generatedAt: string;
   coverageWindow: { from: string; to: string };
-  totalFactCount: number;
-  sourceSupportedCount: number;
-  conflictingCount: number;
-  reviewRequiredCount: number;
+  originalSourceCount: number;
+  validatedSourceCount: number;
+  quarantinedRecordCount: number;
+  totalEligibleFactCount: number;
   facts: VerifiedFactExportItem[];
+  quarantinedRecords: QuarantinedFactItem[];
   categoryDistribution: Record<string, number>;
   monthDistribution: Record<string, number>;
-  claimStatusDistribution: Record<string, number>;
+  quarantineReasonBreakdown: Record<string, number>;
 }
 
 /**
@@ -73,7 +82,8 @@ export function determineEligibleQuestionTypes(
 }
 
 /**
- * Compiles a structured, verified-facts export manifest ready for Phase CA-3 bilingual MCQ drafting.
+ * Compiles a structured, verified-facts export manifest exclusively from independently validated,
+ * non-quarantined records ready for Phase CA-3 bilingual MCQ drafting.
  */
 export function compileVerifiedFactsExport(
   facts: CAFact[],
@@ -85,13 +95,15 @@ export function compileVerifiedFactsExport(
 
   const categoryDist: Record<string, number> = {};
   const monthDist: Record<string, number> = {};
-  const claimStatusDist: Record<string, number> = {
-    source_supported: 0,
-    conflicting: 0,
-    review_required: 0,
+  const quarantineBreakdown: Record<string, number> = {
+    DATE_MISMATCH: 0,
+    SOURCE_UNVERIFIED: 0,
+    FACT_CONFLICT: 0,
+    REVIEW_REQUIRED: 0,
   };
 
   const exportItems: VerifiedFactExportItem[] = [];
+  const quarantinedItems: QuarantinedFactItem[] = [];
 
   for (const fact of facts) {
     const event = eventMap.get(fact.eventId);
@@ -105,13 +117,27 @@ export function compileVerifiedFactsExport(
     const examGroups = event?.examGroups || ['Group II'];
     const monthKey = eventDate.slice(0, 7);
 
-    // Group ID for deduplicating MCQs generated from the same parent event
-    const duplicateGroupId = `group_${event?.id || fact.rawDocumentId}`;
+    // Check if fact or parent document is quarantined
+    if (fact.isQuarantined || fact.eligibleForMcqGeneration === false) {
+      const reason = fact.quarantineReason || doc?.quarantineReason || 'REVIEW_REQUIRED';
+      quarantineBreakdown[reason] = (quarantineBreakdown[reason] || 0) + 1;
 
+      quarantinedItems.push({
+        factId: fact.id,
+        statement_en: fact.statement_en,
+        sourceUrl,
+        originalEventDate: eventDate,
+        actualEventDate: doc?.eventDate,
+        quarantineReason: reason,
+        notes: fact.quarantineNotes || doc?.quarantineNotes || fact.conflictReason || 'Quarantined by integrity check',
+      });
+      continue;
+    }
+
+    // Fully validated and eligible for CA-3 MCQ generation
+    const duplicateGroupId = `group_${event?.id || fact.rawDocumentId}`;
     const eligibleTypes = determineEligibleQuestionTypes(category, fact.entities);
     const claimStatus: FactClaimStatus = fact.claimStatus || 'source_supported';
-
-    claimStatusDist[claimStatus] = (claimStatusDist[claimStatus] || 0) + 1;
 
     exportItems.push({
       factId: fact.id,
@@ -127,10 +153,8 @@ export function compileVerifiedFactsExport(
       syllabusCategory: category,
       examGroups,
       entities: fact.entities,
-      verificationStatus: fact.verificationStatus,
+      verificationStatus: 'source_supported',
       claimStatus,
-      conflictReason: fact.conflictReason,
-      reviewNotes: fact.reviewNotes,
       eligibleQuestionTypes: eligibleTypes,
       monthKey,
     });
@@ -139,17 +163,20 @@ export function compileVerifiedFactsExport(
     monthDist[monthKey] = (monthDist[monthKey] || 0) + 1;
   }
 
+  const validatedSourceCount = rawDocs.filter((d) => !d.isQuarantined).length;
+
   return {
-    version: '2.0.0',
+    version: '2.1.0-corrected',
     generatedAt: new Date().toISOString(),
     coverageWindow: { from: '2026-04-23', to: '2026-10-23' },
-    totalFactCount: exportItems.length,
-    sourceSupportedCount: claimStatusDist.source_supported || 0,
-    conflictingCount: claimStatusDist.conflicting || 0,
-    reviewRequiredCount: claimStatusDist.review_required || 0,
+    originalSourceCount: rawDocs.length,
+    validatedSourceCount,
+    quarantinedRecordCount: quarantinedItems.length,
+    totalEligibleFactCount: exportItems.length,
     facts: exportItems,
+    quarantinedRecords: quarantinedItems,
     categoryDistribution: categoryDist,
     monthDistribution: monthDist,
-    claimStatusDistribution: claimStatusDist,
+    quarantineReasonBreakdown: quarantineBreakdown,
   };
 }

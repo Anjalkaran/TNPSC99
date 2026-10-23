@@ -47,6 +47,22 @@ export interface CASource {
   licensingNotice: string;
 }
 
+export type QuarantineReasonCode = 
+  | 'DATE_MISMATCH' 
+  | 'SOURCE_UNVERIFIED' 
+  | 'FACT_CONFLICT' 
+  | 'REVIEW_REQUIRED';
+
+export interface QuarantineRecord {
+  recordId: string;
+  sourceUrl: string;
+  originalEventDate: string;
+  actualEventDate?: string;
+  quarantineReason: QuarantineReasonCode;
+  notes: string;
+  quarantinedAt: string;
+}
+
 export interface CARawDocument {
   id: string; // SHA-256 hash of (sourceId + canonicalUrl)
   sourceId: string;
@@ -62,10 +78,13 @@ export interface CARawDocument {
   contentType: 'text/html' | 'application/pdf' | 'application/xml';
   pdfGcsUri?: string;
   language: 'en' | 'ta' | 'bilingual';
-  processingStatus: 'pending' | 'processed' | 'skipped' | 'failed';
+  processingStatus: 'pending' | 'processed' | 'skipped' | 'failed' | 'quarantined';
   skipReason?: string;
   retryCount: number;
   lastError?: string;
+  isQuarantined?: boolean;
+  quarantineReason?: QuarantineReasonCode;
+  quarantineNotes?: string;
 }
 
 export interface CAEvent {
@@ -85,7 +104,10 @@ export interface CAEvent {
   keywords_ta: string[];
   extractedFactIds: string[];
   createdAt: string;
-  status: 'draft' | 'verified' | 'archived';
+  status: 'draft' | 'verified' | 'archived' | 'quarantined';
+  isQuarantined?: boolean;
+  quarantineReason?: QuarantineReasonCode;
+  quarantineNotes?: string;
 }
 
 export type FactClaimStatus = 'source_supported' | 'conflicting' | 'review_required' | 'unsupported';
@@ -114,6 +136,10 @@ export interface CAFact {
   reviewNotes?: string;
   verifiedBy?: string;
   verifiedAt?: string;
+  isQuarantined?: boolean;
+  quarantineReason?: QuarantineReasonCode;
+  quarantineNotes?: string;
+  eligibleForMcqGeneration?: boolean;
 }
 
 export interface CACorrectionRecord {

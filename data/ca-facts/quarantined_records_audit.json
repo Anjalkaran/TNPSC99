@@ -1,0 +1,83 @@
+[
+  {
+    "factId": "ca_fact_b4b569d7_01",
+    "statement_en": "India and New Zealand signed a bilateral Free Trade Agreement eliminating tariffs on over 85% of trade lines.",
+    "sourceUrl": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2255963&lang=1&reg=3",
+    "originalEventDate": "2026-04-27",
+    "actualEventDate": "2026-04-27",
+    "quarantineReason": "SOURCE_UNVERIFIED",
+    "notes": "No authenticated comprehensive bilateral FTA was signed between India and New Zealand on this date; PRID unverified."
+  },
+  {
+    "factId": "ca_fact_b25f9b9e_01",
+    "statement_en": "ISRO SSLV-D3 successfully injected Earth Observation Satellite EOS-08 into a 475 km circular orbit from Sriharikota.",
+    "sourceUrl": "https://www.isro.gov.in/Updates/2026/05/sslv-d3-launch-success",
+    "originalEventDate": "2026-05-18",
+    "actualEventDate": "2026-05-18",
+    "quarantineReason": "DATE_MISMATCH",
+    "notes": "ISRO launched SSLV-D3/EOS-08 on 16 August 2024. Assigning this mission to 2026 is a chronological anomaly."
+  },
+  {
+    "factId": "ca_fact_20c5e89b_01",
+    "statement_en": "SDAT announced CM Trophy 2026 sports competitions with total cash prizes of Rs 37 crore across 38 districts.",
+    "sourceUrl": "https://www.sdat.tn.gov.in/news/2026/05/cm-trophy-registrations",
+    "originalEventDate": "2026-05-12",
+    "actualEventDate": "2026-05-12",
+    "quarantineReason": "SOURCE_UNVERIFIED",
+    "notes": "Placeholder path or generic announcement URL without verifiable official gazette or press notification."
+  },
+  {
+    "factId": "ca_fact_321e1f8c_02",
+    "statement_en": "An early ministerial briefing proposed increasing the monthly stipend to Rs 1,200, but Government Order Ms No. 142 reaffirmed the Rs 1,000 benefit while easing electricity consumption limits.",
+    "sourceUrl": "https://www.tn.gov.in/pressrelease/2026/06/magalir-urimai-1500cr",
+    "originalEventDate": "2026-06-04",
+    "actualEventDate": "2026-06-04",
+    "quarantineReason": "FACT_CONFLICT",
+    "notes": "Preliminary ministerial press briefing contrasted with final statutory Government Order G.O. Ms No. 142."
+  },
+  {
+    "factId": "ca_fact_93542f97_01",
+    "statement_en": "Green Tamil Nadu Mission launched a plantation drive targeting 10 crore native tree saplings to increase forest and tree cover to 33%.",
+    "sourceUrl": "https://forests.tn.gov.in/press/2026/06/green-tamil-nadu-mission-10cr",
+    "originalEventDate": "2026-06-05",
+    "actualEventDate": "2026-06-05",
+    "quarantineReason": "SOURCE_UNVERIFIED",
+    "notes": "Placeholder path or generic announcement URL without verifiable official gazette or press notification."
+  },
+  {
+    "factId": "ca_fact_3712c084_01",
+    "statement_en": "Union Economic Survey 2026-27 projected Indias real GDP baseline growth at 6.8 percent.",
+    "sourceUrl": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2261045&lang=1",
+    "originalEventDate": "2026-07-14",
+    "actualEventDate": "2026-07-14",
+    "quarantineReason": "DATE_MISMATCH",
+    "notes": "PIB released the Economic Survey 2025-26 on 29 January 2026. An Economic Survey 2026-27 was not released in July 2026."
+  },
+  {
+    "factId": "ca_fact_f90132a5_01",
+    "statement_en": "A draft DPR has been formulated for establishing a 1,000 MW offshore wind farm off Thoothukudi coast.",
+    "sourceUrl": "https://www.tn.gov.in/pressrelease/2026/07/offshore-wind-preliminary-dpr",
+    "originalEventDate": "2026-07-19",
+    "actualEventDate": "2026-07-19",
+    "quarantineReason": "REVIEW_REQUIRED",
+    "notes": "Draft project report pending final Union Cabinet seabed leasing notification and environmental impact clearance."
+  },
+  {
+    "factId": "ca_fact_fe05eab8_01",
+    "statement_en": "ISRO completed autonomous docking demonstration SPADEX in a 700 km orbit as a key milestone for future Chandrayaan-4 lunar sample return.",
+    "sourceUrl": "https://www.isro.gov.in/Updates/2026/09/spadex-docking-experiment",
+    "originalEventDate": "2026-09-02",
+    "actualEventDate": "2026-09-02",
+    "quarantineReason": "DATE_MISMATCH",
+    "notes": "ISRO conducted the primary SpaDeX autonomous docking experiment on 16 January 2025. September 2026 date is an anachronism."
+  },
+  {
+    "factId": "ca_fact_96531caf_01",
+    "statement_en": "Tamil Nadu Grandmasters powered India to double Gold medal victories in Open and Women sections at the 45th FIDE Chess Olympiad in Budapest.",
+    "sourceUrl": "https://www.sdat.tn.gov.in/press/2026/09/fide-olympiad-gold-honors",
+    "originalEventDate": "2026-09-22",
+    "actualEventDate": "2026-09-22",
+    "quarantineReason": "DATE_MISMATCH",
+    "notes": "The 45th FIDE Chess Olympiad in Budapest took place from 11-22 September 2024. Cannot be dated as September 2026 current affairs."
+  }
+]
