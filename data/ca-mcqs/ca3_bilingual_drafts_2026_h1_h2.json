@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-23T16:02:27.445Z",
+  "generatedAt": "2026-10-23T16:35:40.918Z",
   "sourceFactCount": 16,
   "draftCount": 32,
   "drafts": [
@@ -34,7 +34,7 @@
       "examType": "Group IV",
       "questionType": "direct",
       "verificationReport": {
-        "timestamp": "2026-10-23T16:02:27.443Z",
+        "timestamp": "2026-10-23T16:35:40.916Z",
         "factualConsistency": true,
         "unambiguousCorrectAnswer": true,
         "distractorQualityPassed": true,
@@ -52,7 +52,7 @@
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:02:27.443Z"
+      "createdAt": "2026-10-23T16:35:40.916Z"
     },
     {
       "id": "ca26_h1h2_a25f1758_01_stm",
@@ -85,7 +85,7 @@
       "examType": "Group IV",
       "questionType": "statement_matching",
       "verificationReport": {
-        "timestamp": "2026-10-23T16:02:27.443Z",
+        "timestamp": "2026-10-23T16:35:40.916Z",
         "factualConsistency": true,
         "unambiguousCorrectAnswer": true,
         "distractorQualityPassed": true,
@@ -103,7 +103,7 @@
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:02:27.443Z"
+      "createdAt": "2026-10-23T16:35:40.916Z"
     },
     {
       "id": "ca26_h1h2_321e1f8c_01_dir",
@@ -136,7 +136,7 @@
       "examType": "Group IV",
       "questionType": "direct",
       "verificationReport": {
-        "timestamp": "2026-10-23T16:02:27.443Z",
+        "timestamp": "2026-10-23T16:35:40.917Z",
         "factualConsistency": true,
         "unambiguousCorrectAnswer": true,
         "distractorQualityPassed": true,
@@ -154,7 +154,7 @@
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:02:27.443Z"
+      "createdAt": "2026-10-23T16:35:40.917Z"
     },
     {
       "id": "ca26_h1h2_321e1f8c_01_stm",
@@ -187,7 +187,7 @@
       "examType": "Group IV",
       "questionType": "statement_matching",
       "verificationReport": {
-        "timestamp": "2026-10-23T16:02:27.443Z",
+        "timestamp": "2026-10-23T16:35:40.917Z",
         "factualConsistency": true,
         "unambiguousCorrectAnswer": true,
         "distractorQualityPassed": true,
@@ -205,7 +205,7 @@
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:02:27.443Z"
+      "createdAt": "2026-10-23T16:35:40.917Z"
     },
     {
       "id": "ca26_h1h2_d6da52b9_01_dir",
@@ -238,7 +238,7 @@
       "examType": "Group II",
       "questionType": "direct",
       "verificationReport": {
-        "timestamp": "2026-10-23T16:02:27.443Z",
+        "timestamp": "2026-10-23T16:35:40.917Z",
         "factualConsistency": true,
         "unambiguousCorrectAnswer": true,
         "distractorQualityPassed": true,
@@ -256,7 +256,7 @@
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:02:27.443Z"
+      "createdAt": "2026-10-23T16:35:40.917Z"
     },
     {
       "id": "ca26_h1h2_d6da52b9_01_stm",
@@ -289,7 +289,7 @@
       "examType": "Group II",
       "questionType": "statement_matching",
       "verificationReport": {
-        "timestamp": "2026-10-23T16:02:27.444Z",
+        "timestamp": "2026-10-23T16:35:40.917Z",
         "factualConsistency": true,
         "unambiguousCorrectAnswer": true,
         "distractorQualityPassed": true,
@@ -307,7 +307,7 @@
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:02:27.444Z"
+      "createdAt": "2026-10-23T16:35:40.917Z"
     },
     {
       "id": "ca26_h1h2_fd4c5733_01_dir",
@@ -340,7 +340,7 @@
       "examType": "Group IV",
       "questionType": "direct",
       "verificationReport": {
-        "timestamp": "2026-10-23T16:02:27.444Z",
+        "timestamp": "2026-10-23T16:35:40.917Z",
         "factualConsistency": true,
         "unambiguousCorrectAnswer": true,
         "distractorQualityPassed": true,
@@ -358,7 +358,7 @@
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:02:27.444Z"
+      "createdAt": "2026-10-23T16:35:40.917Z"
     },
     {
       "id": "ca26_h1h2_fd4c5733_01_stm",
@@ -391,7 +391,7 @@
       "examType": "Group IV",
       "questionType": "statement_matching",
       "verificationReport": {
-        "timestamp": "2026-10-23T16:02:27.444Z",
+        "timestamp": "2026-10-23T16:35:40.917Z",
         "factualConsistency": true,
         "unambiguousCorrectAnswer": true,
         "distractorQualityPassed": true,
@@ -409,7 +409,7 @@
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:02:27.444Z"
+      "createdAt": "2026-10-23T16:35:40.917Z"
     },
     {
       "id": "ca26_h1h2_450d6365_01_dir",
@@ -442,7 +442,7 @@
       "examType": "Group IV",
       "questionType": "direct",
       "verificationReport": {
-        "timestamp": "2026-10-23T16:02:27.444Z",
+        "timestamp": "2026-10-23T16:35:40.917Z",
         "factualConsistency": true,
         "unambiguousCorrectAnswer": true,
         "distractorQualityPassed": true,
@@ -460,7 +460,7 @@
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:02:27.444Z"
+      "createdAt": "2026-10-23T16:35:40.917Z"
     },
     {
       "id": "ca26_h1h2_450d6365_01_stm",
@@ -493,7 +493,7 @@
       "examType": "Group IV",
       "questionType": "statement_matching",
       "verificationReport": {
-        "timestamp": "2026-10-23T16:02:27.444Z",
+        "timestamp": "2026-10-23T16:35:40.917Z",
         "factualConsistency": true,
         "unambiguousCorrectAnswer": true,
         "distractorQualityPassed": true,
@@ -511,7 +511,7 @@
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:02:27.444Z"
+      "createdAt": "2026-10-23T16:35:40.918Z"
     },
     {
       "id": "ca26_h1h2_24e3de9d_01_dir",
@@ -544,7 +544,7 @@
       "examType": "Group II",
       "questionType": "direct",
       "verificationReport": {
-        "timestamp": "2026-10-23T16:02:27.444Z",
+        "timestamp": "2026-10-23T16:35:40.918Z",
         "factualConsistency": true,
         "unambiguousCorrectAnswer": true,
         "distractorQualityPassed": true,
@@ -562,7 +562,7 @@
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:02:27.444Z"
+      "createdAt": "2026-10-23T16:35:40.918Z"
     },
     {
       "id": "ca26_h1h2_24e3de9d_01_asr",
@@ -595,7 +595,7 @@
       "examType": "Group II",
       "questionType": "assertion_reason",
       "verificationReport": {
-        "timestamp": "2026-10-23T16:02:27.444Z",
+        "timestamp": "2026-10-23T16:35:40.918Z",
         "factualConsistency": true,
         "unambiguousCorrectAnswer": true,
         "distractorQualityPassed": true,
@@ -613,7 +613,7 @@
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:02:27.444Z"
+      "createdAt": "2026-10-23T16:35:40.918Z"
     },
     {
       "id": "ca26_h1h2_bb1db576_01_dir",
@@ -646,7 +646,7 @@
       "examType": "Group II",
       "questionType": "direct",
       "verificationReport": {
-        "timestamp": "2026-10-23T16:02:27.444Z",
+        "timestamp": "2026-10-23T16:35:40.918Z",
         "factualConsistency": true,
         "unambiguousCorrectAnswer": true,
         "distractorQualityPassed": true,
@@ -664,7 +664,7 @@
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:02:27.444Z"
+      "createdAt": "2026-10-23T16:35:40.918Z"
     },
     {
       "id": "ca26_h1h2_bb1db576_01_stm",
@@ -697,7 +697,7 @@
       "examType": "Group II",
       "questionType": "statement_matching",
       "verificationReport": {
-        "timestamp": "2026-10-23T16:02:27.444Z",
+        "timestamp": "2026-10-23T16:35:40.918Z",
         "factualConsistency": true,
         "unambiguousCorrectAnswer": true,
         "distractorQualityPassed": true,
@@ -715,7 +715,7 @@
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:02:27.444Z"
+      "createdAt": "2026-10-23T16:35:40.918Z"
     },
     {
       "id": "ca26_h1h2_5aecd225_01_dir",
@@ -748,7 +748,7 @@
       "examType": "Group IV",
       "questionType": "direct",
       "verificationReport": {
-        "timestamp": "2026-10-23T16:02:27.444Z",
+        "timestamp": "2026-10-23T16:35:40.918Z",
         "factualConsistency": true,
         "unambiguousCorrectAnswer": true,
         "distractorQualityPassed": true,
@@ -766,7 +766,7 @@
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:02:27.444Z"
+      "createdAt": "2026-10-23T16:35:40.918Z"
     },
     {
       "id": "ca26_h1h2_5aecd225_01_stm",
@@ -799,7 +799,7 @@
       "examType": "Group IV",
       "questionType": "statement_matching",
       "verificationReport": {
-        "timestamp": "2026-10-23T16:02:27.444Z",
+        "timestamp": "2026-10-23T16:35:40.918Z",
         "factualConsistency": true,
         "unambiguousCorrectAnswer": true,
         "distractorQualityPassed": true,
@@ -817,7 +817,7 @@
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:02:27.444Z"
+      "createdAt": "2026-10-23T16:35:40.918Z"
     },
     {
       "id": "ca26_h1h2_e7133bb1_01_dir",
@@ -850,7 +850,7 @@
       "examType": "Group IV",
       "questionType": "direct",
       "verificationReport": {
-        "timestamp": "2026-10-23T16:02:27.444Z",
+        "timestamp": "2026-10-23T16:35:40.918Z",
         "factualConsistency": true,
         "unambiguousCorrectAnswer": true,
         "distractorQualityPassed": true,
@@ -868,7 +868,7 @@
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:02:27.444Z"
+      "createdAt": "2026-10-23T16:35:40.918Z"
     },
     {
       "id": "ca26_h1h2_e7133bb1_01_stm",
@@ -901,7 +901,7 @@
       "examType": "Group IV",
       "questionType": "statement_matching",
       "verificationReport": {
-        "timestamp": "2026-10-23T16:02:27.444Z",
+        "timestamp": "2026-10-23T16:35:40.918Z",
         "factualConsistency": true,
         "unambiguousCorrectAnswer": true,
         "distractorQualityPassed": true,
@@ -919,7 +919,7 @@
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:02:27.444Z"
+      "createdAt": "2026-10-23T16:35:40.918Z"
     },
     {
       "id": "ca26_h1h2_d8a053be_01_dir",
@@ -952,7 +952,7 @@
       "examType": "Group II",
       "questionType": "direct",
       "verificationReport": {
-        "timestamp": "2026-10-23T16:02:27.444Z",
+        "timestamp": "2026-10-23T16:35:40.918Z",
         "factualConsistency": true,
         "unambiguousCorrectAnswer": true,
         "distractorQualityPassed": true,
@@ -970,7 +970,7 @@
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:02:27.444Z"
+      "createdAt": "2026-10-23T16:35:40.918Z"
     },
     {
       "id": "ca26_h1h2_d8a053be_01_asr",
@@ -1003,7 +1003,7 @@
       "examType": "Group II",
       "questionType": "assertion_reason",
       "verificationReport": {
-        "timestamp": "2026-10-23T16:02:27.444Z",
+        "timestamp": "2026-10-23T16:35:40.918Z",
         "factualConsistency": true,
         "unambiguousCorrectAnswer": true,
         "distractorQualityPassed": true,
@@ -1021,7 +1021,7 @@
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:02:27.444Z"
+      "createdAt": "2026-10-23T16:35:40.918Z"
     },
     {
       "id": "ca26_h1h2_a2246c10_01_dir",
@@ -1054,7 +1054,7 @@
       "examType": "Group IV",
       "questionType": "direct",
       "verificationReport": {
-        "timestamp": "2026-10-23T16:02:27.445Z",
+        "timestamp": "2026-10-23T16:35:40.918Z",
         "factualConsistency": true,
         "unambiguousCorrectAnswer": true,
         "distractorQualityPassed": true,
@@ -1072,7 +1072,7 @@
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:02:27.445Z"
+      "createdAt": "2026-10-23T16:35:40.918Z"
     },
     {
       "id": "ca26_h1h2_a2246c10_01_stm",
@@ -1105,7 +1105,7 @@
       "examType": "Group IV",
       "questionType": "statement_matching",
       "verificationReport": {
-        "timestamp": "2026-10-23T16:02:27.445Z",
+        "timestamp": "2026-10-23T16:35:40.918Z",
         "factualConsistency": true,
         "unambiguousCorrectAnswer": true,
         "distractorQualityPassed": true,
@@ -1123,7 +1123,7 @@
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:02:27.445Z"
+      "createdAt": "2026-10-23T16:35:40.918Z"
     },
     {
       "id": "ca26_h1h2_d338fd6d_01_dir",
@@ -1156,7 +1156,7 @@
       "examType": "Group IV",
       "questionType": "direct",
       "verificationReport": {
-        "timestamp": "2026-10-23T16:02:27.445Z",
+        "timestamp": "2026-10-23T16:35:40.918Z",
         "factualConsistency": true,
         "unambiguousCorrectAnswer": true,
         "distractorQualityPassed": true,
@@ -1174,7 +1174,7 @@
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:02:27.445Z"
+      "createdAt": "2026-10-23T16:35:40.918Z"
     },
     {
       "id": "ca26_h1h2_d338fd6d_01_stm",
@@ -1207,7 +1207,7 @@
       "examType": "Group IV",
       "questionType": "statement_matching",
       "verificationReport": {
-        "timestamp": "2026-10-23T16:02:27.445Z",
+        "timestamp": "2026-10-23T16:35:40.918Z",
         "factualConsistency": true,
         "unambiguousCorrectAnswer": true,
         "distractorQualityPassed": true,
@@ -1225,7 +1225,7 @@
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:02:27.445Z"
+      "createdAt": "2026-10-23T16:35:40.918Z"
     },
     {
       "id": "ca26_h1h2_2eb6f9cb_01_dir",
@@ -1258,7 +1258,7 @@
       "examType": "Group II",
       "questionType": "direct",
       "verificationReport": {
-        "timestamp": "2026-10-23T16:02:27.445Z",
+        "timestamp": "2026-10-23T16:35:40.918Z",
         "factualConsistency": true,
         "unambiguousCorrectAnswer": true,
         "distractorQualityPassed": true,
@@ -1276,7 +1276,7 @@
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:02:27.445Z"
+      "createdAt": "2026-10-23T16:35:40.918Z"
     },
     {
       "id": "ca26_h1h2_2eb6f9cb_01_stm",
@@ -1309,7 +1309,7 @@
       "examType": "Group II",
       "questionType": "statement_matching",
       "verificationReport": {
-        "timestamp": "2026-10-23T16:02:27.445Z",
+        "timestamp": "2026-10-23T16:35:40.918Z",
         "factualConsistency": true,
         "unambiguousCorrectAnswer": true,
         "distractorQualityPassed": true,
@@ -1327,7 +1327,7 @@
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:02:27.445Z"
+      "createdAt": "2026-10-23T16:35:40.918Z"
     },
     {
       "id": "ca26_h1h2_a833dd75_01_dir",
@@ -1360,7 +1360,7 @@
       "examType": "Group IV",
       "questionType": "direct",
       "verificationReport": {
-        "timestamp": "2026-10-23T16:02:27.445Z",
+        "timestamp": "2026-10-23T16:35:40.918Z",
         "factualConsistency": true,
         "unambiguousCorrectAnswer": true,
         "distractorQualityPassed": true,
@@ -1378,7 +1378,7 @@
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:02:27.445Z"
+      "createdAt": "2026-10-23T16:35:40.918Z"
     },
     {
       "id": "ca26_h1h2_a833dd75_01_stm",
@@ -1411,7 +1411,7 @@
       "examType": "Group IV",
       "questionType": "statement_matching",
       "verificationReport": {
-        "timestamp": "2026-10-23T16:02:27.445Z",
+        "timestamp": "2026-10-23T16:35:40.918Z",
         "factualConsistency": true,
         "unambiguousCorrectAnswer": true,
         "distractorQualityPassed": true,
@@ -1429,7 +1429,7 @@
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:02:27.445Z"
+      "createdAt": "2026-10-23T16:35:40.918Z"
     },
     {
       "id": "ca26_h1h2_a8967170_01_dir",
@@ -1462,7 +1462,7 @@
       "examType": "Group II",
       "questionType": "direct",
       "verificationReport": {
-        "timestamp": "2026-10-23T16:02:27.445Z",
+        "timestamp": "2026-10-23T16:35:40.918Z",
         "factualConsistency": true,
         "unambiguousCorrectAnswer": true,
         "distractorQualityPassed": true,
@@ -1480,7 +1480,7 @@
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:02:27.445Z"
+      "createdAt": "2026-10-23T16:35:40.918Z"
     },
     {
       "id": "ca26_h1h2_a8967170_01_stm",
@@ -1513,7 +1513,7 @@
       "examType": "Group II",
       "questionType": "statement_matching",
       "verificationReport": {
-        "timestamp": "2026-10-23T16:02:27.445Z",
+        "timestamp": "2026-10-23T16:35:40.918Z",
         "factualConsistency": true,
         "unambiguousCorrectAnswer": true,
         "distractorQualityPassed": true,
@@ -1531,7 +1531,7 @@
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:02:27.445Z"
+      "createdAt": "2026-10-23T16:35:40.918Z"
     },
     {
       "id": "ca26_h1h2_ea52d022_01_dir",
@@ -1564,7 +1564,7 @@
       "examType": "Group II",
       "questionType": "direct",
       "verificationReport": {
-        "timestamp": "2026-10-23T16:02:27.445Z",
+        "timestamp": "2026-10-23T16:35:40.918Z",
         "factualConsistency": true,
         "unambiguousCorrectAnswer": true,
         "distractorQualityPassed": true,
@@ -1582,7 +1582,7 @@
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:02:27.445Z"
+      "createdAt": "2026-10-23T16:35:40.918Z"
     },
     {
       "id": "ca26_h1h2_ea52d022_01_stm",
@@ -1615,7 +1615,7 @@
       "examType": "Group II",
       "questionType": "statement_matching",
       "verificationReport": {
-        "timestamp": "2026-10-23T16:02:27.445Z",
+        "timestamp": "2026-10-23T16:35:40.918Z",
         "factualConsistency": true,
         "unambiguousCorrectAnswer": true,
         "distractorQualityPassed": true,
@@ -1633,7 +1633,7 @@
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:02:27.445Z"
+      "createdAt": "2026-10-23T16:35:40.918Z"
     }
   ],
   "typeDistribution": {
