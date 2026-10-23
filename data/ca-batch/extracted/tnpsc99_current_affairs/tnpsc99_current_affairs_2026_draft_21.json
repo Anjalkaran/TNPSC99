@@ -1,0 +1,1209 @@
+{
+  "metadata": {
+    "coverageStart": "2026-04-23",
+    "coverageEnd": "2026-10-23",
+    "status": "REVIEW_REQUIRED",
+    "questionCount": 21,
+    "productionUploadApproved": false,
+    "warning": "Editorial draft only. Not a complete six-month question bank. Review source details before publication."
+  },
+  "questions": [
+    {
+      "id": "ca26_0b71ff519391",
+      "coverageWindow": {
+        "from": "2026-04-23",
+        "to": "2026-10-23"
+      },
+      "eventDate": "2026-04-27",
+      "publicationDate": "2026-04-27",
+      "category": "International Relations",
+      "question": {
+        "en": "India signed a Free Trade Agreement on 27 April 2026 with which country?",
+        "ta": "2026 ஏப்ரல் 27 அன்று இந்தியா எந்த நாட்டுடன் தடையற்ற வர்த்தக ஒப்பந்தத்தில் கையெழுத்திட்டது?"
+      },
+      "options": [
+        {
+          "en": "New Zealand",
+          "ta": "நியூசிலாந்து"
+        },
+        {
+          "en": "Australia",
+          "ta": "ஆஸ்திரேலியா"
+        },
+        {
+          "en": "Japan",
+          "ta": "ஜப்பான்"
+        },
+        {
+          "en": "Canada",
+          "ta": "கனடா"
+        }
+      ],
+      "correctOptionIndex": 0,
+      "explanation": {
+        "en": "A PIB release dated 27 April 2026 records the India–New Zealand FTA signing.",
+        "ta": "2026 ஏப்ரல் 27 அன்று இந்தியா–நியூசிலாந்து தடையற்ற வர்த்தக ஒப்பந்தம் கையெழுத்தானதாக PIB அறிவித்தது."
+      },
+      "sources": [
+        {
+          "publisher": "Press Information Bureau, Government of India",
+          "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2255963&lang=1&reg=3",
+          "type": "official",
+          "verifiedVia": "web_search",
+          "evidenceText": "Refer to the dated primary release for the stated fact"
+        }
+      ],
+      "status": "REVIEW_REQUIRED",
+      "editorialApproval": null,
+      "verification": {
+        "automatedStructuralChecksPassed": true,
+        "primarySourceLocated": true,
+        "humanSourceChecked": false,
+        "bilingualEditorialChecked": false,
+        "publicationAllowed": false
+      },
+      "createdBy": "chatgpt-draft-seed",
+      "schemaVersion": 1
+    },
+    {
+      "id": "ca26_0720fea26349",
+      "coverageWindow": {
+        "from": "2026-04-23",
+        "to": "2026-10-23"
+      },
+      "eventDate": "2026-04-29",
+      "publicationDate": "2026-04-29",
+      "category": "Statistics",
+      "question": {
+        "en": "Which ministry released the 27th edition of “Women and Men in India 2025: Selected Indicators and Data” in April 2026?",
+        "ta": "2026 ஏப்ரலில் “Women and Men in India 2025: Selected Indicators and Data” நூலின் 27-வது பதிப்பை வெளியிட்ட அமைச்சகம் எது?"
+      },
+      "options": [
+        {
+          "en": "Ministry of Statistics and Programme Implementation",
+          "ta": "புள்ளியியல் மற்றும் திட்ட அமலாக்க அமைச்சகம்"
+        },
+        {
+          "en": "Ministry of Education",
+          "ta": "கல்வி அமைச்சகம்"
+        },
+        {
+          "en": "Ministry of Finance",
+          "ta": "நிதி அமைச்சகம்"
+        },
+        {
+          "en": "Ministry of Health and Family Welfare",
+          "ta": "சுகாதாரம் மற்றும் குடும்ப நல அமைச்சகம்"
+        }
+      ],
+      "correctOptionIndex": 0,
+      "explanation": {
+        "en": "The Ministry of Statistics and Programme Implementation released this publication on 29 April 2026.",
+        "ta": "இந்த வெளியீட்டை 2026 ஏப்ரல் 29 அன்று புள்ளியியல் மற்றும் திட்ட அமலாக்க அமைச்சகம் வெளியிட்டது."
+      },
+      "sources": [
+        {
+          "publisher": "Press Information Bureau, Government of India",
+          "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2256593&lang=1&reg=20",
+          "type": "official",
+          "verifiedVia": "web_search",
+          "evidenceText": "Refer to the dated primary release for the stated fact"
+        }
+      ],
+      "status": "REVIEW_REQUIRED",
+      "editorialApproval": null,
+      "verification": {
+        "automatedStructuralChecksPassed": true,
+        "primarySourceLocated": true,
+        "humanSourceChecked": false,
+        "bilingualEditorialChecked": false,
+        "publicationAllowed": false
+      },
+      "createdBy": "chatgpt-draft-seed",
+      "schemaVersion": 1
+    },
+    {
+      "id": "ca26_f660d487f3f1",
+      "coverageWindow": {
+        "from": "2026-04-23",
+        "to": "2026-10-23"
+      },
+      "eventDate": "2026-04-29",
+      "publicationDate": "2026-04-29",
+      "category": "Water and Sanitation",
+      "question": {
+        "en": "Under Jal Jeevan Mission 2.0, which set of states signed reform-linked MoUs on 29 April 2026?",
+        "ta": "2026 ஏப்ரல் 29 அன்று ஜல் ஜீவன் மிஷன் 2.0 திட்டத்தின் கீழ் சீர்திருத்தம் சார்ந்த புரிந்துணர்வு ஒப்பந்தங்களில் கையெழுத்திட்ட மாநிலங்கள் எவை?"
+      },
+      "options": [
+        {
+          "en": "Uttarakhand, Karnataka and Tripura",
+          "ta": "உத்தராகண்ட், கர்நாடகா, திரிபுரா"
+        },
+        {
+          "en": "Tamil Nadu, Kerala and Goa",
+          "ta": "தமிழ்நாடு, கேரளா, கோவா"
+        },
+        {
+          "en": "Punjab, Haryana and Gujarat",
+          "ta": "பஞ்சாப், ஹரியானா, குஜராத்"
+        },
+        {
+          "en": "Bihar, Odisha and Assam",
+          "ta": "பீகார், ஒடிசா, அசாம்"
+        }
+      ],
+      "correctOptionIndex": 0,
+      "explanation": {
+        "en": "The Ministry of Jal Shakti identified Uttarakhand, Karnataka and Tripura in the 29 April 2026 release.",
+        "ta": "2026 ஏப்ரல் 29 வெளியீட்டில் உத்தராகண்ட், கர்நாடகா, திரிபுரா மாநிலங்கள் குறிப்பிடப்பட்டுள்ளன."
+      },
+      "sources": [
+        {
+          "publisher": "Press Information Bureau, Government of India",
+          "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2256663&lang=1&reg=3",
+          "type": "official",
+          "verifiedVia": "web_search",
+          "evidenceText": "Refer to the dated primary release for the stated fact"
+        }
+      ],
+      "status": "REVIEW_REQUIRED",
+      "editorialApproval": null,
+      "verification": {
+        "automatedStructuralChecksPassed": true,
+        "primarySourceLocated": true,
+        "humanSourceChecked": false,
+        "bilingualEditorialChecked": false,
+        "publicationAllowed": false
+      },
+      "createdBy": "chatgpt-draft-seed",
+      "schemaVersion": 1
+    },
+    {
+      "id": "ca26_1c06294c7bf5",
+      "coverageWindow": {
+        "from": "2026-04-23",
+        "to": "2026-10-23"
+      },
+      "eventDate": "2026-05-07",
+      "publicationDate": "2026-05-07",
+      "category": "Health and Welfare",
+      "question": {
+        "en": "The ESIC free annual health check-up programme launched in May 2026 targets insured persons above which age?",
+        "ta": "2026 மே மாதத்தில் தொடங்கப்பட்ட ESIC இலவச வருடாந்திர உடல்நலப் பரிசோதனைத் திட்டம் எந்த வயதுக்கு மேற்பட்ட காப்பீடு பெற்றவர்களுக்கானது?"
+      },
+      "options": [
+        {
+          "en": "40 years",
+          "ta": "40 வயது"
+        },
+        {
+          "en": "30 years",
+          "ta": "30 வயது"
+        },
+        {
+          "en": "50 years",
+          "ta": "50 வயது"
+        },
+        {
+          "en": "60 years",
+          "ta": "60 வயது"
+        }
+      ],
+      "correctOptionIndex": 0,
+      "explanation": {
+        "en": "The nationwide ESIC programme launched on 7 May 2026 is for insured persons above 40 years of age.",
+        "ta": "2026 மே 7 அன்று தொடங்கப்பட்ட இத்திட்டம் 40 வயதுக்கு மேற்பட்ட காப்பீடு பெற்றவர்களுக்கானது."
+      },
+      "sources": [
+        {
+          "publisher": "Press Information Bureau, Government of India",
+          "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2258702&lang=2&reg=3",
+          "type": "official",
+          "verifiedVia": "web_search",
+          "evidenceText": "Refer to the dated primary release for the stated fact"
+        }
+      ],
+      "status": "REVIEW_REQUIRED",
+      "editorialApproval": null,
+      "verification": {
+        "automatedStructuralChecksPassed": true,
+        "primarySourceLocated": true,
+        "humanSourceChecked": false,
+        "bilingualEditorialChecked": false,
+        "publicationAllowed": false
+      },
+      "createdBy": "chatgpt-draft-seed",
+      "schemaVersion": 1
+    },
+    {
+      "id": "ca26_d2474430558c",
+      "coverageWindow": {
+        "from": "2026-04-23",
+        "to": "2026-10-23"
+      },
+      "eventDate": "2026-05-10",
+      "publicationDate": "2026-05-10",
+      "category": "Industry and Textiles",
+      "question": {
+        "en": "India’s first functional PM MITRA Park inaugurated in May 2026 is located at which city?",
+        "ta": "2026 மே மாதத்தில் திறக்கப்பட்ட இந்தியாவின் முதல் செயல்பாட்டிலுள்ள PM MITRA பூங்கா எந்த நகரத்தில் அமைந்துள்ளது?"
+      },
+      "options": [
+        {
+          "en": "Warangal",
+          "ta": "வாரங்கல்"
+        },
+        {
+          "en": "Surat",
+          "ta": "சூரத்"
+        },
+        {
+          "en": "Coimbatore",
+          "ta": "கோயம்புத்தூர்"
+        },
+        {
+          "en": "Kanpur",
+          "ta": "கான்பூர்"
+        }
+      ],
+      "correctOptionIndex": 0,
+      "explanation": {
+        "en": "The May 10 PIB announcement locates the first functional PM MITRA Park at Warangal, Telangana.",
+        "ta": "முதல் செயல்பாட்டிலுள்ள PM MITRA பூங்கா தெலங்கானாவின் வாரங்கலில் அமைந்துள்ளதாக PIB தெரிவித்தது."
+      },
+      "sources": [
+        {
+          "publisher": "Press Information Bureau, Government of India",
+          "url": "https://www.pib.gov.in/PressReleaseIframePage.aspx?PRID=2259537&lang=2&reg=48",
+          "type": "official",
+          "verifiedVia": "web_search",
+          "evidenceText": "Refer to the dated primary release for the stated fact"
+        }
+      ],
+      "status": "REVIEW_REQUIRED",
+      "editorialApproval": null,
+      "verification": {
+        "automatedStructuralChecksPassed": true,
+        "primarySourceLocated": true,
+        "humanSourceChecked": false,
+        "bilingualEditorialChecked": false,
+        "publicationAllowed": false
+      },
+      "createdBy": "chatgpt-draft-seed",
+      "schemaVersion": 1
+    },
+    {
+      "id": "ca26_5dd9c9a20560",
+      "coverageWindow": {
+        "from": "2026-04-23",
+        "to": "2026-10-23"
+      },
+      "eventDate": "2026-05-12",
+      "publicationDate": "2026-05-12",
+      "category": "Tamil Nadu and Aadhaar",
+      "question": {
+        "en": "In which Tamil Nadu district did UIDAI operationalise an Aadhaar Seva Kendra on 12 May 2026?",
+        "ta": "2026 மே 12 அன்று UIDAI எந்தத் தமிழ்நாடு மாவட்டத்தில் ஆதார் சேவா கேந்திராவைச் செயல்பாட்டுக்குக் கொண்டுவந்தது?"
+      },
+      "options": [
+        {
+          "en": "Krishnagiri",
+          "ta": "கிருஷ்ணகிரி"
+        },
+        {
+          "en": "Madurai",
+          "ta": "மதுரை"
+        },
+        {
+          "en": "Thanjavur",
+          "ta": "தஞ்சாவூர்"
+        },
+        {
+          "en": "Salem",
+          "ta": "சேலம்"
+        }
+      ],
+      "correctOptionIndex": 0,
+      "explanation": {
+        "en": "UIDAI operationalised an Aadhaar Seva Kendra at Azad Nagar, Krishnagiri on 12 May 2026.",
+        "ta": "2026 மே 12 அன்று கிருஷ்ணகிரி ஆசாத் நகரில் ஆதார் சேவா கேந்திரா செயல்பாட்டுக்கு வந்தது."
+      },
+      "sources": [
+        {
+          "publisher": "Press Information Bureau, Government of India",
+          "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2260307&lang=2&reg=48",
+          "type": "official",
+          "verifiedVia": "web_search",
+          "evidenceText": "Refer to the dated primary release for the stated fact"
+        }
+      ],
+      "status": "REVIEW_REQUIRED",
+      "editorialApproval": null,
+      "verification": {
+        "automatedStructuralChecksPassed": true,
+        "primarySourceLocated": true,
+        "humanSourceChecked": false,
+        "bilingualEditorialChecked": false,
+        "publicationAllowed": false
+      },
+      "createdBy": "chatgpt-draft-seed",
+      "schemaVersion": 1
+    },
+    {
+      "id": "ca26_a31d87a5d0e0",
+      "coverageWindow": {
+        "from": "2026-04-23",
+        "to": "2026-10-23"
+      },
+      "eventDate": "2026-06-03",
+      "publicationDate": "2026-06-03",
+      "category": "Road Infrastructure",
+      "question": {
+        "en": "The Cabinet approved four-laning of sections of NH-63 and NH-563 in June 2026 in which state?",
+        "ta": "2026 ஜூனில் NH-63 மற்றும் NH-563 சாலைகளின் சில பகுதிகளை நான்கு வழிச்சாலையாக்க மத்திய அமைச்சரவை ஒப்புதல் அளித்த மாநிலம் எது?"
+      },
+      "options": [
+        {
+          "en": "Telangana",
+          "ta": "தெலங்கானா"
+        },
+        {
+          "en": "Tamil Nadu",
+          "ta": "தமிழ்நாடு"
+        },
+        {
+          "en": "Kerala",
+          "ta": "கேரளா"
+        },
+        {
+          "en": "Punjab",
+          "ta": "பஞ்சாப்"
+        }
+      ],
+      "correctOptionIndex": 0,
+      "explanation": {
+        "en": "The Cabinet approval covered NH-63 and NH-563 sections in Telangana.",
+        "ta": "NH-63 மற்றும் NH-563 சாலைப் பகுதிகள் தெலங்கானாவில் அமைந்துள்ளன."
+      },
+      "sources": [
+        {
+          "publisher": "Press Information Bureau, Government of India",
+          "url": "https://www.pib.gov.in/newsite/archiveContent.aspx?lang=2&reg=48&relid=289567",
+          "type": "official",
+          "verifiedVia": "web_search",
+          "evidenceText": "Refer to the dated primary release for the stated fact"
+        }
+      ],
+      "status": "REVIEW_REQUIRED",
+      "editorialApproval": null,
+      "verification": {
+        "automatedStructuralChecksPassed": true,
+        "primarySourceLocated": true,
+        "humanSourceChecked": false,
+        "bilingualEditorialChecked": false,
+        "publicationAllowed": false
+      },
+      "createdBy": "chatgpt-draft-seed",
+      "schemaVersion": 1
+    },
+    {
+      "id": "ca26_c49b0ae6d7f3",
+      "coverageWindow": {
+        "from": "2026-04-23",
+        "to": "2026-10-23"
+      },
+      "eventDate": "2026-06-10",
+      "publicationDate": "2026-06-10",
+      "category": "Urban Transport",
+      "question": {
+        "en": "In June 2026, which city’s Metro Rail Phase 2A airport corridor received Union Cabinet approval?",
+        "ta": "2026 ஜூனில் எந்த நகரத்தின் மெட்ரோ ரயில் 2A கட்ட விமான நிலைய வழித்தடத்துக்கு மத்திய அமைச்சரவை ஒப்புதல் அளித்தது?"
+      },
+      "options": [
+        {
+          "en": "Ahmedabad",
+          "ta": "அகமதாபாத்"
+        },
+        {
+          "en": "Chennai",
+          "ta": "சென்னை"
+        },
+        {
+          "en": "Bengaluru",
+          "ta": "பெங்களூரு"
+        },
+        {
+          "en": "Lucknow",
+          "ta": "லக்னோ"
+        }
+      ],
+      "correctOptionIndex": 0,
+      "explanation": {
+        "en": "The 10 June 2026 Cabinet decision approved the Koteshwar Road–Airport corridor of Ahmedabad Metro Phase 2A.",
+        "ta": "அகமதாபாத் மெட்ரோ 2A கட்டத்தின் கோடேஷ்வர் சாலை–விமான நிலைய வழித்தடத்துக்கு ஒப்புதல் அளிக்கப்பட்டது."
+      },
+      "sources": [
+        {
+          "publisher": "Press Information Bureau, Government of India",
+          "url": "https://www.pib.gov.in/newsite/erelcontent.aspx?lang=2&reg=48&relid=289836",
+          "type": "official",
+          "verifiedVia": "web_search",
+          "evidenceText": "Refer to the dated primary release for the stated fact"
+        }
+      ],
+      "status": "REVIEW_REQUIRED",
+      "editorialApproval": null,
+      "verification": {
+        "automatedStructuralChecksPassed": true,
+        "primarySourceLocated": true,
+        "humanSourceChecked": false,
+        "bilingualEditorialChecked": false,
+        "publicationAllowed": false
+      },
+      "createdBy": "chatgpt-draft-seed",
+      "schemaVersion": 1
+    },
+    {
+      "id": "ca26_c5c153a7e2fb",
+      "coverageWindow": {
+        "from": "2026-04-23",
+        "to": "2026-10-23"
+      },
+      "eventDate": "2026-06-10",
+      "publicationDate": "2026-06-10",
+      "category": "Public Administration",
+      "question": {
+        "en": "The Cabinet approved a General Pool Residential Accommodation project at Amaravati in which state?",
+        "ta": "அமராவதியில் மத்திய அரசு ஊழியர்களுக்கான GPRA குடியிருப்புத் திட்டத்துக்கு ஒப்புதல் அளிக்கப்பட்ட மாநிலம் எது?"
+      },
+      "options": [
+        {
+          "en": "Andhra Pradesh",
+          "ta": "ஆந்திரப் பிரதேசம்"
+        },
+        {
+          "en": "Telangana",
+          "ta": "தெலங்கானா"
+        },
+        {
+          "en": "Odisha",
+          "ta": "ஒடிசா"
+        },
+        {
+          "en": "Karnataka",
+          "ta": "கர்நாடகா"
+        }
+      ],
+      "correctOptionIndex": 0,
+      "explanation": {
+        "en": "The approved GPRA project is in Amaravati, Andhra Pradesh.",
+        "ta": "ஒப்புதல் அளிக்கப்பட்ட GPRA திட்டம் ஆந்திரப் பிரதேசத்தின் அமராவதியில் அமைந்துள்ளது."
+      },
+      "sources": [
+        {
+          "publisher": "Press Information Bureau, Government of India",
+          "url": "https://www.pib.gov.in/newsite/erelcontent.aspx?lang=2&reg=3&relid=289835",
+          "type": "official",
+          "verifiedVia": "web_search",
+          "evidenceText": "Refer to the dated primary release for the stated fact"
+        }
+      ],
+      "status": "REVIEW_REQUIRED",
+      "editorialApproval": null,
+      "verification": {
+        "automatedStructuralChecksPassed": true,
+        "primarySourceLocated": true,
+        "humanSourceChecked": false,
+        "bilingualEditorialChecked": false,
+        "publicationAllowed": false
+      },
+      "createdBy": "chatgpt-draft-seed",
+      "schemaVersion": 1
+    },
+    {
+      "id": "ca26_a57f2a34083c",
+      "coverageWindow": {
+        "from": "2026-04-23",
+        "to": "2026-10-23"
+      },
+      "eventDate": "2026-07-09",
+      "publicationDate": "2026-07-09",
+      "category": "Tamil Nadu and Aadhaar",
+      "question": {
+        "en": "UIDAI opened a new Aadhaar Seva Kendra in which Tamil Nadu city on 9 July 2026?",
+        "ta": "2026 ஜூலை 9 அன்று UIDAI எந்தத் தமிழ்நாட்டு நகரத்தில் புதிய ஆதார் சேவா கேந்திராவைத் திறந்தது?"
+      },
+      "options": [
+        {
+          "en": "Coimbatore",
+          "ta": "கோயம்புத்தூர்"
+        },
+        {
+          "en": "Karur",
+          "ta": "கரூர்"
+        },
+        {
+          "en": "Dindigul",
+          "ta": "திண்டுக்கல்"
+        },
+        {
+          "en": "Tirunelveli",
+          "ta": "திருநெல்வேலி"
+        }
+      ],
+      "correctOptionIndex": 0,
+      "explanation": {
+        "en": "The 9 July 2026 release confirms the opening at Coimbatore.",
+        "ta": "2026 ஜூலை 9 அன்று கோயம்புத்தூரில் புதிய ஆதார் சேவா கேந்திரா திறக்கப்பட்டது."
+      },
+      "sources": [
+        {
+          "publisher": "Press Information Bureau, Government of India",
+          "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2282860&lang=1&reg=6",
+          "type": "official",
+          "verifiedVia": "web_search",
+          "evidenceText": "Refer to the dated primary release for the stated fact"
+        }
+      ],
+      "status": "REVIEW_REQUIRED",
+      "editorialApproval": null,
+      "verification": {
+        "automatedStructuralChecksPassed": true,
+        "primarySourceLocated": true,
+        "humanSourceChecked": false,
+        "bilingualEditorialChecked": false,
+        "publicationAllowed": false
+      },
+      "createdBy": "chatgpt-draft-seed",
+      "schemaVersion": 1
+    },
+    {
+      "id": "ca26_c2571d350d47",
+      "coverageWindow": {
+        "from": "2026-04-23",
+        "to": "2026-10-23"
+      },
+      "eventDate": "2026-07-15",
+      "publicationDate": "2026-07-15",
+      "category": "Manufacturing",
+      "question": {
+        "en": "What was the approved budgetary outlay of the Mobile Phone Manufacturing Scheme in July 2026?",
+        "ta": "2026 ஜூலையில் ஒப்புதல் அளிக்கப்பட்ட Mobile Phone Manufacturing Scheme திட்டத்தின் நிதி ஒதுக்கீடு எவ்வளவு?"
+      },
+      "options": [
+        {
+          "en": "₹62,500 crore",
+          "ta": "₹62,500 கோடி"
+        },
+        {
+          "en": "₹6,250 crore",
+          "ta": "₹6,250 கோடி"
+        },
+        {
+          "en": "₹36,441 crore",
+          "ta": "₹36,441 கோடி"
+        },
+        {
+          "en": "₹3,030 crore",
+          "ta": "₹3,030 கோடி"
+        }
+      ],
+      "correctOptionIndex": 0,
+      "explanation": {
+        "en": "The Cabinet approved the Mobile Phone Manufacturing Scheme with an outlay of ₹62,500 crore on 15 July 2026.",
+        "ta": "2026 ஜூலை 15 அன்று இத்திட்டத்துக்கு ₹62,500 கோடி ஒதுக்கீடு ஒப்புதல் அளிக்கப்பட்டது."
+      },
+      "sources": [
+        {
+          "publisher": "Press Information Bureau, Government of India",
+          "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2284789&lang=1&reg=20",
+          "type": "official",
+          "verifiedVia": "web_search",
+          "evidenceText": "Refer to the dated primary release for the stated fact"
+        }
+      ],
+      "status": "REVIEW_REQUIRED",
+      "editorialApproval": null,
+      "verification": {
+        "automatedStructuralChecksPassed": true,
+        "primarySourceLocated": true,
+        "humanSourceChecked": false,
+        "bilingualEditorialChecked": false,
+        "publicationAllowed": false
+      },
+      "createdBy": "chatgpt-draft-seed",
+      "schemaVersion": 1
+    },
+    {
+      "id": "ca26_21cbd2369feb",
+      "coverageWindow": {
+        "from": "2026-04-23",
+        "to": "2026-10-23"
+      },
+      "eventDate": "2026-07-24",
+      "publicationDate": "2026-07-24",
+      "category": "Industry",
+      "question": {
+        "en": "The BHAVYA Rasayan Scheme approved in July 2026 concerns setting up which type of infrastructure?",
+        "ta": "2026 ஜூலையில் ஒப்புதல் அளிக்கப்பட்ட BHAVYA Rasayan திட்டம் எந்த வகை உள்கட்டமைப்பை உருவாக்குவதற்கானது?"
+      },
+      "options": [
+        {
+          "en": "Dedicated chemical parks",
+          "ta": "சிறப்பு இரசாயனத் தொழிற்பூங்காக்கள்"
+        },
+        {
+          "en": "Satellite launch pads",
+          "ta": "செயற்கைக்கோள் ஏவுதளங்கள்"
+        },
+        {
+          "en": "National sports academies",
+          "ta": "தேசிய விளையாட்டுக் கல்விக்கூடங்கள்"
+        },
+        {
+          "en": "Fishing harbours",
+          "ta": "மீன்பிடித் துறைமுகங்கள்"
+        }
+      ],
+      "correctOptionIndex": 0,
+      "explanation": {
+        "en": "The Cabinet approved the scheme for three dedicated chemical parks.",
+        "ta": "மூன்று சிறப்பு இரசாயனத் தொழிற்பூங்காக்களை அமைப்பதே இத்திட்டத்தின் நோக்கம்."
+      },
+      "sources": [
+        {
+          "publisher": "Press Information Bureau, Government of India",
+          "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2288863&lang=1&noshow=1&reg=48",
+          "type": "official",
+          "verifiedVia": "web_search",
+          "evidenceText": "Refer to the dated primary release for the stated fact"
+        }
+      ],
+      "status": "REVIEW_REQUIRED",
+      "editorialApproval": null,
+      "verification": {
+        "automatedStructuralChecksPassed": true,
+        "primarySourceLocated": true,
+        "humanSourceChecked": false,
+        "bilingualEditorialChecked": false,
+        "publicationAllowed": false
+      },
+      "createdBy": "chatgpt-draft-seed",
+      "schemaVersion": 1
+    },
+    {
+      "id": "ca26_cb3135c0a079",
+      "coverageWindow": {
+        "from": "2026-04-23",
+        "to": "2026-10-23"
+      },
+      "eventDate": "2026-08-12",
+      "publicationDate": "2026-08-12",
+      "category": "Road Safety",
+      "question": {
+        "en": "Under PM-RAHAT, what is the maximum treatment cover for an eligible road-accident victim stated in the August 2026 implementation release?",
+        "ta": "2026 ஆகஸ்ட் PM-RAHAT நடைமுறை அறிக்கையின்படி தகுதியுடைய சாலை விபத்துப் பாதிக்கப்பட்ட ஒருவருக்கான அதிகபட்ச சிகிச்சை உதவித்தொகை எவ்வளவு?"
+      },
+      "options": [
+        {
+          "en": "₹1.5 lakh",
+          "ta": "₹1.5 லட்சம்"
+        },
+        {
+          "en": "₹50,000",
+          "ta": "₹50,000"
+        },
+        {
+          "en": "₹5 lakh",
+          "ta": "₹5 லட்சம்"
+        },
+        {
+          "en": "₹10 lakh",
+          "ta": "₹10 லட்சம்"
+        }
+      ],
+      "correctOptionIndex": 0,
+      "explanation": {
+        "en": "The 12 August 2026 status release states a treatment cover up to ₹1.5 lakh per eligible victim, subject to a seven-day cap.",
+        "ta": "தகுதியுடைய ஒருவருக்கு ₹1.5 லட்சம் வரை, அதிகபட்சம் ஏழு நாட்கள் சிகிச்சை உதவி வழங்கப்படுவதாக வெளியீடு குறிப்பிடுகிறது."
+      },
+      "sources": [
+        {
+          "publisher": "Press Information Bureau, Government of India",
+          "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2298285&lang=2&reg=48",
+          "type": "official",
+          "verifiedVia": "web_search",
+          "evidenceText": "Refer to the dated primary release for the stated fact"
+        }
+      ],
+      "status": "REVIEW_REQUIRED",
+      "editorialApproval": null,
+      "verification": {
+        "automatedStructuralChecksPassed": true,
+        "primarySourceLocated": true,
+        "humanSourceChecked": false,
+        "bilingualEditorialChecked": false,
+        "publicationAllowed": false
+      },
+      "createdBy": "chatgpt-draft-seed",
+      "schemaVersion": 1
+    },
+    {
+      "id": "ca26_6be4e4b361a8",
+      "coverageWindow": {
+        "from": "2026-04-23",
+        "to": "2026-10-23"
+      },
+      "eventDate": "2026-08-17",
+      "publicationDate": "2026-08-17",
+      "category": "Electronics",
+      "question": {
+        "en": "How many additional ECMS proposals were approved by MeitY in the announcement dated 17 August 2026?",
+        "ta": "2026 ஆகஸ்ட் 17 அன்று வெளியான அறிவிப்பில் MeitY கூடுதலாக எத்தனை ECMS முன்மொழிவுகளுக்கு ஒப்புதல் அளித்தது?"
+      },
+      "options": [
+        {
+          "en": "31",
+          "ta": "31"
+        },
+        {
+          "en": "16",
+          "ta": "16"
+        },
+        {
+          "en": "75",
+          "ta": "75"
+        },
+        {
+          "en": "106",
+          "ta": "106"
+        }
+      ],
+      "correctOptionIndex": 0,
+      "explanation": {
+        "en": "The release states that MeitY approved 31 additional proposals under the Electronics Components Manufacturing Scheme.",
+        "ta": "மின்னணு உதிரிபாகங்கள் உற்பத்தித் திட்டத்தின் கீழ் கூடுதலாக 31 முன்மொழிவுகள் ஒப்புதல் பெற்றன."
+      },
+      "sources": [
+        {
+          "publisher": "Press Information Bureau, Government of India",
+          "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2300625&lang=1&reg=3",
+          "type": "official",
+          "verifiedVia": "web_search",
+          "evidenceText": "Refer to the dated primary release for the stated fact"
+        }
+      ],
+      "status": "REVIEW_REQUIRED",
+      "editorialApproval": null,
+      "verification": {
+        "automatedStructuralChecksPassed": true,
+        "primarySourceLocated": true,
+        "humanSourceChecked": false,
+        "bilingualEditorialChecked": false,
+        "publicationAllowed": false
+      },
+      "createdBy": "chatgpt-draft-seed",
+      "schemaVersion": 1
+    },
+    {
+      "id": "ca26_79ffc95219b9",
+      "coverageWindow": {
+        "from": "2026-04-23",
+        "to": "2026-10-23"
+      },
+      "eventDate": "2026-08-28",
+      "publicationDate": "2026-08-28",
+      "category": "Environment and Transport",
+      "question": {
+        "en": "Which vehicle emission standard is a principal replacement target of the PARIVARTAN scheme described in August 2026?",
+        "ta": "2026 ஆகஸ்ட் அறிவிப்பின்படி PARIVARTAN திட்டம் பழைய வாகனங்களுக்கு மாற்றாக முக்கியமாக எந்தத் தரநிலைக்குரிய வாகனங்களை ஊக்குவிக்கிறது?"
+      },
+      "options": [
+        {
+          "en": "BS-VI or stricter / electric vehicles",
+          "ta": "BS-VI அல்லது அதற்கு மேற்பட்ட தரநிலை / மின்சார வாகனங்கள்"
+        },
+        {
+          "en": "Only BS-II vehicles",
+          "ta": "BS-II வாகனங்கள் மட்டும்"
+        },
+        {
+          "en": "Only BS-III diesel vehicles",
+          "ta": "BS-III டீசல் வாகனங்கள் மட்டும்"
+        },
+        {
+          "en": "Only two-wheelers",
+          "ta": "இருசக்கர வாகனங்கள் மட்டும்"
+        }
+      ],
+      "correctOptionIndex": 0,
+      "explanation": {
+        "en": "PARIVARTAN replaces older BS-IV-or-earlier trucks and buses with BS-VI-or-stricter or electric vehicles.",
+        "ta": "பழைய BS-IV அல்லது அதற்கு முந்தைய லாரிகள், பேருந்துகளுக்கு மாற்றாக BS-VI அல்லது மின்சார வாகனங்களை ஊக்குவிக்கிறது."
+      },
+      "sources": [
+        {
+          "publisher": "Press Information Bureau, Government of India",
+          "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2304373&lang=1&reg=3",
+          "type": "official",
+          "verifiedVia": "web_search",
+          "evidenceText": "Refer to the dated primary release for the stated fact"
+        }
+      ],
+      "status": "REVIEW_REQUIRED",
+      "editorialApproval": null,
+      "verification": {
+        "automatedStructuralChecksPassed": true,
+        "primarySourceLocated": true,
+        "humanSourceChecked": false,
+        "bilingualEditorialChecked": false,
+        "publicationAllowed": false
+      },
+      "createdBy": "chatgpt-draft-seed",
+      "schemaVersion": 1
+    },
+    {
+      "id": "ca26_7d9921ae0825",
+      "coverageWindow": {
+        "from": "2026-04-23",
+        "to": "2026-10-23"
+      },
+      "eventDate": "2026-09-01",
+      "publicationDate": "2026-09-01",
+      "category": "Infrastructure",
+      "question": {
+        "en": "The 160-km coastal highway corridor announced by NHAI in September 2026 lies in which state?",
+        "ta": "2026 செப்டம்பரில் NHAI அறிவித்த சுமார் 160 கி.மீ. கடலோர நெடுஞ்சாலைத் திட்டம் எந்த மாநிலத்தில் அமைந்துள்ளது?"
+      },
+      "options": [
+        {
+          "en": "Odisha",
+          "ta": "ஒடிசா"
+        },
+        {
+          "en": "Kerala",
+          "ta": "கேரளா"
+        },
+        {
+          "en": "Goa",
+          "ta": "கோவா"
+        },
+        {
+          "en": "Tamil Nadu",
+          "ta": "தமிழ்நாடு"
+        }
+      ],
+      "correctOptionIndex": 0,
+      "explanation": {
+        "en": "The NHAI release describes the Rameshwar–Paradeep coastal corridor in Odisha.",
+        "ta": "NHAI வெளியீட்டின்படி ராமேஷ்வர்–பாரதீப் கடலோர வழித்தடம் ஒடிசாவில் உள்ளது."
+      },
+      "sources": [
+        {
+          "publisher": "Press Information Bureau, Government of India",
+          "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2305502&lang=1&reg=48",
+          "type": "official",
+          "verifiedVia": "web_search",
+          "evidenceText": "Refer to the dated primary release for the stated fact"
+        }
+      ],
+      "status": "REVIEW_REQUIRED",
+      "editorialApproval": null,
+      "verification": {
+        "automatedStructuralChecksPassed": true,
+        "primarySourceLocated": true,
+        "humanSourceChecked": false,
+        "bilingualEditorialChecked": false,
+        "publicationAllowed": false
+      },
+      "createdBy": "chatgpt-draft-seed",
+      "schemaVersion": 1
+    },
+    {
+      "id": "ca26_26fd64bcc21b",
+      "coverageWindow": {
+        "from": "2026-04-23",
+        "to": "2026-10-23"
+      },
+      "eventDate": "2026-09-16",
+      "publicationDate": "2026-09-16",
+      "category": "Labour and Social Security",
+      "question": {
+        "en": "What new monthly wage ceiling for mandatory EPFO coverage was approved in September 2026?",
+        "ta": "2026 செப்டம்பரில் கட்டாய EPFO உறுப்பினர் சேர்க்கைக்காக ஒப்புதல் அளிக்கப்பட்ட புதிய மாத ஊதிய உச்சவரம்பு எவ்வளவு?"
+      },
+      "options": [
+        {
+          "en": "₹25,000",
+          "ta": "₹25,000"
+        },
+        {
+          "en": "₹15,000",
+          "ta": "₹15,000"
+        },
+        {
+          "en": "₹20,000",
+          "ta": "₹20,000"
+        },
+        {
+          "en": "₹30,000",
+          "ta": "₹30,000"
+        }
+      ],
+      "correctOptionIndex": 0,
+      "explanation": {
+        "en": "The Union Cabinet approved raising the wage ceiling from ₹15,000 to ₹25,000.",
+        "ta": "மாத ஊதிய உச்சவரம்பை ₹15,000 இலிருந்து ₹25,000 ஆக உயர்த்த அமைச்சரவை ஒப்புதல் அளித்தது."
+      },
+      "sources": [
+        {
+          "publisher": "Press Information Bureau, Government of India",
+          "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2310811&lang=1&reg=48",
+          "type": "official",
+          "verifiedVia": "web_search",
+          "evidenceText": "Refer to the dated primary release for the stated fact"
+        }
+      ],
+      "status": "REVIEW_REQUIRED",
+      "editorialApproval": null,
+      "verification": {
+        "automatedStructuralChecksPassed": true,
+        "primarySourceLocated": true,
+        "humanSourceChecked": false,
+        "bilingualEditorialChecked": false,
+        "publicationAllowed": false
+      },
+      "createdBy": "chatgpt-draft-seed",
+      "schemaVersion": 1
+    },
+    {
+      "id": "ca26_280925bb1a21",
+      "coverageWindow": {
+        "from": "2026-04-23",
+        "to": "2026-10-23"
+      },
+      "eventDate": "2026-09-16",
+      "publicationDate": "2026-09-16",
+      "category": "Labour and Social Security",
+      "question": {
+        "en": "From which date did the enhanced EPFO wage ceiling take effect according to the Ministry of Labour release?",
+        "ta": "தொழிலாளர் அமைச்சக வெளியீட்டின்படி உயர்த்தப்பட்ட EPFO ஊதிய உச்சவரம்பு எந்த தேதியிலிருந்து அமலுக்கு வந்தது?"
+      },
+      "options": [
+        {
+          "en": "17 September 2026",
+          "ta": "17 செப்டம்பர் 2026"
+        },
+        {
+          "en": "1 January 2027",
+          "ta": "1 ஜனவரி 2027"
+        },
+        {
+          "en": "1 August 2026",
+          "ta": "1 ஆகஸ்ட் 2026"
+        },
+        {
+          "en": "1 April 2026",
+          "ta": "1 ஏப்ரல் 2026"
+        }
+      ],
+      "correctOptionIndex": 0,
+      "explanation": {
+        "en": "The Ministry stated that the enhanced ceiling took effect on 17 September 2026.",
+        "ta": "உயர்த்தப்பட்ட உச்சவரம்பு 2026 செப்டம்பர் 17 முதல் நடைமுறைக்கு வந்ததாக அமைச்சகம் தெரிவித்தது."
+      },
+      "sources": [
+        {
+          "publisher": "Press Information Bureau, Government of India",
+          "url": "https://www.pib.gov.in/PressReleaseIframePage.aspx?PRID=2310973&lang=2&reg=48",
+          "type": "official",
+          "verifiedVia": "web_search",
+          "evidenceText": "Refer to the dated primary release for the stated fact"
+        }
+      ],
+      "status": "REVIEW_REQUIRED",
+      "editorialApproval": null,
+      "verification": {
+        "automatedStructuralChecksPassed": true,
+        "primarySourceLocated": true,
+        "humanSourceChecked": false,
+        "bilingualEditorialChecked": false,
+        "publicationAllowed": false
+      },
+      "createdBy": "chatgpt-draft-seed",
+      "schemaVersion": 1
+    },
+    {
+      "id": "ca26_969554a94813",
+      "coverageWindow": {
+        "from": "2026-04-23",
+        "to": "2026-10-23"
+      },
+      "eventDate": "2026-10-06",
+      "publicationDate": "2026-10-06",
+      "category": "MSME and Economy",
+      "question": {
+        "en": "What government commitment was approved for the SME Growth Fund in October 2026?",
+        "ta": "2026 அக்டோபரில் SME Growth Fund-க்காக மத்திய அரசு ஒப்புதல் அளித்த நிதிப் பங்களிப்பு எவ்வளவு?"
+      },
+      "options": [
+        {
+          "en": "₹10,000 crore",
+          "ta": "₹10,000 கோடி"
+        },
+        {
+          "en": "₹1,000 crore",
+          "ta": "₹1,000 கோடி"
+        },
+        {
+          "en": "₹25,000 crore",
+          "ta": "₹25,000 கோடி"
+        },
+        {
+          "en": "₹50,000 crore",
+          "ta": "₹50,000 கோடி"
+        }
+      ],
+      "correctOptionIndex": 0,
+      "explanation": {
+        "en": "The Union Cabinet approved ₹10,000 crore for the SME Growth Fund on 6 October 2026.",
+        "ta": "2026 அக்டோபர் 6 அன்று SME Growth Fund-க்கு ₹10,000 கோடி பங்களிப்புக்கு ஒப்புதல் அளிக்கப்பட்டது."
+      },
+      "sources": [
+        {
+          "publisher": "Press Information Bureau, Government of India",
+          "url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2319532&lang=1&reg=3",
+          "type": "official",
+          "verifiedVia": "web_search",
+          "evidenceText": "Refer to the dated primary release for the stated fact"
+        }
+      ],
+      "status": "REVIEW_REQUIRED",
+      "editorialApproval": null,
+      "verification": {
+        "automatedStructuralChecksPassed": true,
+        "primarySourceLocated": true,
+        "humanSourceChecked": false,
+        "bilingualEditorialChecked": false,
+        "publicationAllowed": false
+      },
+      "createdBy": "chatgpt-draft-seed",
+      "schemaVersion": 1
+    },
+    {
+      "id": "ca26_2cb92b9e3aab",
+      "coverageWindow": {
+        "from": "2026-04-23",
+        "to": "2026-10-23"
+      },
+      "eventDate": "2026-10-06",
+      "publicationDate": "2026-10-06",
+      "category": "Governance and Logistics",
+      "question": {
+        "en": "What does ITLA stand for in the Cabinet decision dated 6 October 2026?",
+        "ta": "2026 அக்டோபர் 6 அமைச்சரவை முடிவில் ITLA என்பதன் விரிவாக்கம் என்ன?"
+      },
+      "options": [
+        {
+          "en": "Integrated Transport & Logistics Authority",
+          "ta": "ஒருங்கிணைந்த போக்குவரத்து மற்றும் சரக்குப் போக்குவரத்து ஆணையம்"
+        },
+        {
+          "en": "Indian Trade and Labour Association",
+          "ta": "இந்திய வர்த்தக மற்றும் தொழிலாளர் சங்கம்"
+        },
+        {
+          "en": "International Telecom Licensing Agency",
+          "ta": "சர்வதேச தொலைத்தொடர்பு உரிம ஆணையம்"
+        },
+        {
+          "en": "Integrated Tax and Land Administration",
+          "ta": "ஒருங்கிணைந்த வரி மற்றும் நில நிர்வாகம்"
+        }
+      ],
+      "correctOptionIndex": 0,
+      "explanation": {
+        "en": "The Cabinet approved an SPV named Integrated Transport & Logistics Authority.",
+        "ta": "ஒருங்கிணைந்த போக்குவரத்து மற்றும் சரக்குப் போக்குவரத்து ஆணையம் என்ற சிறப்பு நோக்க அமைப்புக்கு அமைச்சரவை ஒப்புதல் அளித்தது."
+      },
+      "sources": [
+        {
+          "publisher": "Press Information Bureau, Government of India",
+          "url": "https://www.pib.gov.in/PressReleasepage.aspx?PRID=2319529&lang=1&reg=48",
+          "type": "official",
+          "verifiedVia": "web_search",
+          "evidenceText": "Refer to the dated primary release for the stated fact"
+        }
+      ],
+      "status": "REVIEW_REQUIRED",
+      "editorialApproval": null,
+      "verification": {
+        "automatedStructuralChecksPassed": true,
+        "primarySourceLocated": true,
+        "humanSourceChecked": false,
+        "bilingualEditorialChecked": false,
+        "publicationAllowed": false
+      },
+      "createdBy": "chatgpt-draft-seed",
+      "schemaVersion": 1
+    },
+    {
+      "id": "ca26_24a6a04eb348",
+      "coverageWindow": {
+        "from": "2026-04-23",
+        "to": "2026-10-23"
+      },
+      "eventDate": "2026-10-14",
+      "publicationDate": "2026-10-14",
+      "category": "Railways",
+      "question": {
+        "en": "The October 2026 Cabinet decision approved Productivity Linked Bonus equivalent to how many days for eligible railway employees?",
+        "ta": "2026 அக்டோபர் அமைச்சரவை முடிவின்படி தகுதியான ரயில்வே ஊழியர்களுக்கான உற்பத்தித் திறன் சார்ந்த போனஸ் எத்தனை நாட்களுக்கு இணையானது?"
+      },
+      "options": [
+        {
+          "en": "78 days",
+          "ta": "78 நாட்கள்"
+        },
+        {
+          "en": "60 days",
+          "ta": "60 நாட்கள்"
+        },
+        {
+          "en": "45 days",
+          "ta": "45 நாட்கள்"
+        },
+        {
+          "en": "90 days",
+          "ta": "90 நாட்கள்"
+        }
+      ],
+      "correctOptionIndex": 0,
+      "explanation": {
+        "en": "The Cabinet approved a Productivity Linked Bonus equivalent to 78 days.",
+        "ta": "உற்பத்தித் திறன் சார்ந்த போனஸ் 78 நாட்கள் ஊதியத்துக்கு இணையானதாக ஒப்புதல் அளிக்கப்பட்டது."
+      },
+      "sources": [
+        {
+          "publisher": "Press Information Bureau, Government of India",
+          "url": "https://www.pib.gov.in/PressReleseDetailm.aspx?PRID=2323256&lang=1&reg=3",
+          "type": "official",
+          "verifiedVia": "web_search",
+          "evidenceText": "Refer to the dated primary release for the stated fact"
+        }
+      ],
+      "status": "REVIEW_REQUIRED",
+      "editorialApproval": null,
+      "verification": {
+        "automatedStructuralChecksPassed": true,
+        "primarySourceLocated": true,
+        "humanSourceChecked": false,
+        "bilingualEditorialChecked": false,
+        "publicationAllowed": false
+      },
+      "createdBy": "chatgpt-draft-seed",
+      "schemaVersion": 1
+    }
+  ]
+}
