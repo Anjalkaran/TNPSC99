@@ -26,6 +26,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
+import { FreeLearningHub } from '@/components/public/free-learning-hub';
 import { useUser } from '@/firebase';
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -161,9 +162,9 @@ export default function PublicHomePage() {
                 </Link>
               </Button>
               <Button asChild variant="outline" size="lg" className="w-full sm:w-auto h-12 md:h-14 px-8 text-base font-bold rounded-xl border-border hover:bg-muted">
-                <Link href="/signup">
-                  Start Free Demo Practice
-                </Link>
+                <a href="#free-hub">
+                  Try Free MCQs (No Login)
+                </a>
               </Button>
             </div>
 
@@ -188,6 +189,11 @@ export default function PublicHomePage() {
             </div>
           </div>
         </section>
+
+        {/* ========================================================================= */}
+        {/* PUBLIC FREE LEARNING HUB: NO-LOGIN INTERACTIVE PRACTICE                   */}
+        {/* ========================================================================= */}
+        <FreeLearningHub />
 
         {/* ========================================================================= */}
         {/* PRIMARY PROMOTIONAL OFFER: MCQ ACADEMY – ₹99/MONTH SHOWCASE               */}
