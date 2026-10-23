@@ -48,11 +48,15 @@
         "riskLevel": "LOW_RISK",
         "overallScore": 100,
         "canAutoPublish": false,
-        "rejectionReasons": []
+        "rejectionReasons": [
+          "Contains repetitive template distractors; fails TNPSC distractor diversity standard",
+          "Correct answer fixed at Option A (index 0); requires key randomization"
+        ]
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:35:40.916Z"
+      "createdAt": "2026-10-23T16:35:40.916Z",
+      "rejectionReason": "Contains repetitive template distractors; fails TNPSC distractor diversity standard; Correct answer fixed at Option A (index 0); requires key randomization"
     },
     {
       "id": "ca26_h1h2_a25f1758_01_stm",
@@ -99,11 +103,14 @@
         "riskLevel": "MEDIUM_RISK",
         "overallScore": 100,
         "canAutoPublish": false,
-        "rejectionReasons": []
+        "rejectionReasons": [
+          "Correct answer fixed at Option A (index 0); requires key randomization"
+        ]
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:35:40.916Z"
+      "createdAt": "2026-10-23T16:35:40.916Z",
+      "rejectionReason": "Correct answer fixed at Option A (index 0); requires key randomization"
     },
     {
       "id": "ca26_h1h2_321e1f8c_01_dir",
@@ -150,11 +157,15 @@
         "riskLevel": "LOW_RISK",
         "overallScore": 100,
         "canAutoPublish": false,
-        "rejectionReasons": []
+        "rejectionReasons": [
+          "Contains repetitive template distractors; fails TNPSC distractor diversity standard",
+          "Correct answer fixed at Option A (index 0); requires key randomization"
+        ]
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:35:40.917Z"
+      "createdAt": "2026-10-23T16:35:40.917Z",
+      "rejectionReason": "Contains repetitive template distractors; fails TNPSC distractor diversity standard; Correct answer fixed at Option A (index 0); requires key randomization"
     },
     {
       "id": "ca26_h1h2_321e1f8c_01_stm",
@@ -201,11 +212,14 @@
         "riskLevel": "MEDIUM_RISK",
         "overallScore": 100,
         "canAutoPublish": false,
-        "rejectionReasons": []
+        "rejectionReasons": [
+          "Correct answer fixed at Option A (index 0); requires key randomization"
+        ]
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:35:40.917Z"
+      "createdAt": "2026-10-23T16:35:40.917Z",
+      "rejectionReason": "Correct answer fixed at Option A (index 0); requires key randomization"
     },
     {
       "id": "ca26_h1h2_d6da52b9_01_dir",
@@ -252,11 +266,16 @@
         "riskLevel": "MEDIUM_RISK",
         "overallScore": 100,
         "canAutoPublish": false,
-        "rejectionReasons": []
+        "rejectionReasons": [
+          "Parent source quarantined: Primary source parameter conflict or unauthenticated PRID: https://rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=58120",
+          "Contains repetitive template distractors; fails TNPSC distractor diversity standard",
+          "Correct answer fixed at Option A (index 0); requires key randomization"
+        ]
       },
-      "overallStatus": "REVIEW_REQUIRED",
+      "overallStatus": "REJECTED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:35:40.917Z"
+      "createdAt": "2026-10-23T16:35:40.917Z",
+      "rejectionReason": "Parent source quarantined: Primary source parameter conflict or unauthenticated PRID: https://rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=58120; Contains repetitive template distractors; fails TNPSC distractor diversity standard; Correct answer fixed at Option A (index 0); requires key randomization"
     },
     {
       "id": "ca26_h1h2_d6da52b9_01_stm",
@@ -303,11 +322,15 @@
         "riskLevel": "MEDIUM_RISK",
         "overallScore": 100,
         "canAutoPublish": false,
-        "rejectionReasons": []
+        "rejectionReasons": [
+          "Parent source quarantined: Primary source parameter conflict or unauthenticated PRID: https://rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=58120",
+          "Correct answer fixed at Option A (index 0); requires key randomization"
+        ]
       },
-      "overallStatus": "REVIEW_REQUIRED",
+      "overallStatus": "REJECTED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:35:40.917Z"
+      "createdAt": "2026-10-23T16:35:40.917Z",
+      "rejectionReason": "Parent source quarantined: Primary source parameter conflict or unauthenticated PRID: https://rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=58120; Correct answer fixed at Option A (index 0); requires key randomization"
     },
     {
       "id": "ca26_h1h2_fd4c5733_01_dir",
@@ -354,11 +377,15 @@
         "riskLevel": "LOW_RISK",
         "overallScore": 100,
         "canAutoPublish": false,
-        "rejectionReasons": []
+        "rejectionReasons": [
+          "Contains repetitive template distractors; fails TNPSC distractor diversity standard",
+          "Correct answer fixed at Option A (index 0); requires key randomization"
+        ]
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:35:40.917Z"
+      "createdAt": "2026-10-23T16:35:40.917Z",
+      "rejectionReason": "Contains repetitive template distractors; fails TNPSC distractor diversity standard; Correct answer fixed at Option A (index 0); requires key randomization"
     },
     {
       "id": "ca26_h1h2_fd4c5733_01_stm",
@@ -405,11 +432,14 @@
         "riskLevel": "MEDIUM_RISK",
         "overallScore": 100,
         "canAutoPublish": false,
-        "rejectionReasons": []
+        "rejectionReasons": [
+          "Correct answer fixed at Option A (index 0); requires key randomization"
+        ]
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:35:40.917Z"
+      "createdAt": "2026-10-23T16:35:40.917Z",
+      "rejectionReason": "Correct answer fixed at Option A (index 0); requires key randomization"
     },
     {
       "id": "ca26_h1h2_450d6365_01_dir",
@@ -456,11 +486,15 @@
         "riskLevel": "LOW_RISK",
         "overallScore": 100,
         "canAutoPublish": false,
-        "rejectionReasons": []
+        "rejectionReasons": [
+          "Contains repetitive template distractors; fails TNPSC distractor diversity standard",
+          "Correct answer fixed at Option A (index 0); requires key randomization"
+        ]
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:35:40.917Z"
+      "createdAt": "2026-10-23T16:35:40.917Z",
+      "rejectionReason": "Contains repetitive template distractors; fails TNPSC distractor diversity standard; Correct answer fixed at Option A (index 0); requires key randomization"
     },
     {
       "id": "ca26_h1h2_450d6365_01_stm",
@@ -507,11 +541,14 @@
         "riskLevel": "MEDIUM_RISK",
         "overallScore": 100,
         "canAutoPublish": false,
-        "rejectionReasons": []
+        "rejectionReasons": [
+          "Correct answer fixed at Option A (index 0); requires key randomization"
+        ]
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:35:40.918Z"
+      "createdAt": "2026-10-23T16:35:40.918Z",
+      "rejectionReason": "Correct answer fixed at Option A (index 0); requires key randomization"
     },
     {
       "id": "ca26_h1h2_24e3de9d_01_dir",
@@ -558,11 +595,15 @@
         "riskLevel": "MEDIUM_RISK",
         "overallScore": 100,
         "canAutoPublish": false,
-        "rejectionReasons": []
+        "rejectionReasons": [
+          "Contains repetitive template distractors; fails TNPSC distractor diversity standard",
+          "Correct answer fixed at Option A (index 0); requires key randomization"
+        ]
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:35:40.918Z"
+      "createdAt": "2026-10-23T16:35:40.918Z",
+      "rejectionReason": "Contains repetitive template distractors; fails TNPSC distractor diversity standard; Correct answer fixed at Option A (index 0); requires key randomization"
     },
     {
       "id": "ca26_h1h2_24e3de9d_01_asr",
@@ -609,11 +650,14 @@
         "riskLevel": "MEDIUM_RISK",
         "overallScore": 100,
         "canAutoPublish": false,
-        "rejectionReasons": []
+        "rejectionReasons": [
+          "Correct answer fixed at Option A (index 0); requires key randomization"
+        ]
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:35:40.918Z"
+      "createdAt": "2026-10-23T16:35:40.918Z",
+      "rejectionReason": "Correct answer fixed at Option A (index 0); requires key randomization"
     },
     {
       "id": "ca26_h1h2_bb1db576_01_dir",
@@ -660,11 +704,16 @@
         "riskLevel": "LOW_RISK",
         "overallScore": 100,
         "canAutoPublish": false,
-        "rejectionReasons": []
+        "rejectionReasons": [
+          "Parent source quarantined: Primary source parameter conflict or unauthenticated PRID: https://www.pib.gov.in/PressReleasePage.aspx?PRID=2264810",
+          "Contains repetitive template distractors; fails TNPSC distractor diversity standard",
+          "Correct answer fixed at Option A (index 0); requires key randomization"
+        ]
       },
-      "overallStatus": "REVIEW_REQUIRED",
+      "overallStatus": "REJECTED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:35:40.918Z"
+      "createdAt": "2026-10-23T16:35:40.918Z",
+      "rejectionReason": "Parent source quarantined: Primary source parameter conflict or unauthenticated PRID: https://www.pib.gov.in/PressReleasePage.aspx?PRID=2264810; Contains repetitive template distractors; fails TNPSC distractor diversity standard; Correct answer fixed at Option A (index 0); requires key randomization"
     },
     {
       "id": "ca26_h1h2_bb1db576_01_stm",
@@ -711,11 +760,15 @@
         "riskLevel": "MEDIUM_RISK",
         "overallScore": 100,
         "canAutoPublish": false,
-        "rejectionReasons": []
+        "rejectionReasons": [
+          "Parent source quarantined: Primary source parameter conflict or unauthenticated PRID: https://www.pib.gov.in/PressReleasePage.aspx?PRID=2264810",
+          "Correct answer fixed at Option A (index 0); requires key randomization"
+        ]
       },
-      "overallStatus": "REVIEW_REQUIRED",
+      "overallStatus": "REJECTED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:35:40.918Z"
+      "createdAt": "2026-10-23T16:35:40.918Z",
+      "rejectionReason": "Parent source quarantined: Primary source parameter conflict or unauthenticated PRID: https://www.pib.gov.in/PressReleasePage.aspx?PRID=2264810; Correct answer fixed at Option A (index 0); requires key randomization"
     },
     {
       "id": "ca26_h1h2_5aecd225_01_dir",
@@ -762,11 +815,15 @@
         "riskLevel": "LOW_RISK",
         "overallScore": 100,
         "canAutoPublish": false,
-        "rejectionReasons": []
+        "rejectionReasons": [
+          "Contains repetitive template distractors; fails TNPSC distractor diversity standard",
+          "Correct answer fixed at Option A (index 0); requires key randomization"
+        ]
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:35:40.918Z"
+      "createdAt": "2026-10-23T16:35:40.918Z",
+      "rejectionReason": "Contains repetitive template distractors; fails TNPSC distractor diversity standard; Correct answer fixed at Option A (index 0); requires key randomization"
     },
     {
       "id": "ca26_h1h2_5aecd225_01_stm",
@@ -813,11 +870,14 @@
         "riskLevel": "MEDIUM_RISK",
         "overallScore": 100,
         "canAutoPublish": false,
-        "rejectionReasons": []
+        "rejectionReasons": [
+          "Correct answer fixed at Option A (index 0); requires key randomization"
+        ]
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:35:40.918Z"
+      "createdAt": "2026-10-23T16:35:40.918Z",
+      "rejectionReason": "Correct answer fixed at Option A (index 0); requires key randomization"
     },
     {
       "id": "ca26_h1h2_e7133bb1_01_dir",
@@ -864,11 +924,15 @@
         "riskLevel": "LOW_RISK",
         "overallScore": 100,
         "canAutoPublish": false,
-        "rejectionReasons": []
+        "rejectionReasons": [
+          "Contains repetitive template distractors; fails TNPSC distractor diversity standard",
+          "Correct answer fixed at Option A (index 0); requires key randomization"
+        ]
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:35:40.918Z"
+      "createdAt": "2026-10-23T16:35:40.918Z",
+      "rejectionReason": "Contains repetitive template distractors; fails TNPSC distractor diversity standard; Correct answer fixed at Option A (index 0); requires key randomization"
     },
     {
       "id": "ca26_h1h2_e7133bb1_01_stm",
@@ -915,11 +979,14 @@
         "riskLevel": "MEDIUM_RISK",
         "overallScore": 100,
         "canAutoPublish": false,
-        "rejectionReasons": []
+        "rejectionReasons": [
+          "Correct answer fixed at Option A (index 0); requires key randomization"
+        ]
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:35:40.918Z"
+      "createdAt": "2026-10-23T16:35:40.918Z",
+      "rejectionReason": "Correct answer fixed at Option A (index 0); requires key randomization"
     },
     {
       "id": "ca26_h1h2_d8a053be_01_dir",
@@ -966,11 +1033,16 @@
         "riskLevel": "LOW_RISK",
         "overallScore": 100,
         "canAutoPublish": false,
-        "rejectionReasons": []
+        "rejectionReasons": [
+          "Parent source quarantined: Primary source parameter conflict or unauthenticated PRID: https://rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=58432",
+          "Contains repetitive template distractors; fails TNPSC distractor diversity standard",
+          "Correct answer fixed at Option A (index 0); requires key randomization"
+        ]
       },
-      "overallStatus": "REVIEW_REQUIRED",
+      "overallStatus": "REJECTED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:35:40.918Z"
+      "createdAt": "2026-10-23T16:35:40.918Z",
+      "rejectionReason": "Parent source quarantined: Primary source parameter conflict or unauthenticated PRID: https://rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=58432; Contains repetitive template distractors; fails TNPSC distractor diversity standard; Correct answer fixed at Option A (index 0); requires key randomization"
     },
     {
       "id": "ca26_h1h2_d8a053be_01_asr",
@@ -1017,11 +1089,15 @@
         "riskLevel": "MEDIUM_RISK",
         "overallScore": 100,
         "canAutoPublish": false,
-        "rejectionReasons": []
+        "rejectionReasons": [
+          "Parent source quarantined: Primary source parameter conflict or unauthenticated PRID: https://rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=58432",
+          "Correct answer fixed at Option A (index 0); requires key randomization"
+        ]
       },
-      "overallStatus": "REVIEW_REQUIRED",
+      "overallStatus": "REJECTED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:35:40.918Z"
+      "createdAt": "2026-10-23T16:35:40.918Z",
+      "rejectionReason": "Parent source quarantined: Primary source parameter conflict or unauthenticated PRID: https://rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=58432; Correct answer fixed at Option A (index 0); requires key randomization"
     },
     {
       "id": "ca26_h1h2_a2246c10_01_dir",
@@ -1068,11 +1144,15 @@
         "riskLevel": "LOW_RISK",
         "overallScore": 100,
         "canAutoPublish": false,
-        "rejectionReasons": []
+        "rejectionReasons": [
+          "Contains repetitive template distractors; fails TNPSC distractor diversity standard",
+          "Correct answer fixed at Option A (index 0); requires key randomization"
+        ]
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:35:40.918Z"
+      "createdAt": "2026-10-23T16:35:40.918Z",
+      "rejectionReason": "Contains repetitive template distractors; fails TNPSC distractor diversity standard; Correct answer fixed at Option A (index 0); requires key randomization"
     },
     {
       "id": "ca26_h1h2_a2246c10_01_stm",
@@ -1119,11 +1199,14 @@
         "riskLevel": "MEDIUM_RISK",
         "overallScore": 100,
         "canAutoPublish": false,
-        "rejectionReasons": []
+        "rejectionReasons": [
+          "Correct answer fixed at Option A (index 0); requires key randomization"
+        ]
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:35:40.918Z"
+      "createdAt": "2026-10-23T16:35:40.918Z",
+      "rejectionReason": "Correct answer fixed at Option A (index 0); requires key randomization"
     },
     {
       "id": "ca26_h1h2_d338fd6d_01_dir",
@@ -1170,11 +1253,15 @@
         "riskLevel": "LOW_RISK",
         "overallScore": 100,
         "canAutoPublish": false,
-        "rejectionReasons": []
+        "rejectionReasons": [
+          "Contains repetitive template distractors; fails TNPSC distractor diversity standard",
+          "Correct answer fixed at Option A (index 0); requires key randomization"
+        ]
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:35:40.918Z"
+      "createdAt": "2026-10-23T16:35:40.918Z",
+      "rejectionReason": "Contains repetitive template distractors; fails TNPSC distractor diversity standard; Correct answer fixed at Option A (index 0); requires key randomization"
     },
     {
       "id": "ca26_h1h2_d338fd6d_01_stm",
@@ -1221,11 +1308,14 @@
         "riskLevel": "MEDIUM_RISK",
         "overallScore": 100,
         "canAutoPublish": false,
-        "rejectionReasons": []
+        "rejectionReasons": [
+          "Correct answer fixed at Option A (index 0); requires key randomization"
+        ]
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:35:40.918Z"
+      "createdAt": "2026-10-23T16:35:40.918Z",
+      "rejectionReason": "Correct answer fixed at Option A (index 0); requires key randomization"
     },
     {
       "id": "ca26_h1h2_2eb6f9cb_01_dir",
@@ -1272,11 +1362,15 @@
         "riskLevel": "LOW_RISK",
         "overallScore": 100,
         "canAutoPublish": false,
-        "rejectionReasons": []
+        "rejectionReasons": [
+          "Contains repetitive template distractors; fails TNPSC distractor diversity standard",
+          "Correct answer fixed at Option A (index 0); requires key randomization"
+        ]
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:35:40.918Z"
+      "createdAt": "2026-10-23T16:35:40.918Z",
+      "rejectionReason": "Contains repetitive template distractors; fails TNPSC distractor diversity standard; Correct answer fixed at Option A (index 0); requires key randomization"
     },
     {
       "id": "ca26_h1h2_2eb6f9cb_01_stm",
@@ -1323,11 +1417,14 @@
         "riskLevel": "MEDIUM_RISK",
         "overallScore": 100,
         "canAutoPublish": false,
-        "rejectionReasons": []
+        "rejectionReasons": [
+          "Correct answer fixed at Option A (index 0); requires key randomization"
+        ]
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:35:40.918Z"
+      "createdAt": "2026-10-23T16:35:40.918Z",
+      "rejectionReason": "Correct answer fixed at Option A (index 0); requires key randomization"
     },
     {
       "id": "ca26_h1h2_a833dd75_01_dir",
@@ -1374,11 +1471,16 @@
         "riskLevel": "LOW_RISK",
         "overallScore": 100,
         "canAutoPublish": false,
-        "rejectionReasons": []
+        "rejectionReasons": [
+          "Parent source quarantined: Primary source parameter conflict or unauthenticated PRID: https://pib.gov.in/PressReleasePage.aspx?PRID=2274981&lang=1",
+          "Contains repetitive template distractors; fails TNPSC distractor diversity standard",
+          "Correct answer fixed at Option A (index 0); requires key randomization"
+        ]
       },
-      "overallStatus": "REVIEW_REQUIRED",
+      "overallStatus": "REJECTED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:35:40.918Z"
+      "createdAt": "2026-10-23T16:35:40.918Z",
+      "rejectionReason": "Parent source quarantined: Primary source parameter conflict or unauthenticated PRID: https://pib.gov.in/PressReleasePage.aspx?PRID=2274981&lang=1; Contains repetitive template distractors; fails TNPSC distractor diversity standard; Correct answer fixed at Option A (index 0); requires key randomization"
     },
     {
       "id": "ca26_h1h2_a833dd75_01_stm",
@@ -1425,11 +1527,15 @@
         "riskLevel": "MEDIUM_RISK",
         "overallScore": 100,
         "canAutoPublish": false,
-        "rejectionReasons": []
+        "rejectionReasons": [
+          "Parent source quarantined: Primary source parameter conflict or unauthenticated PRID: https://pib.gov.in/PressReleasePage.aspx?PRID=2274981&lang=1",
+          "Correct answer fixed at Option A (index 0); requires key randomization"
+        ]
       },
-      "overallStatus": "REVIEW_REQUIRED",
+      "overallStatus": "REJECTED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:35:40.918Z"
+      "createdAt": "2026-10-23T16:35:40.918Z",
+      "rejectionReason": "Parent source quarantined: Primary source parameter conflict or unauthenticated PRID: https://pib.gov.in/PressReleasePage.aspx?PRID=2274981&lang=1; Correct answer fixed at Option A (index 0); requires key randomization"
     },
     {
       "id": "ca26_h1h2_a8967170_01_dir",
@@ -1476,11 +1582,15 @@
         "riskLevel": "LOW_RISK",
         "overallScore": 100,
         "canAutoPublish": false,
-        "rejectionReasons": []
+        "rejectionReasons": [
+          "Contains repetitive template distractors; fails TNPSC distractor diversity standard",
+          "Correct answer fixed at Option A (index 0); requires key randomization"
+        ]
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:35:40.918Z"
+      "createdAt": "2026-10-23T16:35:40.918Z",
+      "rejectionReason": "Contains repetitive template distractors; fails TNPSC distractor diversity standard; Correct answer fixed at Option A (index 0); requires key randomization"
     },
     {
       "id": "ca26_h1h2_a8967170_01_stm",
@@ -1527,11 +1637,14 @@
         "riskLevel": "MEDIUM_RISK",
         "overallScore": 100,
         "canAutoPublish": false,
-        "rejectionReasons": []
+        "rejectionReasons": [
+          "Correct answer fixed at Option A (index 0); requires key randomization"
+        ]
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:35:40.918Z"
+      "createdAt": "2026-10-23T16:35:40.918Z",
+      "rejectionReason": "Correct answer fixed at Option A (index 0); requires key randomization"
     },
     {
       "id": "ca26_h1h2_ea52d022_01_dir",
@@ -1578,11 +1691,15 @@
         "riskLevel": "LOW_RISK",
         "overallScore": 100,
         "canAutoPublish": false,
-        "rejectionReasons": []
+        "rejectionReasons": [
+          "Contains repetitive template distractors; fails TNPSC distractor diversity standard",
+          "Correct answer fixed at Option A (index 0); requires key randomization"
+        ]
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:35:40.918Z"
+      "createdAt": "2026-10-23T16:35:40.918Z",
+      "rejectionReason": "Contains repetitive template distractors; fails TNPSC distractor diversity standard; Correct answer fixed at Option A (index 0); requires key randomization"
     },
     {
       "id": "ca26_h1h2_ea52d022_01_stm",
@@ -1629,11 +1746,14 @@
         "riskLevel": "MEDIUM_RISK",
         "overallScore": 100,
         "canAutoPublish": false,
-        "rejectionReasons": []
+        "rejectionReasons": [
+          "Correct answer fixed at Option A (index 0); requires key randomization"
+        ]
       },
       "overallStatus": "REVIEW_REQUIRED",
       "editorialApproval": null,
-      "createdAt": "2026-10-23T16:35:40.918Z"
+      "createdAt": "2026-10-23T16:35:40.918Z",
+      "rejectionReason": "Correct answer fixed at Option A (index 0); requires key randomization"
     }
   ],
   "typeDistribution": {
@@ -1649,8 +1769,8 @@
     "environment_geography": 4
   },
   "verificationSummary": {
-    "passedCount": 32,
-    "reviewRequiredCount": 32,
+    "passedCount": 0,
+    "reviewRequiredCount": 24,
     "autoPublishPreventedCount": 32
   }
 }

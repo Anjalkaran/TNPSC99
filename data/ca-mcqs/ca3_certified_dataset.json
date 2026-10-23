@@ -1,5 +1,5 @@
 {
-  "certifiedAt": "2026-10-23T16:31:05.589Z",
+  "certifiedAt": "2026-10-23T17:10:50.565Z",
   "auditStandard": "TNPSC99_CA3_CERTIFICATION_V1",
   "summary": {
     "totalAudited": 32,
@@ -77,7 +77,7 @@
         "bilingualEquivalenceConfirmed": true,
         "distractorQualityPassed": false,
         "tnpscRelevanceConfirmed": true,
-        "auditTimestamp": "2026-10-23T16:31:05.588Z",
+        "auditTimestamp": "2026-10-23T17:10:50.564Z",
         "notes": "Contains repetitive template distractors; fails TNPSC distractor diversity standard; Correct answer fixed at Option A (index 0); requires key randomization"
       }
     },
@@ -124,7 +124,7 @@
         "bilingualEquivalenceConfirmed": true,
         "distractorQualityPassed": true,
         "tnpscRelevanceConfirmed": true,
-        "auditTimestamp": "2026-10-23T16:31:05.588Z",
+        "auditTimestamp": "2026-10-23T17:10:50.564Z",
         "notes": "Correct answer fixed at Option A (index 0); requires key randomization"
       }
     },
@@ -173,7 +173,7 @@
         "bilingualEquivalenceConfirmed": true,
         "distractorQualityPassed": false,
         "tnpscRelevanceConfirmed": true,
-        "auditTimestamp": "2026-10-23T16:31:05.588Z",
+        "auditTimestamp": "2026-10-23T17:10:50.564Z",
         "notes": "Contains repetitive template distractors; fails TNPSC distractor diversity standard; Correct answer fixed at Option A (index 0); requires key randomization"
       }
     },
@@ -220,7 +220,7 @@
         "bilingualEquivalenceConfirmed": true,
         "distractorQualityPassed": true,
         "tnpscRelevanceConfirmed": true,
-        "auditTimestamp": "2026-10-23T16:31:05.588Z",
+        "auditTimestamp": "2026-10-23T17:10:50.564Z",
         "notes": "Correct answer fixed at Option A (index 0); requires key randomization"
       }
     },
@@ -271,7 +271,7 @@
         "bilingualEquivalenceConfirmed": true,
         "distractorQualityPassed": false,
         "tnpscRelevanceConfirmed": true,
-        "auditTimestamp": "2026-10-23T16:31:05.588Z",
+        "auditTimestamp": "2026-10-23T17:10:50.564Z",
         "notes": "Parent source quarantined: Primary source parameter conflict or unauthenticated PRID: https://rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=58120; Contains repetitive template distractors; fails TNPSC distractor diversity standard; Correct answer fixed at Option A (index 0); requires key randomization"
       }
     },
@@ -320,7 +320,7 @@
         "bilingualEquivalenceConfirmed": true,
         "distractorQualityPassed": true,
         "tnpscRelevanceConfirmed": true,
-        "auditTimestamp": "2026-10-23T16:31:05.588Z",
+        "auditTimestamp": "2026-10-23T17:10:50.564Z",
         "notes": "Parent source quarantined: Primary source parameter conflict or unauthenticated PRID: https://rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=58120; Correct answer fixed at Option A (index 0); requires key randomization"
       }
     },
@@ -369,7 +369,7 @@
         "bilingualEquivalenceConfirmed": true,
         "distractorQualityPassed": false,
         "tnpscRelevanceConfirmed": true,
-        "auditTimestamp": "2026-10-23T16:31:05.588Z",
+        "auditTimestamp": "2026-10-23T17:10:50.564Z",
         "notes": "Contains repetitive template distractors; fails TNPSC distractor diversity standard; Correct answer fixed at Option A (index 0); requires key randomization"
       }
     },
@@ -416,7 +416,7 @@
         "bilingualEquivalenceConfirmed": true,
         "distractorQualityPassed": true,
         "tnpscRelevanceConfirmed": true,
-        "auditTimestamp": "2026-10-23T16:31:05.588Z",
+        "auditTimestamp": "2026-10-23T17:10:50.564Z",
         "notes": "Correct answer fixed at Option A (index 0); requires key randomization"
       }
     },
@@ -465,7 +465,7 @@
         "bilingualEquivalenceConfirmed": true,
         "distractorQualityPassed": false,
         "tnpscRelevanceConfirmed": true,
-        "auditTimestamp": "2026-10-23T16:31:05.588Z",
+        "auditTimestamp": "2026-10-23T17:10:50.564Z",
         "notes": "Contains repetitive template distractors; fails TNPSC distractor diversity standard; Correct answer fixed at Option A (index 0); requires key randomization"
       }
     },
@@ -512,7 +512,7 @@
         "bilingualEquivalenceConfirmed": true,
         "distractorQualityPassed": true,
         "tnpscRelevanceConfirmed": true,
-        "auditTimestamp": "2026-10-23T16:31:05.588Z",
+        "auditTimestamp": "2026-10-23T17:10:50.564Z",
         "notes": "Correct answer fixed at Option A (index 0); requires key randomization"
       }
     },
@@ -561,7 +561,7 @@
         "bilingualEquivalenceConfirmed": true,
         "distractorQualityPassed": false,
         "tnpscRelevanceConfirmed": true,
-        "auditTimestamp": "2026-10-23T16:31:05.588Z",
+        "auditTimestamp": "2026-10-23T17:10:50.564Z",
         "notes": "Contains repetitive template distractors; fails TNPSC distractor diversity standard; Correct answer fixed at Option A (index 0); requires key randomization"
       }
     },
@@ -608,7 +608,7 @@
         "bilingualEquivalenceConfirmed": true,
         "distractorQualityPassed": true,
         "tnpscRelevanceConfirmed": true,
-        "auditTimestamp": "2026-10-23T16:31:05.588Z",
+        "auditTimestamp": "2026-10-23T17:10:50.564Z",
         "notes": "Correct answer fixed at Option A (index 0); requires key randomization"
       }
     },
@@ -659,7 +659,7 @@
         "bilingualEquivalenceConfirmed": true,
         "distractorQualityPassed": false,
         "tnpscRelevanceConfirmed": true,
-        "auditTimestamp": "2026-10-23T16:31:05.588Z",
+        "auditTimestamp": "2026-10-23T17:10:50.564Z",
         "notes": "Parent source quarantined: Primary source parameter conflict or unauthenticated PRID: https://www.pib.gov.in/PressReleasePage.aspx?PRID=2264810; Contains repetitive template distractors; fails TNPSC distractor diversity standard; Correct answer fixed at Option A (index 0); requires key randomization"
       }
     },
@@ -708,7 +708,7 @@
         "bilingualEquivalenceConfirmed": true,
         "distractorQualityPassed": true,
         "tnpscRelevanceConfirmed": true,
-        "auditTimestamp": "2026-10-23T16:31:05.588Z",
+        "auditTimestamp": "2026-10-23T17:10:50.564Z",
         "notes": "Parent source quarantined: Primary source parameter conflict or unauthenticated PRID: https://www.pib.gov.in/PressReleasePage.aspx?PRID=2264810; Correct answer fixed at Option A (index 0); requires key randomization"
       }
     },
@@ -757,7 +757,7 @@
         "bilingualEquivalenceConfirmed": true,
         "distractorQualityPassed": false,
         "tnpscRelevanceConfirmed": true,
-        "auditTimestamp": "2026-10-23T16:31:05.588Z",
+        "auditTimestamp": "2026-10-23T17:10:50.564Z",
         "notes": "Contains repetitive template distractors; fails TNPSC distractor diversity standard; Correct answer fixed at Option A (index 0); requires key randomization"
       }
     },
@@ -804,7 +804,7 @@
         "bilingualEquivalenceConfirmed": true,
         "distractorQualityPassed": true,
         "tnpscRelevanceConfirmed": true,
-        "auditTimestamp": "2026-10-23T16:31:05.588Z",
+        "auditTimestamp": "2026-10-23T17:10:50.564Z",
         "notes": "Correct answer fixed at Option A (index 0); requires key randomization"
       }
     },
@@ -853,7 +853,7 @@
         "bilingualEquivalenceConfirmed": true,
         "distractorQualityPassed": false,
         "tnpscRelevanceConfirmed": true,
-        "auditTimestamp": "2026-10-23T16:31:05.588Z",
+        "auditTimestamp": "2026-10-23T17:10:50.564Z",
         "notes": "Contains repetitive template distractors; fails TNPSC distractor diversity standard; Correct answer fixed at Option A (index 0); requires key randomization"
       }
     },
@@ -900,7 +900,7 @@
         "bilingualEquivalenceConfirmed": true,
         "distractorQualityPassed": true,
         "tnpscRelevanceConfirmed": true,
-        "auditTimestamp": "2026-10-23T16:31:05.588Z",
+        "auditTimestamp": "2026-10-23T17:10:50.564Z",
         "notes": "Correct answer fixed at Option A (index 0); requires key randomization"
       }
     },
@@ -951,7 +951,7 @@
         "bilingualEquivalenceConfirmed": true,
         "distractorQualityPassed": false,
         "tnpscRelevanceConfirmed": true,
-        "auditTimestamp": "2026-10-23T16:31:05.588Z",
+        "auditTimestamp": "2026-10-23T17:10:50.564Z",
         "notes": "Parent source quarantined: Primary source parameter conflict or unauthenticated PRID: https://rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=58432; Contains repetitive template distractors; fails TNPSC distractor diversity standard; Correct answer fixed at Option A (index 0); requires key randomization"
       }
     },
@@ -1000,7 +1000,7 @@
         "bilingualEquivalenceConfirmed": true,
         "distractorQualityPassed": true,
         "tnpscRelevanceConfirmed": true,
-        "auditTimestamp": "2026-10-23T16:31:05.588Z",
+        "auditTimestamp": "2026-10-23T17:10:50.564Z",
         "notes": "Parent source quarantined: Primary source parameter conflict or unauthenticated PRID: https://rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=58432; Correct answer fixed at Option A (index 0); requires key randomization"
       }
     },
@@ -1049,7 +1049,7 @@
         "bilingualEquivalenceConfirmed": true,
         "distractorQualityPassed": false,
         "tnpscRelevanceConfirmed": true,
-        "auditTimestamp": "2026-10-23T16:31:05.588Z",
+        "auditTimestamp": "2026-10-23T17:10:50.564Z",
         "notes": "Contains repetitive template distractors; fails TNPSC distractor diversity standard; Correct answer fixed at Option A (index 0); requires key randomization"
       }
     },
@@ -1096,7 +1096,7 @@
         "bilingualEquivalenceConfirmed": true,
         "distractorQualityPassed": true,
         "tnpscRelevanceConfirmed": true,
-        "auditTimestamp": "2026-10-23T16:31:05.588Z",
+        "auditTimestamp": "2026-10-23T17:10:50.564Z",
         "notes": "Correct answer fixed at Option A (index 0); requires key randomization"
       }
     },
@@ -1145,7 +1145,7 @@
         "bilingualEquivalenceConfirmed": true,
         "distractorQualityPassed": false,
         "tnpscRelevanceConfirmed": true,
-        "auditTimestamp": "2026-10-23T16:31:05.588Z",
+        "auditTimestamp": "2026-10-23T17:10:50.564Z",
         "notes": "Contains repetitive template distractors; fails TNPSC distractor diversity standard; Correct answer fixed at Option A (index 0); requires key randomization"
       }
     },
@@ -1192,7 +1192,7 @@
         "bilingualEquivalenceConfirmed": true,
         "distractorQualityPassed": true,
         "tnpscRelevanceConfirmed": true,
-        "auditTimestamp": "2026-10-23T16:31:05.588Z",
+        "auditTimestamp": "2026-10-23T17:10:50.564Z",
         "notes": "Correct answer fixed at Option A (index 0); requires key randomization"
       }
     },
@@ -1241,7 +1241,7 @@
         "bilingualEquivalenceConfirmed": true,
         "distractorQualityPassed": false,
         "tnpscRelevanceConfirmed": true,
-        "auditTimestamp": "2026-10-23T16:31:05.588Z",
+        "auditTimestamp": "2026-10-23T17:10:50.564Z",
         "notes": "Contains repetitive template distractors; fails TNPSC distractor diversity standard; Correct answer fixed at Option A (index 0); requires key randomization"
       }
     },
@@ -1288,7 +1288,7 @@
         "bilingualEquivalenceConfirmed": true,
         "distractorQualityPassed": true,
         "tnpscRelevanceConfirmed": true,
-        "auditTimestamp": "2026-10-23T16:31:05.588Z",
+        "auditTimestamp": "2026-10-23T17:10:50.564Z",
         "notes": "Correct answer fixed at Option A (index 0); requires key randomization"
       }
     },
@@ -1339,7 +1339,7 @@
         "bilingualEquivalenceConfirmed": true,
         "distractorQualityPassed": false,
         "tnpscRelevanceConfirmed": true,
-        "auditTimestamp": "2026-10-23T16:31:05.588Z",
+        "auditTimestamp": "2026-10-23T17:10:50.564Z",
         "notes": "Parent source quarantined: Primary source parameter conflict or unauthenticated PRID: https://pib.gov.in/PressReleasePage.aspx?PRID=2274981&lang=1; Contains repetitive template distractors; fails TNPSC distractor diversity standard; Correct answer fixed at Option A (index 0); requires key randomization"
       }
     },
@@ -1388,7 +1388,7 @@
         "bilingualEquivalenceConfirmed": true,
         "distractorQualityPassed": true,
         "tnpscRelevanceConfirmed": true,
-        "auditTimestamp": "2026-10-23T16:31:05.588Z",
+        "auditTimestamp": "2026-10-23T17:10:50.564Z",
         "notes": "Parent source quarantined: Primary source parameter conflict or unauthenticated PRID: https://pib.gov.in/PressReleasePage.aspx?PRID=2274981&lang=1; Correct answer fixed at Option A (index 0); requires key randomization"
       }
     },
@@ -1437,7 +1437,7 @@
         "bilingualEquivalenceConfirmed": true,
         "distractorQualityPassed": false,
         "tnpscRelevanceConfirmed": true,
-        "auditTimestamp": "2026-10-23T16:31:05.588Z",
+        "auditTimestamp": "2026-10-23T17:10:50.564Z",
         "notes": "Contains repetitive template distractors; fails TNPSC distractor diversity standard; Correct answer fixed at Option A (index 0); requires key randomization"
       }
     },
@@ -1484,7 +1484,7 @@
         "bilingualEquivalenceConfirmed": true,
         "distractorQualityPassed": true,
         "tnpscRelevanceConfirmed": true,
-        "auditTimestamp": "2026-10-23T16:31:05.588Z",
+        "auditTimestamp": "2026-10-23T17:10:50.564Z",
         "notes": "Correct answer fixed at Option A (index 0); requires key randomization"
       }
     },
@@ -1533,7 +1533,7 @@
         "bilingualEquivalenceConfirmed": true,
         "distractorQualityPassed": false,
         "tnpscRelevanceConfirmed": true,
-        "auditTimestamp": "2026-10-23T16:31:05.588Z",
+        "auditTimestamp": "2026-10-23T17:10:50.564Z",
         "notes": "Contains repetitive template distractors; fails TNPSC distractor diversity standard; Correct answer fixed at Option A (index 0); requires key randomization"
       }
     },
@@ -1580,7 +1580,7 @@
         "bilingualEquivalenceConfirmed": true,
         "distractorQualityPassed": true,
         "tnpscRelevanceConfirmed": true,
-        "auditTimestamp": "2026-10-23T16:31:05.588Z",
+        "auditTimestamp": "2026-10-23T17:10:50.564Z",
         "notes": "Correct answer fixed at Option A (index 0); requires key randomization"
       }
     }

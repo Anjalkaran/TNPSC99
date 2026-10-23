@@ -55,6 +55,11 @@ export function FreeLearningHub() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, number>>({});
   const [isTestSubmitted, setIsTestSubmitted] = useState<boolean>(false);
+
+  // Dynamic Current Affairs State (Task 3: Dynamic Feed Support)
+  const [dynamicCaPackage, setDynamicCaPackage] = useState<PublicSampleTestPackage | null>(null);
+  const [isCaApproved, setIsCaApproved] = useState<boolean>(false);
+  const [caStatusMessage, setCaStatusMessage] = useState<string>('');
   
   // Timer State for Exam Mode
   const [elapsedSeconds, setElapsedSeconds] = useState<number>(0);
@@ -69,22 +74,38 @@ export function FreeLearningHub() {
   const currentPackage: PublicSampleTestPackage = useMemo(() => {
     switch (activeTab) {
       case 'current_affairs':
-        return FREE_CURRENT_AFFAIRS_TEST;
+        return dynamicCaPackage || FREE_CURRENT_AFFAIRS_TEST;
       case 'mock_test':
         return FREE_MOCK_TEST;
       case 'textbook':
         return FREE_TEXTBOOK_PRACTICE;
       default:
-        return FREE_CURRENT_AFFAIRS_TEST;
+        return FREE_MOCK_TEST;
     }
-  }, [activeTab]);
+  }, [activeTab, dynamicCaPackage]);
 
   const questions = currentPackage.questions;
   const currentQ: PublicSampleQuestion | undefined = questions[currentQuestionIndex];
 
-  // Track initial page impression
+  // Track initial page impression & fetch dynamic Current Affairs feed
   useEffect(() => {
     PublicAnalytics.trackHomepageImpression();
+
+    // Query dynamic Current Affairs feed (Task 3: Dynamic zero-redeploy feed support)
+    fetch('/api/public/daily-ca')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.hasApprovedEdition && data.package) {
+          setDynamicCaPackage(data.package);
+          setIsCaApproved(true);
+        } else {
+          setIsCaApproved(false);
+          setCaStatusMessage(data.message || '');
+        }
+      })
+      .catch(() => {
+        setIsCaApproved(false);
+      });
   }, []);
 
   // Timer effect for exam mode
@@ -283,8 +304,45 @@ export function FreeLearningHub() {
           </TabsList>
 
           {/* TAB CONTENT 1, 2, 3: QUESTION PACKAGES */}
-          {(['current_affairs', 'mock_test', 'textbook'] as ActiveTab[]).map((tabKey) => (
-            <TabsContent key={tabKey} value={tabKey} className="focus-visible:outline-none focus-visible:ring-0">
+          {(['current_affairs', 'mock_test', 'textbook'] as ActiveTab[]).map((tabKey) => {
+            // Task 3: If current affairs edition is undergoing review, show transparent status instead of fabricating unapproved test
+            if (tabKey === 'current_affairs' && !isCaApproved) {
+              return (
+                <TabsContent key={tabKey} value={tabKey} className="focus-visible:outline-none focus-visible:ring-0">
+                  <Card className="border-border bg-card shadow-sm rounded-2xl overflow-hidden p-6 sm:p-10 text-center space-y-6">
+                    <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-amber-500/10 border-2 border-amber-500/30 text-amber-600 dark:text-amber-400 mx-auto">
+                      <Sparkles className="h-8 w-8" />
+                    </div>
+                    <div className="max-w-xl mx-auto space-y-2">
+                      <Badge variant="outline" className="text-xs font-bold border-amber-400 text-amber-700 dark:text-amber-300">
+                        {language === 'ta' ? 'அரசு அரசிதழ் சரிபார்ப்பு நிலையில் உள்ளது' : 'Official Gazette Verification In Progress'}
+                      </Badge>
+                      <h3 className="text-xl sm:text-2xl font-black text-foreground">
+                        {language === 'ta' ? 'தினசரி நடப்பு நிகழ்வுகள் — ஆசிரியர் குழு சரிபார்ப்பு' : 'Daily Current Affairs — Editorial Review in Progress'}
+                      </h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                        {language === 'ta'
+                          ? 'TNPSC99 கொள்கைப்படி, அரசு செய்திக்குறிப்புகள் மற்றும் தமிழ்நாடு அரசு அரசிதழ்களுடன் (Government Gazettes) சரிபார்க்கப்பட்ட பின்னரே நடப்பு நிகழ்வுகள் வினாக்கள் வெளியிடப்படுகின்றன. இன்றைய பதிப்பு ஆசிரியர் குழுவின் இறுதி ஆய்வில் உள்ளது; சரிபார்க்கப்பட்டவுடன் இங்கு தானாகவே தோன்றும்.'
+                          : 'In accordance with TNPSC99 editorial standards, Current Affairs questions are published only after secondary fact verification against official Tamil Nadu Government Gazettes and Departmental releases. The upcoming edition is currently in the verification queue and will publish dynamically once approved.'}
+                      </p>
+                    </div>
+                    <div className="flex flex-col sm:flex-row justify-center items-center gap-3 pt-2 max-w-md mx-auto">
+                      <Button onClick={() => setActiveTab('mock_test')} className="w-full sm:w-auto h-11 px-6 font-bold rounded-xl gap-2">
+                        <Award className="h-4 w-4" />
+                        <span>{language === 'ta' ? 'இலவச மாதிரித் தேர்வு (20 வினாக்கள்)' : 'Try Free Mock Test (20 Q)'}</span>
+                      </Button>
+                      <Button onClick={() => setActiveTab('textbook')} variant="outline" className="w-full sm:w-auto h-11 px-6 font-semibold rounded-xl gap-2">
+                        <BookOpen className="h-4 w-4" />
+                        <span>{language === 'ta' ? 'பாடப்புத்தகப் பயிற்சி (10 வினாக்கள்)' : 'Textbook Practice (10 Q)'}</span>
+                      </Button>
+                    </div>
+                  </Card>
+                </TabsContent>
+              );
+            }
+
+            return (
+              <TabsContent key={tabKey} value={tabKey} className="focus-visible:outline-none focus-visible:ring-0">
               <div className="space-y-6">
                 {/* Module Banner with Controls */}
                 <Card className="border-border bg-card shadow-sm rounded-2xl overflow-hidden">
@@ -739,7 +797,8 @@ export function FreeLearningHub() {
                 </Card>
               </div>
             </TabsContent>
-          ))}
+          );
+        })}
 
           {/* TAB CONTENT 4: AI TUTOR INTERACTIVE PRECOMPUTED DEMO */}
           <TabsContent value="ai_tutor" className="focus-visible:outline-none focus-visible:ring-0">
