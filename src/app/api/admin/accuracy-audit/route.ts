@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { QuestionBankAuditor } from '@/lib/accuracy/question-bank-auditor';
 import { db, adminAuth } from '@/firebase/admin';
 import { QuestionAccuracyCandidate } from '@/lib/accuracy/types';
+import { getCa2026DraftCandidates } from '@/data/ca-2026-draft-bank';
 
 export const dynamic = 'force-dynamic';
 
@@ -132,9 +133,22 @@ export async function GET(req: NextRequest) {
     // -------------------------------------------------------------------------
     // 3. Compute Audit Summary on Deduplicated Distinct Questions
     // -------------------------------------------------------------------------
+    const includeDraftBank = req.nextUrl?.searchParams?.get('includeDraftBank') === 'true';
+    const ca2026DraftCandidates = getCa2026DraftCandidates();
+
+    if (includeDraftBank) {
+      for (const q of ca2026DraftCandidates) {
+        questionMap.set(q.id, q);
+      }
+    }
+
     const distinctCandidates = Array.from(questionMap.values());
     const auditor = new QuestionBankAuditor();
     const { summary } = auditor.auditBatch(distinctCandidates);
+
+    // Compute isolated audit metrics for the 2026 draft bank
+    const draftAuditor = new QuestionBankAuditor();
+    const { summary: draftSummary } = draftAuditor.auditBatch(ca2026DraftCandidates);
 
     // -------------------------------------------------------------------------
     // 4. Return Structured Governance Response (No PII / Internal Secrets)
@@ -153,6 +167,23 @@ export async function GET(req: NextRequest) {
         totalIsolatedCount: summary.quarantinedCount + summary.mutuallyExclusiveStatuses.retracted,
         automatedGatePassRate: summary.automatedGatePassRate,
         factualAccuracyVerificationStatus: summary.factualAccuracyVerificationStatus,
+      },
+      ca2026DraftBank: {
+        totalDraftQuestions: ca2026DraftCandidates.length,
+        sourceVerifiedCount: draftSummary.mutuallyExclusiveStatuses.sourceVerified,
+        humanApprovedCount: draftSummary.mutuallyExclusiveStatuses.humanApproved,
+        publishedCount: draftSummary.mutuallyExclusiveStatuses.published,
+        quarantinedCount: draftSummary.quarantinedCount,
+        retractedCount: draftSummary.mutuallyExclusiveStatuses.retracted,
+        editorialSignOffStatus: 'AWAITING_HUMAN_EDITORIAL_REVIEW',
+        publicEndpointSafetyStatus: 'FAIL_CLOSED_EDITORIAL_FALLBACK_ACTIVE',
+        optionIndexDistribution: {
+          optionA: ca2026DraftCandidates.filter((q) => q.correctOptionIndex === 0).length,
+          optionB: ca2026DraftCandidates.filter((q) => q.correctOptionIndex === 1).length,
+          optionC: ca2026DraftCandidates.filter((q) => q.correctOptionIndex === 2).length,
+          optionD: ca2026DraftCandidates.filter((q) => q.correctOptionIndex === 3).length,
+        },
+        sampleDraftIds: ca2026DraftCandidates.map((q) => q.id),
       },
       retractedQuestionsAudit: distinctCandidates
         .filter((q) => q.isRetracted || q.status === 'RETRACTED')
