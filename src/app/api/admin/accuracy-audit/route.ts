@@ -149,6 +149,8 @@ export async function GET(req: NextRequest) {
         mutuallyExclusiveStatuses: summary.mutuallyExclusiveStatuses,
         cumulativeMilestones: summary.cumulativeMilestones,
         quarantinedCount: summary.quarantinedCount,
+        retractedCount: summary.mutuallyExclusiveStatuses.retracted,
+        totalIsolatedCount: summary.quarantinedCount + summary.mutuallyExclusiveStatuses.retracted,
         automatedGatePassRate: summary.automatedGatePassRate,
         factualAccuracyVerificationStatus: summary.factualAccuracyVerificationStatus,
       },

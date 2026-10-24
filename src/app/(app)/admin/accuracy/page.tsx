@@ -39,6 +39,8 @@ interface AccuracyStats {
     activeStudentDeliverable: number;
   };
   quarantinedCount: number;
+  retractedCount?: number;
+  totalIsolatedCount?: number;
   automatedGatePassRate: string;
   factualAccuracyVerificationStatus: string;
 }
@@ -51,19 +53,21 @@ export default function AccuracyAdminPage() {
       draft: 0,
       sourceVerified: 0,
       humanApproved: 0,
-      published: 38,
+      published: 30,
       reviewRequired: 0,
-      rejected: 0,
+      rejected: 8,
       retracted: 2,
     },
     cumulativeMilestones: {
-      passedSourceVerification: 38,
-      passedHumanEditorialApproval: 38,
-      activeStudentDeliverable: 38,
+      passedSourceVerification: 30,
+      passedHumanEditorialApproval: 30,
+      activeStudentDeliverable: 30,
     },
-    quarantinedCount: 2,
-    automatedGatePassRate: '100%',
-    factualAccuracyVerificationStatus: '38 Verified / 2 Retracted by Primary Source Reconciliation',
+    quarantinedCount: 8,
+    retractedCount: 2,
+    totalIsolatedCount: 10,
+    automatedGatePassRate: '75%',
+    factualAccuracyVerificationStatus: '30 Verified (Syllabus) / 8 Quarantined / 2 Retracted by Primary Source Reconciliation',
   });
 
   const [loading, setLoading] = useState(false);
@@ -97,14 +101,16 @@ export default function AccuracyAdminPage() {
           setStats({
             totalDistinctQuestions: data.platformBreakdown.totalDistinctQuestions || 40,
             mutuallyExclusive: data.platformBreakdown.mutuallyExclusiveStatuses || {
-              draft: 0, sourceVerified: 0, humanApproved: 0, published: 38, reviewRequired: 0, rejected: 0, retracted: 2
+              draft: 0, sourceVerified: 0, humanApproved: 0, published: 30, reviewRequired: 0, rejected: 8, retracted: 2
             },
             cumulativeMilestones: data.platformBreakdown.cumulativeMilestones || {
-              passedSourceVerification: 38, passedHumanEditorialApproval: 38, activeStudentDeliverable: 38
+              passedSourceVerification: 30, passedHumanEditorialApproval: 30, activeStudentDeliverable: 30
             },
-            quarantinedCount: data.platformBreakdown.quarantinedCount || 2,
-            automatedGatePassRate: data.platformBreakdown.automatedGatePassRate || '100%',
-            factualAccuracyVerificationStatus: data.platformBreakdown.factualAccuracyVerificationStatus || 'Verified',
+            quarantinedCount: data.platformBreakdown.quarantinedCount || 8,
+            retractedCount: data.platformBreakdown.retractedCount || 2,
+            totalIsolatedCount: data.platformBreakdown.totalIsolatedCount || 10,
+            automatedGatePassRate: data.platformBreakdown.automatedGatePassRate || '75%',
+            factualAccuracyVerificationStatus: data.platformBreakdown.factualAccuracyVerificationStatus || '30 Verified (Syllabus) / 8 Quarantined / 2 Retracted by Primary Source Reconciliation',
           });
         }
       }
@@ -192,8 +198,8 @@ export default function AccuracyAdminPage() {
         </div>
       </div>
 
-      {/* Distinction Banner: Gate Automation vs Verified Factual Accuracy */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Distinction Banner: Gate Automation vs Verified Factual Accuracy vs Quarantine Isolation */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="border-border">
           <CardHeader className="p-4 pb-2">
             <CardDescription className="text-xs font-semibold">Total Distinct Question Records</CardDescription>
@@ -223,7 +229,7 @@ export default function AccuracyAdminPage() {
             <CardDescription className="text-xs font-semibold text-blue-800 dark:text-blue-300">
               Factual Grounding & Editorial Status
             </CardDescription>
-            <CardTitle className="text-lg font-bold text-blue-800 dark:text-blue-300">
+            <CardTitle className="text-base font-bold text-blue-800 dark:text-blue-300 leading-tight">
               {stats.factualAccuracyVerificationStatus}
             </CardTitle>
           </CardHeader>
@@ -231,13 +237,32 @@ export default function AccuracyAdminPage() {
             Requires authentic primary document corroboration & human sign-off
           </CardContent>
         </Card>
+
+        <Card className="border-amber-300 dark:border-amber-800 bg-amber-50/20">
+          <CardHeader className="p-4 pb-2">
+            <CardDescription className="text-xs font-semibold text-amber-800 dark:text-amber-300">
+              Separate Quarantine & Isolation
+            </CardDescription>
+            <CardTitle className="text-3xl font-black text-amber-700 dark:text-amber-300">
+              {stats.totalIsolatedCount || (stats.quarantinedCount + (stats.retractedCount || 2))} Isolated
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 pt-0 text-xs text-muted-foreground">
+            {stats.quarantinedCount} Quarantined + {stats.retractedCount || 2} Retracted (Zero student delivery)
+          </CardContent>
+        </Card>
       </div>
 
       {/* 7 Mutually Exclusive Current Lifecycle Statuses */}
-      <div>
-        <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground mb-3">
-          Current Mutually Exclusive Lifecycle Statuses (Sum: {stats.totalDistinctQuestions})
-        </h2>
+      <div className="space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+            Current Mutually Exclusive Lifecycle Statuses (Sum: {stats.totalDistinctQuestions})
+          </h2>
+          <Badge variant="outline" className="text-xs font-medium text-muted-foreground self-start sm:self-auto">
+            Quarantine is an orthogonal operational flag (isQuarantined: true)
+          </Badge>
+        </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
           <Card className="border-border">
             <CardHeader className="p-3 pb-1">
@@ -294,6 +319,15 @@ export default function AccuracyAdminPage() {
             </CardHeader>
             <CardContent className="p-3 pt-0 text-[11px] text-muted-foreground">Erratum handled</CardContent>
           </Card>
+        </div>
+
+        {/* Reconciliation Notice: Lifecycle Status vs Quarantine Flag */}
+        <div className="p-3 rounded-lg border border-amber-200 bg-amber-50/40 dark:border-amber-900/40 dark:bg-amber-950/20 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2">
+          <ShieldAlert className="h-4 w-4 shrink-0 mt-0.5 text-amber-700 dark:text-amber-400" />
+          <div>
+            <span className="font-bold">Governance Reconciliation Note: </span>
+            The 7 Lifecycle Statuses (Sum: {stats.totalDistinctQuestions}) represent mutually exclusive editorial decisions (30 Published Syllabus MCQs, 8 Rejected CA Questions, 2 Retracted CA Questions). The <span className="font-semibold underline">Quarantine Flag</span> is an orthogonal operational isolation state (<code className="font-mono text-[11px] bg-amber-100 dark:bg-amber-900/60 px-1 py-0.5 rounded">isQuarantined: true</code>) active on all 8 rejected preliminary CA items plus 2 retracted defect items (Total: 10 non-deliverable items), guaranteeing zero unverified questions are ever returned to students.
+          </div>
         </div>
       </div>
 
