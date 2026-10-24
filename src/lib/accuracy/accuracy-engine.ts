@@ -11,6 +11,7 @@ import {
   AccuracyLifecycleStatus
 } from './types';
 import { TemporalEligibilityValidator } from './temporal-validator';
+import { ActualSourceAuthenticator } from './actual-source-authenticator';
 
 function cleanText(str: string): string {
   return (str || '')
@@ -32,7 +33,7 @@ export function evaluatePublicationGate(
   const rejectionReasons: string[] = [];
 
   // =========================================================================
-  // GATE 1: SOURCE AUTHENTICATION
+  // GATE 1: ACTUAL SOURCE AUTHENTICATION
   // =========================================================================
   const isWebSource = Boolean(candidate.sourceUrl && candidate.sourceUrl.startsWith('http'));
   const isPlaceholderUrl = Boolean(
@@ -46,16 +47,20 @@ export function evaluatePublicationGate(
     (candidate.textbookCitation.pageNumber || candidate.textbookCitation.lessonName)
   );
 
-  const hasAuthoritativeSource = (isWebSource && !isPlaceholderUrl) || isTextbookSource;
-  const hasEvidenceExcerpt = Boolean(
-    (candidate.sourceExcerpt && candidate.sourceExcerpt.trim().length >= 20) ||
-    isTextbookSource
-  );
+  let sourceAuthVerdict = isTextbookSource
+    ? { passed: true, details: `Verified against ${candidate.textbookCitation?.standard} ${candidate.textbookCitation?.subject}` }
+    : ActualSourceAuthenticator.authenticateActualDocument(candidate);
 
-  if (!hasAuthoritativeSource || !hasEvidenceExcerpt) {
-    const reason = !hasAuthoritativeSource
-      ? (isPlaceholderUrl ? 'Source URL is synthetic or placeholder.' : 'Missing authoritative primary source URL or textbook citation.')
-      : 'Source evidence excerpt is missing or shorter than 20 characters.';
+  if (isPlaceholderUrl) {
+    sourceAuthVerdict = {
+      passed: false,
+      failureCode: 'INACCESSIBLE_SOURCE',
+      details: 'Source URL is synthetic or placeholder.',
+    };
+  }
+
+  if (!sourceAuthVerdict.passed) {
+    const reason = sourceAuthVerdict.details;
     rejectionReasons.push(`Gate 1 Failed: ${reason}`);
     gateResults.push({
       checkId: 'SOURCE_AUTHENTICATED',
@@ -63,7 +68,7 @@ export function evaluatePublicationGate(
       passed: false,
       score: 0,
       details: reason,
-      failureReason: reason,
+      failureReason: sourceAuthVerdict.failureCode || reason,
     });
   } else {
     gateResults.push({
@@ -73,29 +78,35 @@ export function evaluatePublicationGate(
       score: 100,
       details: isTextbookSource
         ? `Verified against ${candidate.textbookCitation?.standard} ${candidate.textbookCitation?.subject}`
-        : `Primary source authenticated: ${candidate.sourcePublisher || candidate.sourceUrl}`,
+        : sourceAuthVerdict.details,
     });
   }
 
   // =========================================================================
-  // GATE 2: FACTUAL VERIFICATION
+  // GATE 2: FACTUAL VERIFICATION & INDEPENDENT ANSWER GROUNDING
   // =========================================================================
   let factualPassed = true;
   let factualDetail = 'Factual claim grounded in source evidence';
+  let failureReasonCode = undefined;
+
+  const hasEvidenceExcerpt = Boolean(
+    (candidate.sourceExcerpt && candidate.sourceExcerpt.trim().length >= 20) ||
+    isTextbookSource
+  );
 
   if (!hasEvidenceExcerpt) {
     factualPassed = false;
     factualDetail = 'Cannot verify facts without source excerpt';
-  } else if (candidate.sourceExcerpt) {
-    const cleanEvidence = cleanText(candidate.sourceExcerpt);
-    const correctOpt = candidate.options_en?.[candidate.correctOptionIndex] || '';
-    const cleanOpt = cleanText(correctOpt);
-    const tokens = cleanOpt.split(' ').filter((t) => t.length >= 3);
-    const hasOverlap = tokens.length === 0 || tokens.some((t) => cleanEvidence.includes(t));
-
-    if (!hasOverlap) {
+    failureReasonCode = 'MISSING_SOURCE_EXCERPT';
+  } else if (candidate.sourceExcerpt && !isTextbookSource) {
+    // Run Independent Answer & Distractor Verification without model self-approval
+    const independentResult = ActualSourceAuthenticator.verifyIndependentAnswerAndDistractors(candidate);
+    if (!independentResult.passed) {
       factualPassed = false;
-      factualDetail = 'Correct answer lacks factual grounding in provided primary source excerpt';
+      factualDetail = independentResult.details;
+      failureReasonCode = independentResult.failureCode;
+    } else {
+      factualDetail = independentResult.details;
     }
   }
 
@@ -107,7 +118,7 @@ export function evaluatePublicationGate(
       passed: false,
       score: 20,
       details: factualDetail,
-      failureReason: factualDetail,
+      failureReason: failureReasonCode || factualDetail,
     });
   } else {
     gateResults.push({

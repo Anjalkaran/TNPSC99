@@ -33,6 +33,72 @@ export interface OperatingCostBreakdown {
   isDeterministicFreeExecution: boolean;
   failClosedLimitUSD: number;
   isWithinBudget: boolean;
+  cloudBillingSeparationNotice?: string;
+}
+
+/**
+ * Explicit Architectural Separation:
+ * AI-Provider Token Inference Expenses vs. Google Cloud Platform Infrastructure Expenses.
+ * 
+ * IMPORTANT:
+ * The application-level $1.00 (₹84.00) circuit breaker bounds AI model token consumption only.
+ * It is NOT an absolute guarantee against Google Cloud infrastructure billing (e.g., runaway Cloud Run
+ * instances, Firestore DDOS read spikes, or bandwidth egress).
+ * Real cloud-billing guarantees require GCP Billing Budgets, Pub/Sub spend alerts, and instance limits.
+ */
+export interface CloudExpenseSeparationReport {
+  aiInference: {
+    serviceName: 'Gemini AI Studio / Vertex AI';
+    meteredMetric: 'Input & Output Tokens';
+    circuitBreakerLimitUSD: number; // $1.00 daily application circuit breaker
+    circuitBreakerScope: 'APPLICATION_INFERENCE_ONLY';
+    dailyObservedCostUSD: number;
+    dailyObservedCostINR: number;
+  };
+  gcpInfrastructure: {
+    serviceName: 'Google Cloud Platform (Cloud Run, Cloud Firestore, Cloud Storage, Egress)';
+    meteredMetric: 'Container vCPU/RAM seconds, document read/write ops, GiB egress';
+    appLevelGuaranteed: false;
+    guaranteeMechanism: 'GCP_BILLING_BUDGETS_AND_PUBSUB_ALERTS';
+    recommendedMonthlyBudgetUSD: number; // $30.00 / month
+    recommendedAlertThresholdsPercent: number[]; // [50, 80, 100]
+    scalingHardLimits: {
+      cloudRunMinInstances: number;
+      cloudRunMaxInstances: number;
+      concurrencyPerInstance: number;
+    };
+  };
+}
+
+/**
+ * Generates an auditable expense separation report comparing AI token costs vs GCP infrastructure.
+ */
+export function generateCloudExpenseSeparationReport(
+  observedDailyAiCostUSD: number = 0.088
+): CloudExpenseSeparationReport {
+  return {
+    aiInference: {
+      serviceName: 'Gemini AI Studio / Vertex AI',
+      meteredMetric: 'Input & Output Tokens',
+      circuitBreakerLimitUSD: 1.00,
+      circuitBreakerScope: 'APPLICATION_INFERENCE_ONLY',
+      dailyObservedCostUSD: observedDailyAiCostUSD,
+      dailyObservedCostINR: Number((observedDailyAiCostUSD * 84.0).toFixed(2)),
+    },
+    gcpInfrastructure: {
+      serviceName: 'Google Cloud Platform (Cloud Run, Cloud Firestore, Cloud Storage, Egress)',
+      meteredMetric: 'Container vCPU/RAM seconds, document read/write ops, GiB egress',
+      appLevelGuaranteed: false,
+      guaranteeMechanism: 'GCP_BILLING_BUDGETS_AND_PUBSUB_ALERTS',
+      recommendedMonthlyBudgetUSD: 30.00,
+      recommendedAlertThresholdsPercent: [50, 80, 100],
+      scalingHardLimits: {
+        cloudRunMinInstances: 0,
+        cloudRunMaxInstances: 3,
+        concurrencyPerInstance: 80,
+      },
+    },
+  };
 }
 
 export type SupportedAiModel = 'none' | 'gemini_2.5_flash' | 'gemini_2.5_pro';
