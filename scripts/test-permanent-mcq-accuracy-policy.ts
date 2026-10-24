@@ -165,6 +165,9 @@ async function runTestSuite() {
         id: `ca_cand_${i + 1}`,
         question_en: `Current Affairs Verified Question Stem ${i + 1}`,
         sourceExcerpt: `Current Affairs Verified Question Stem ${i + 1} Chennai facts`,
+        eventDate: '2026-06-15',
+        publicationDate: '2026-06-16',
+        isCurrentAffairs: true,
       };
     } else {
       return {
@@ -172,6 +175,9 @@ async function runTestSuite() {
         id: `ca_cand_${i + 1}`,
         question_en: `Unverified Draft Question Stem ${i + 1}`,
         sourceUrl: undefined,
+        eventDate: '2026-06-15',
+        publicationDate: '2026-06-16',
+        isCurrentAffairs: true,
       };
     }
   });

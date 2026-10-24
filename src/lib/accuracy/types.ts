@@ -21,7 +21,8 @@ export type AccuracyGateCheckId =
   | 'DISTRACTOR_VERIFICATION'
   | 'DUPLICATE_CHECK'
   | 'EDITORIAL_APPROVAL'
-  | 'CONFLICT_RETRACTION_CHECK';
+  | 'CONFLICT_RETRACTION_CHECK'
+  | 'TEMPORAL_ELIGIBILITY_2026';
 
 export interface GateCheckResult {
   checkId: AccuracyGateCheckId;
@@ -66,6 +67,18 @@ export interface QuestionAccuracyCandidate {
     termOrVolume?: string;
     pageNumber?: number | string;
     lessonName?: string;
+  };
+
+  // 2026-Only Current Affairs Temporal Context
+  category?: string;
+  category_ta?: string;
+  isCurrentAffairs?: boolean;
+  olderSchemeContext?: {
+    schemeOriginYear?: number;
+    has2026Amendment?: boolean;
+    amendmentDate?: string;
+    tests2026DevelopmentExplicitly?: boolean;
+    amendmentDetails?: string;
   };
 
   // Human Review & Metadata

@@ -39,6 +39,10 @@ export interface PublicSampleTestPackage {
   questionCount: number;
   durationMinutes: number;
   questions: PublicSampleQuestion[];
+  isRevision?: boolean;
+  originalEditionDate?: string;
+  revisionNotice_en?: string;
+  revisionNotice_ta?: string;
 }
 
 export interface AiTutorPrecomputedDemo {
@@ -237,8 +241,8 @@ export const QUARANTINED_CURRENT_AFFAIRS_QUESTIONS: PublicSampleQuestion[] = [
 
 export const FREE_CURRENT_AFFAIRS_TEST: PublicSampleTestPackage = {
   id: 'pub_daily_ca_20261024',
-  title_en: 'Daily Current Affairs — Editorial Review in Progress',
-  title_ta: 'தினசரி நடப்பு நிகழ்வுகள் — ஆசிரியர் குழு சரிபார்ப்பு',
+  title_en: '2026 Current Affairs — Editorial Verification in Progress.',
+  title_ta: '2026 நடப்பு நிகழ்வுகள் — உண்மைச் சரிபார்ப்பு நடைபெற்று வருகிறது.',
   subtitle_en: 'Undergoing Verification Against Tamil Nadu Government Gazettes · 24 October 2026',
   subtitle_ta: 'அரசு அரசிதழ் சரிபார்ப்பு நிலையில் உள்ளது · 24 அக்டோபர் 2026',
   editionDate: '24 October 2026',

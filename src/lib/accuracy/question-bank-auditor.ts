@@ -140,6 +140,7 @@ export class QuestionBankAuditor {
       DUPLICATE_CHECK: 0,
       EDITORIAL_APPROVAL: 0,
       CONFLICT_RETRACTION_CHECK: 0,
+      TEMPORAL_ELIGIBILITY_2026: 0,
     };
 
     const mutuallyExclusive = {

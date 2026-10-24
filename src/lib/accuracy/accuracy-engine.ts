@@ -10,6 +10,7 @@ import {
   QuestionAccuracyCandidate,
   AccuracyLifecycleStatus
 } from './types';
+import { TemporalEligibilityValidator } from './temporal-validator';
 
 function cleanText(str: string): string {
   return (str || '')
@@ -357,6 +358,46 @@ export function evaluatePublicationGate(
   }
 
   // =========================================================================
+  // GATE 10: 2026-ONLY CURRENT AFFAIRS TEMPORAL ELIGIBILITY
+  // =========================================================================
+  const isCaQuestion =
+    candidate.isCurrentAffairs === true ||
+    Boolean(candidate.category && candidate.category.toLowerCase().includes('current affairs')) ||
+    Boolean(candidate.category_ta && candidate.category_ta.includes('நடப்பு')) ||
+    Boolean(candidate.eventDate && !candidate.textbookCitation);
+
+  if (isCaQuestion) {
+    const temporalResult = TemporalEligibilityValidator.validate(candidate);
+    if (!temporalResult.eligible) {
+      rejectionReasons.push(`Gate 10 Failed: ${temporalResult.details}`);
+      gateResults.push({
+        checkId: 'TEMPORAL_ELIGIBILITY_2026',
+        name: '2026-Only Current Affairs Temporal Eligibility',
+        passed: false,
+        score: 0,
+        details: temporalResult.details,
+        failureReason: temporalResult.rejectionReason || temporalResult.details,
+      });
+    } else {
+      gateResults.push({
+        checkId: 'TEMPORAL_ELIGIBILITY_2026',
+        name: '2026-Only Current Affairs Temporal Eligibility',
+        passed: true,
+        score: 100,
+        details: temporalResult.details,
+      });
+    }
+  } else {
+    gateResults.push({
+      checkId: 'TEMPORAL_ELIGIBILITY_2026',
+      name: '2026-Only Current Affairs Temporal Eligibility',
+      passed: true,
+      score: 100,
+      details: 'Exempt: Textbook curriculum syllabus question or general knowledge item',
+    });
+  }
+
+  // =========================================================================
   // FINAL FAIL-CLOSED SYNTHESIS
   // =========================================================================
   const allGatesPassed = gateResults.every((g) => g.passed);
@@ -365,8 +406,21 @@ export function evaluatePublicationGate(
   if (isRetracted) {
     targetStatus = 'RETRACTED';
   } else if (!allGatesPassed) {
+    const temporalGate = gateResults.find((g) => g.checkId === 'TEMPORAL_ELIGIBILITY_2026');
+    const isTemporalRejected = temporalGate && !temporalGate.passed && (
+      temporalGate.failureReason?.includes('disqualified') ||
+      temporalGate.failureReason?.includes('pre-2026') ||
+      temporalGate.failureReason?.includes('strictly forbidden') ||
+      temporalGate.failureReason?.includes('statutory fact')
+    );
+
     const hasCriticalFailure = gateResults.some(
-      (g) => !g.passed && (g.checkId === 'SOURCE_AUTHENTICATED' || g.checkId === 'CONFLICT_RETRACTION_CHECK' || g.checkId === 'DUPLICATE_CHECK')
+      (g) => !g.passed && (
+        g.checkId === 'SOURCE_AUTHENTICATED' ||
+        g.checkId === 'CONFLICT_RETRACTION_CHECK' ||
+        g.checkId === 'DUPLICATE_CHECK' ||
+        isTemporalRejected
+      )
     );
     targetStatus = hasCriticalFailure ? 'REJECTED' : 'REVIEW_REQUIRED';
   }

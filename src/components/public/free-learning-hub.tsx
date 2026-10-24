@@ -456,15 +456,15 @@ export function FreeLearningHub() {
                     </div>
                     <div className="max-w-xl mx-auto space-y-2">
                       <Badge variant="outline" className="text-xs font-bold border-amber-400 text-amber-700 dark:text-amber-300">
-                        {language === 'ta' ? 'அரசு அரசிதழ் சரிபார்ப்பு நிலையில் உள்ளது' : 'Official Gazette Verification In Progress'}
+                        {language === 'ta' ? '2026 உண்மைச் சரிபார்ப்பு நிலுவை' : '2026 Editorial Verification in Progress'}
                       </Badge>
                       <h3 className="text-xl sm:text-2xl font-black text-foreground">
-                        {language === 'ta' ? 'தினசரி நடப்பு நிகழ்வுகள் — ஆசிரியர் குழு சரிபார்ப்பு' : 'Daily Current Affairs — Editorial Review in Progress'}
+                        {language === 'ta' ? '2026 நடப்பு நிகழ்வுகள் — உண்மைச் சரிபார்ப்பு நடைபெற்று வருகிறது.' : '2026 Current Affairs — Editorial Verification in Progress.'}
                       </h3>
                       <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                         {language === 'ta'
-                          ? 'TNPSC99 கொள்கைப்படி, அரசு செய்திக்குறிப்புகள் மற்றும் தமிழ்நாடு அரசு அரசிதழ்களுடன் (Government Gazettes) சரிபார்க்கப்பட்ட பின்னரே நடப்பு நிகழ்வுகள் வினாக்கள் வெளியிடப்படுகின்றன. இன்றைய பதிப்பு ஆசிரியர் குழுவின் இறுதி ஆய்வில் உள்ளது; சரிபார்க்கப்பட்டவுடன் இங்கு தானாகவே தோன்றும்.'
-                          : 'In accordance with TNPSC99 editorial standards, Current Affairs questions are published only after secondary fact verification against official Tamil Nadu Government Gazettes and Departmental releases. The upcoming edition is currently in the verification queue and will publish dynamically once approved.'}
+                          ? 'TNPSC99 கொள்கைப்படி, அரசு செய்திக்குறிப்புகள் மற்றும் தமிழ்நாடு அரசு அரசிதழ்களுடன் (Government Gazettes) சரிபார்க்கப்பட்ட பின்னரே 2026 நடப்பு நிகழ்வுகள் வினாக்கள் வெளியிடப்படுகின்றன. இன்றைய பதிப்பு ஆசிரியர் குழுவின் இறுதி ஆய்வில் உள்ளது; சரிபார்க்கப்பட்டவுடன் இங்கு தானாகவே தோன்றும்.'
+                          : 'In accordance with TNPSC99 2026-only editorial standards, Current Affairs questions are published only after primary fact verification against official Tamil Nadu Government Gazettes and Departmental releases. The upcoming edition is currently in the verification queue and will publish dynamically once approved.'}
                       </p>
                     </div>
                     <div className="flex flex-col sm:flex-row justify-center items-center gap-3 pt-2 max-w-md mx-auto">
@@ -490,6 +490,11 @@ export function FreeLearningHub() {
                   <div className="bg-gradient-to-r from-primary/5 via-primary/10 to-transparent p-4 sm:p-6 border-b border-border flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                       <div className="flex items-center gap-2 mb-1">
+                        {currentPackage.isRevision && (
+                          <Badge className="text-[11px] font-bold bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30">
+                            {language === 'ta' ? 'மீள்பார்வைப் பயிற்சி' : 'Revision Practice'}
+                          </Badge>
+                        )}
                         <Badge variant="outline" className="text-[11px] font-bold border-primary/30 text-primary">
                           {currentPackage.editionDate || 'Samacheer Kalvi Classes 6–10'}
                         </Badge>
@@ -503,6 +508,16 @@ export function FreeLearningHub() {
                       <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
                         {language === 'ta' ? currentPackage.subtitle_ta : currentPackage.subtitle_en}
                       </p>
+                      {currentPackage.isRevision && (
+                        <div className="mt-2 text-xs text-amber-800 dark:text-amber-300 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-lg inline-flex items-center gap-2">
+                          <Sparkles className="h-3.5 w-3.5" />
+                          <span>
+                            {language === 'ta'
+                              ? currentPackage.revisionNotice_ta || `இன்றைய பதிப்பு உண்மைச் சரிபார்ப்பில் உள்ளதால், ${currentPackage.originalEditionDate || currentPackage.editionDate} தேதியிட்ட சரிபார்க்கப்பட்ட மீள்பார்வைப் பயிற்சி வழங்கப்படுகிறது.`
+                              : currentPackage.revisionNotice_en || `Today's edition is under editorial verification. Serving verified revision practice from ${currentPackage.originalEditionDate || currentPackage.editionDate}.`}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     {/* Mode Selector & Reset */}
