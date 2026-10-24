@@ -116,6 +116,18 @@ async function runVerification() {
     return res.result?.value;
   }
 
+  async function waitForSelector(sel, timeout = 12000) {
+    const start = Date.now();
+    while (Date.now() - start < timeout) {
+      try {
+        const found = await evalJs(`Boolean(document.querySelector('${sel}'))`);
+        if (found) return true;
+      } catch (e) {}
+      await new Promise(r => setTimeout(r, 400));
+    }
+    return false;
+  }
+
   async function takeScreenshot(filename) {
     const { data } = await send('Page.captureScreenshot', { format: 'png' });
     const buf = Buffer.from(data, 'base64');
@@ -132,9 +144,10 @@ async function runVerification() {
     await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
     // Clear localStorage to test default fresh user state
     await send('Page.navigate', { url: TARGET_URL });
-    await new Promise(r => setTimeout(r, 2000));
+    await waitForSelector('h1');
     await evalJs(`localStorage.removeItem('language'); location.reload();`);
-    await new Promise(r => setTimeout(r, 2500));
+    await waitForSelector('h1');
+    await new Promise(r => setTimeout(r, 1000));
 
     const defaultLanguageState = await evalJs(`({
       headline: document.querySelector('h1')?.innerText || '',
