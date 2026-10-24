@@ -42,12 +42,13 @@ import {
 } from '@/data/public-sample-questions';
 import { PublicAnalytics } from '@/lib/public-analytics';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/hooks/use-translation';
 
 type ActiveTab = 'current_affairs' | 'mock_test' | 'textbook' | 'ai_tutor';
 type TestMode = 'practice' | 'exam';
 
 export function FreeLearningHub() {
-  const [language, setLanguage] = useState<'ta' | 'en'>('ta');
+  const { language, setLanguage, t } = useTranslation();
   const [activeTab, setActiveTab] = useState<ActiveTab>('current_affairs');
   const [testMode, setTestMode] = useState<TestMode>('practice');
   
@@ -215,15 +216,13 @@ export function FreeLearningHub() {
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-400 mb-2">
               <Sparkles className="h-3.5 w-3.5" />
-              <span>{language === 'ta' ? 'இலவச மாதிரி மையம் — உள்நுழைவு தேவையில்லை' : 'Public Free Learning Hub — No Login Required'}</span>
+              <span>{t('hub_badge')}</span>
             </div>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-foreground tracking-tight">
-              {language === 'ta' ? 'உடனடி TNPSC மாதிரி பயிற்சி' : 'Try Genuine TNPSC Questions Now'}
+              {t('hub_title')}
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1 max-w-xl">
-              {language === 'ta'
-                ? 'தினசரி நடப்பு நிகழ்வுகள், முழு மாதிரித் தேர்வு, பாடப்புத்தக வினாக்கள் மற்றும் AI வழிகாட்டி மாதிரியை நேரடியாக சோதிக்கலாம்.'
-                : 'Experience authentic TNPSC-standard questions mapped to Samacheer Kalvi school textbooks with instant answer explanations.'}
+              {t('hub_subtitle')}
             </p>
           </div>
 
@@ -255,53 +254,195 @@ export function FreeLearningHub() {
           </div>
         </div>
 
-        {/* 4 Interactive Tabs */}
+        {/* 4 Prominent Responsive Cards Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8" role="tablist" aria-label="Learning Modules">
+          {/* Card 1: Daily Current Affairs */}
+          <div
+            role="tab"
+            aria-selected={activeTab === 'current_affairs'}
+            tabIndex={0}
+            onClick={() => handleTabChange('current_affairs')}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleTabChange('current_affairs'); }}
+            className={cn(
+              "text-left p-5 sm:p-6 rounded-2xl border transition-all duration-200 flex flex-col justify-between group relative overflow-hidden cursor-pointer",
+              activeTab === 'current_affairs'
+                ? "ring-2 ring-primary border-primary bg-primary/5 text-primary shadow-md"
+                : "border-border bg-card/60 hover:bg-card hover:border-primary/40 hover:shadow-sm"
+            )}
+          >
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <div className={cn(
+                  "h-12 w-12 rounded-xl flex items-center justify-center transition-colors",
+                  activeTab === 'current_affairs' ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary group-hover:bg-primary/20"
+                )}>
+                  <BookOpen className="h-6 w-6" />
+                </div>
+                <Badge
+                  variant={isCaApproved ? "default" : "outline"}
+                  className={cn(
+                    "text-xs font-bold",
+                    isCaApproved
+                      ? "bg-primary text-primary-foreground"
+                      : "border-amber-500/40 text-amber-700 dark:text-amber-300 bg-amber-500/10"
+                  )}
+                >
+                  {isCaApproved ? t('card_ca_count') : t('card_ca_review')}
+                </Badge>
+              </div>
+              <h3 className="text-lg font-bold text-foreground mb-1.5 group-hover:text-primary transition-colors">
+                {t('card_ca_title')}
+              </h3>
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                {t('card_ca_benefit')}
+              </p>
+            </div>
+            <div className="pt-4 mt-4 border-t border-border/60 flex items-center justify-between text-xs font-bold">
+              <span className={activeTab === 'current_affairs' ? "text-primary" : "text-muted-foreground group-hover:text-foreground"}>
+                {activeTab === 'current_affairs' ? t('card_active_indicator') : t('card_click_to_view')}
+              </span>
+              <ArrowRight className={cn(
+                "h-4 w-4 transition-transform",
+                activeTab === 'current_affairs' ? "text-primary translate-x-1" : "text-muted-foreground group-hover:translate-x-1"
+              )} />
+            </div>
+          </div>
+
+          {/* Card 2: Free Mock Test */}
+          <div
+            role="tab"
+            aria-selected={activeTab === 'mock_test'}
+            tabIndex={0}
+            onClick={() => handleTabChange('mock_test')}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleTabChange('mock_test'); }}
+            className={cn(
+              "text-left p-5 sm:p-6 rounded-2xl border transition-all duration-200 flex flex-col justify-between group relative overflow-hidden cursor-pointer",
+              activeTab === 'mock_test'
+                ? "ring-2 ring-primary border-primary bg-primary/5 text-primary shadow-md"
+                : "border-border bg-card/60 hover:bg-card hover:border-primary/40 hover:shadow-sm"
+            )}
+          >
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <div className={cn(
+                  "h-12 w-12 rounded-xl flex items-center justify-center transition-colors",
+                  activeTab === 'mock_test' ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary group-hover:bg-primary/20"
+                )}>
+                  <Award className="h-6 w-6" />
+                </div>
+                <Badge variant="default" className="text-xs font-bold bg-primary text-primary-foreground">
+                  {t('card_mock_count')}
+                </Badge>
+              </div>
+              <h3 className="text-lg font-bold text-foreground mb-1.5 group-hover:text-primary transition-colors">
+                {t('card_mock_title')}
+              </h3>
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                {t('card_mock_benefit')}
+              </p>
+            </div>
+            <div className="pt-4 mt-4 border-t border-border/60 flex items-center justify-between text-xs font-bold">
+              <span className={activeTab === 'mock_test' ? "text-primary" : "text-muted-foreground group-hover:text-foreground"}>
+                {activeTab === 'mock_test' ? t('card_active_indicator') : t('card_click_to_view')}
+              </span>
+              <ArrowRight className={cn(
+                "h-4 w-4 transition-transform",
+                activeTab === 'mock_test' ? "text-primary translate-x-1" : "text-muted-foreground group-hover:translate-x-1"
+              )} />
+            </div>
+          </div>
+
+          {/* Card 3: Textbook Practice */}
+          <div
+            role="tab"
+            aria-selected={activeTab === 'textbook'}
+            tabIndex={0}
+            onClick={() => handleTabChange('textbook')}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleTabChange('textbook'); }}
+            className={cn(
+              "text-left p-5 sm:p-6 rounded-2xl border transition-all duration-200 flex flex-col justify-between group relative overflow-hidden cursor-pointer",
+              activeTab === 'textbook'
+                ? "ring-2 ring-secondary border-secondary bg-secondary/5 text-secondary shadow-md"
+                : "border-border bg-card/60 hover:bg-card hover:border-secondary/40 hover:shadow-sm"
+            )}
+          >
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <div className={cn(
+                  "h-12 w-12 rounded-xl flex items-center justify-center transition-colors",
+                  activeTab === 'textbook' ? "bg-secondary text-secondary-foreground" : "bg-secondary/10 text-secondary group-hover:bg-secondary/20"
+                )}>
+                  <BookMarked className="h-6 w-6" />
+                </div>
+                <Badge variant="default" className="text-xs font-bold bg-secondary text-secondary-foreground">
+                  {t('card_textbook_count')}
+                </Badge>
+              </div>
+              <h3 className="text-lg font-bold text-foreground mb-1.5 group-hover:text-secondary transition-colors">
+                {t('card_textbook_title')}
+              </h3>
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                {t('card_textbook_benefit')}
+              </p>
+            </div>
+            <div className="pt-4 mt-4 border-t border-border/60 flex items-center justify-between text-xs font-bold">
+              <span className={activeTab === 'textbook' ? "text-secondary" : "text-muted-foreground group-hover:text-foreground"}>
+                {activeTab === 'textbook' ? t('card_active_indicator') : t('card_click_to_view')}
+              </span>
+              <ArrowRight className={cn(
+                "h-4 w-4 transition-transform",
+                activeTab === 'textbook' ? "text-secondary translate-x-1" : "text-muted-foreground group-hover:translate-x-1"
+              )} />
+            </div>
+          </div>
+
+          {/* Card 4: AI Tutor Preview */}
+          <div
+            role="tab"
+            aria-selected={activeTab === 'ai_tutor'}
+            tabIndex={0}
+            onClick={() => handleTabChange('ai_tutor')}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleTabChange('ai_tutor'); }}
+            className={cn(
+              "text-left p-5 sm:p-6 rounded-2xl border transition-all duration-200 flex flex-col justify-between group relative overflow-hidden cursor-pointer",
+              activeTab === 'ai_tutor'
+                ? "ring-2 ring-amber-500 border-amber-500 bg-amber-500/5 text-amber-800 dark:text-amber-200 shadow-md"
+                : "border-border bg-card/60 hover:bg-card hover:border-amber-500/40 hover:shadow-sm"
+            )}
+          >
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <div className={cn(
+                  "h-12 w-12 rounded-xl flex items-center justify-center transition-colors",
+                  activeTab === 'ai_tutor' ? "bg-amber-500 text-white" : "bg-amber-500/10 text-amber-600 dark:text-amber-400 group-hover:bg-amber-500/20"
+                )}>
+                  <BrainCircuit className="h-6 w-6" />
+                </div>
+                <Badge variant="outline" className="text-xs font-bold border-amber-400 text-amber-800 dark:text-amber-300 bg-amber-500/10">
+                  {t('card_ai_count')}
+                </Badge>
+              </div>
+              <h3 className="text-lg font-bold text-foreground mb-1.5 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+                {t('card_ai_title')}
+              </h3>
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                {t('card_ai_benefit')}
+              </p>
+            </div>
+            <div className="pt-4 mt-4 border-t border-border/60 flex items-center justify-between text-xs font-bold">
+              <span className={activeTab === 'ai_tutor' ? "text-amber-700 dark:text-amber-300" : "text-muted-foreground group-hover:text-foreground"}>
+                {activeTab === 'ai_tutor' ? t('card_active_indicator') : t('card_click_to_view')}
+              </span>
+              <ArrowRight className={cn(
+                "h-4 w-4 transition-transform",
+                activeTab === 'ai_tutor' ? "text-amber-600 translate-x-1" : "text-muted-foreground group-hover:translate-x-1"
+              )} />
+            </div>
+          </div>
+        </div>
+
+        {/* Active Module Container */}
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="grid grid-cols-2 md:grid-cols-4 h-auto p-1.5 bg-muted/70 rounded-2xl gap-1.5 mb-8 border border-border">
-            <TabsTrigger
-              value="current_affairs"
-              className="rounded-xl py-2.5 text-xs sm:text-sm font-bold data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm"
-            >
-              <div className="flex items-center gap-2">
-                <BookOpen className="h-4 w-4 text-primary" />
-                <span className="truncate">{language === 'ta' ? 'நடப்பு நிகழ்வுகள்' : 'Current Affairs'}</span>
-                <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-bold hidden sm:inline">10 Q</span>
-              </div>
-            </TabsTrigger>
-
-            <TabsTrigger
-              value="mock_test"
-              className="rounded-xl py-2.5 text-xs sm:text-sm font-bold data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-sm"
-            >
-              <div className="flex items-center gap-2">
-                <Award className="h-4 w-4 text-primary" />
-                <span className="truncate">{language === 'ta' ? 'இலவச மாதிரித் தேர்வு' : 'Free Mock Test'}</span>
-                <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-bold hidden sm:inline">20 Q</span>
-              </div>
-            </TabsTrigger>
-
-            <TabsTrigger
-              value="textbook"
-              className="rounded-xl py-2.5 text-xs sm:text-sm font-bold data-[state=active]:bg-card data-[state=active]:text-secondary data-[state=active]:shadow-sm"
-            >
-              <div className="flex items-center gap-2">
-                <BookMarked className="h-4 w-4 text-secondary" />
-                <span className="truncate">{language === 'ta' ? 'பாடப்புத்தக பயிற்சி' : 'Textbook Practice'}</span>
-                <span className="text-[10px] bg-secondary/15 text-secondary px-1.5 py-0.5 rounded-full font-bold hidden sm:inline">10 Q</span>
-              </div>
-            </TabsTrigger>
-
-            <TabsTrigger
-              value="ai_tutor"
-              className="rounded-xl py-2.5 text-xs sm:text-sm font-bold data-[state=active]:bg-card data-[state=active]:text-amber-800 dark:data-[state=active]:text-amber-200 data-[state=active]:shadow-sm"
-            >
-              <div className="flex items-center gap-2">
-                <BrainCircuit className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                <span className="truncate">{language === 'ta' ? 'AI வழிகாட்டி முன்னோட்டம்' : 'AI Tutor Demo'}</span>
-                <span className="text-[10px] bg-amber-500/15 text-amber-800 dark:text-amber-300 px-1.5 py-0.5 rounded-full font-bold hidden sm:inline">Demo</span>
-              </div>
-            </TabsTrigger>
-          </TabsList>
 
           {/* TAB CONTENT 1, 2, 3: QUESTION PACKAGES */}
           {(['current_affairs', 'mock_test', 'textbook'] as ActiveTab[]).map((tabKey) => {

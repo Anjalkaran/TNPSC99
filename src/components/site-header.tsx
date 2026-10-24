@@ -127,7 +127,7 @@ export function SiteHeader() {
                   <Link href="/">{t('home')}</Link>
                 </Button>
                 <Button asChild variant="ghost" className="text-primary font-bold">
-                  <Link href="/subscription">MCQ Academy (₹99)</Link>
+                  <Link href="/subscription">{t('nav_mcq_academy')}</Link>
                 </Button>
                 <Button asChild variant="ghost">
                   <Link href="/about-us">{t('about_us')}</Link>
@@ -160,7 +160,7 @@ export function SiteHeader() {
                         {t('home')}
                       </Link>
                       <Link href="/subscription" className="text-lg font-bold text-primary flex items-center justify-between">
-                        <span>MCQ Academy (₹99)</span>
+                        <span>{t('nav_mcq_academy')}</span>
                         <span className="text-xs bg-primary/10 text-primary px-2.5 py-0.5 rounded-full font-bold">₹99/mo</span>
                       </Link>
                       <Link href="/about-us" className="text-lg font-medium hover:text-primary transition-colors">
