@@ -412,9 +412,11 @@ export const CA_2026_DRAFT_MCQ_BANK: Ca2026DraftMCQ[] = [
       distractor_3: '6.50% was the previous policy rate maintained during the 2023–2024 monetary cycle.',
     },
     editorialApproval: null,
-    isRetracted: false,
-    isQuarantined: false,
-    status: 'SOURCE_VERIFIED',
+    isRetracted: true,
+    isQuarantined: true,
+    quarantineReason: 'FACTUAL_NUMERICAL_DISCREPANCY: June 2026 RBI repo rate was 5.25%, not 5.50%.',
+    status: 'REJECTED',
+    publicationMode: 'MANUAL_APPROVED' as any,
   },
 
   // ---------------------------------------------------------------------------
@@ -627,9 +629,11 @@ export const CA_2026_DRAFT_MCQ_BANK: Ca2026DraftMCQ[] = [
       distractor_3: 'Karuppu Kavuni received GI registration under a separate previous batch.',
     },
     editorialApproval: null,
-    isRetracted: false,
-    isQuarantined: false,
-    status: 'SOURCE_VERIFIED',
+    isRetracted: true,
+    isQuarantined: true,
+    quarantineReason: 'PRE_2026_EVENT_IN_2026_PUBLICATION: ISRO SSLV-D3/EOS-08 launched on 16 August 2024, not July 2026.',
+    status: 'REJECTED',
+    publicationMode: 'MANUAL_APPROVED' as any,
   },
 
   // ---------------------------------------------------------------------------
@@ -885,9 +889,11 @@ export const CA_2026_DRAFT_MCQ_BANK: Ca2026DraftMCQ[] = [
       distractor_3: 'TN Forest Academy is located in Coimbatore/Pollachi but did not host the 29th NTCA national meeting.',
     },
     editorialApproval: null,
-    isRetracted: false,
-    isQuarantined: false,
-    status: 'SOURCE_VERIFIED',
+    isRetracted: true,
+    isQuarantined: true,
+    quarantineReason: 'DOCUMENT_CONTENT_MISMATCH: PIB PRID 2274981 concerns PM address in France, not NITI Aayog Health Index.',
+    status: 'REJECTED',
+    publicationMode: 'MANUAL_APPROVED' as any,
   },
 
   // ---------------------------------------------------------------------------
@@ -1014,9 +1020,11 @@ export const CA_2026_DRAFT_MCQ_BANK: Ca2026DraftMCQ[] = [
       distractor_3: '75th Raising Day (Platinum Jubilee) will be celebrated in 2031.',
     },
     editorialApproval: null,
-    isRetracted: false,
-    isQuarantined: false,
-    status: 'SOURCE_VERIFIED',
+    isRetracted: true,
+    isQuarantined: true,
+    quarantineReason: 'PRE_2026_EVENT_IN_2026_PUBLICATION: PM-KISAN 17th instalment was released on 18 June 2024, not April 2026.',
+    status: 'REJECTED',
+    publicationMode: 'MANUAL_APPROVED' as any,
   },
 
   // ---------------------------------------------------------------------------
@@ -1100,9 +1108,11 @@ export const CA_2026_DRAFT_MCQ_BANK: Ca2026DraftMCQ[] = [
       distractor_3: 'Neyveli Airport is a regional airstrip developed under RCS-UDAN.',
     },
     editorialApproval: null,
-    isRetracted: false,
-    isQuarantined: false,
-    status: 'SOURCE_VERIFIED',
+    isRetracted: true,
+    isQuarantined: true,
+    quarantineReason: 'PRE_2026_EVENT_IN_2026_PUBLICATION: UNESCO inscribed Maratha Military Landscapes in 2025, not August 2026.',
+    status: 'REJECTED',
+    publicationMode: 'MANUAL_APPROVED' as any,
   },
 
   // ---------------------------------------------------------------------------

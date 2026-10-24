@@ -1,16 +1,20 @@
 /**
  * TNPSC99 — Real Shadow-Mode Accuracy Evaluation & Auditing Engine
+ * Policy: 2026.AUTO_V1 (Post-Revocation Audit & Defect Quarantine)
  * 
  * Executes repeated multi-cycle shadow-mode runs using actual 2026 government source documents
- * and realistic negative defect traps.
+ * and confirmed defect traps:
+ * - ca_2026_draft_02: Wetlands workshop (Pre-2026 event: 2025-02-01)
+ * - ca_2026_draft_03: RBI Repo rate (5.25% actual vs 5.50% claimed)
+ * - ca_2026_draft_08: ISRO SSLV-D3/EOS-08 launch (Pre-2026 event: 16 August 2024)
+ * - ca_2026_draft_14: PIB PRID 2274981 (Document mismatch: PM address in France, not NITI Aayog)
+ * - ca_2026_draft_17: PM-KISAN 17th instalment (Pre-2026 event: 18 June 2024)
+ * - ca_2026_draft_19: UNESCO Maratha Military Landscapes (Pre-2026 event: 2024–2025)
  * 
- * Tracks:
- * - False Approvals (Critical: any factual false approval blocks production)
+ * Evaluates:
+ * - False Approvals (Must be strictly 0; ANY false approval blocks production)
  * - False Rejections
- * - Missing Source Evidence
- * - Incorrect Answer Keys
- * - Tamil/English Translation Differences
- * - Unverified Event Dates
+ * - Invariant: Production deployment remains strictly NO-GO.
  */
 
 import { getCa2026DraftCandidates, AUTHENTIC_2026_SOURCE_REGISTRY } from '../src/data/ca-2026-draft-bank';
@@ -45,7 +49,7 @@ export interface ShadowEvaluationSummary {
   totalCycles: number;
   truePositives: number;
   trueNegatives: number;
-  falseApprovals: number; // MUST BE 0 FOR PRODUCTION GO
+  falseApprovals: number;
   falseRejections: number;
   precision: number;
   recall: number;
@@ -53,7 +57,17 @@ export interface ShadowEvaluationSummary {
   falseApprovalRate: number;
   defectClassificationsCaught: Record<string, number>;
   productionReadinessGatePassed: boolean;
+  productionRecommendation: 'NO-GO (REVOKED)' | 'GO';
 }
+
+const CONFIRMED_DEFECT_IDS = new Set([
+  'ca_2026_draft_02',
+  'ca_2026_draft_03',
+  'ca_2026_draft_08',
+  'ca_2026_draft_14',
+  'ca_2026_draft_17',
+  'ca_2026_draft_19',
+]);
 
 export function buildNegativeDefectTraps(genuineBaseline: QuestionAccuracyCandidate): QuestionAccuracyCandidate[] {
   return [
@@ -98,68 +112,69 @@ export function buildNegativeDefectTraps(genuineBaseline: QuestionAccuracyCandid
       sourceExcerpt: 'This is an invented passage claiming Tamil Nadu received 500 new high-speed bullet trains.',
       options_en: ['500 bullet trains', '100 bullet trains', '50 bullet trains', '200 bullet trains'],
       correctOptionIndex: 0,
-      actualRetrievedEvidence: {
-        retrievalStatus: 'RETRIEVED_HTTP_200',
-        httpStatus: 200,
-        retrievedAt: '2026-10-24T18:00:00Z',
-        contentType: 'text/html',
-        contentLengthBytes: 1540,
-        contentHashSha256: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
-        documentTitle: 'Ministry of Railways Official Release',
-        officialDocumentId: 'MoR PRID 99999',
-        evidenceLocation: {
-          startChar: 0,
-          endChar: 50,
-          matchedText: 'Authentic railway allocation was ₹7,611 crore only.',
-        },
-        rawBodySnippet: 'Authentic railway allocation was ₹7,611 crore only.',
+      publicationMode: 'AUTO_VERIFIED',
+    },
+    // Trap 6: English vs Tamil translation number discrepancy
+    {
+      ...genuineBaseline,
+      id: 'trap_neg_06_translation_parity_mismatch',
+      options_en: ['500 crore rupees', '200 crore rupees', '100 crore rupees', '50 crore rupees'],
+      options_ta: ['100 கோடி ரூபாய்', '200 கோடி ரூபாய்', '300 கோடி ரூபாய்', '50 கோடி ரூபாய்'], // Discrepancy: 500 vs 100
+      correctOptionIndex: 0,
+      publicationMode: 'AUTO_VERIFIED',
+    },
+    // Trap 7: Ambiguous multiple correct answers supported by excerpt
+    {
+      ...genuineBaseline,
+      id: 'trap_neg_07_ambiguous_options',
+      sourceExcerpt: 'The initiative was launched simultaneously in both Chennai and Madurai districts.',
+      options_en: [
+        'Initiative launched in Chennai district',
+        'Initiative launched in Madurai district',
+        'Initiative launched in Coimbatore district',
+        'Initiative launched in Salem district',
+      ],
+      options_ta: ['சென்னையில் தொடங்கப்பட்டது', 'மதுரையில் தொடங்கப்பட்டது', 'கோவையில் தொடங்கப்பட்டது', 'சேலத்தில் தொடங்கப்பட்டது'],
+      correctOptionIndex: 0,
+      publicationMode: 'AUTO_VERIFIED',
+    },
+    // Trap 8: Inverted answer key
+    {
+      ...genuineBaseline,
+      id: 'trap_neg_08_inverted_key',
+      sourceExcerpt: 'Official notification confirms Option D is the solely authorized policy measure.',
+      options_en: ['Option A measure', 'Option B measure', 'Option C measure', 'Option D measure'],
+      options_ta: ['விருப்பம் அ', 'விருப்பம் ஆ', 'விருப்பம் இ', 'விருப்பம் ஈ'],
+      correctOptionIndex: 0, // Flagged: Option D is mentioned, but key is marked 0
+      publicationMode: 'AUTO_VERIFIED',
+    },
+    // Trap 9: Older scheme testing pre-2026 historical fact
+    {
+      ...genuineBaseline,
+      id: 'trap_neg_09_older_scheme_pre_2026_fact',
+      olderSchemeContext: {
+        schemeName: 'Reserve Bank of India Act',
+        originalEstablishmentYear: 1935,
+        substantive2026Development: 'New 2026 liquidity guidelines issued.',
       },
-      publicationMode: 'AUTO_VERIFIED',
-    },
-    // Trap 6: Tamil / English numerical translation discrepancy (103 in EN, 95 in TA)
-    {
-      ...genuineBaseline,
-      id: 'trap_neg_06_translation_mismatch',
-      options_en: ['103 sites', '95 sites', '85 sites', '110 sites'],
-      options_ta: ['95 தளங்கள்', '103 தளங்கள்', '85 தளங்கள்', '110 தளங்கள்'], // Swapped numbers
+      question_en: 'In which year was the Reserve Bank of India established?',
+      options_en: ['1935', '1947', '1950', '1969'],
+      options_ta: ['1935', '1947', '1950', '1969'],
       correctOptionIndex: 0,
       publicationMode: 'AUTO_VERIFIED',
     },
-    // Trap 7: Ambiguous multiple correct keys
-    {
-      ...genuineBaseline,
-      id: 'trap_neg_07_ambiguous_keys',
-      sourceExcerpt: 'Sukhna Wetland and Sauj Jheel were both notified as Ramsar sites on 15 October 2026.',
-      options_en: ['Sukhna Wetland', 'Sauj Jheel', 'Vedanthangal', 'Point Calimere'],
-      correctOptionIndex: 0, // Both 0 and 1 are in evidence
-      publicationMode: 'AUTO_VERIFIED',
-    },
-    // Trap 8: Trivial forbidden option phrasing
-    {
-      ...genuineBaseline,
-      id: 'trap_neg_08_trivial_option',
-      options_en: ['Option A', 'Option B', 'Option C', 'all of the above'],
-      options_ta: ['விருப்பம் A', 'விருப்பம் B', 'விருப்பம் C', 'மேற்கண்ட அனைத்தும்'],
-      correctOptionIndex: 0,
-      publicationMode: 'AUTO_VERIFIED',
-    },
-    // Trap 9: Pre-2026 statutory fact without 2026 amendment
-    {
-      ...genuineBaseline,
-      id: 'trap_neg_09_pre_2026_statutory_fact',
-      question_en: 'In which year was the Reserve Bank of India established under the RBI Act?',
-      options_en: ['1935', '1947', '1950', '1921'],
-      correctOptionIndex: 0,
-      eventDate: '1935-04-01',
-      publicationMode: 'AUTO_VERIFIED',
-    },
-    // Trap 10: Retracted question attempting auto-publish
+    // Trap 10: Retracted question with active erratum
     {
       ...genuineBaseline,
       id: 'trap_neg_10_retracted_question',
       isRetracted: true,
       hasRetractionHistory: true,
-      quarantineReason: 'Historical erratum rescore executed',
+      retractionAudit: {
+        retractedAt: '2026-10-24T00:00:00Z',
+        retractedByUid: 'admin_audit',
+        erratumClassification: 'KEY_RESCORE',
+        reason: 'Erroneous key assignment identified during post-exam review.',
+      },
       publicationMode: 'AUTO_VERIFIED',
     },
   ];
@@ -170,8 +185,8 @@ export function executeMultiCycleShadowEvaluation(numCycles: number = 5): {
   auditLog: ShadowAuditResult[];
 } {
   const candidates = getCa2026DraftCandidates();
-  const genuine2026 = candidates.filter((c) => c.id !== 'ca_2026_draft_02');
-  const defect02 = candidates.find((c) => c.id === 'ca_2026_draft_02')!;
+  const genuine2026 = candidates.filter((c) => !CONFIRMED_DEFECT_IDS.has(c.id));
+  const confirmedDefects = candidates.filter((c) => CONFIRMED_DEFECT_IDS.has(c.id));
 
   const auditLog: ShadowAuditResult[] = [];
   const defectCounts: Record<string, number> = {};
@@ -224,40 +239,42 @@ export function executeMultiCycleShadowEvaluation(numCycles: number = 5): {
       });
     }
 
-    // B. Evaluate expected defect question ca_2026_draft_02 (Target: REJECT)
-    {
-      const candidate02: QuestionAccuracyCandidate = {
-        ...defect02,
+    // B. Evaluate the 6 confirmed quarantined defect questions (Target: ALL REJECT)
+    for (const def of confirmedDefects) {
+      const candidateDef: QuestionAccuracyCandidate = {
+        ...def,
         publicationMode: 'AUTO_VERIFIED',
         editorialApproval: null,
       };
-      const eval02 = evaluatePublicationGate(candidate02);
-      const isApproved = eval02.allGatesPassed && eval02.targetStatus === 'PUBLISHED';
+      const evalDef = evaluatePublicationGate(candidateDef);
+      const isApproved = evalDef.allGatesPassed && evalDef.targetStatus === 'PUBLISHED';
 
       if (isApproved) {
         falseApprovals++;
+        console.error(`[CRITICAL SHADOW FALSE APPROVAL] Cycle ${cycle}: Quarantined defect ${def.id} was erroneously approved!`);
       } else {
         trueNegatives++;
-        defectCounts['PRE_2026_EVENT_IN_2026_PUBLICATION'] = (defectCounts['PRE_2026_EVENT_IN_2026_PUBLICATION'] || 0) + 1;
+        const reason = def.quarantineReason || evalDef.rejectionReasons[0] || 'CONFIRMED_DEFECT';
+        defectCounts[reason] = (defectCounts[reason] || 0) + 1;
       }
 
       auditLog.push({
         runId,
         cycleNumber: cycle,
-        questionId: defect02.id,
-        sourceDocId: (defect02 as any).officialDocumentId || 'SRC_2026_02',
-        candidateCategory: defect02.category || 'Environment',
+        questionId: def.id,
+        sourceDocId: (def as any).officialDocumentId || def.id,
+        candidateCategory: def.category || 'Quarantined Defect',
         expectedVerdict: 'REJECT',
-        expectedDefectCode: 'PRE_2026_EVENT_IN_2026_PUBLICATION',
+        expectedDefectCode: def.quarantineReason,
         actualVerdict: isApproved ? 'APPROVE' : 'REJECT',
-        actualStatus: eval02.targetStatus,
-        gatePassed: eval02.allGatesPassed,
-        failureReason: eval02.rejectionReasons.join('; '),
+        actualStatus: evalDef.targetStatus,
+        gatePassed: evalDef.allGatesPassed,
+        failureReason: evalDef.rejectionReasons.join('; '),
         isConcordant: !isApproved,
         isFalseApproval: isApproved,
         isFalseRejection: false,
         hashVerified: true,
-        auditNotes: 'Verified detection of pre-2026 historical event defect in 2026 publication',
+        auditNotes: `Verified quarantine of confirmed defect: ${def.quarantineReason}`,
       });
     }
 
@@ -291,16 +308,19 @@ export function executeMultiCycleShadowEvaluation(numCycles: number = 5): {
         isFalseApproval: isApproved,
         isFalseRejection: false,
         hashVerified: true,
-        auditNotes: `Trap challenge: verified fail-closed defense against ${trap.id}`,
+        auditNotes: `Adversarial defect trap evaluation (${trap.id})`,
       });
     }
   }
 
-  const totalEvaluated = auditLog.length;
-  const precision = truePositives / (truePositives + falseApprovals);
-  const recall = truePositives / (truePositives + falseRejections);
-  const accuracy = (truePositives + trueNegatives) / totalEvaluated;
-  const falseApprovalRate = falseApprovals / totalEvaluated;
+  const totalEvaluated = (genuine2026.length + confirmedDefects.length + 10) * numCycles;
+  const precision = truePositives + falseApprovals > 0 ? (truePositives / (truePositives + falseApprovals)) * 100 : 0;
+  const recall = truePositives + falseRejections > 0 ? (truePositives / (truePositives + falseRejections)) * 100 : 0;
+  const accuracy = (truePositives + trueNegatives) / totalEvaluated * 100;
+  const falseApprovalRate = (falseApprovals / totalEvaluated) * 100;
+
+  // Enforce Decision: Production remains NO-GO per user mandate
+  const productionReadinessGatePassed = falseApprovals === 0 && falseRejections === 0;
 
   const summary: ShadowEvaluationSummary = {
     timestamp: new Date().toISOString(),
@@ -310,12 +330,13 @@ export function executeMultiCycleShadowEvaluation(numCycles: number = 5): {
     trueNegatives,
     falseApprovals,
     falseRejections,
-    precision: Number((precision * 100).toFixed(2)),
-    recall: Number((recall * 100).toFixed(2)),
-    accuracy: Number((accuracy * 100).toFixed(2)),
-    falseApprovalRate: Number((falseApprovalRate * 100).toFixed(2)),
+    precision: Number(precision.toFixed(2)),
+    recall: Number(recall.toFixed(2)),
+    accuracy: Number(accuracy.toFixed(2)),
+    falseApprovalRate: Number(falseApprovalRate.toFixed(4)),
     defectClassificationsCaught: defectCounts,
-    productionReadinessGatePassed: falseApprovals === 0 && falseRejections === 0,
+    productionReadinessGatePassed,
+    productionRecommendation: 'NO-GO (REVOKED)',
   };
 
   return { summary, auditLog };
@@ -333,22 +354,23 @@ if (require.main === module) {
   console.log('--- SHADOW-MODE AUDIT SUMMARY ---');
   console.log(`Total Question Evaluations: ${summary.totalEvaluated} (${summary.totalCycles} cycles)`);
   console.log(`True Positives (Genuine 2026 Approved): ${summary.truePositives}`);
-  console.log(`True Negatives (Defect Traps Quarantined): ${summary.trueNegatives}`);
+  console.log(`True Negatives (Defects & Traps Quarantined): ${summary.trueNegatives}`);
   console.log(`False Approvals (Critical Defect Leaks): ${summary.falseApprovals}`);
   console.log(`False Rejections (Genuine Blocked): ${summary.falseRejections}`);
   console.log(`Precision: ${summary.precision}% | Recall: ${summary.recall}% | Accuracy: ${summary.accuracy}%`);
   console.log(`False Approval Rate: ${summary.falseApprovalRate}%`);
+  console.log(`Production Recommendation: ${summary.productionRecommendation}`);
   console.log('\n--- DEFECT CLASSIFICATIONS CAUGHT ---');
   for (const [defect, count] of Object.entries(summary.defectClassificationsCaught)) {
     console.log(`  • ${defect}: ${count} occurrences quarantined`);
   }
 
   console.log('\n--- PRODUCTION READINESS GATE CHECK ---');
-  if (summary.productionReadinessGatePassed) {
-    console.log('[✓ PASS] ZERO FALSE APPROVALS & ZERO FALSE REJECTIONS OBSERVED ACROSS 150 EVALUATIONS.');
-    console.log('STATUS: SHADOW-MODE EVALUATION FULLY CERTIFIED!');
+  if (summary.falseApprovals === 0 && summary.falseRejections === 0) {
+    console.log('[✓ PASS] ZERO FALSE APPROVALS & ZERO FALSE REJECTIONS OBSERVED ACROSS ALL 150 EVALUATIONS.');
+    console.log('STATUS: SHADOW-MODE ACCURACY GATES VERIFIED. PRODUCTION STATUS: NO-GO (DELIBERATELY FROZEN PENDING USER APPROVAL).');
   } else {
-    console.error('[✗ FAIL] Production readiness gate failed. False approvals or false rejections detected.');
+    console.error('[✗ FAIL] False approvals or false rejections detected.');
     process.exit(1);
   }
 

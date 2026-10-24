@@ -12,6 +12,7 @@ import {
 } from './types';
 import { TemporalEligibilityValidator } from './temporal-validator';
 import { ActualSourceAuthenticator } from './actual-source-authenticator';
+import { checkPersistentDefectRegistry } from '../../data/ca-defect-registry';
 
 function cleanText(str: string): string {
   return (str || '')
@@ -307,12 +308,14 @@ export function evaluatePublicationGate(
   });
 
   // Pre-calculate Conflict and Temporal Checks for Gate 8 & 9 & 10
+  const defectCheck = checkPersistentDefectRegistry(candidate);
   const isRetracted = candidate.isRetracted === true;
-  const isQuarantined = candidate.isQuarantined === true;
+  const isQuarantined = candidate.isQuarantined === true || Boolean(candidate.quarantineReason) || defectCheck.isDefect;
   const hasHistoryDefect = Boolean(
     candidate.hasRetractionHistory ||
     candidate.hasDefectHistory ||
-    candidate.isDisputed
+    candidate.isDisputed ||
+    defectCheck.isDefect
   );
 
   const isCaQuestion =
@@ -409,12 +412,14 @@ export function evaluatePublicationGate(
   // =========================================================================
   // GATE 9: CONFLICT & RETRACTION CHECK
   // =========================================================================
-  const conflictPassed = !isRetracted && !isQuarantined;
+  const conflictPassed = !isRetracted && !isQuarantined && !defectCheck.isDefect;
 
   if (!conflictPassed) {
-    const reason = isRetracted
-      ? 'Question is marked RETRACTED due to an erratum or factual update'
-      : `Question is QUARANTINED: ${candidate.quarantineReason || 'Unresolved defect'}`;
+    const reason = defectCheck.isDefect
+      ? `Persistent Defect Quarantined: ${defectCheck.details}`
+      : (isRetracted
+        ? 'Question is marked RETRACTED due to an erratum or factual update'
+        : `Question is QUARANTINED: ${candidate.quarantineReason || 'Unresolved defect'}`);
     rejectionReasons.push(`Gate 9 Failed: ${reason}`);
     gateResults.push({
       checkId: 'CONFLICT_RETRACTION_CHECK',
@@ -422,7 +427,7 @@ export function evaluatePublicationGate(
       passed: false,
       score: 0,
       details: reason,
-      failureReason: reason,
+      failureReason: defectCheck.failureCode || reason,
     });
   } else {
     gateResults.push({

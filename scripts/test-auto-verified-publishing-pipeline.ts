@@ -184,10 +184,17 @@ async function runAutoVerifiedPipelineTests() {
   // -------------------------------------------------------------------------
   console.log('\n--- TEST 4: Dynamic Daily Edition Sizing (10–15 MCQs) ---');
 
-  // Filter authentic 2026 candidates (excluding pre-2026 rejected ca_2026_draft_02)
+  // Filter authentic 2026 candidates (excluding all 6 confirmed quarantined defects)
+  const CONFIRMED_DEFECT_SET = new Set([
+    'ca_2026_draft_02',
+    'ca_2026_draft_03',
+    'ca_2026_draft_08',
+    'ca_2026_draft_14',
+    'ca_2026_draft_17',
+    'ca_2026_draft_19',
+  ]);
   const verified2026Candidates = draftCandidates
-    .filter((c) => c.id !== 'ca_2026_draft_02')
-    .slice(0, 14) // Simulate 14 authentic passing MCQs
+    .filter((c) => !CONFIRMED_DEFECT_SET.has(c.id))
     .map((c) => ({
       ...c,
       publicationMode: 'AUTO_VERIFIED' as const,

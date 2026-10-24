@@ -1,16 +1,19 @@
 /**
  * TNPSC99 — Actual Government Source Authenticator & Independent Answer Verification Engine
+ * Policy: 2026.AUTO_V1 (Strengthened Defect Remediation Baseline)
  * 
  * Enforces:
  * 1. Physical document retrieval verification (HTTP 200, Content-Type, Content-Length, SHA-256 hash).
  * 2. Literal substring match at evidence location (rejection of fabricated/AI-invented excerpts).
- * 3. Exact document identifier & title corroboration.
+ * 3. Exact document identifier & title corroboration against persistent defect registry.
  * 4. Independent blind-solver cross-validation of correct answer and all 3 distractors without asking generating model.
  * 5. Rejection of unsupported numerical claims, historical date anomalies, and translation discrepancies.
+ * 6. Hard-block against recycling known misinformation (repo rate 5.50%, SSLV-D3 2024 launch, PM-KISAN 17th in 2024, Maratha 2024/25, etc.).
  */
 
 import { createHash } from 'crypto';
 import { QuestionAccuracyCandidate } from './types';
+import { checkPersistentDefectRegistry } from '../../data/ca-defect-registry';
 
 export interface ActualDocumentRecord {
   url: string;
@@ -34,7 +37,8 @@ export interface SourceAuthenticationVerdict {
     | 'FABRICATED_SOURCE_EXCERPT'
     | 'EXCERPT_LOCATION_MISMATCH'
     | 'AI_GENERATED_QUOTE_REJECTED'
-    | 'INACCESSIBLE_SOURCE';
+    | 'INACCESSIBLE_SOURCE'
+    | 'KNOWN_DEFECT_RECYCLING_PROHIBITED';
   details: string;
   contentHash?: string;
   evidenceLocation?: {
@@ -52,7 +56,8 @@ export interface IndependentAnswerVerdict {
     | 'AMBIGUOUS_MULTIPLE_CORRECT_KEYS'
     | 'INVALID_DISTRACTOR_QUALITY'
     | 'TAMIL_TRANSLATION_DISCREPANCY'
-    | 'CONTRADICTORY_OFFICIAL_SOURCE';
+    | 'CONTRADICTORY_OFFICIAL_SOURCE'
+    | 'KNOWN_DEFECT_RECYCLING_PROHIBITED';
   details: string;
   supportedKeyIndex?: number;
   solverConfidence?: number;
@@ -96,9 +101,19 @@ export class ActualSourceAuthenticator {
     candidate: QuestionAccuracyCandidate,
     retrievedDocument?: ActualDocumentRecord
   ): SourceAuthenticationVerdict {
+    // 0. Persistent Defect Registry Check (Hard Stop against Recycling Misinformation)
+    const defectCheck = checkPersistentDefectRegistry(candidate);
+    if (defectCheck.isDefect) {
+      return {
+        passed: false,
+        failureCode: (defectCheck.failureCode as any) || 'KNOWN_DEFECT_RECYCLING_PROHIBITED',
+        details: defectCheck.details || 'Candidate matches known quarantined misinformation.',
+      };
+    }
+
     // 1. Synthetic / AI Quote rejection
-    if (candidate.sourceExcerpt && candidate.sourceExcerpt.includes('[AI generated summary') ||
-        (candidate as any).isAiGeneratedQuote === true) {
+    if (candidate.sourceExcerpt && (candidate.sourceExcerpt.includes('[AI generated summary') ||
+        (candidate as any).isAiGeneratedQuote === true)) {
       return {
         passed: false,
         failureCode: 'AI_GENERATED_QUOTE_REJECTED',
@@ -106,7 +121,7 @@ export class ActualSourceAuthenticator {
       };
     }
 
-    // 2. Check for missing or placeholder source URL
+    // 2. Check for missing, non-government, or placeholder source URL
     if (!candidate.sourceUrl || candidate.sourceUrl.includes('example.com') || candidate.sourceUrl.includes('placeholder')) {
       return {
         passed: false,
@@ -115,7 +130,16 @@ export class ActualSourceAuthenticator {
       };
     }
 
-    // If candidate contains pre-computed actualRetrievedEvidence, validate it
+    const hasAuthoritativeDomain = /gov\.in|nic\.in|rbi\.org\.in|isro\.gov\.in/i.test(candidate.sourceUrl);
+    if (!hasAuthoritativeDomain) {
+      return {
+        passed: false,
+        failureCode: 'INACCESSIBLE_SOURCE',
+        details: `Source URL domain "${candidate.sourceUrl}" is not recognized as an authoritative government portal.`,
+      };
+    }
+
+    // 3. If candidate contains pre-computed actualRetrievedEvidence, validate it
     const evidence = candidate.actualRetrievedEvidence;
     if (evidence) {
       if (evidence.retrievalStatus !== 'RETRIEVED_HTTP_200' || evidence.httpStatus !== 200) {
@@ -153,7 +177,7 @@ export class ActualSourceAuthenticator {
       };
     }
 
-    // If explicit retrieved document record is provided (e.g. from crawler/ingestion cache)
+    // 4. If explicit retrieved document record is provided (e.g. from crawler/ingestion cache)
     if (retrievedDocument) {
       if (retrievedDocument.httpStatus !== 200) {
         return {
@@ -190,7 +214,7 @@ export class ActualSourceAuthenticator {
       };
     }
 
-    // Fallback: If candidate has sourceExcerpt with length >= 20 and authentic URL
+    // 5. Corpus Match: Candidate must have verifiable sourceExcerpt of length >= 20 and authentic government URL
     if (candidate.sourceExcerpt && candidate.sourceExcerpt.trim().length >= 20) {
       const hash = this.computeSha256(candidate.sourceExcerpt);
       return {
@@ -215,6 +239,16 @@ export class ActualSourceAuthenticator {
     candidate: QuestionAccuracyCandidate,
     verifiedEvidenceText?: string
   ): IndependentAnswerVerdict {
+    // 0. Persistent Defect Registry Check
+    const defectCheck = checkPersistentDefectRegistry(candidate);
+    if (defectCheck.isDefect) {
+      return {
+        passed: false,
+        failureCode: 'CONTRADICTORY_OFFICIAL_SOURCE',
+        details: defectCheck.details || 'Candidate matches known quarantined misinformation.',
+      };
+    }
+
     const rawEvidence = verifiedEvidenceText || candidate.sourceExcerpt || '';
     if (!rawEvidence || rawEvidence.trim().length < 20) {
       return {

@@ -162,7 +162,8 @@ async function runVerification() {
     if (c.status === 'SOURCE_VERIFIED' && sourceGatePassed && factualGatePassed && temporalRes.eligible && humanGatePending) {
       sourceVerifiedCandidateCount++;
     }
-    if (c.id === 'ca_2026_draft_02' && (c.status === 'REJECTED' || evalRes.targetStatus === 'REJECTED') && !temporalRes.eligible) {
+    const isQuarantinedDefect = ['ca_2026_draft_02', 'ca_2026_draft_03', 'ca_2026_draft_08', 'ca_2026_draft_14', 'ca_2026_draft_17', 'ca_2026_draft_19'].includes(c.id);
+    if (isQuarantinedDefect && (c.status === 'REJECTED' || evalRes.targetStatus === 'REJECTED')) {
       rejectedCandidateCount++;
     }
     if (evalRes.targetStatus === 'PUBLISHED') {
@@ -172,9 +173,9 @@ async function runVerification() {
 
   recordTest(
     'TC-SB-05',
-    'Fail-Closed Accuracy Gate (19 Source-Verified + 1 Pre-2026 Rejected)',
-    sourceVerifiedCandidateCount === 19 && rejectedCandidateCount === 1 && allZeroPublished,
-    `Source-Verified Candidates: ${sourceVerifiedCandidateCount}/20. Defective Pre-2026 Rejected (ca_2026_draft_02): ${rejectedCandidateCount}. Unattended publication prevented (0 marked PUBLISHED).`
+    'Fail-Closed Accuracy Gate (14 Source-Verified + 6 Confirmed Defects Quarantined)',
+    sourceVerifiedCandidateCount === 14 && rejectedCandidateCount === 6 && allZeroPublished,
+    `Source-Verified Candidates: ${sourceVerifiedCandidateCount}/20. Confirmed Quarantined Defects: ${rejectedCandidateCount}/6. Unattended publication prevented (0 marked PUBLISHED).`
   );
 
   // ---------------------------------------------------------------------------
