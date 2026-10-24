@@ -6,12 +6,12 @@ runConfig:
 
 env:
   - variable: NEXT_PUBLIC_RAZORPAY_KEY_ID
-    value: rzp_live_T2lZIXOSc8dXuA
+    value: rzp_test_tnpsc99_staging
     availability: [BUILD, RUNTIME]
   - variable: FIREBASE_PROJECT_ID
-    value: studio-5029416251-928dd
+    value: tnpsc99-staging
   - variable: FIREBASE_CLIENT_EMAIL
-    value: firebase-adminsdk-fbsvc@studio-5029416251-928dd.iam.gserviceaccount.com
+    value: staging-runner@tnpsc99-staging.iam.gserviceaccount.com
   - variable: FIREBASE_PRIVATE_KEY
     secret: FIREBASE_PRIVATE_KEY
   - variable: RAZORPAY_KEY_SECRET

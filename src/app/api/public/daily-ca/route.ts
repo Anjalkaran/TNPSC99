@@ -1,16 +1,8 @@
 import { NextResponse } from 'next/server';
-import { initializeApp, getApps } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
+import { db } from '@/firebase/admin';
 import { PublicSampleTestPackage } from '@/data/public-sample-questions';
 
-// Initialize Firebase Admin if available in runtime
-if (!getApps().length) {
-  try {
-    initializeApp();
-  } catch {
-    // Emulator or build fallback
-  }
-}
+export const dynamic = 'force-dynamic';
 
 /**
  * Public Dynamic Current Affairs API
@@ -20,7 +12,9 @@ if (!getApps().length) {
  */
 export async function GET() {
   try {
-    const db = getFirestore();
+    if (!db) {
+      throw new Error('Database instance is unavailable');
+    }
     
     // Query for latest published daily manifest
     const manifestsSnap = await db
@@ -175,6 +169,7 @@ export async function GET() {
       }
     });
   } catch (err: any) {
+    console.error('[daily-ca API internal error]:', err?.message || err);
     // Fail-closed fallback: if database is unreachable or offline, report review status
     return NextResponse.json({
       hasApprovedEdition: false,
