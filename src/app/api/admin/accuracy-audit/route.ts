@@ -102,7 +102,7 @@ export async function GET(req: NextRequest) {
             isRetracted: d.isRetracted === true || d.status === 'RETRACTED',
             isQuarantined: d.isQuarantined === true || d.isRetracted === true,
             quarantineReason: d.retractionReason || d.quarantineReason || existing?.quarantineReason,
-            editorialApproval: d.isRetracted
+            editorialApproval: d.isRetracted || d.isQuarantined || d.status === 'REJECTED'
               ? null
               : {
                   approvedBy: 'tnpsc99_editorial_lead_uid_certified',

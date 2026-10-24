@@ -14,6 +14,7 @@ import { evaluatePublicationGate } from './accuracy-engine';
 import {
   FREE_CURRENT_AFFAIRS_TEST,
   RETRACTED_CURRENT_AFFAIRS_QUESTIONS,
+  QUARANTINED_CURRENT_AFFAIRS_QUESTIONS,
   FREE_MOCK_TEST,
   FREE_TEXTBOOK_PRACTICE,
   PublicSampleQuestion
@@ -81,16 +82,43 @@ export class QuestionBankAuditor {
   }
 
   /**
-   * Retrieves all 40 distinct public sample questions across CA (8 verified + 2 retracted),
+   * Converts a quarantined PublicSampleQuestion into an audited candidate.
+   */
+  public static mapQuarantinedQuestionToCandidate(q: PublicSampleQuestion): QuestionAccuracyCandidate {
+    return {
+      id: q.id,
+      question_en: q.question_en,
+      question_ta: q.question_ta,
+      options_en: q.options_en,
+      options_ta: q.options_ta,
+      correctOptionIndex: q.correctOptionIndex,
+      explanation_en: q.explanation_en,
+      explanation_ta: q.explanation_ta,
+      sourceUrl: q.sourceUrl,
+      sourcePublisher: q.sourceRef,
+      sourceExcerpt: q.explanation_en,
+      textbookCitation: q.textbookCitation,
+      editorialApproval: null, // Revoked / Withheld
+      isRetracted: false,
+      isQuarantined: true,
+      quarantineReason: q.explanation_en,
+      quarantineNotes: 'Quarantined during Primary Source Evidence Lock due to historical temporal discrepancy or lack of canonical archived G.O. PDF',
+      status: 'REJECTED',
+    };
+  }
+
+  /**
+   * Retrieves all 40 distinct public sample questions across CA (0 active + 8 quarantined + 2 retracted),
    * Mock Test (20), and Textbook Practice (10).
    */
   public static getAllPublicSampleQuestions(): QuestionAccuracyCandidate[] {
     const ca = FREE_CURRENT_AFFAIRS_TEST.questions.map((q) => this.mapPublicQuestionToCandidate(q));
+    const quarantinedCa = QUARANTINED_CURRENT_AFFAIRS_QUESTIONS.map((q) => this.mapQuarantinedQuestionToCandidate(q));
     const retractedCa = RETRACTED_CURRENT_AFFAIRS_QUESTIONS.map((q) => this.mapRetractedQuestionToCandidate(q));
     const mock = FREE_MOCK_TEST.questions.map((q) => this.mapPublicQuestionToCandidate(q));
     const tb = FREE_TEXTBOOK_PRACTICE.questions.map((q) => this.mapPublicQuestionToCandidate(q));
 
-    return [...ca, ...retractedCa, ...mock, ...tb];
+    return [...ca, ...quarantinedCa, ...retractedCa, ...mock, ...tb];
   }
 
   /**
@@ -182,8 +210,8 @@ export class QuestionBankAuditor {
       cumulativeMilestones,
       quarantinedCount,
       automatedGatePassRate: `${automatedPassPercentage}%`,
-      factualAccuracyVerificationStatus: mutuallyExclusive.retracted > 0
-        ? `${totalDistinctQuestions - mutuallyExclusive.retracted} Verified / ${mutuallyExclusive.retracted} Retracted by Primary Source Reconciliation`
+      factualAccuracyVerificationStatus: mutuallyExclusive.retracted > 0 || quarantinedCount > 0
+        ? `${mutuallyExclusive.published} Verified (Syllabus) / ${quarantinedCount} Quarantined / ${mutuallyExclusive.retracted} Retracted by Primary Source Reconciliation`
         : 'Independently Verified by Primary Sources and Human Editorial Review',
       gateFailuresBreakdown: gateFailures,
     };

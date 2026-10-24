@@ -13,6 +13,7 @@ import { QuestionAccuracyCandidate, ErratumDefectClassification } from '../src/l
 import {
   FREE_CURRENT_AFFAIRS_TEST,
   RETRACTED_CURRENT_AFFAIRS_QUESTIONS,
+  QUARANTINED_CURRENT_AFFAIRS_QUESTIONS,
   FREE_MOCK_TEST,
   FREE_TEXTBOOK_PRACTICE
 } from '../src/data/public-sample-questions';
@@ -144,8 +145,17 @@ async function runTestSuite() {
   const activeCaQuestions = FREE_CURRENT_AFFAIRS_TEST.questions;
   const ca04Excluded = !activeCaQuestions.some((q) => q.id === 'ca_pub_04');
   const ca05Excluded = !activeCaQuestions.some((q) => q.id === 'ca_pub_05');
-  const activeCaCountIs8 = activeCaQuestions.length === 8;
+  const activeCaCountIs0 = activeCaQuestions.length === 0;
   const retractedCaCountIs2 = RETRACTED_CURRENT_AFFAIRS_QUESTIONS.length === 2;
+  const quarantinedCaCountIs8 = QUARANTINED_CURRENT_AFFAIRS_QUESTIONS.length === 8;
+
+  // Zero-question fail-closed fallback
+  const zeroEdition = DailyCaAccuracyGuard.processDailyEdition('2026-10-24', []);
+  const zeroEditionPass =
+    zeroEdition.hasApprovedEdition === false &&
+    zeroEdition.status === 'EDITORIAL_REVIEW_IN_PROGRESS' &&
+    zeroEdition.package === null &&
+    zeroEdition.verifiedCount === 0;
 
   // Dynamic Sizing with 6 of 10 verified
   const mixedCaCandidates: QuestionAccuracyCandidate[] = Array.from({ length: 10 }, (_, i) => {
@@ -174,8 +184,8 @@ async function runTestSuite() {
     partialEdition.package?.title_en.includes('6 Questions');
 
   recordTest('TC-03', 'Dynamic CA Sizing & Retraction Handling',
-    ca04Excluded && ca05Excluded && activeCaCountIs8 && retractedCaCountIs2 && partialSizingPass,
-    `ca_pub_04 Excluded: ${ca04Excluded}, ca_pub_05 Excluded: ${ca05Excluded}, Active CA Count: ${activeCaQuestions.length}, Retracted CA Count: ${retractedCaCountIs2}, Dynamic 6-Q Sizing: ${partialSizingPass}`
+    ca04Excluded && ca05Excluded && activeCaCountIs0 && retractedCaCountIs2 && quarantinedCaCountIs8 && zeroEditionPass && partialSizingPass,
+    `ca_pub_04 Excluded: ${ca04Excluded}, ca_pub_05 Excluded: ${ca05Excluded}, Active CA Count: ${activeCaQuestions.length}, Retracted CA Count: ${retractedCaCountIs2}, Quarantined CA Count: ${quarantinedCaCountIs8}, Zero-Q Fallback: ${zeroEditionPass}, Dynamic 6-Q Sizing: ${partialSizingPass}`
   );
 
   // -------------------------------------------------------------------------
@@ -187,9 +197,10 @@ async function runTestSuite() {
   const auditor = new QuestionBankAuditor();
   const { summary: auditSummary } = auditor.auditBatch(allPublicCandidates);
 
-  // Distinct count must equal exactly 40 (8 CA + 2 retracted CA + 20 Mock + 10 Textbook)
+  // Distinct count must equal exactly 40 (0 active CA + 8 quarantined CA + 2 retracted CA + 20 Mock + 10 Textbook)
   const distinctCountPass = auditSummary.totalDistinctQuestions === 40;
-  const publishedPass = auditSummary.mutuallyExclusiveStatuses.published === 38;
+  const publishedPass = auditSummary.mutuallyExclusiveStatuses.published === 30;
+  const rejectedPass = auditSummary.mutuallyExclusiveStatuses.rejected === 8;
   const retractedPass = auditSummary.mutuallyExclusiveStatuses.retracted === 2;
   const sumMatchesDistinct =
     auditSummary.mutuallyExclusiveStatuses.published +
@@ -201,8 +212,8 @@ async function runTestSuite() {
     auditSummary.mutuallyExclusiveStatuses.rejected === auditSummary.totalDistinctQuestions;
 
   recordTest('TC-04', 'Question Bank Audit (40 Distinct MCQs)',
-    distinctCountPass && publishedPass && retractedPass && sumMatchesDistinct,
-    `Total Distinct: ${auditSummary.totalDistinctQuestions}, Published: ${auditSummary.mutuallyExclusiveStatuses.published}, Retracted: ${auditSummary.mutuallyExclusiveStatuses.retracted}, Sum Matches: ${sumMatchesDistinct}`
+    distinctCountPass && publishedPass && rejectedPass && retractedPass && sumMatchesDistinct,
+    `Total Distinct: ${auditSummary.totalDistinctQuestions}, Published: ${auditSummary.mutuallyExclusiveStatuses.published}, Quarantined/Rejected: ${auditSummary.mutuallyExclusiveStatuses.rejected}, Retracted: ${auditSummary.mutuallyExclusiveStatuses.retracted}, Sum Matches: ${sumMatchesDistinct}`
   );
 
   // -------------------------------------------------------------------------
@@ -280,9 +291,9 @@ async function runTestSuite() {
 
   // Verify that cumulative milestones and mutually exclusive categories are distinct
   const cumulativeMilestonesDistinct =
-    auditSummary.cumulativeMilestones.passedSourceVerification === 38 &&
-    auditSummary.cumulativeMilestones.passedHumanEditorialApproval === 38 &&
-    auditSummary.cumulativeMilestones.activeStudentDeliverable === 38;
+    auditSummary.cumulativeMilestones.passedSourceVerification === 30 &&
+    auditSummary.cumulativeMilestones.passedHumanEditorialApproval === 30 &&
+    auditSummary.cumulativeMilestones.activeStudentDeliverable === 30;
 
   // Verify that automated gate rate is NOT labeled factual accuracy
   const automatedPassRateDistinct = typeof auditSummary.automatedGatePassRate === 'string';

@@ -447,7 +447,7 @@ export function FreeLearningHub() {
           {/* TAB CONTENT 1, 2, 3: QUESTION PACKAGES */}
           {(['current_affairs', 'mock_test', 'textbook'] as ActiveTab[]).map((tabKey) => {
             // Task 3: If current affairs edition is undergoing review, show transparent status instead of fabricating unapproved test
-            if (tabKey === 'current_affairs' && !isCaApproved) {
+            if (tabKey === 'current_affairs' && (!isCaApproved || questions.length === 0)) {
               return (
                 <TabsContent key={tabKey} value={tabKey} className="focus-visible:outline-none focus-visible:ring-0">
                   <Card className="border-border bg-card shadow-sm rounded-2xl overflow-hidden p-6 sm:p-10 text-center space-y-6">
