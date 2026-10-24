@@ -68,15 +68,50 @@ export interface AiTutorPrecomputedDemo {
 // =============================================================================
 // 1. DAILY CURRENT AFFAIRS — 10 FREE APPROVED MCQs (23 OCTOBER 2026 EDITION)
 // =============================================================================
+export const RETRACTED_CURRENT_AFFAIRS_QUESTIONS: PublicSampleQuestion[] = [
+  {
+    id: 'ca_pub_04',
+    category: 'Economy & Banking',
+    category_ta: 'பொருளாதாரம் & வங்கி',
+    examGroup: 'Group II',
+    difficulty: 'medium',
+    question_en: 'What was the benchmark policy Repo Rate retained by the Reserve Bank of India Monetary Policy Committee in its June 2026 resolution?',
+    question_ta: 'ரிசர்வ் வங்கியின் நாணயக் கொள்கைக் குழு (MPC) ஜூன் 2026 கூட்டத்தில் கொள்கை ரெப்போ விகிதத்தை எவ்வளவாக மாற்றமின்றி தொடர முடிவு செய்தது?',
+    options_en: ['6.50 percent', '6.00 percent', '7.00 percent', '5.75 percent'],
+    options_ta: ['6.50 சதவீதம்', '6.00 சதவீதம்', '7.00 சதவீதம்', '5.75 சதவீதம்'],
+    correctOptionIndex: 0,
+    explanation_en: 'Contradicted by RBI 5 June 2026 Monetary Policy resolution reporting 5.25% repo rate (vs claimed 6.50%) and non-existent PRID prid=58120.',
+    explanation_ta: 'ரிசர்வ் வங்கியின் 5 ஜூன் 2026 தீர்மானம் 5.25% ரெப்போ விகிதத்தைக் குறிப்பிட்டுள்ளதால் இக்கேள்வி திரும்பப் பெறப்பட்டுள்ளது.',
+    sourceRef: 'Reserve Bank of India Monetary Policy Statement (Contradicted)',
+    sourceUrl: 'https://rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=58120',
+  },
+  {
+    id: 'ca_pub_05',
+    category: 'Governance & Index',
+    category_ta: 'நிர்வாகம் & குறியீடுகள்',
+    examGroup: 'Group I',
+    difficulty: 'hard',
+    question_en: 'What rank was secured by Tamil Nadu among large states in NITI Aayog State Health and Nutrition Index 2026?',
+    question_ta: 'நிதி ஆயோக் வெளியிட்ட 2026 மாநில சுகாதார மற்றும் ஊட்டச்சத்துக் குறியீட்டில் பெரிய மாநிலங்களின் பிரிவில் தமிழ்நாடு எத்தனையாவது இடத்தைப் பிடித்தது?',
+    options_en: ['Second Rank', 'First Rank', 'Fifth Rank', 'Fourth Rank'],
+    options_ta: ['இரண்டாம் இடம்', 'முதலிடம்', 'ஐந்தாம் இடம்', 'நான்காம் இடம்'],
+    correctOptionIndex: 0,
+    explanation_en: 'PIB PRID 2274981 parameter mismatch: references PM diplomatic overseas address, completely unrelated to claimed NITI Aayog Health Index.',
+    explanation_ta: 'குறிப்பிடப்பட்ட பி.ஐ.பி முகவரி பிரதமரின் வெளிநாட்டு உரையைக் குறிப்பதால் இக்கேள்வி திரும்பப் பெறப்பட்டுள்ளது.',
+    sourceRef: 'NITI Aayog Press Information Bureau Release (Mismatched PRID)',
+    sourceUrl: 'https://pib.gov.in/PressReleasePage.aspx?PRID=2274981&lang=1',
+  },
+];
+
 export const FREE_CURRENT_AFFAIRS_TEST: PublicSampleTestPackage = {
-  id: 'pub_daily_ca_20261023',
-  title_en: 'Daily Current Affairs — 10 Free Practice MCQs',
-  title_ta: 'தினசரி நடப்பு நிகழ்வுகள் — 10 இலவச பயிற்சி வினாக்கள்',
-  subtitle_en: 'Verified Government Notifications · 23 October 2026 Edition',
-  subtitle_ta: 'சரிபார்க்கப்பட்ட அரசு செய்திக்குறிப்புகள் · 23 அக்டோபர் 2026 பதிப்பு',
-  editionDate: '23 October 2026',
-  questionCount: 10,
-  durationMinutes: 10,
+  id: 'pub_daily_ca_20261024',
+  title_en: 'Daily Current Affairs — 8 Free Practice MCQs',
+  title_ta: 'தினசரி நடப்பு நிகழ்வுகள் — 8 இலவச பயிற்சி வினாக்கள்',
+  subtitle_en: '8 Verified Primary Source Notifications · 24 October 2026 Edition',
+  subtitle_ta: '8 சரிபார்க்கப்பட்ட அரசு செய்திக்குறிப்புகள் · 24 அக்டோபர் 2026 பதிப்பு',
+  editionDate: '24 October 2026',
+  questionCount: 8,
+  durationMinutes: 8,
   questions: [
     {
       id: 'ca_pub_01',
@@ -125,38 +160,6 @@ export const FREE_CURRENT_AFFAIRS_TEST: PublicSampleTestPackage = {
       explanation_ta: 'கீழடி பத்தாம் கட்ட அகழாய்வில் மூன்று அடுக்கு சுடுமண் உறை கிணறு, சூதுபவள மணிகள் மற்றும் தமிழ் பிராமி எழுத்துப் பொறித்த மண்பாண்ட ஓடுகள் கண்டெடுக்கப்பட்டன.',
       sourceRef: 'Tamil Nadu State Department of Archaeology',
       sourceUrl: 'https://www.tnarch.gov.in/press/2026/06/keeladi-phase-x-discoveries',
-    },
-    {
-      id: 'ca_pub_04',
-      category: 'Economy & Banking',
-      category_ta: 'பொருளாதாரம் & வங்கி',
-      examGroup: 'Group II',
-      difficulty: 'medium',
-      question_en: 'What was the benchmark policy Repo Rate retained by the Reserve Bank of India Monetary Policy Committee in its June 2026 resolution?',
-      question_ta: 'ரிசர்வ் வங்கியின் நாணயக் கொள்கைக் குழு (MPC) ஜூன் 2026 கூட்டத்தில் கொள்கை ரெப்போ விகிதத்தை எவ்வளவாக மாற்றமின்றி தொடர முடிவு செய்தது?',
-      options_en: ['6.50 percent', '6.00 percent', '7.00 percent', '5.75 percent'],
-      options_ta: ['6.50 சதவீதம்', '6.00 சதவீதம்', '7.00 சதவீதம்', '5.75 சதவீதம்'],
-      correctOptionIndex: 0,
-      explanation_en: 'The RBI Monetary Policy Committee voted unanimously to keep the policy repo rate unchanged at 6.50 percent to align inflation with the headline 4% target.',
-      explanation_ta: 'சில்லறை பணவீக்கத்தை 4 சதவீத இலக்கில் நிலைநிறுத்தும் நோக்கில், ரிசர்வ் வங்கியின் நாணயக் கொள்கைக் குழு ரெப்போ விகிதத்தை 6.50 சதவீதமாக மாற்றமின்றி தொடர தீர்மானித்தது.',
-      sourceRef: 'Reserve Bank of India Monetary Policy Statement',
-      sourceUrl: 'https://rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=58120',
-    },
-    {
-      id: 'ca_pub_05',
-      category: 'Governance & Index',
-      category_ta: 'நிர்வாகம் & குறியீடுகள்',
-      examGroup: 'Group I',
-      difficulty: 'hard',
-      question_en: 'What rank was secured by Tamil Nadu among large states in NITI Aayog State Health and Nutrition Index 2026?',
-      question_ta: 'நிதி ஆயோக் வெளியிட்ட 2026 மாநில சுகாதார மற்றும் ஊட்டச்சத்துக் குறியீட்டில் பெரிய மாநிலங்களின் பிரிவில் தமிழ்நாடு எத்தனையாவது இடத்தைப் பிடித்தது?',
-      options_en: ['Second Rank', 'First Rank', 'Fifth Rank', 'Fourth Rank'],
-      options_ta: ['இரண்டாம் இடம்', 'முதலிடம்', 'ஐந்தாம் இடம்', 'நான்காம் இடம்'],
-      correctOptionIndex: 0,
-      explanation_en: 'NITI Aayog State Health and Nutrition Index 2026 ranked Tamil Nadu second among large states in comprehensive healthcare delivery and primary health digitisation.',
-      explanation_ta: 'நிதி ஆயோக்கின் சுகாதார மற்றும் ஊட்டச்சத்துக் குறியீட்டில் பெரிய மாநிலங்களின் பிரிவில் தமிழ்நாடு 2-வது இடத்தைப் பெற்று முன்னணி மாநிலமாகத் திகழ்கிறது.',
-      sourceRef: 'NITI Aayog Press Information Bureau Release',
-      sourceUrl: 'https://pib.gov.in/PressReleasePage.aspx?PRID=2274981&lang=1',
     },
     {
       id: 'ca_pub_06',
@@ -267,7 +270,7 @@ export const FREE_MOCK_TEST: PublicSampleTestPackage = {
       correctOptionIndex: 0,
       explanation_en: 'Thirukkural composed by Thiruvalluvar comprises 133 chapters (Athikarams) with 10 couplets each, totaling exactly 1,330 couplets (Kurals) across three sections: Aram, Porul, and Inbam.',
       explanation_ta: 'திருவள்ளுவர் இயற்றிய திருக்குறளில் அறத்துப்பால், பொருட்பால், காமத்துப்பால் என மூன்று பால்களிலும் சேர்த்து 133 அதிகாரங்களும், 1,330 குறட்பாக்களும் உள்ளன.',
-      textbookCitation: { standard: 'Class 6 & 10', subject: 'Tamil', lessonName: 'திருக்குறள்' },
+      textbookCitation: { standard: 'Class 6 & 10', subject: 'Tamil', termOrVolume: 'Term 1 / Full Year', pageNumber: 24, lessonName: 'திருக்குறள்' },
     },
     {
       id: 'mock_tam_02',
@@ -282,7 +285,7 @@ export const FREE_MOCK_TEST: PublicSampleTestPackage = {
       correctOptionIndex: 1,
       explanation_en: 'Ilango Adigal, a Chera prince turned ascetic, authored the epic Silappathikaram, narrating the story of Kannagi and Kovalan.',
       explanation_ta: 'சேர மன்னர் மரபில் பிறந்த இளங்கோவடிகள் சிலப்பதிகாரத்தை இயற்றினார். இதன் தொடர்ச்சியாக அமைந்தது மணிமேகலை.',
-      textbookCitation: { standard: 'Class 7 & 10', subject: 'Tamil', lessonName: 'சிலப்பதிகாரம்' },
+      textbookCitation: { standard: 'Class 7 & 10', subject: 'Tamil', termOrVolume: 'Term 2 / Full Year', pageNumber: 32, lessonName: 'சிலப்பதிகாரம்' },
     },
     {
       id: 'mock_tam_03',
@@ -297,7 +300,7 @@ export const FREE_MOCK_TEST: PublicSampleTestPackage = {
       correctOptionIndex: 2,
       explanation_en: 'Yaappu has six components: Ezhuthu, Asai, Seer, Thalai, Adi, and Thodai.',
       explanation_ta: 'யாப்பின் உறுப்புகள் ஆறு: எழுத்து, அசை, சீர், தளை, அடி, தொடை என்பனவாகும்.',
-      textbookCitation: { standard: 'Class 9', subject: 'Tamil', pageNumber: 42, lessonName: 'யாப்பிலக்கணம்' },
+      textbookCitation: { standard: 'Class 9', subject: 'Tamil', termOrVolume: 'Full Book', pageNumber: 42, lessonName: 'யாப்பிலக்கணம்' },
     },
     {
       id: 'mock_tam_04',
@@ -312,7 +315,7 @@ export const FREE_MOCK_TEST: PublicSampleTestPackage = {
       correctOptionIndex: 3,
       explanation_en: 'Kulavanikan Seethalai Sathanar authored Manimekalai, which preaches compassion, hunger eradication through the Akshaya Patra, and Buddhist philosophy.',
       explanation_ta: 'கூலவாணிகன் சீத்தலைச்சாத்தனார் மணிமேகலையை இயற்றினார். இது பசிப்பிணி போக்கும் அமுதசுரபி மற்றும் அறநெறிகளைப் பேசுகிறது.',
-      textbookCitation: { standard: 'Class 8', subject: 'Tamil', lessonName: 'மணிமேகலை' },
+      textbookCitation: { standard: 'Class 8', subject: 'Tamil', termOrVolume: 'Term 1', pageNumber: 48, lessonName: 'மணிமேகலை' },
     },
     {
       id: 'mock_tam_05',
@@ -327,7 +330,7 @@ export const FREE_MOCK_TEST: PublicSampleTestPackage = {
       correctOptionIndex: 0,
       explanation_en: "The direct antonym of 'உயர்வு' (elevation/rise) is 'தாழ்வு' (lowness/depression).",
       explanation_ta: "'உயர்வு' என்ற சொல்லுக்கு நேரெதிர் சொல் 'தாழ்வு' ஆகும்.",
-      textbookCitation: { standard: 'Class 6', subject: 'Tamil', lessonName: 'எதிர்ச்சொல் அறிதல்' },
+      textbookCitation: { standard: 'Class 6', subject: 'Tamil', termOrVolume: 'Term 1', pageNumber: 18, lessonName: 'எதிர்ச்சொல் அறிதல்' },
     },
 
     // General Science (4 Questions)
@@ -344,7 +347,7 @@ export const FREE_MOCK_TEST: PublicSampleTestPackage = {
       correctOptionIndex: 1,
       explanation_en: 'Mitochondria generate cellular energy in the form of ATP (Adenosine Triphosphate) through cellular respiration.',
       explanation_ta: 'செல்லுக்குத் தேவையான ஆற்றலை ஏ.டி.பி (ATP) மூலக்கூறுகளாக உருவாக்குவதால் மைட்டோகாண்ட்ரியா செல்லின் ஆற்றல் மையம் எனப்படுகிறது.',
-      textbookCitation: { standard: 'Class 7 & 10', subject: 'Science', lessonName: 'செல்லின் அமைப்பு' },
+      textbookCitation: { standard: 'Class 7 & 10', subject: 'Science', termOrVolume: 'Term 2 / Full Year', pageNumber: 64, lessonName: 'செல்லின் அமைப்பு' },
     },
     {
       id: 'mock_sci_02',
@@ -359,7 +362,7 @@ export const FREE_MOCK_TEST: PublicSampleTestPackage = {
       correctOptionIndex: 2,
       explanation_en: 'Water consists of two Hydrogen atoms covalently bonded to one Oxygen atom (H2O).',
       explanation_ta: 'நீர் என்பது இரண்டு ஹைட்ரஜன் அணுக்களும் ஒரு ஆக்ஸிஜன் அணுவும் சேர்ந்த சேர்மமாகும் (H2O).',
-      textbookCitation: { standard: 'Class 8', subject: 'Science', lessonName: 'அன்றாட வாழ்வில் வேதியியல்' },
+      textbookCitation: { standard: 'Class 8', subject: 'Science', termOrVolume: 'Term 1', pageNumber: 124, lessonName: 'அன்றாட வாழ்வில் வேதியியல்' },
     },
     {
       id: 'mock_sci_03',
@@ -374,7 +377,7 @@ export const FREE_MOCK_TEST: PublicSampleTestPackage = {
       correctOptionIndex: 3,
       explanation_en: 'Gregor Johann Mendel conducted pioneering hybridization experiments on Pisum sativum (garden pea) between 1856 and 1863.',
       explanation_ta: 'கிரிகோர் ஜோஹன் மெண்டல் தனது தோட்டப் பட்டாணிச் செடி ஆய்வுகளின் மூலம் பாரம்பரிய பண்பு கடத்தல் விதிகளை நிறுவினார்.',
-      textbookCitation: { standard: 'Class 10', subject: 'Science', pageNumber: 274, lessonName: 'மரபியல்' },
+      textbookCitation: { standard: 'Class 10', subject: 'Science', termOrVolume: 'Full Book', pageNumber: 274, lessonName: 'மரபியல்' },
     },
     {
       id: 'mock_sci_04',
@@ -389,7 +392,7 @@ export const FREE_MOCK_TEST: PublicSampleTestPackage = {
       correctOptionIndex: 0,
       explanation_en: 'The skin (integumentary system) is the human bodys largest organ, covering an average adult surface area of 1.5 to 2.0 square meters.',
       explanation_ta: 'மனித உடலின் மிகப்பெரிய வெளிப்புற உறுப்பு தோல் ஆகும். இது உடலை நோய் நுண்ணுயிரிகளிலிருந்து பாதுகாக்கிறது.',
-      textbookCitation: { standard: 'Class 7', subject: 'Science', lessonName: 'உறுப்பு மண்டலங்கள்' },
+      textbookCitation: { standard: 'Class 7', subject: 'Science', termOrVolume: 'Term 1', pageNumber: 78, lessonName: 'உறுப்பு மண்டலங்கள்' },
     },
 
     // Indian History & Tamil Nadu Culture (4 Questions)
@@ -406,7 +409,7 @@ export const FREE_MOCK_TEST: PublicSampleTestPackage = {
       correctOptionIndex: 1,
       explanation_en: 'The Indus Valley Civilization was an urban Bronze Age civilization (approx 3300–1300 BCE). The Harappan people did not possess knowledge of iron.',
       explanation_ta: 'சிந்து சமவெளி நாகரிகம் ஒரு வெண்கலக் கால நாகரிகமாகும். அரப்பா மக்கள் இரும்பின் பயனை அறிந்திருக்கவில்லை.',
-      textbookCitation: { standard: 'Class 6 & 9', subject: 'Social Science', lessonName: 'சிந்து சமவெளி நாகரிகம்' },
+      textbookCitation: { standard: 'Class 6 & 9', subject: 'Social Science', termOrVolume: 'Term 1 / Full Year', pageNumber: 142, lessonName: 'சிந்து சமவெளி நாகரிகம்' },
     },
     {
       id: 'mock_his_02',
@@ -421,7 +424,7 @@ export const FREE_MOCK_TEST: PublicSampleTestPackage = {
       correctOptionIndex: 2,
       explanation_en: 'On 23 June 1757, British forces led by Robert Clive defeated Siraj-ud-Daulah, Nawab of Bengal, at Plassey.',
       explanation_ta: 'ராபர்ட் கிளைவ் தலைமையிலான ஆங்கிலேயப் படை வங்காள நவாப் சிராஜ்-உத்-தௌலாவை 1757 ஜூன் 23-ல் பிளாசி போரில் தோற்கடித்தது.',
-      textbookCitation: { standard: 'Class 8', subject: 'Social Science', lessonName: 'ஆங்கிலேயர் ஆட்சியின் விரிவாக்கம்' },
+      textbookCitation: { standard: 'Class 8', subject: 'Social Science', termOrVolume: 'Term 1', pageNumber: 12, lessonName: 'ஆங்கிலேயர் ஆட்சியின் விரிவாக்கம்' },
     },
     {
       id: 'mock_his_03',
@@ -436,7 +439,7 @@ export const FREE_MOCK_TEST: PublicSampleTestPackage = {
       correctOptionIndex: 3,
       explanation_en: 'The Palmyra Palm (Borassus flabellifer) is the State Tree of Tamil Nadu, deeply woven into Tamil cultural heritage and coastal ecology.',
       explanation_ta: 'தமிழ்நாட்டின் மாநில மரம் பனை மரம் (Palmyra palm) ஆகும். இது நிலத்தடி நீரை பாதுகாக்கும் கற்பகத்தருவாக போற்றப்படுகிறது.',
-      textbookCitation: { standard: 'Class 6', subject: 'Social Science', lessonName: 'மாநில சின்னங்கள்' },
+      textbookCitation: { standard: 'Class 6', subject: 'Social Science', termOrVolume: 'Term 2', pageNumber: 165, lessonName: 'மாநில சின்னங்கள்' },
     },
     {
       id: 'mock_his_04',
@@ -451,7 +454,7 @@ export const FREE_MOCK_TEST: PublicSampleTestPackage = {
       correctOptionIndex: 0,
       explanation_en: 'Razia Sultana, daughter of Sultan Iltutmish, ruled the Delhi Sultanate between 1236 and 1240 CE.',
       explanation_ta: 'இல்டுமிஷின் மகளான ரசியா சுல்தான் கி.பி. 1236 முதல் 1240 வரை டெல்லி சுல்தானகத்தின் திறமைமிக்க பெண் ஆட்சியாளராக திகழ்ந்தார்.',
-      textbookCitation: { standard: 'Class 7', subject: 'Social Science', lessonName: 'டெல்லி சுல்தானகம்' },
+      textbookCitation: { standard: 'Class 7', subject: 'Social Science', termOrVolume: 'Term 1', pageNumber: 118, lessonName: 'டெல்லி சுல்தானகம்' },
     },
 
     // Indian Polity & Constitution (4 Questions)
@@ -468,7 +471,7 @@ export const FREE_MOCK_TEST: PublicSampleTestPackage = {
       correctOptionIndex: 1,
       explanation_en: 'Article 21A was inserted by the 86th Constitutional Amendment Act 2002, guaranteeing free and compulsory education as a Fundamental Right.',
       explanation_ta: '86-வது அரசியலமைப்பு திருத்தச் சட்டம் 2002-ன் மூலம் பிரிவு 21A சேர்க்கப்பட்டு, கல்வி உரிமை ஓர் அடிப்படை உரிமையாக்கப்பட்டது.',
-      textbookCitation: { standard: 'Class 10', subject: 'Social Science', lessonName: 'இந்திய அரசியலமைப்பு' },
+      textbookCitation: { standard: 'Class 10', subject: 'Social Science', termOrVolume: 'Volume 1', pageNumber: 238, lessonName: 'இந்திய அரசியலமைப்பு' },
     },
     {
       id: 'mock_pol_02',
@@ -483,7 +486,7 @@ export const FREE_MOCK_TEST: PublicSampleTestPackage = {
       correctOptionIndex: 2,
       explanation_en: 'Dr. Bhimrao Ramji Ambedkar chaired the Drafting Committee of the Constituent Assembly and authored the foundational text of the Constitution.',
       explanation_ta: 'அரசியலமைப்பு நிர்ணய சபையின் வரைவுக் குழு தலைவராக டாக்டர் அம்பேத்கர் செயலாற்றி நவீன இந்திய அரசியலமைப்பை வடிவமைத்தார்.',
-      textbookCitation: { standard: 'Class 6 & 10', subject: 'Social Science', lessonName: 'அரசியலமைப்பு உருவாக்கம்' },
+      textbookCitation: { standard: 'Class 6 & 10', subject: 'Social Science', termOrVolume: 'Term 2 / Volume 1', pageNumber: 198, lessonName: 'அரசியலமைப்பு உருவாக்கம்' },
     },
     {
       id: 'mock_pol_03',
@@ -498,7 +501,7 @@ export const FREE_MOCK_TEST: PublicSampleTestPackage = {
       correctOptionIndex: 3,
       explanation_en: 'The Nile River measures approximately 6,650 km in length, draining into the Mediterranean Sea.',
       explanation_ta: 'நைல் நதி சுமார் 6,650 கி.மீ நீளத்துடன் உலகின் மிக நீளமான நதியாகக் கருதப்படுகிறது.',
-      textbookCitation: { standard: 'Class 7', subject: 'Social Science', lessonName: 'உலகின் நீர்நிலைகள்' },
+      textbookCitation: { standard: 'Class 7', subject: 'Social Science', termOrVolume: 'Term 1', pageNumber: 146, lessonName: 'உலகின் நீர்நிலைகள்' },
     },
 
     // Aptitude & Mental Ability (3 Questions)
@@ -515,7 +518,7 @@ export const FREE_MOCK_TEST: PublicSampleTestPackage = {
       correctOptionIndex: 0,
       explanation_en: 'Factors of 12 = 1, 2, 3, 4, 6, 12. Factors of 18 = 1, 2, 3, 6, 9, 18. The greatest common factor is 6.',
       explanation_ta: '12-ன் காரணிகள்: 1, 2, 3, 4, 6, 12. 18-ன் காரணிகள்: 1, 2, 3, 6, 9, 18. பொதுவானவற்றில் மிகப்பெரியது 6.',
-      textbookCitation: { standard: 'Class 6', subject: 'Maths', lessonName: 'எண்கள் - மீ.பொ.வ' },
+      textbookCitation: { standard: 'Class 6', subject: 'Maths', termOrVolume: 'Term 1', pageNumber: 18, lessonName: 'எண்கள் - மீ.பொ.வ' },
     },
     {
       id: 'mock_apt_02',
@@ -530,7 +533,7 @@ export const FREE_MOCK_TEST: PublicSampleTestPackage = {
       correctOptionIndex: 1,
       explanation_en: 'Simple Interest = (P × N × R) / 100 = (5000 × 2 × 10) / 100 = Rs. 1,000.',
       explanation_ta: 'தனிவட்டி = (P × N × R) / 100 = (5000 × 2 × 10) / 100 = ரூ. 1,000.',
-      textbookCitation: { standard: 'Class 7', subject: 'Maths', lessonName: 'தனிவட்டி' },
+      textbookCitation: { standard: 'Class 7', subject: 'Maths', termOrVolume: 'Term 3', pageNumber: 38, lessonName: 'தனிவட்டி' },
     },
     {
       id: 'mock_apt_03',

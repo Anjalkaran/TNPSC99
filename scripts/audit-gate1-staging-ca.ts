@@ -2,7 +2,7 @@ import * as admin from 'firebase-admin';
 import { execSync } from 'child_process';
 import * as fs from 'fs';
 
-const privateKey = execSync('gcloud secrets versions access latest --secret=FIREBASE_PRIVATE_KEY --project=tnpsc99-staging', { encoding: 'utf8' }).trim();
+const privateKey = execSync('gcloud.cmd secrets versions access latest --secret=FIREBASE_PRIVATE_KEY --project=tnpsc99-staging', { encoding: 'utf8' }).trim();
 
 if (!admin.apps.length) {
   admin.initializeApp({
@@ -44,4 +44,9 @@ async function runAudit() {
   }
 }
 
-runAudit().catch(console.error);
+runAudit()
+  .then(() => process.exit(0))
+  .catch(err => {
+    console.error(err);
+    process.exit(1);
+  });

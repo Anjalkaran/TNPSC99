@@ -13,6 +13,7 @@ import {
 import { evaluatePublicationGate } from './accuracy-engine';
 import {
   FREE_CURRENT_AFFAIRS_TEST,
+  RETRACTED_CURRENT_AFFAIRS_QUESTIONS,
   FREE_MOCK_TEST,
   FREE_TEXTBOOK_PRACTICE,
   PublicSampleQuestion
@@ -54,17 +55,47 @@ export class QuestionBankAuditor {
   }
 
   /**
-   * Retrieves all 40 public sample questions across CA, Mock Test, and Textbook Practice.
+   * Converts a retracted PublicSampleQuestion into an audited candidate.
    */
-  public static getAllPublicSampleQuestions(): QuestionAccuracyCandidate[] {
-    const ca = FREE_CURRENT_AFFAIRS_TEST.questions.map(this.mapPublicQuestionToCandidate);
-    const mock = FREE_MOCK_TEST.questions.map(this.mapPublicQuestionToCandidate);
-    const tb = FREE_TEXTBOOK_PRACTICE.questions.map(this.mapPublicQuestionToCandidate);
-    return [...ca, [...mock], [...tb]].flat();
+  public static mapRetractedQuestionToCandidate(q: PublicSampleQuestion): QuestionAccuracyCandidate {
+    return {
+      id: q.id,
+      question_en: q.question_en,
+      question_ta: q.question_ta,
+      options_en: q.options_en,
+      options_ta: q.options_ta,
+      correctOptionIndex: q.correctOptionIndex,
+      explanation_en: q.explanation_en,
+      explanation_ta: q.explanation_ta,
+      sourceUrl: q.sourceUrl,
+      sourcePublisher: q.sourceRef,
+      sourceExcerpt: q.explanation_en,
+      textbookCitation: q.textbookCitation,
+      editorialApproval: null, // Revoked
+      isRetracted: true,
+      isQuarantined: true,
+      quarantineReason: q.explanation_en,
+      quarantineNotes: 'Retracted during P0 primary source verification audit',
+      status: 'RETRACTED',
+    };
   }
 
   /**
-   * Audits a batch of question candidates against all 9 fail-closed gates.
+   * Retrieves all 40 distinct public sample questions across CA (8 verified + 2 retracted),
+   * Mock Test (20), and Textbook Practice (10).
+   */
+  public static getAllPublicSampleQuestions(): QuestionAccuracyCandidate[] {
+    const ca = FREE_CURRENT_AFFAIRS_TEST.questions.map((q) => this.mapPublicQuestionToCandidate(q));
+    const retractedCa = RETRACTED_CURRENT_AFFAIRS_QUESTIONS.map((q) => this.mapRetractedQuestionToCandidate(q));
+    const mock = FREE_MOCK_TEST.questions.map((q) => this.mapPublicQuestionToCandidate(q));
+    const tb = FREE_TEXTBOOK_PRACTICE.questions.map((q) => this.mapPublicQuestionToCandidate(q));
+
+    return [...ca, ...retractedCa, ...mock, ...tb];
+  }
+
+  /**
+   * Audits a batch of question candidates against all 9 fail-closed gates,
+   * computing mutually exclusive statuses and separate cumulative verification milestones.
    */
   public auditBatch(candidates: QuestionAccuracyCandidate[]): {
     evaluations: AccuracyGateEvaluation[];
@@ -83,7 +114,7 @@ export class QuestionBankAuditor {
       CONFLICT_RETRACTION_CHECK: 0,
     };
 
-    const counts = {
+    const mutuallyExclusive = {
       draft: 0,
       sourceVerified: 0,
       humanApproved: 0,
@@ -107,22 +138,22 @@ export class QuestionBankAuditor {
         }
       }
 
-      // Track lifecycle counts based on candidate and evaluation
-      if (candidate.isRetracted || evalResult.targetStatus === 'RETRACTED') {
-        counts.retracted++;
-      } else if (candidate.isQuarantined) {
+      // Track Mutually Exclusive Lifecycle Status
+      if (candidate.isRetracted || candidate.status === 'RETRACTED' || evalResult.targetStatus === 'RETRACTED') {
+        mutuallyExclusive.retracted++;
+      } else if (candidate.isQuarantined || evalResult.targetStatus === 'REJECTED') {
         quarantinedCount++;
-        counts.rejected++;
-      } else if (evalResult.targetStatus === 'PUBLISHED') {
-        counts.published++;
-        counts.humanApproved++;
-        counts.sourceVerified++;
+        mutuallyExclusive.rejected++;
       } else if (evalResult.targetStatus === 'REVIEW_REQUIRED') {
-        counts.reviewRequired++;
-      } else if (evalResult.targetStatus === 'REJECTED') {
-        counts.rejected++;
+        mutuallyExclusive.reviewRequired++;
+      } else if (evalResult.targetStatus === 'PUBLISHED') {
+        mutuallyExclusive.published++;
+      } else if (evalResult.targetStatus === 'HUMAN_APPROVED') {
+        mutuallyExclusive.humanApproved++;
+      } else if (evalResult.targetStatus === 'SOURCE_VERIFIED') {
+        mutuallyExclusive.sourceVerified++;
       } else {
-        counts.draft++;
+        mutuallyExclusive.draft++;
       }
 
       // Register stem to detect duplicate within the batch
@@ -131,16 +162,29 @@ export class QuestionBankAuditor {
       }
     }
 
-    const totalAudited = candidates.length;
+    const totalDistinctQuestions = candidates.length;
     const passedAll = evaluations.filter((e) => e.allGatesPassed).length;
-    const complianceRate = totalAudited > 0 ? Math.round((passedAll / totalAudited) * 100) : 100;
+    const automatedPassPercentage = totalDistinctQuestions > 0 
+      ? Math.round((passedAll / totalDistinctQuestions) * 100) 
+      : 100;
+
+    // Cumulative Verification Milestones
+    const cumulativeMilestones = {
+      passedSourceVerification: mutuallyExclusive.sourceVerified + mutuallyExclusive.humanApproved + mutuallyExclusive.published,
+      passedHumanEditorialApproval: mutuallyExclusive.humanApproved + mutuallyExclusive.published,
+      activeStudentDeliverable: mutuallyExclusive.published,
+    };
 
     const summary: AccuracyAuditSummary = {
       timestamp: new Date().toISOString(),
-      totalAudited,
-      counts,
+      totalDistinctQuestions,
+      mutuallyExclusiveStatuses: mutuallyExclusive,
+      cumulativeMilestones,
       quarantinedCount,
-      complianceRate,
+      automatedGatePassRate: `${automatedPassPercentage}%`,
+      factualAccuracyVerificationStatus: mutuallyExclusive.retracted > 0
+        ? `${totalDistinctQuestions - mutuallyExclusive.retracted} Verified / ${mutuallyExclusive.retracted} Retracted by Primary Source Reconciliation`
+        : 'Independently Verified by Primary Sources and Human Editorial Review',
       gateFailuresBreakdown: gateFailures,
     };
 

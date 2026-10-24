@@ -84,8 +84,8 @@ export interface QuestionAccuracyCandidate {
 
 export interface AccuracyAuditSummary {
   timestamp: string;
-  totalAudited: number;
-  counts: {
+  totalDistinctQuestions: number;
+  mutuallyExclusiveStatuses: {
     draft: number;
     sourceVerified: number;
     humanApproved: number;
@@ -94,9 +94,48 @@ export interface AccuracyAuditSummary {
     rejected: number;
     retracted: number;
   };
+  cumulativeMilestones: {
+    passedSourceVerification: number;
+    passedHumanEditorialApproval: number;
+    activeStudentDeliverable: number;
+  };
   quarantinedCount: number;
-  complianceRate: number; // Percentage meeting zero-compromise criteria
+  automatedGatePassRate: string; // e.g., "100%"
+  factualAccuracyVerificationStatus: string;
   gateFailuresBreakdown: Record<AccuracyGateCheckId, number>;
+}
+
+export type ErratumDefectClassification =
+  | 'INCORRECT_ANSWER_KEY'
+  | 'AMBIGUOUS_QUESTION'
+  | 'INVALID_QUESTION'
+  | 'TRANSLATION_DISCREPANCY'
+  | 'INCORRECT_CITATION_ONLY';
+
+export type ErratumRemedyType =
+  | 'KEY_RESCORE'
+  | 'ACCEPT_MULTIPLE_KEYS'
+  | 'FULL_MARKS_AWARDED'
+  | 'LANGUAGE_SPECIFIC_RESCORE'
+  | 'METADATA_UPDATE_ONLY';
+
+export interface ErratumRemedyApproval {
+  approvedByUid: string;
+  approvedAt: string;
+  remedyDecision: ErratumRemedyType;
+  rationale: string;
+}
+
+export interface ErratumScoreAdjustment {
+  attemptId: string;
+  userId: string;
+  originalScore: number;
+  adjustedScore: number;
+  erratumDelta: number;
+  incidentId: string;
+  remedyApplied: ErratumRemedyType;
+  appliedAt: string;
+  doubleCompensationPrevented: boolean;
 }
 
 export interface QuestionIncidentLog {
@@ -105,12 +144,16 @@ export interface QuestionIncidentLog {
   flaggedAt: string;
   reason: string;
   severity: 'CRITICAL' | 'HIGH' | 'MEDIUM';
+  defectClassification: ErratumDefectClassification;
+  remedyType: ErratumRemedyType;
   adminUid: string;
   previousKeyIndex: number;
   revisedKeyIndex?: number;
+  acceptedOptionIndexes?: number[];
   affectedAttemptsCount: number;
   affectedStudentsCount: number;
-  erratumActionTaken: 'FULL_MARKS_AWARDED' | 'TOTAL_SCORE_NORMALIZED' | 'QUESTION_VOIDED';
+  erratumActionTaken: string;
+  editorialApproval: ErratumRemedyApproval | null;
   mistakeVaultNeutralizedCount: number;
   reapprovalRequired: boolean;
   status: 'ACTIVE_RETRACTION' | 'RESOLVED_REPUBLISHED' | 'PERMANENTLY_QUARANTINED';
