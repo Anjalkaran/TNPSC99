@@ -74,7 +74,7 @@ export async function GET() {
       const questionsSnap = await db
         .collection('currentAffairsQuestions')
         .where('status', '==', 'PUBLISHED')
-        .where('__name__', 'in', questionIds.slice(0, 10))
+        .where('__name__', 'in', questionIds.slice(0, 15))
         .get();
 
       if (questionsSnap.empty) {

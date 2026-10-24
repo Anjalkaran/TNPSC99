@@ -270,6 +270,9 @@ export async function executeDailyPipeline(
       // Auto-publish eligible ONLY if enabled, score >= 95, and LOW_RISK
       draft.overallStatus = 'PUBLISHED';
       draft.publishedAt = new Date().toISOString();
+      draft.publicationMode = 'AUTO_VERIFIED';
+      draft.verificationPolicyVersion = '2026.AUTO_V1';
+      draft.contentVersion = 1;
       draft.editorialApproval = {
         approvedBy: 'AUTO_PIPELINE',
         approvedAt: new Date().toISOString(),

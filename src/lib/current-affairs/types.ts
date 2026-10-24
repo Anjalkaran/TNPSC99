@@ -195,6 +195,9 @@ export interface CADraftQuestion {
   verificationReport: CAVerificationReport;
   overallStatus: QuestionEditorialStatus;
   rejectionReason?: string;
+  publicationMode?: 'AUTO_VERIFIED' | 'MANUAL_APPROVED';
+  verificationPolicyVersion?: string;
+  contentVersion?: number;
   editorialApproval?: {
     approvedBy: string; // Admin UID or 'AUTO_PIPELINE'
     approvedAt: string;

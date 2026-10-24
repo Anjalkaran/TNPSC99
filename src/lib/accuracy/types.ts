@@ -12,6 +12,10 @@ export type AccuracyLifecycleStatus =
   | 'REJECTED'
   | 'RETRACTED';
 
+export type AccuracyPublicationMode =
+  | 'AUTO_VERIFIED'
+  | 'MANUAL_APPROVED';
+
 export type AccuracyGateCheckId =
   | 'SOURCE_AUTHENTICATED'
   | 'FACTUAL_VERIFICATION'
@@ -41,6 +45,16 @@ export interface AccuracyGateEvaluation {
   rejectionReasons: string[];
   evaluatedAt: string;
   evaluatorVersion: string;
+  publicationMode?: AccuracyPublicationMode;
+  verificationPolicyVersion?: string;
+  provenance?: {
+    publicationMode: AccuracyPublicationMode;
+    verificationPolicyVersion: string;
+    publishedAt?: string;
+    contentVersion: number;
+    verifiedSourceIds?: string[];
+    isAutoVerified: boolean;
+  };
 }
 
 export interface QuestionAccuracyCandidate {
@@ -59,6 +73,30 @@ export interface QuestionAccuracyCandidate {
   sourceExcerpt?: string;
   publicationDate?: string;
   eventDate?: string;
+
+  // Automated Publication & Versioning Provenance
+  publicationMode?: AccuracyPublicationMode;
+  verificationPolicyVersion?: string;
+  verifiedSourceIds?: string[];
+  automatedVerificationResults?: Record<string, any>;
+  publishedAt?: string;
+  contentVersion?: number;
+  previousVersions?: Array<{
+    version: number;
+    question_en: string;
+    question_ta: string;
+    options_en: string[];
+    options_ta: string[];
+    correctOptionIndex: number;
+    explanation_en: string;
+    explanation_ta: string;
+    modifiedAt: string;
+    modifiedBy: string;
+    changeReason: string;
+  }>;
+  hasRetractionHistory?: boolean;
+  hasDefectHistory?: boolean;
+  isDisputed?: boolean;
 
   // Textbook Citation (for syllabus questions)
   textbookCitation?: {

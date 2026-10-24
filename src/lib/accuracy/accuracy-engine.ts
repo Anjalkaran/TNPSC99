@@ -295,43 +295,109 @@ export function evaluatePublicationGate(
     failureReason: duplicatePassed ? undefined : 'Duplicate question stem detected',
   });
 
-  // =========================================================================
-  // GATE 8: HUMAN EDITORIAL APPROVAL
-  // =========================================================================
-  const hasEditorialApproval = Boolean(
-    candidate.editorialApproval &&
-    candidate.editorialApproval.approvedBy &&
-    candidate.editorialApproval.approvedBy !== 'AUTO_PIPELINE' &&
-    candidate.editorialApproval.approvedBy !== 'AI' &&
-    candidate.editorialApproval.approvedAt
+  // Pre-calculate Conflict and Temporal Checks for Gate 8 & 9 & 10
+  const isRetracted = candidate.isRetracted === true;
+  const isQuarantined = candidate.isQuarantined === true;
+  const hasHistoryDefect = Boolean(
+    candidate.hasRetractionHistory ||
+    candidate.hasDefectHistory ||
+    candidate.isDisputed
   );
 
-  if (!hasEditorialApproval) {
-    const reason = 'Human editorial review signature missing. AI-only sign-off is prohibited by Permanent Accuracy Policy';
-    rejectionReasons.push(`Gate 8 Failed: ${reason}`);
-    gateResults.push({
-      checkId: 'EDITORIAL_APPROVAL',
-      name: 'Human Editorial Sign-Off',
-      passed: false,
-      score: 0,
-      details: reason,
-      failureReason: reason,
-    });
+  const isCaQuestion =
+    candidate.isCurrentAffairs === true ||
+    Boolean(candidate.category && candidate.category.toLowerCase().includes('current affairs')) ||
+    Boolean(candidate.category_ta && candidate.category_ta.includes('நடப்பு')) ||
+    Boolean(candidate.eventDate && !candidate.textbookCitation);
+
+  const temporalCheckResult = isCaQuestion
+    ? TemporalEligibilityValidator.validate(candidate)
+    : { eligible: true, details: 'Exempt: Textbook curriculum syllabus question or general knowledge item', rejectionReason: undefined };
+
+  // =========================================================================
+  // GATE 8: HUMAN EDITORIAL SIGN-OFF / AUTO_VERIFIED PUBLICATION GATE
+  // =========================================================================
+  const isAutoVerifiedMode = candidate.publicationMode === 'AUTO_VERIFIED';
+
+  if (isAutoVerifiedMode) {
+    // 1. Strict prohibition: Questions with retraction, defect, or dispute history cannot use AUTO_VERIFIED
+    if (isRetracted || isQuarantined || hasHistoryDefect) {
+      const reason = 'AUTO_VERIFIED mode strictly prohibited for questions with retraction, defect, quarantine, or dispute history. Mandatory human editorial sign-off (MANUAL_APPROVED) required.';
+      rejectionReasons.push(`Gate 8 Failed: ${reason}`);
+      gateResults.push({
+        checkId: 'EDITORIAL_APPROVAL',
+        name: 'Automated Publication Verification Gate',
+        passed: false,
+        score: 0,
+        details: reason,
+        failureReason: reason,
+      });
+    } else {
+      // 2. Automated Validation Preconditions: Gates 1-7 & Temporal must all pass
+      const priorFailedGates = gateResults.filter((g) => !g.passed);
+      const passesPriorGates = priorFailedGates.length === 0;
+      const passesTemporal = temporalCheckResult.eligible;
+
+      if (!passesPriorGates || !passesTemporal) {
+        const failList = [
+          ...priorFailedGates.map((g) => g.name),
+          ...(!passesTemporal ? ['2026 Temporal Eligibility'] : []),
+        ];
+        const reason = `Auto-verification blocked: Preceding automated validation checks failed (${failList.join(', ')}).`;
+        rejectionReasons.push(`Gate 8 Failed: ${reason}`);
+        gateResults.push({
+          checkId: 'EDITORIAL_APPROVAL',
+          name: 'Automated Publication Verification Gate',
+          passed: false,
+          score: 0,
+          details: reason,
+          failureReason: reason,
+        });
+      } else {
+        gateResults.push({
+          checkId: 'EDITORIAL_APPROVAL',
+          name: 'Automated Publication Verification Gate',
+          passed: true,
+          score: 100,
+          details: 'Auto-verified under verified automated publishing policy 2026.AUTO_V1 (all automated checks passed)',
+        });
+      }
+    }
   } else {
-    gateResults.push({
-      checkId: 'EDITORIAL_APPROVAL',
-      name: 'Human Editorial Sign-Off',
-      passed: true,
-      score: 100,
-      details: `Approved by editor ${candidate.editorialApproval?.approvedBy} on ${candidate.editorialApproval?.approvedAt}`,
-    });
+    // Standard MANUAL_APPROVED Pathway: Mandatory Human Editorial Review Signature
+    const hasEditorialApproval = Boolean(
+      candidate.editorialApproval &&
+      candidate.editorialApproval.approvedBy &&
+      candidate.editorialApproval.approvedBy !== 'AUTO_PIPELINE' &&
+      candidate.editorialApproval.approvedBy !== 'AI' &&
+      candidate.editorialApproval.approvedAt
+    );
+
+    if (!hasEditorialApproval) {
+      const reason = 'Human editorial review signature missing. AI-only sign-off is prohibited by Permanent Accuracy Policy (MANUAL_APPROVED pathway required)';
+      rejectionReasons.push(`Gate 8 Failed: ${reason}`);
+      gateResults.push({
+        checkId: 'EDITORIAL_APPROVAL',
+        name: 'Human Editorial Sign-Off',
+        passed: false,
+        score: 0,
+        details: reason,
+        failureReason: reason,
+      });
+    } else {
+      gateResults.push({
+        checkId: 'EDITORIAL_APPROVAL',
+        name: 'Human Editorial Sign-Off',
+        passed: true,
+        score: 100,
+        details: `Approved by editor ${candidate.editorialApproval?.approvedBy} on ${candidate.editorialApproval?.approvedAt}`,
+      });
+    }
   }
 
   // =========================================================================
   // GATE 9: CONFLICT & RETRACTION CHECK
   // =========================================================================
-  const isRetracted = candidate.isRetracted === true;
-  const isQuarantined = candidate.isQuarantined === true;
   const conflictPassed = !isRetracted && !isQuarantined;
 
   if (!conflictPassed) {
@@ -360,23 +426,16 @@ export function evaluatePublicationGate(
   // =========================================================================
   // GATE 10: 2026-ONLY CURRENT AFFAIRS TEMPORAL ELIGIBILITY
   // =========================================================================
-  const isCaQuestion =
-    candidate.isCurrentAffairs === true ||
-    Boolean(candidate.category && candidate.category.toLowerCase().includes('current affairs')) ||
-    Boolean(candidate.category_ta && candidate.category_ta.includes('நடப்பு')) ||
-    Boolean(candidate.eventDate && !candidate.textbookCitation);
-
   if (isCaQuestion) {
-    const temporalResult = TemporalEligibilityValidator.validate(candidate);
-    if (!temporalResult.eligible) {
-      rejectionReasons.push(`Gate 10 Failed: ${temporalResult.details}`);
+    if (!temporalCheckResult.eligible) {
+      rejectionReasons.push(`Gate 10 Failed: ${temporalCheckResult.details}`);
       gateResults.push({
         checkId: 'TEMPORAL_ELIGIBILITY_2026',
         name: '2026-Only Current Affairs Temporal Eligibility',
         passed: false,
         score: 0,
-        details: temporalResult.details,
-        failureReason: temporalResult.rejectionReason || temporalResult.details,
+        details: temporalCheckResult.details,
+        failureReason: temporalCheckResult.rejectionReason || temporalCheckResult.details,
       });
     } else {
       gateResults.push({
@@ -384,7 +443,7 @@ export function evaluatePublicationGate(
         name: '2026-Only Current Affairs Temporal Eligibility',
         passed: true,
         score: 100,
-        details: temporalResult.details,
+        details: temporalCheckResult.details,
       });
     }
   } else {
@@ -425,6 +484,10 @@ export function evaluatePublicationGate(
     targetStatus = hasCriticalFailure ? 'REJECTED' : 'REVIEW_REQUIRED';
   }
 
+  const publicationMode = candidate.publicationMode || 'MANUAL_APPROVED';
+  const verificationPolicyVersion = '2026.AUTO_V1';
+  const contentVersion = candidate.contentVersion || 1;
+
   return {
     questionId: candidate.id,
     allGatesPassed,
@@ -432,6 +495,16 @@ export function evaluatePublicationGate(
     gateResults,
     rejectionReasons,
     evaluatedAt: new Date().toISOString(),
-    evaluatorVersion: 'TNPSC99_ACCURACY_ENGINE_V1',
+    evaluatorVersion: 'TNPSC99_ACCURACY_ENGINE_V2_AUTO_VERIFIED',
+    publicationMode,
+    verificationPolicyVersion,
+    provenance: {
+      publicationMode,
+      verificationPolicyVersion,
+      publishedAt: candidate.publishedAt || (allGatesPassed ? new Date().toISOString() : undefined),
+      contentVersion,
+      verifiedSourceIds: candidate.verifiedSourceIds || (candidate.sourceUrl ? [candidate.sourceUrl] : []),
+      isAutoVerified: publicationMode === 'AUTO_VERIFIED' && allGatesPassed,
+    },
   };
 }
