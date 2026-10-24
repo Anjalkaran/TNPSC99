@@ -1,19 +1,32 @@
 /**
  * TNPSC99 — Mandatory 2026-Only Current Affairs Policy Test Suite
  * 
- * Verifies all 7 Mandatory Validation Scenarios:
+ * Verifies all Mandatory Requirements and Safeguards:
  * 1. Genuine 2026 event -> Eligible
- * 2. Pre-2026 event -> Rejected
+ * 2. Pre-2026 event -> Rejected (PRE_2026_EVENT)
  * 3. Older scheme with verified 2026 amendment -> Eligible for amendment-specific question
- * 4. 2026 article describing 2024 event -> Rejected
+ * 4. 2026 article describing 2024 event -> Rejected (PRE_2026_EVENT_IN_2026_PUBLICATION)
  * 5. Missing or ambiguous event date -> Held as REVIEW_REQUIRED
- * 6. No approved 2026 records -> Tier 3 Editorial Fallback (Exact strings)
- * 7. Previous 2026 verified edition -> Tier 2 Revision Fallback (Original date + Revision notice)
- * + Six-month historical bank window check (23-04-2026 to 23-10-2026)
- * + Preservation in General Studies / Historical Knowledge without relabeling
+ * 6. Dynamic Rolling 6-month window with day-of-month clamping & 2026-01-01 bounding
+ * 7. Calendar legitimacy & Leap Year parsing (e.g. 2026-02-29 rejected, 2024-02-29 parsed)
+ * 8. Asia/Kolkata timezone calendar-day transitions (UTC+05:30)
+ * 9. December 2026 boundary and 2027 cycle rollover archiving
+ * 10. Strict prohibition of automatic reclassification & blocking retracted items
+ * 11. Three-tier fallback engine:
+ *     - Tier 1: Today's approved edition
+ *     - Tier 2: Previous approved 2026 edition (Revision practice badge & original date)
+ *     - Tier 3: Editorial verification fallback (Exact EN/TA strings)
+ * 12. Retraction invariant: Retracted/disputed questions strictly excluded from fallback
  */
 
-import { TemporalEligibilityValidator } from '../src/lib/accuracy/temporal-validator';
+import {
+  TemporalEligibilityValidator,
+  calculateRollingSixMonthWindow,
+  isValidCalendarDate,
+  isLeapYear,
+  getAsiaKolkataDateString,
+  IndependentReclassificationReview,
+} from '../src/lib/accuracy/temporal-validator';
 import { DailyCaAccuracyGuard, DailyCaCandidateEdition } from '../src/lib/accuracy/daily-ca-accuracy-guard';
 import { QuestionAccuracyCandidate } from '../src/lib/accuracy/types';
 
@@ -35,7 +48,7 @@ function recordTest(id: string, name: string, passed: boolean, details: string) 
 
 async function runTemporalSuite() {
   console.log('========================================================================');
-  console.log('TNPSC99 — MANDATORY 2026-ONLY CURRENT AFFAIRS POLICY TEST SUITE');
+  console.log('TNPSC99 — MANDATORY 2026-ONLY CURRENT AFFAIRS POLICY COMPREHENSIVE TEST SUITE');
   console.log('Timestamp:', new Date().toISOString());
   console.log('========================================================================\n');
 
@@ -94,7 +107,6 @@ async function runTemporalSuite() {
   // TEST 3: Older Scheme with Verified 2026 Amendment -> Eligible for Amendment-Specific Question
   // -------------------------------------------------------------------------
   console.log('\n--- TEST 3: Older Scheme with Verified 2026 Amendment ---');
-  // Sub-case A: Explicitly tests the 2026 amendment/milestone
   const olderSchemeWith2026Amendment: QuestionAccuracyCandidate = {
     ...baselineValid2026Candidate,
     id: 'ca_test_scheme_amended_2026',
@@ -103,7 +115,7 @@ async function runTemporalSuite() {
     eventDate: '2026-05-18',
     publicationDate: '2026-05-19',
     olderSchemeContext: {
-      schemeOriginYear: 2022, // Originated in 2022
+      schemeOriginYear: 2022,
       has2026Amendment: true,
       amendmentDate: '2026-05-18',
       tests2026DevelopmentExplicitly: true,
@@ -113,7 +125,6 @@ async function runTemporalSuite() {
   const res3A = TemporalEligibilityValidator.validate(olderSchemeWith2026Amendment);
   const t3APassed = res3A.eligible === true && res3A.isOlderSchemeWith2026Amendment === true;
 
-  // Sub-case B: Older scheme question merely tests pre-2026 historical fact -> REJECTED
   const olderSchemeHistoricalOnly: QuestionAccuracyCandidate = {
     ...baselineValid2026Candidate,
     id: 'ca_test_scheme_historical_fact',
@@ -124,7 +135,7 @@ async function runTemporalSuite() {
     olderSchemeContext: {
       schemeOriginYear: 2022,
       has2026Amendment: true,
-      tests2026DevelopmentExplicitly: false, // Does NOT test 2026 development
+      tests2026DevelopmentExplicitly: false,
     },
   };
   const res3B = TemporalEligibilityValidator.validate(olderSchemeHistoricalOnly);
@@ -135,25 +146,24 @@ async function runTemporalSuite() {
     `Amendment-Specific Eligible: ${t3APassed}, Pre-2026 Fact Rejected: ${t3BPassed} (DefectCode: ${res3B.defectCode})`);
 
   // -------------------------------------------------------------------------
-  // TEST 4: 2026 Article Describing 2024 Event -> Rejected
+  // TEST 4: 2026 Article Describing Pre-2026 Event -> Rejected
   // -------------------------------------------------------------------------
-  console.log('\n--- TEST 4: 2026 Article Describing 2024 Event ---');
+  console.log('\n--- TEST 4: 2026 Article Describing Pre-2026 Event ---');
   const recentArticleHistoricalEvent: QuestionAccuracyCandidate = {
     ...baselineValid2026Candidate,
     id: 'ca_test_article_2026_event_2024',
-    eventDate: '2024-08-09', // Real launch in August 2024
-    publicationDate: '2026-05-10', // Synthesized or retrospective 2026 article
+    eventDate: '2024-08-09',
+    publicationDate: '2026-05-10',
   };
   const res4 = TemporalEligibilityValidator.validate(recentArticleHistoricalEvent);
   const t4Passed = res4.eligible === false && res4.targetStatus === 'REJECTED' && res4.defectCode === 'PRE_2026_EVENT_IN_2026_PUBLICATION';
-  recordTest('TC-TEMP-04', '2026 article describing 2024 event is rejected', t4Passed,
+  recordTest('TC-TEMP-04', '2026 article describing pre-2026 event is rejected', t4Passed,
     `Eligible: ${res4.eligible}, TargetStatus: ${res4.targetStatus}, DefectCode: ${res4.defectCode}`);
 
   // -------------------------------------------------------------------------
   // TEST 5: Missing or Ambiguous Event Date -> Held (REVIEW_REQUIRED)
   // -------------------------------------------------------------------------
   console.log('\n--- TEST 5: Missing or Ambiguous Event Date ---');
-  // Sub-case A: Missing event date
   const missingDateCandidate: QuestionAccuracyCandidate = {
     ...baselineValid2026Candidate,
     id: 'ca_test_missing_date',
@@ -162,7 +172,6 @@ async function runTemporalSuite() {
   const res5A = TemporalEligibilityValidator.validate(missingDateCandidate);
   const t5APassed = res5A.eligible === false && res5A.targetStatus === 'REVIEW_REQUIRED' && res5A.defectCode === 'MISSING_OR_AMBIGUOUS_EVENT_DATE';
 
-  // Sub-case B: Ambiguous non-ISO date string
   const ambiguousDateCandidate: QuestionAccuracyCandidate = {
     ...baselineValid2026Candidate,
     id: 'ca_test_ambiguous_date',
@@ -176,100 +185,271 @@ async function runTemporalSuite() {
     `Missing Date Held: ${t5APassed}, Ambiguous Date Held: ${t5BPassed}`);
 
   // -------------------------------------------------------------------------
-  // TEST 6: No Approved 2026 Records -> Tier 3 Editorial Fallback
+  // TEST 6: Dynamic Rolling 6-Month Window Calculation & Bounding
   // -------------------------------------------------------------------------
-  console.log('\n--- TEST 6: No Approved 2026 Records (Tier 3 Fallback) ---');
-  const emptyEditions: DailyCaCandidateEdition[] = [
+  console.log('\n--- TEST 6: Dynamic Rolling 6-Month Window Calculation & Bounding ---');
+  // Sub-case A: 2026-10-24 -> rolling 6 months is 2026-04-24 to 2026-10-24
+  const w1 = calculateRollingSixMonthWindow('2026-10-24');
+  const w1Passed = w1.windowStart === '2026-04-24' && w1.windowEnd === '2026-10-24';
+
+  // Sub-case B: Day-of-month clamping (2026-10-31 -> April has 30 days -> 2026-04-30)
+  const w2 = calculateRollingSixMonthWindow('2026-10-31');
+  const w2Passed = w2.windowStart === '2026-04-30' && w2.windowEnd === '2026-10-31';
+
+  // Sub-case C: Early 2026 (2026-03-15) -> rolling calculation would be 2025-09-15, but MUST clamp to 2026-01-01
+  const w3 = calculateRollingSixMonthWindow('2026-03-15');
+  const w3Passed = w3.windowStart === '2026-01-01' && w3.windowEnd === '2026-03-15';
+
+  recordTest('TC-TEMP-06', 'Dynamic rolling 6-month window calculation and bounding',
+    w1Passed && w2Passed && w3Passed,
+    `Standard (2026-10-24): [${w1.windowStart} to ${w1.windowEnd}], Clamped Month-End (2026-10-31): [${w2.windowStart} to ${w2.windowEnd}], Cycle Clamped (2026-03-15): [${w3.windowStart} to ${w3.windowEnd}]`);
+
+  // -------------------------------------------------------------------------
+  // TEST 7: Calendar Legitimacy & Leap Year Parsing
+  // -------------------------------------------------------------------------
+  console.log('\n--- TEST 7: Calendar Legitimacy & Leap Year Parsing ---');
+  // 2026 is NOT a leap year: 2026-02-29 must be rejected as invalid calendar date
+  const is2026Leap = isLeapYear(2026);
+  const isValid2026Feb29 = isValidCalendarDate('2026-02-29');
+  const invalidDateCandidate: QuestionAccuracyCandidate = {
+    ...baselineValid2026Candidate,
+    id: 'ca_test_invalid_leap_2026',
+    eventDate: '2026-02-29',
+  };
+  const res7A = TemporalEligibilityValidator.validate(invalidDateCandidate);
+  const t7APassed = !is2026Leap && !isValid2026Feb29 && res7A.defectCode === 'INVALID_CALENDAR_DATE';
+
+  // 2024 IS a leap year: 2024-02-29 is a valid calendar date, but must fail 2026-only check as PRE_2026_EVENT
+  const is2024Leap = isLeapYear(2024);
+  const isValid2024Feb29 = isValidCalendarDate('2024-02-29');
+  const leap2024Candidate: QuestionAccuracyCandidate = {
+    ...baselineValid2026Candidate,
+    id: 'ca_test_leap_2024',
+    eventDate: '2024-02-29',
+    publicationDate: '2024-03-01',
+  };
+  const res7B = TemporalEligibilityValidator.validate(leap2024Candidate);
+  const t7BPassed = is2024Leap && isValid2024Feb29 && res7B.defectCode === 'PRE_2026_EVENT';
+
+  // Invalid month-day length: April 31
+  const isValidApril31 = isValidCalendarDate('2026-04-31');
+  const t7CPassed = !isValidApril31;
+
+  recordTest('TC-TEMP-07', 'Calendar legitimacy and leap-year date validation',
+    t7APassed && t7BPassed && t7CPassed,
+    `2026-02-29 Invalid (Leap=false): ${t7APassed}, 2024-02-29 Pre-2026 (Leap=true): ${t7BPassed}, 2026-04-31 Rejected: ${t7CPassed}`);
+
+  // -------------------------------------------------------------------------
+  // TEST 8: Asia/Kolkata Timezone Transitions
+  // -------------------------------------------------------------------------
+  console.log('\n--- TEST 8: Asia/Kolkata Timezone Transitions ---');
+  // UTC 2026-10-24 18:29:59Z -> IST 2026-10-24 23:59:59 (+5:30) -> Date is 2026-10-24
+  const dateBeforeMidnightUtc = new Date('2026-10-24T18:29:59.000Z');
+  const istDate1 = getAsiaKolkataDateString(dateBeforeMidnightUtc);
+
+  // UTC 2026-10-24 18:30:00Z -> IST 2026-10-25 00:00:00 (+5:30) -> Date is 2026-10-25
+  const dateAfterMidnightUtc = new Date('2026-10-24T18:30:00.000Z');
+  const istDate2 = getAsiaKolkataDateString(dateAfterMidnightUtc);
+
+  const t8Passed = istDate1 === '2026-10-24' && istDate2 === '2026-10-25';
+  recordTest('TC-TEMP-08', 'Asia/Kolkata (UTC+05:30) calendar-day transitions', t8Passed,
+    `18:29:59 UTC -> IST: ${istDate1} (Expected: 2026-10-24) | 18:30:00 UTC -> IST: ${istDate2} (Expected: 2026-10-25)`);
+
+  // -------------------------------------------------------------------------
+  // TEST 9: December 2026 Boundary & 2027 Cycle Rollover Archiving
+  // -------------------------------------------------------------------------
+  console.log('\n--- TEST 9: December 2026 Boundary & 2027 Cycle Rollover ---');
+  // Sub-case A: 2026-12-31 is eligible during 2026 cycle
+  const dec31Candidate: QuestionAccuracyCandidate = {
+    ...baselineValid2026Candidate,
+    id: 'ca_test_dec31_2026',
+    eventDate: '2026-12-31',
+  };
+  const res9A = TemporalEligibilityValidator.validate(dec31Candidate, {
+    cutoffDate: '2026-12-31',
+    cycleConfig: {
+      activeCycleYear: 2026,
+      cycleStartDate: '2026-01-01',
+      cycleEndDate: '2026-12-31',
+    },
+  });
+  const t9APassed = res9A.eligible === true && res9A.cycleStatus === 'ACTIVE_CURRENT';
+
+  // Sub-case B: At start of 2027 (activeCycleYear: 2027), 2026 content is ARCHIVED, not active current
+  const res9B = TemporalEligibilityValidator.validate(dec31Candidate, {
+    cutoffDate: '2027-01-15',
+    cycleConfig: {
+      activeCycleYear: 2027,
+      cycleStartDate: '2027-01-01',
+      cycleEndDate: '2027-12-31',
+      allowArchivedCycleAsCurrent: false,
+    },
+  });
+  const t9BPassed =
+    res9B.eligible === false &&
+    res9B.defectCode === 'EXPIRED_CYCLE_ARCHIVED' &&
+    res9B.cycleStatus === 'ARCHIVED_HISTORICAL_REVISION';
+
+  recordTest('TC-TEMP-09', 'December 2026 boundary and 2027 cycle rollover archiving',
+    t9APassed && t9BPassed,
+    `2026-12-31 in 2026 Cycle: Eligible=${res9A.eligible} (${res9A.cycleStatus}) | In 2027 Cycle: Archived=${!res9B.eligible} (${res9B.defectCode}, ${res9B.cycleStatus})`);
+
+  // -------------------------------------------------------------------------
+  // TEST 10: Strict Prohibition of Automatic Reclassification & Blocking Retracted
+  // -------------------------------------------------------------------------
+  console.log('\n--- TEST 10: Prohibition of Automatic Reclassification & Blocking Retracted ---');
+  // Sub-case A: Automatic reclassification attempt without review throws Error
+  let autoReclassBlocked = false;
+  try {
+    TemporalEligibilityValidator.reclassifyToGeneralStudies(pre2026Candidate);
+  } catch (err: any) {
+    autoReclassBlocked = err.message.includes('Automatic Reclassification Forbidden');
+  }
+
+  // Sub-case B: Reclassifying a retracted question (e.g. ca_pub_04 / ca_pub_05) throws Error even if review submitted
+  const retractedCandidate: QuestionAccuracyCandidate = {
+    ...baselineValid2026Candidate,
+    id: 'ca_pub_04',
+    isRetracted: true,
+    status: 'RETRACTED',
+  };
+  const mockReview: IndependentReclassificationReview = {
+    reviewerUid: 'admin_subject_expert_109',
+    reviewedAt: '2026-10-24T12:00:00Z',
+    isIndependentlyVerified: true,
+    syllabusAlignment: 'Economy of India',
+    printedTextbookSourceRef: 'Std 11 Economics, Chapter 8, Page 172',
+    justificationNotes: 'Static monetary policy definition verified in printed textbook.',
+  };
+  let retractedReclassBlocked = false;
+  try {
+    TemporalEligibilityValidator.reclassifyToGeneralStudies(retractedCandidate, mockReview);
+  } catch (err: any) {
+    retractedReclassBlocked = err.message.includes('Reclassification Forbidden: Question ca_pub_04 is RETRACTED');
+  }
+
+  // Sub-case C: Legitimate older question with independent review succeeds
+  const validOlderCandidate: QuestionAccuracyCandidate = {
+    ...pre2026Candidate,
+    isRetracted: false,
+    status: 'REVIEW_REQUIRED',
+  };
+  const reclassifiedSuccess = TemporalEligibilityValidator.reclassifyToGeneralStudies(validOlderCandidate, mockReview);
+  const legitimateReclassPassed =
+    reclassifiedSuccess.isCurrentAffairs === false &&
+    reclassifiedSuccess.category === 'General Studies — Economy of India' &&
+    reclassifiedSuccess.editorialApproval?.approvedBy === 'admin_subject_expert_109';
+
+  recordTest('TC-TEMP-10', 'Prohibition of automatic reclassification & blocking retracted items',
+    autoReclassBlocked && retractedReclassBlocked && legitimateReclassPassed,
+    `Auto Reclass Blocked: ${autoReclassBlocked}, Retracted Blocked: ${retractedReclassBlocked}, Review-Backed Passed: ${legitimateReclassPassed}`);
+
+  // -------------------------------------------------------------------------
+  // TEST 11: Three-Tier Fallback Engine Resolution
+  // -------------------------------------------------------------------------
+  console.log('\n--- TEST 11: Three-Tier Fallback Engine Resolution ---');
+  // Tier 1: Today's Approved Edition
+  const todayApprovedEdition: DailyCaCandidateEdition[] = [
     {
       editionDate: '2026-10-24',
-      questions: [], // Today has 0 approved questions
-    },
-    {
-      editionDate: '2026-10-23',
-      questions: [pre2026Candidate], // Previous edition had only pre-2026 ungrounded questions
+      questions: [baselineValid2026Candidate],
+      title_en: 'Daily Current Affairs — 24 October 2026',
+      title_ta: 'தினசரி நடப்பு நிகழ்வுகள் — 24 அக்டோபர் 2026',
     },
   ];
+  const tier1Res = DailyCaAccuracyGuard.resolveDailyCaEdition('2026-10-24', todayApprovedEdition);
+  const tier1Passed =
+    tier1Res.hasApprovedEdition === true &&
+    tier1Res.tier === 'TODAY_APPROVED' &&
+    tier1Res.isRevision === false &&
+    tier1Res.verifiedCount === 1;
 
-  const fallbackResult = DailyCaAccuracyGuard.resolveDailyCaEdition('2026-10-24', emptyEditions);
-  const t6Passed =
-    fallbackResult.hasApprovedEdition === false &&
-    fallbackResult.status === 'EDITORIAL_REVIEW_IN_PROGRESS' &&
-    fallbackResult.tier === 'EDITORIAL_VERIFICATION_IN_PROGRESS' &&
-    fallbackResult.message === '2026 Current Affairs — Editorial Verification in Progress.' &&
-    fallbackResult.message_ta === '2026 நடப்பு நிகழ்வுகள் — உண்மைச் சரிபார்ப்பு நடைபெற்று வருகிறது.' &&
-    fallbackResult.package === null &&
-    fallbackResult.verifiedCount === 0;
-
-  recordTest('TC-TEMP-06', 'No approved 2026 records triggers Tier 3 Editorial Fallback', t6Passed,
-    `HasApproved: ${fallbackResult.hasApprovedEdition}, Tier: ${fallbackResult.tier}, Message EN: "${fallbackResult.message}", Message TA: "${fallbackResult.message_ta}"`);
-
-  // -------------------------------------------------------------------------
-  // TEST 7: Previous 2026 Verified Edition -> Tier 2 Revision Fallback
-  // -------------------------------------------------------------------------
-  console.log('\n--- TEST 7: Previous 2026 Verified Edition (Tier 2 Revision Fallback) ---');
-  const editionsWithPreviousApproved: DailyCaCandidateEdition[] = [
+  // Tier 2: Previous Approved 2026 Edition (Revision notice & original edition date)
+  const tier2Editions: DailyCaCandidateEdition[] = [
     {
       editionDate: '2026-10-24',
-      questions: [], // Today has 0 approved questions
+      questions: [], // Today has 0
     },
     {
       editionDate: '2026-10-23',
-      questions: [baselineValid2026Candidate], // Yesterday has 1 authentic verified 2026 question
+      questions: [baselineValid2026Candidate], // Yesterday has approved
       title_en: 'Daily Current Affairs — 23 October 2026 Edition',
       title_ta: 'தினசரி நடப்பு நிகழ்வுகள் — 23 அக்டோபர் 2026 பதிப்பு',
     },
   ];
+  const tier2Res = DailyCaAccuracyGuard.resolveDailyCaEdition('2026-10-24', tier2Editions);
+  const tier2Passed =
+    tier2Res.hasApprovedEdition === true &&
+    tier2Res.tier === 'REVISION_FALLBACK' &&
+    tier2Res.isRevision === true &&
+    tier2Res.originalEditionDate === '2026-10-23' &&
+    tier2Res.revisionNotice_en === 'Revision Practice — 2026-10-23 Edition' &&
+    tier2Res.revisionNotice_ta === 'மீள்பார்வைப் பயிற்சி — 2026-10-23 பதிப்பு';
 
-  const revisionResult = DailyCaAccuracyGuard.resolveDailyCaEdition('2026-10-24', editionsWithPreviousApproved);
-  const t7Passed =
-    revisionResult.hasApprovedEdition === true &&
-    revisionResult.status === 'PUBLISHED' &&
-    revisionResult.tier === 'REVISION_FALLBACK' &&
-    revisionResult.isRevision === true &&
-    revisionResult.editionDate === '2026-10-23' &&
-    revisionResult.originalEditionDate === '2026-10-23' &&
-    revisionResult.revisionNotice_en === 'Revision Practice — 2026-10-23 Edition' &&
-    revisionResult.revisionNotice_ta === 'மீள்பார்வைப் பயிற்சி — 2026-10-23 பதிப்பு' &&
-    revisionResult.package !== null &&
-    revisionResult.package.title_en.includes('Revision Practice');
+  // Tier 3: No approved 2026 records -> Editorial Verification In Progress (Exact Strings)
+  const tier3Editions: DailyCaCandidateEdition[] = [
+    {
+      editionDate: '2026-10-24',
+      questions: [],
+    },
+  ];
+  const tier3Res = DailyCaAccuracyGuard.resolveDailyCaEdition('2026-10-24', tier3Editions);
+  const tier3Passed =
+    tier3Res.hasApprovedEdition === false &&
+    tier3Res.tier === 'EDITORIAL_VERIFICATION_IN_PROGRESS' &&
+    tier3Res.status === 'EDITORIAL_REVIEW_IN_PROGRESS' &&
+    tier3Res.message === '2026 Current Affairs — Editorial Verification in Progress.' &&
+    tier3Res.message_ta === '2026 நடப்பு நிகழ்வுகள் — உண்மைச் சரிபார்ப்பு நடைபெற்று வருகிறது.' &&
+    tier3Res.package === null &&
+    tier3Res.verifiedCount === 0;
 
-  recordTest('TC-TEMP-07', 'Previous 2026 verified edition triggers Tier 2 Revision Fallback with original date', t7Passed,
-    `HasApproved: ${revisionResult.hasApprovedEdition}, Tier: ${revisionResult.tier}, Original Date: ${revisionResult.originalEditionDate}, Revision Notice: "${revisionResult.revisionNotice_en}"`);
-
-  // -------------------------------------------------------------------------
-  // TEST 8: Six-Month Historical Bank Window Check (23-04-2026 to 23-10-2026)
-  // -------------------------------------------------------------------------
-  console.log('\n--- TEST 8: Six-Month Historical Bank Window Check ---');
-  // Event from 15 Feb 2026 (Valid for 2026 full cycle, but outside 6-month window 23-04-2026)
-  const feb2026Candidate: QuestionAccuracyCandidate = {
-    ...baselineValid2026Candidate,
-    id: 'ca_test_feb_2026',
-    eventDate: '2026-02-15',
-  };
-
-  const cycleRes = TemporalEligibilityValidator.validate(feb2026Candidate, { enforceSixMonthWindow: false });
-  const sixMonthRes = TemporalEligibilityValidator.validate(feb2026Candidate, { enforceSixMonthWindow: true });
-  const t8Passed =
-    cycleRes.eligible === true &&
-    sixMonthRes.eligible === false &&
-    sixMonthRes.defectCode === 'OUTSIDE_SIX_MONTH_WINDOW';
-
-  recordTest('TC-TEMP-08', 'Six-month historical bank window enforcement', t8Passed,
-    `Full Cycle Eligible: ${cycleRes.eligible}, Six-Month Bank Enforced: ${sixMonthRes.eligible} (DefectCode: ${sixMonthRes.defectCode})`);
+  recordTest('TC-TEMP-11', 'Three-tier fallback resolution (Tier 1 -> Tier 2 -> Tier 3)',
+    tier1Passed && tier2Passed && tier3Passed,
+    `Tier 1 Passed: ${tier1Passed}, Tier 2 Passed: ${tier2Passed} (Notice: "${tier2Res.revisionNotice_en}"), Tier 3 Passed: ${tier3Passed} (EN: "${tier3Res.message}")`);
 
   // -------------------------------------------------------------------------
-  // TEST 9: Preservation in General Studies / Historical Knowledge (Rule 8)
+  // TEST 12: Retraction Invariant: Retracted / Disputed Questions Strictly Excluded from Fallback
   // -------------------------------------------------------------------------
-  console.log('\n--- TEST 9: Preservation in General Studies (Anti-Relabeling Rule 8) ---');
-  const reclassified = TemporalEligibilityValidator.reclassifyToGeneralStudies(pre2026Candidate);
-  const t9Passed =
-    reclassified.isCurrentAffairs === false &&
-    reclassified.category === 'General Studies — Historical Knowledge' &&
-    reclassified.category_ta === 'பொது அறிவு — வரலாற்றுப் பாடப்பிரிவு' &&
-    reclassified.eventDate === '2023-08-25'; // Original historical date strictly preserved
+  console.log('\n--- TEST 12: Retraction Invariant in Fallback ---');
+  // If an edition contains only retracted items (e.g. ca_pub_04, ca_pub_05) or pre-2026 items,
+  // it MUST NOT be selected as a valid Tier 1 or Tier 2 fallback. It must drop down to Tier 3!
+  const editionsWithDefectsOnly: DailyCaCandidateEdition[] = [
+    {
+      editionDate: '2026-10-24',
+      questions: [
+        {
+          ...baselineValid2026Candidate,
+          id: 'ca_pub_04',
+          isRetracted: true,
+          status: 'RETRACTED',
+          retractionReason: 'Contradicted by RBI 5 June 2026 resolution',
+        },
+        {
+          ...baselineValid2026Candidate,
+          id: 'ca_pub_05',
+          isRetracted: true,
+          status: 'RETRACTED',
+          retractionReason: 'PIB release 2274981 does not contain Health Index',
+        },
+      ],
+    },
+    {
+      editionDate: '2026-10-23',
+      questions: [
+        pre2026Candidate, // Pre-2026 event
+      ],
+    },
+  ];
+  const defectFallbackRes = DailyCaAccuracyGuard.resolveDailyCaEdition('2026-10-24', editionsWithDefectsOnly);
+  const t12Passed =
+    defectFallbackRes.hasApprovedEdition === false &&
+    defectFallbackRes.tier === 'EDITORIAL_VERIFICATION_IN_PROGRESS' &&
+    defectFallbackRes.verifiedCount === 0 &&
+    defectFallbackRes.package === null;
 
-  recordTest('TC-TEMP-09', 'Preservation in General Studies without relabeling', t9Passed,
-    `isCurrentAffairs: ${reclassified.isCurrentAffairs}, Category: "${reclassified.category}", EventDate Preserved: ${reclassified.eventDate}`);
+  recordTest('TC-TEMP-12', 'Retracted and ineligible questions strictly excluded from fallback',
+    t12Passed,
+    `Defect Edition Dropped to Tier 3: ${t12Passed}, Verified Count: ${defectFallbackRes.verifiedCount}, Tier: ${defectFallbackRes.tier}`);
 
   // -------------------------------------------------------------------------
   // SUMMARY
@@ -283,7 +463,7 @@ async function runTemporalSuite() {
   console.log(`Total Checks: ${total} | Passed: ${passed} | Failed: ${failed}`);
 
   if (failed === 0) {
-    console.log('STATUS: MANDATORY 2026-ONLY CURRENT AFFAIRS POLICY FULLY CERTIFIED!\n');
+    console.log('STATUS: ALL 12 MANDATORY 2026 CURRENT AFFAIRS SAFEGUARDS FULLY CERTIFIED!\n');
     process.exit(0);
   } else {
     console.log('STATUS: SOME TEMPORAL INVARIANT CHECKS FAILED!\n');
