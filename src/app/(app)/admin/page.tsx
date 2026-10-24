@@ -3,12 +3,14 @@ import { useTranslation } from '@/hooks/use-translation';
 import { IconMcqBank, IconTopicManagement } from '@/components/icons';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
-import { Shield, BookOpen, Trophy, BarChart, FileText, Archive, BookOpenCheck } from 'lucide-react';
+import { Shield, BookOpen, Trophy, BarChart, FileText, Archive, BookOpenCheck, CheckCircle2, Layers } from 'lucide-react';
 
 export default function AdminPage() {
     const { t } = useTranslation();
 
     const adminSections = [
+        { href: '/admin/accuracy', label: 'Zero-Compromise Accuracy', icon: <CheckCircle2 className="text-emerald-600" /> },
+        { href: '/admin/current-affairs', label: 'Current Affairs Intelligence', icon: <Layers className="text-primary" /> },
         { href: '/admin/users', label: t('user_management'), icon: <Shield /> },
         { href: '/admin/topics', label: t('topic_management'), icon: <IconTopicManagement />},
         { href: '/admin/upload', label: t('mcq_bank'), icon: <IconMcqBank /> },

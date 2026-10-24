@@ -265,7 +265,7 @@ export const FREE_MOCK_TEST: PublicSampleTestPackage = {
       options_en: ['133 Athikarams, 1330 Kurals', '108 Athikarams, 1080 Kurals', '70 Athikarams, 700 Kurals', '120 Athikarams, 1200 Kurals'],
       options_ta: ['133 அதிகாரங்கள், 1330 குறட்பாக்கள்', '108 அதிகாரங்கள், 1080 குறட்பாக்கள்', '70 அதிகாரங்கள், 700 குறட்பாக்கள்', '120 அதிகாரங்கள், 1200 குறட்பாக்கள்'],
       correctOptionIndex: 0,
-      explanation_en: 'Thirukkural composed by Thiruvalluvar comprises 133 chapters with 10 couplets each, totaling exactly 1,330 couplets across three sections: Aram, Porul, and Inbam.',
+      explanation_en: 'Thirukkural composed by Thiruvalluvar comprises 133 chapters (Athikarams) with 10 couplets each, totaling exactly 1,330 couplets (Kurals) across three sections: Aram, Porul, and Inbam.',
       explanation_ta: 'திருவள்ளுவர் இயற்றிய திருக்குறளில் அறத்துப்பால், பொருட்பால், காமத்துப்பால் என மூன்று பால்களிலும் சேர்த்து 133 அதிகாரங்களும், 1,330 குறட்பாக்களும் உள்ளன.',
       textbookCitation: { standard: 'Class 6 & 10', subject: 'Tamil', lessonName: 'திருக்குறள்' },
     },
