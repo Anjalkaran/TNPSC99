@@ -175,6 +175,14 @@ export async function GET(req: NextRequest) {
         publishedCount: draftSummary.mutuallyExclusiveStatuses.published,
         quarantinedCount: draftSummary.quarantinedCount,
         retractedCount: draftSummary.mutuallyExclusiveStatuses.retracted,
+        rejectedDefectsCount: draftSummary.mutuallyExclusiveStatuses.rejected,
+        rejectedQuestions: ca2026DraftCandidates
+          .filter((q) => q.status === 'REJECTED' || q.isQuarantined)
+          .map((q) => ({
+            questionId: q.id,
+            defectCode: 'PRE_2026_EVENT_IN_2026_PUBLICATION',
+            reason: q.quarantineReason,
+          })),
         editorialSignOffStatus: 'AWAITING_HUMAN_EDITORIAL_REVIEW',
         publicEndpointSafetyStatus: 'FAIL_CLOSED_EDITORIAL_FALLBACK_ACTIVE',
         optionIndexDistribution: {

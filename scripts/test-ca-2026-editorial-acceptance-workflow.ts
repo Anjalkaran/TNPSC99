@@ -46,6 +46,7 @@ async function runAcceptanceTests() {
   console.log('--- TEST 1: Live Question Bank Zero Premature Approval ---');
   let zeroApprovalCount = 0;
   let sourceVerifiedStatusCount = 0;
+  let rejectedStatusCount = 0;
 
   for (const q of CA_2026_DRAFT_MCQ_BANK) {
     if (q.editorialApproval === null) {
@@ -54,13 +55,16 @@ async function runAcceptanceTests() {
     if (q.status === 'SOURCE_VERIFIED') {
       sourceVerifiedStatusCount++;
     }
+    if (q.id === 'ca_2026_draft_02' && q.status === 'REJECTED') {
+      rejectedStatusCount++;
+    }
   }
 
   recordTest(
     'TC-EA-01',
-    'Live Questions Awaiting Editorial Sign-Off',
-    zeroApprovalCount === 20 && sourceVerifiedStatusCount === 20,
-    `Total Live Drafts: 20, Unapproved (null): ${zeroApprovalCount}, Status SOURCE_VERIFIED: ${sourceVerifiedStatusCount}`
+    'Live Questions Awaiting Editorial Sign-Off (19 Pending + 1 Rejected)',
+    zeroApprovalCount === 20 && sourceVerifiedStatusCount === 19 && rejectedStatusCount === 1,
+    `Total Live Drafts: 20, Unapproved (null): ${zeroApprovalCount}, Pending SOURCE_VERIFIED: ${sourceVerifiedStatusCount}, Pre-2026 Defect Rejected (ca_2026_draft_02): ${rejectedStatusCount}`
   );
 
   // ---------------------------------------------------------------------------
@@ -100,19 +104,22 @@ async function runAcceptanceTests() {
   // ---------------------------------------------------------------------------
   console.log('\n--- TEST 3: Strict 2026 Temporal Window Validation ---');
   let temporalEligibleCount = 0;
+  let pre2026RejectedCount = 0;
 
   for (const q of CA_2026_DRAFT_MCQ_BANK) {
     const tempEval = TemporalEligibilityValidator.validate(q);
     if (tempEval.eligible && q.eventDate && q.eventDate.startsWith('2026-')) {
       temporalEligibleCount++;
+    } else if (q.id === 'ca_2026_draft_02' && !tempEval.eligible) {
+      pre2026RejectedCount++;
     }
   }
 
   recordTest(
     'TC-EA-03',
-    '2026 Temporal Qualification (No Pre-2026 Retrospective Items)',
-    temporalEligibleCount === 20,
-    `Strict 2026 Verified Events: ${temporalEligibleCount}/20. All events occurred between 2026-01-01 and 2026-10-24.`
+    '2026 Temporal Qualification (19 Eligible 2026 + 1 Pre-2026 Rejected)',
+    temporalEligibleCount === 19 && pre2026RejectedCount === 1,
+    `Strict 2026 Verified Events: ${temporalEligibleCount}/20. Defect PRE_2026_EVENT_IN_2026_PUBLICATION rejected: ${pre2026RejectedCount}.`
   );
 
   // ---------------------------------------------------------------------------

@@ -54,15 +54,15 @@ export const AUTHENTIC_2026_SOURCE_REGISTRY: VerifiedSourceRecord[] = [
   },
   {
     id: 'SRC_2026_02',
-    officialDocumentId: 'PIB PRID 2098813 / MoEFCC 2026 Registry',
+    officialDocumentId: 'PIB PRID 2098813 (Defective Reference — Rejected)',
     sourceUrl: 'https://pib.gov.in/PressReleasePage.aspx?PRID=2098813',
     sourcePublisher: 'Ministry of Environment, Forest and Climate Change (MoEFCC)',
-    publicationDate: '2026-02-02',
-    eventDate: '2026-02-02',
-    title: 'Tamil Nadu Holds Highest Number of Ramsar Sites in India',
-    keyFactSummary: 'Tamil Nadu holds the highest number of Ramsar sites of international importance in India with 20 designated wetlands.',
-    verifiableEvidenceText: 'Tamil Nadu leads the country with a total of 20 Ramsar sites, accounting for nearly one-fifth of the total designated wetlands of international importance across India.',
-    category: 'tamil_nadu',
+    publicationDate: '2025-02-01',
+    eventDate: '2025-02-01',
+    title: 'MoS (MoEFCC) Inaugurates Regional Workshop on Conservation and Wise Use of Wetlands at Ayodhya (1 Feb 2025)',
+    keyFactSummary: 'PIB PRID 2098813 is a 2025 release regarding Ayodhya wetlands workshop on the eve of World Wetlands Day 2025. Does not constitute a 2026 event.',
+    verifiableEvidenceText: 'PIB PRID 2098813 was published on 01 February 2025 covering a North India regional workshop in Ayodhya, UP. Disqualified under mandatory 2026-only current affairs temporal eligibility policy.',
+    category: 'environment_geography',
   },
   {
     id: 'SRC_2026_03',
@@ -330,17 +330,17 @@ export const CA_2026_DRAFT_MCQ_BANK: Ca2026DraftMCQ[] = [
   },
 
   // ---------------------------------------------------------------------------
-  // Question 2: Tamil Nadu Ramsar Sites Leadership -> Correct: Option C (Index 2)
+  // Question 2: Tamil Nadu Ramsar Sites Leadership -> REJECTED (PRE_2026_EVENT)
   // ---------------------------------------------------------------------------
   {
     id: 'ca_2026_draft_02',
     sourceRecordId: 'SRC_2026_02',
-    officialDocumentId: 'PIB PRID 2098813 / MoEFCC 2026 Registry',
+    officialDocumentId: 'PIB PRID 2098813',
     sourceUrl: 'https://pib.gov.in/PressReleasePage.aspx?PRID=2098813',
     sourcePublisher: 'Ministry of Environment, Forest and Climate Change (MoEFCC)',
-    sourceExcerpt: 'Tamil Nadu leads the country with a total of 20 Ramsar sites, accounting for nearly one-fifth of the total designated wetlands of international importance across India.',
-    publicationDate: '2026-02-02',
-    eventDate: '2026-02-02',
+    sourceExcerpt: 'PIB PRID 2098813 was published on 01 February 2025 covering a North India regional workshop in Ayodhya, UP. Disqualified under mandatory 2026-only current affairs temporal eligibility policy.',
+    publicationDate: '2025-02-01',
+    eventDate: '2025-02-01',
     isCurrentAffairs: true,
     category: 'tamil_nadu',
     category_ta: 'சுற்றுச்சூழல் & தமிழ்நாடு',
@@ -359,17 +359,19 @@ export const CA_2026_DRAFT_MCQ_BANK: Ca2026DraftMCQ[] = [
       '24 ராம்சார் தளங்கள்',
     ],
     correctOptionIndex: 2, // Option C
-    explanation_en: 'MoEFCC official data confirms that Tamil Nadu holds 20 designated Ramsar sites, maintaining the premier ranking among Indian states (accounting for nearly 19.4% of the national total).',
-    explanation_ta: 'மத்திய சுற்றுச்சூழல் அமைச்சகத்தின் அதிகாரப்பூர்வ தரவுகளின்படி, தமிழ்நாடு 20 ராம்சார் தளங்களைக் கொண்டு இந்திய மாநிலங்களிலேயே முதலிடத்தில் தொடர்ந்து நீடிக்கிறது.',
+    explanation_en: 'REJECTED: PIB PRID 2098813 was published on 01 February 2025 (pre-2026 event). Fails mandatory 2026-only policy and cannot qualify as a 2026 current affairs question.',
+    explanation_ta: 'நிராகரிக்கப்பட்டது: PIB PRID 2098813 செய்திக் குறிப்பு 1 பிப்ரவரி 2025 அன்று வெளியிடப்பட்டது. 2026 நடப்பு நிகழ்வுகள் கொள்கையின் கீழ் இது தகுதியற்றது.',
     distractorJustification: {
-      distractor_1: '14 Ramsar sites was Tamil Nadu’s tally in 2022 before subsequent wetland notifications.',
-      distractor_2: '16 was the state tally prior to the 2024 additions (Longwood Shola and Karaivetti).',
-      distractor_3: '24 is an unsupported future projection.',
+      distractor_1: 'Question is rejected due to pre-2026 source mismatch (PIB PRID 2098813 dated 01 Feb 2025).',
+      distractor_2: 'Fails mandatory 2026 temporal eligibility policy.',
+      distractor_3: 'Permanent quarantine applied with defect code PRE_2026_EVENT_IN_2026_PUBLICATION.',
     },
     editorialApproval: null,
     isRetracted: false,
-    isQuarantined: false,
-    status: 'SOURCE_VERIFIED',
+    isQuarantined: true,
+    quarantineReason: 'PRE_2026_EVENT_IN_2026_PUBLICATION: PIB PRID 2098813 was published on 01 February 2025 regarding Ayodhya wetlands workshop. Pre-2026 event disqualified from 2026 Current Affairs bank.',
+    quarantineNotes: 'Rejected during P0 editorial packet source audit. Fails mandatory 2026 temporal eligibility policy.',
+    status: 'REJECTED',
   },
 
   // ---------------------------------------------------------------------------
@@ -1169,8 +1171,10 @@ export function getCa2026DraftCandidates(): QuestionAccuracyCandidate[] {
     category_ta: q.category_ta,
     isCurrentAffairs: true,
     editorialApproval: null, // Strictly null awaiting human review
-    isRetracted: false,
-    isQuarantined: false,
-    status: 'SOURCE_VERIFIED',
+    isRetracted: q.isRetracted ?? false,
+    isQuarantined: q.isQuarantined ?? false,
+    quarantineReason: q.quarantineReason,
+    quarantineNotes: q.quarantineNotes,
+    status: q.status,
   }));
 }
