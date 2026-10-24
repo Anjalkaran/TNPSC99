@@ -669,8 +669,8 @@ export const FREE_TEXTBOOK_PRACTICE: PublicSampleTestPackage = {
     },
     {
       id: 'tb_07',
-      category: 'Science (Class 10)',
-      category_ta: 'அறிவியல் (10ஆம் வகுப்பு)',
+      category: 'Science (Class 9)',
+      category_ta: 'அறிவியல் (9ஆம் வகுப்பு)',
       examGroup: 'Group II',
       difficulty: 'medium',
       question_en: 'Which planetary body in the Solar System is widely nicknamed the Red Planet due to iron oxide on its surface?',

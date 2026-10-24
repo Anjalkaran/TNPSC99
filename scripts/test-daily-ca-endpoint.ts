@@ -1,6 +1,6 @@
 /**
  * TNPSC99 — Verification Suite for /api/public/daily-ca
- * Audits all 7 security and data-integrity requirements for the Dynamic Daily CA Endpoint.
+ * Audits all security and fail-closed data-integrity requirements for the Dynamic Daily CA Endpoint.
  */
 
 import fs from 'fs';
@@ -49,23 +49,41 @@ function auditDailyCaEndpointCode() {
   recordCheck(
     'API-03',
     'Explicitly rejects retracted manifests (isRetracted === true) and retracted questions',
-    content.includes('manifestData.isRetracted === true') &&
+    content.includes('manifestData.isRetracted !== true') &&
     content.includes('d.isRetracted !== true'),
     'Defensive anti-tamper check against retracted items'
   );
 
-  // 4. Returns only the approved free edition (max 10 questions)
+  // 4. Enforces explicit public-free manifest classification (fail-closed)
   recordCheck(
     'API-04',
+    'Manifest requires explicit isFree === true and accessLevel === "free"',
+    content.includes('manifestData.isFree === true') &&
+    content.includes("manifestData.accessLevel === 'free'"),
+    'Rejects premium or untagged manifests fail-closed'
+  );
+
+  // 5. Enforces explicit public-free question classification (fail-closed)
+  recordCheck(
+    'API-05',
+    'Individual questions require explicit isFree === true and accessLevel === "free"',
+    content.includes('d.isFree === true') &&
+    content.includes("d.accessLevel === 'free'"),
+    'Rejects premium or untagged questions; prevents mixed manifest leaks'
+  );
+
+  // 6. Returns only the approved free edition (max 10 questions)
+  recordCheck(
+    'API-06',
     'Limits question retrieval strictly to the 10 approved MCQs for the free daily package',
     content.includes('questionIds.slice(0, 10)') &&
     content.includes('durationMinutes'),
     'Exactly 10 questions returned for public practice package'
   );
 
-  // 5. Strips internal and sensitive editorial fields
+  // 7. Strips internal and sensitive editorial fields
   recordCheck(
-    'API-05',
+    'API-07',
     'Strips internal staging ID, raw documents, and editorial notes',
     !content.includes('rawDocumentId: d.rawDocumentId') &&
     !content.includes('editorialNotes: d.editorialNotes') &&
@@ -75,9 +93,9 @@ function auditDailyCaEndpointCode() {
     'Public response contains only student-facing metadata'
   );
 
-  // 6. Handles missing or empty editions without fabricating questions
+  // 8. Handles missing or empty editions without fabricating questions
   recordCheck(
-    'API-06',
+    'API-08',
     'Returns status EDITORIAL_REVIEW_IN_PROGRESS with hasApprovedEdition: false on missing edition',
     content.includes("status: 'EDITORIAL_REVIEW_IN_PROGRESS'") &&
     content.includes('hasApprovedEdition: false') &&
@@ -85,9 +103,9 @@ function auditDailyCaEndpointCode() {
     'Fail-closed anti-fabrication protection'
   );
 
-  // 7. Caching and abuse protection headers
+  // 9. Caching and abuse protection headers
   recordCheck(
-    'API-07',
+    'API-09',
     'Emits public Cache-Control headers with s-maxage and X-Content-Type-Options: nosniff',
     content.includes("'Cache-Control': 'public, max-age=300, s-maxage=900, stale-while-revalidate=60'") &&
     content.includes("'X-Content-Type-Options': 'nosniff'"),

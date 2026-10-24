@@ -44,8 +44,14 @@ export async function GET() {
     const manifestDoc = manifestsSnap.docs[0];
     const manifestData = manifestDoc.data();
 
-    // Exclude retracted manifests
-    if (manifestData.isRetracted === true || manifestData.status !== 'published') {
+    // Exclude retracted manifests, premium manifests, or manifests with invalid/inconsistent access metadata
+    const isManifestValidFreeDaily =
+      manifestData.status === 'published' &&
+      manifestData.isRetracted !== true &&
+      manifestData.isFree === true &&
+      manifestData.accessLevel === 'free';
+
+    if (!isManifestValidFreeDaily) {
       return NextResponse.json({
         hasApprovedEdition: false,
         status: 'EDITORIAL_REVIEW_IN_PROGRESS',
@@ -77,7 +83,7 @@ export async function GET() {
       });
     }
 
-    // Retrieve approved questions, strictly excluding retracted or unverified questions
+    // Retrieve approved questions, strictly excluding retracted, unverified, or premium questions
     const questionsSnap = await db
       .collection('currentAffairsQuestions')
       .where('status', '==', 'PUBLISHED')
@@ -99,11 +105,16 @@ export async function GET() {
       });
     }
 
-    // Strictly validate publication status and filter out retracted or unapproved questions
+    // Strictly validate publication status and filter out retracted, unapproved, premium, or inconsistently tagged questions
     const approvedQuestions = questionsSnap.docs
       .filter((doc) => {
         const d = doc.data();
-        return d.status === 'PUBLISHED' && d.isRetracted !== true;
+        return (
+          d.status === 'PUBLISHED' &&
+          d.isRetracted !== true &&
+          d.isFree === true &&
+          d.accessLevel === 'free'
+        );
       })
       .map((doc) => {
         const d = doc.data();
