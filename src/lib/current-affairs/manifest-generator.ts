@@ -15,7 +15,7 @@ export function compileDailyManifest(
 ): CAManifest {
   // Filter questions for the specific date
   const filtered = availableQuestions.filter(
-    (q) => isEligibleForTest(q.overallStatus) && q.createdAt.startsWith(date)
+    (q) => isEligibleForTest(q.overallStatus) && !q.isRetracted && !q.isQuarantined && (q.eventDate?.startsWith(date.slice(0, 7)) || q.createdAt.startsWith(date))
   );
 
   const selected = filtered.slice(0, 15);
@@ -37,6 +37,10 @@ export function compileDailyManifest(
     examGroup,
     tier: 'free',
     status: 'draft',
+    isRevision: false,
+    isRetracted: false,
+    isFree: true,
+    accessLevel: 'free',
   };
 }
 
@@ -75,6 +79,10 @@ export function compileWeeklyManifest(
     examGroup,
     tier: 'premium',
     status: 'draft',
+    isRevision: false,
+    isRetracted: false,
+    isFree: true,
+    accessLevel: 'free',
   };
 }
 
@@ -111,6 +119,10 @@ export function compileMonthlyManifest(
     examGroup,
     tier: 'premium',
     status: 'draft',
+    isRevision: false,
+    isRetracted: false,
+    isFree: true,
+    accessLevel: 'free',
   };
 }
 
@@ -162,6 +174,10 @@ export function compileSixMonthGrandMockManifest(
     examGroup,
     tier: 'premium',
     status: 'draft',
+    isRevision: false,
+    isRetracted: false,
+    isFree: true,
+    accessLevel: 'free',
   };
 }
 
@@ -179,5 +195,43 @@ export function assessErratumImpact(
   return {
     affectedManifestIds: affected.map((m) => m.id),
     affectedManifestCount: affected.length,
+  };
+}
+
+/**
+ * Compiles a 2026 Revision Bank Manifest for historical 2026 developments.
+ * Retains authentic historical event dates, prominently labeled as revision practice.
+ */
+export function compileRevisionManifest(
+  manifestId: string,
+  availableQuestions: CADraftQuestion[],
+  examGroup: TNPSCExamGroup = 'Group II'
+): CAManifest {
+  const filtered = availableQuestions.filter(
+    (q) => isEligibleForTest(q.overallStatus) && !q.isRetracted && !q.isQuarantined
+  );
+
+  const qIds = filtered.map((q) => q.id);
+
+  return {
+    id: manifestId,
+    type: 'monthly',
+    title_en: `2026 Current Affairs — Revision Bank (${qIds.length} Questions)`,
+    title_ta: `2026 நடப்பு நிகழ்வுகள் — மீள்பார்வை வினா வங்கி (${qIds.length} வினாக்கள்)`,
+    description_en: `Authoritative revision collection covering 2026 verified developments with authentic event dates.`,
+    description_ta: `உண்மையான நிகழ்வுத் தேதிகளுடன் சரிபார்க்கப்பட்ட 2026 நடப்பு நிகழ்வுகள் மீள்பார்வைத் தொகுப்பு.`,
+    periodStart: '2026-01-01',
+    periodEnd: '2026-09-30',
+    questionIds: qIds,
+    questionCount: qIds.length,
+    durationMinutes: Math.min(60, qIds.length * 2),
+    syllabusCategory: 'Current Affairs',
+    examGroup,
+    tier: 'free',
+    status: 'published',
+    isRevision: true,
+    isRetracted: false,
+    isFree: true,
+    accessLevel: 'free',
   };
 }

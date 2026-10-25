@@ -20,6 +20,8 @@ export interface PublicSampleQuestion {
   // Provenance & Textbook Mapping
   sourceRef?: string;
   sourceUrl?: string;
+  eventDate?: string;
+  publicationDate?: string;
   textbookCitation?: {
     standard: string;
     subject: string;

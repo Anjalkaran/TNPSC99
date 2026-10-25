@@ -791,6 +791,11 @@ export function FreeLearningHub() {
                               <Badge variant="secondary" className="text-xs">
                                 {currentQ.examGroup}
                               </Badge>
+                              {currentQ.eventDate && (
+                                <Badge variant="outline" className="text-xs font-semibold bg-primary/5 text-primary border-primary/20">
+                                  {language === 'ta' ? `நிகழ்வுத் தேதி: ${currentQ.eventDate}` : `Event Date: ${currentQ.eventDate}`}
+                                </Badge>
+                              )}
                               <span className="text-xs text-muted-foreground capitalize">
                                 {currentQ.difficulty}
                               </span>

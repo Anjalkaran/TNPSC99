@@ -206,6 +206,9 @@ export interface CADraftQuestion {
   correctionHistory?: CACorrectionRecord[];
   createdAt: string;
   publishedAt?: string;
+  eventDate?: string;
+  isRetracted?: boolean;
+  isQuarantined?: boolean;
 }
 
 export type ManifestType = 
@@ -233,8 +236,16 @@ export interface CAManifest {
   tier: 'free' | 'premium';
   publishedTestId?: string;
   publishedAt?: string;
+  eventDate?: string;
+  isRetracted?: boolean;
+  isQuarantined?: boolean;
   publishedBy?: string;
-  status: 'draft' | 'ready_for_review' | 'approved' | 'published';
+  status: 'draft' | 'ready_for_review' | 'approved' | 'published' | 'retracted';
+  syllabusDistribution?: Record<string, number>;
+  isRevision?: boolean;
+  isRetracted?: boolean;
+  isFree?: boolean;
+  accessLevel?: 'free' | 'premium';
 }
 
 export interface HistoricalPartition {

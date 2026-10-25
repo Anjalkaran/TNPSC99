@@ -130,6 +130,8 @@ export async function GET() {
             correctOptionIndex: d.correctOptionIndex,
             sourceRef: d.publisher || 'Government Notification',
             sourceUrl: d.sourceUrl,
+            eventDate: d.eventDate,
+            publicationDate: d.publicationDate,
           };
         });
 

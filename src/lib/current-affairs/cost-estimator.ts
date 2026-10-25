@@ -101,7 +101,7 @@ export function generateCloudExpenseSeparationReport(
   };
 }
 
-export type SupportedAiModel = 'none' | 'gemini_2.5_flash' | 'gemini_2.5_pro';
+export type SupportedAiModel = 'none' | 'gemini_1.5_flash' | 'gemini_2.5_flash' | 'gemini_2.5_pro';
 
 export interface CostCalculationOptions {
   aiModel?: SupportedAiModel;
@@ -116,6 +116,11 @@ export interface CostCalculationOptions {
 export const PRICING = {
   USD_TO_INR: 84.0,
   FAIL_CLOSED_MAX_BUDGET_USD: 1.0, // ₹84.00 hard limit for daily operations
+  GEMINI_1_5_FLASH: {
+    modelId: 'googleai/gemini-1.5-flash',
+    inputPer1MTokensUSD: 0.075,  // $0.075 / 1M tokens ($0.000000075/token)
+    outputPer1MTokensUSD: 0.30,  // $0.30 / 1M tokens ($0.00000030/token)
+  },
   GEMINI_2_5_FLASH: {
     modelId: 'googleai/gemini-2.5-flash',
     inputPer1MTokensUSD: 0.30,   // $0.30 / 1M tokens ($0.00000030/token)
@@ -204,7 +209,11 @@ export function calculateItemizedMcqCost(
     };
   }
 
-  const modelPricing = model === 'gemini_2.5_pro' ? PRICING.GEMINI_2_5_PRO : PRICING.GEMINI_2_5_FLASH;
+  const modelPricing = model === 'gemini_2.5_pro'
+    ? PRICING.GEMINI_2_5_PRO
+    : model === 'gemini_1.5_flash'
+    ? PRICING.GEMINI_1_5_FLASH
+    : PRICING.GEMINI_2_5_FLASH;
 
   // 1. Generation Step: Prompt includes official release excerpt + TNPSC MCQ format instructions
   const genInputTokens = Math.ceil(sourceTextLengthChars / 3.5) + 350; // Context + instructions
