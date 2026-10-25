@@ -18,3 +18,5 @@ env:
     secret: RAZORPAY_KEY_SECRET
   - variable: GEMINI_API_KEY
     secret: GEMINI_API_KEY
+  - variable: INTERNAL_PIPELINE_SECRET
+    secret: INTERNAL_PIPELINE_SECRET
