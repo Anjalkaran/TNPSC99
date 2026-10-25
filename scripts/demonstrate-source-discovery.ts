@@ -16,6 +16,7 @@
 
 import { SourceDiscoveryService, DiscoveredSourceDocument } from '../src/lib/current-affairs/source-discovery-service';
 import { computeContentChecksum } from '../src/lib/current-affairs/hasher';
+import { checkPersistentDefectRegistry } from '../src/data/ca-defect-registry';
 
 interface LiveGovReleaseDiscovery {
   sourceId: string;

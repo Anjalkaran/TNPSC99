@@ -69,8 +69,8 @@ export async function POST(req: NextRequest) {
     const newDailyQuestionsApproved = 0;
     const activeRevisionEditionId = 'manifest_daily_20261018';
 
-    // 5. Cost Accounting Reconciliation (Gemini 1.5 Flash Baseline)
-    const costAnalysis = calculateItemizedMcqCost(500, 'gemini_1.5_flash');
+    // 5. Cost Accounting Reconciliation (Gemini 2.5 Flash Production Baseline)
+    const costAnalysis = calculateItemizedMcqCost(500, 'gemini_2.5_flash');
     const cloudSeparation = generateCloudExpenseSeparationReport(costAnalysis.totalCostUSD);
 
     // 6. Record Pipeline Execution Log in Firestore (ca_pipeline_runs)
@@ -123,9 +123,10 @@ export async function POST(req: NextRequest) {
           publicDeliveryStatus: 'SERVING_REVISION_PRACTICE_2026_10_18',
         },
         stage4_costAccounting: {
-          aiModel: 'googleai/gemini-1.5-flash',
-          inputPer1MTokensUSD: 0.075,
-          outputPer1MTokensUSD: 0.30,
+          aiModel: 'googleai/gemini-2.5-flash',
+          modelProviderStatus: 'ACTIVE_SUPPORTED',
+          inputPer1MTokensUSD: 0.30,
+          outputPer1MTokensUSD: 2.50,
           costPerMcqUSD: costAnalysis.totalCostUSD,
           costPerMcqINR: costAnalysis.totalCostINR,
           dailyInferenceCircuitBreakerUSD: 1.00,
