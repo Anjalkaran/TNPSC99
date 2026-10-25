@@ -48,7 +48,7 @@ async function runAcceptanceTests() {
   let sourceVerifiedStatusCount = 0;
   let rejectedStatusCount = 0;
 
-  const confirmedDefectSet = new Set(['ca_2026_draft_02', 'ca_2026_draft_03', 'ca_2026_draft_08', 'ca_2026_draft_14', 'ca_2026_draft_17', 'ca_2026_draft_19']);
+  const confirmedDefectSet = new Set(['ca_2026_draft_02', 'ca_2026_draft_03', 'ca_2026_draft_07']);
   for (const q of CA_2026_DRAFT_MCQ_BANK) {
     if (q.editorialApproval === null) {
       zeroApprovalCount++;
@@ -63,8 +63,8 @@ async function runAcceptanceTests() {
 
   recordTest(
     'TC-EA-01',
-    'Live Questions Awaiting Editorial Sign-Off (14 Pending + 6 Confirmed Defects Quarantined)',
-    zeroApprovalCount === 20 && sourceVerifiedStatusCount === 14 && rejectedStatusCount === 6,
+    'Live Questions Awaiting Editorial Sign-Off (17 Pending + 3 Confirmed Defects Quarantined)',
+    zeroApprovalCount === 20 && sourceVerifiedStatusCount === 17 && rejectedStatusCount === 3,
     `Total Live Drafts: 20, Unapproved (null): ${zeroApprovalCount}, Pending SOURCE_VERIFIED: ${sourceVerifiedStatusCount}, Quarantined Confirmed Defects: ${rejectedStatusCount}`
   );
 

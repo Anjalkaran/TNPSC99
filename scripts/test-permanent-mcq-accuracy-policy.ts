@@ -6,6 +6,7 @@
  */
 
 import { evaluatePublicationGate } from '../src/lib/accuracy/accuracy-engine';
+import { ActualSourceAuthenticator } from '../src/lib/accuracy/actual-source-authenticator';
 import { QuestionBankAuditor } from '../src/lib/accuracy/question-bank-auditor';
 import { IncidentResponseService } from '../src/lib/accuracy/incident-response-service';
 import { DailyCaAccuracyGuard } from '../src/lib/accuracy/daily-ca-accuracy-guard';
@@ -46,6 +47,23 @@ async function runTestSuite() {
     sourceUrl: 'https://www.tn.gov.in/about-tamil-nadu/capital-chennai',
     sourcePublisher: 'Government of Tamil Nadu Official Portal',
     sourceExcerpt: 'Chennai is the capital city of Tamil Nadu, the southernmost state of India.',
+    actualRetrievedEvidence: {
+      sourceUrl: 'https://www.tn.gov.in/about-tamil-nadu/capital-chennai',
+      officialDocumentId: 'TN GOV CAPITAL PORTAL',
+      documentTitle: 'About Tamil Nadu - Capital Chennai',
+      issuingAuthority: 'Government of Tamil Nadu',
+      publicationDate: '2026-01-01',
+      eventDate: '2026-01-01',
+      httpStatus: 200,
+      retrievalStatus: 'RETRIEVED_HTTP_200',
+      retrievedAt: '2026-10-24T00:00:00.000Z',
+      contentHashSha256: ActualSourceAuthenticator.computeSha256('Chennai is the capital city of Tamil Nadu, the southernmost state of India.'),
+      evidenceLocation: {
+        startChar: 0,
+        endChar: 71,
+        matchedText: 'chennai is the capital city of tamil nadu the southernmost state of india',
+      },
+    },
     editorialApproval: {
       approvedBy: 'admin_reviewer_uid_101',
       approvedAt: '2026-10-24T05:00:00Z',

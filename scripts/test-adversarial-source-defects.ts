@@ -32,10 +32,10 @@ async function runAdversarialDefectSuite() {
 
   const candidates = getCa2026DraftCandidates();
 
-  // TEST 1: Verification that All 6 Confirmed Defects are Quarantined in Bank
+  // TEST 1: Verification that All 3 Confirmed Defects are Quarantined in Bank
   {
-    console.log('[TEST 1] Verification of 6 Confirmed Quarantined Defects in Bank');
-    const defectIds = ['ca_2026_draft_02', 'ca_2026_draft_03', 'ca_2026_draft_08', 'ca_2026_draft_14', 'ca_2026_draft_17', 'ca_2026_draft_19'];
+    console.log('[TEST 1] Verification of Confirmed Quarantined Defects in Bank (02, 03, 07)');
+    const defectIds = ['ca_2026_draft_02', 'ca_2026_draft_03', 'ca_2026_draft_07'];
     
     let allQuarantined = true;
     for (const dId of defectIds) {
@@ -55,7 +55,7 @@ async function runAdversarialDefectSuite() {
   // TEST 2: Gate Rejection on Confirmed Defects Under AUTO_VERIFIED Mode
   {
     console.log('\n[TEST 2] Accuracy Gate Rejection of Confirmed Defects Under AUTO_VERIFIED Mode');
-    const defectIds = ['ca_2026_draft_02', 'ca_2026_draft_03', 'ca_2026_draft_08', 'ca_2026_draft_14', 'ca_2026_draft_17', 'ca_2026_draft_19'];
+    const defectIds = ['ca_2026_draft_02', 'ca_2026_draft_03', 'ca_2026_draft_07'];
 
     let allBlocked = true;
     for (const dId of defectIds) {
@@ -201,10 +201,10 @@ async function runAdversarialDefectSuite() {
     }
   }
 
-  // TEST 6: Preservation of Genuine Remaining Candidates (14 Questions)
+  // TEST 6: Preservation of Genuine Remaining Candidates (17 Questions)
   {
-    console.log('\n[TEST 6] Preservation of Genuine Remaining Candidates (14 Questions)');
-    const confirmedDefectSet = new Set(['ca_2026_draft_02', 'ca_2026_draft_03', 'ca_2026_draft_08', 'ca_2026_draft_14', 'ca_2026_draft_17', 'ca_2026_draft_19']);
+    console.log('\n[TEST 6] Preservation of Genuine Remaining Candidates (17 Questions)');
+    const confirmedDefectSet = new Set(['ca_2026_draft_02', 'ca_2026_draft_03', 'ca_2026_draft_07']);
     const genuineList = candidates.filter((c) => !confirmedDefectSet.has(c.id));
 
     let allGenuineValid = true;
@@ -221,7 +221,7 @@ async function runAdversarialDefectSuite() {
       }
     }
 
-    if (allGenuineValid && genuineList.length === 14) {
+    if (allGenuineValid && genuineList.length === 17) {
       console.log(`  ✓ All ${genuineList.length} genuine remaining candidates successfully passed verification without false rejection.`);
       passedTests++;
     } else {
@@ -233,7 +233,7 @@ async function runAdversarialDefectSuite() {
   {
     console.log('\n[TEST 7] Production NO-GO Hard Isolation Preserved');
     const defectRegCount = PERMANENT_DEFECT_REGISTRY.length;
-    const isNoGo = defectRegCount >= 6;
+    const isNoGo = defectRegCount >= 8;
 
     if (isNoGo) {
       console.log(`  ✓ Production deployment status strictly NO-GO. ${defectRegCount} defects permanently registered.`);

@@ -478,7 +478,9 @@ export function evaluatePublicationGate(
   const allGatesPassed = gateResults.every((g) => g.passed);
 
   let targetStatus: AccuracyLifecycleStatus = 'PUBLISHED';
-  if (isRetracted) {
+  if (isQuarantined || defectCheck.isDefect || candidate.status === 'REJECTED') {
+    targetStatus = 'REJECTED';
+  } else if (isRetracted) {
     targetStatus = 'RETRACTED';
   } else if (!allGatesPassed) {
     const temporalGate = gateResults.find((g) => g.checkId === 'TEMPORAL_ELIGIBILITY_2026');

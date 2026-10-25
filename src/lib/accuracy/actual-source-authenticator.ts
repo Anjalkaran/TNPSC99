@@ -14,6 +14,7 @@
 import { createHash } from 'crypto';
 import { QuestionAccuracyCandidate } from './types';
 import { checkPersistentDefectRegistry } from '../../data/ca-defect-registry';
+import { getRetrievedGovernmentDocument } from '../../data/actual-retrieved-documents';
 
 export interface ActualDocumentRecord {
   url: string;
@@ -214,20 +215,47 @@ export class ActualSourceAuthenticator {
       };
     }
 
-    // 5. Corpus Match: Candidate must have verifiable sourceExcerpt of length >= 20 and authentic government URL
-    if (candidate.sourceExcerpt && candidate.sourceExcerpt.trim().length >= 20) {
-      const hash = this.computeSha256(candidate.sourceExcerpt);
+    // 5. Physical Document Archive Match: Look up actual retrieved government document
+    const archiveDoc = getRetrievedGovernmentDocument(candidate.officialDocumentId || candidate.sourceUrl || '');
+    if (archiveDoc) {
+      if (archiveDoc.httpStatus !== 200) {
+        return {
+          passed: false,
+          failureCode: 'SOURCE_RETRIEVAL_FAILED',
+          details: `Government source retrieval failed with HTTP ${archiveDoc.httpStatus} from ${archiveDoc.sourceUrl}`,
+        };
+      }
+
+      const normDoc = this.cleanTextForMatching(archiveDoc.fullContentText);
+      const normExcerpt = this.cleanTextForMatching(candidate.sourceExcerpt || '');
+
+      const startIdx = normDoc.indexOf(normExcerpt);
+      if (startIdx === -1) {
+        return {
+          passed: false,
+          failureCode: 'FABRICATED_SOURCE_EXCERPT',
+          details: `Source excerpt does not match retrieved document text in archive. Invented or modified quotes are rejected.`,
+        };
+      }
+
+      const endIdx = startIdx + normExcerpt.length;
       return {
         passed: true,
-        details: `Primary source verified with SHA-256 fingerprint ${hash.slice(0, 16)}...`,
-        contentHash: hash,
+        details: `Government document authenticated from official archive (${archiveDoc.officialDocumentId}). Verified literal excerpt at char offsets [${startIdx}..${endIdx}]. SHA-256: ${archiveDoc.contentHashSha256.slice(0, 16)}...`,
+        contentHash: archiveDoc.contentHashSha256,
+        evidenceLocation: {
+          startChar: startIdx,
+          endChar: endIdx,
+          matchedText: normExcerpt,
+        },
       };
     }
 
+    // Fail-Closed: Never allow self-referential hashing or domain-only allowlisting
     return {
       passed: false,
-      failureCode: 'FABRICATED_SOURCE_EXCERPT',
-      details: 'Missing verifiable source excerpt or authentic document body.',
+      failureCode: 'SOURCE_RETRIEVAL_FAILED',
+      details: `No authenticated physical government document record found for "${candidate.officialDocumentId || candidate.sourceUrl}". Inaccessible or un-retrieved primary sources are strictly forbidden from publishing.`,
     };
   }
 

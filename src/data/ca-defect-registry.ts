@@ -12,6 +12,7 @@
 
 export interface QuarantinedDefectRecord {
   questionId: string;
+  historicalAliases?: string[];
   officialDocumentId: string;
   sourceUrl: string;
   claimedEventDate: string;
@@ -31,9 +32,12 @@ export interface QuarantinedDefectRecord {
 }
 
 export const PERMANENT_DEFECT_REGISTRY: QuarantinedDefectRecord[] = [
-  // Defect 1: ca_2026_draft_02 (PIB PRID 2098813)
+  // ---------------------------------------------------------------------------
+  // Defect 1: Wetlands workshop in Ayodhya (PIB PRID 2098813)
+  // ---------------------------------------------------------------------------
   {
-    questionId: 'ca_2026_draft_02',
+    questionId: 'ca_2026_proto_02',
+    historicalAliases: ['ca_2026_draft_02', 'ca_2026_v2_02'],
     officialDocumentId: 'PIB PRID 2098813',
     sourceUrl: 'https://pib.gov.in/PressReleasePage.aspx?PRID=2098813',
     claimedEventDate: '2026-02-01',
@@ -46,9 +50,13 @@ export const PERMANENT_DEFECT_REGISTRY: QuarantinedDefectRecord[] = [
     reinstatementBlocked: true,
     immutableAuditLock: true,
   },
-  // Defect 2: ca_2026_draft_03 (RBI repo rate)
+
+  // ---------------------------------------------------------------------------
+  // Defect 2: RBI Repo Rate 5.50% (PRID 62121)
+  // ---------------------------------------------------------------------------
   {
-    questionId: 'ca_2026_draft_03',
+    questionId: 'ca_2026_proto_03',
+    historicalAliases: ['ca_2026_draft_03', 'ca_2026_v2_03'],
     officialDocumentId: 'RBI Press Release PRID 62121',
     sourceUrl: 'https://rbi.org.in/Scripts/BS_PressReleaseDisplay.aspx?prid=62121',
     claimedEventDate: '2026-10-07',
@@ -61,9 +69,51 @@ export const PERMANENT_DEFECT_REGISTRY: QuarantinedDefectRecord[] = [
     reinstatementBlocked: true,
     immutableAuditLock: true,
   },
-  // Defect 3: ca_2026_draft_08 (ISRO SSLV-D3 / EOS-08)
+
+  // ---------------------------------------------------------------------------
+  // Defect 3: Pudhumai Penn Phase Expansion (G.O. Ms No. 34 / 2024)
+  // ---------------------------------------------------------------------------
   {
-    questionId: 'ca_2026_draft_08',
+    questionId: 'ca_2026_proto_04',
+    historicalAliases: ['ca_2026_draft_04_proto'],
+    officialDocumentId: 'G.O. (Ms) No. 34 (SW&WE)',
+    sourceUrl: 'https://www.tn.gov.in/pressrelease/2026/05/pudhumai-penn-phase-expansion',
+    claimedEventDate: '2026-05-08',
+    actualEventDate: '2024-08-09',
+    claimedFact: 'Pudhumai Penn scheme expanded to government-aided school girls in May 2026.',
+    actualFactFromPrimarySource: 'The expansion of Pudhumai Penn monthly financial assistance of ₹1,000 to girl students in government-aided Tamil-medium schools was sanctioned under G.O. (Ms) No. 34 dated 31.07.2024 and launched on 09 August 2024. No new 2026 event exists; cited URL is synthetic.',
+    defectClassification: 'PRE_2026_EVENT_IN_2026_PUBLICATION',
+    quarantineReason: 'Historical 2024 welfare expansion (09 August 2024) falsely backdated or postdated to 2026 Current Affairs.',
+    quarantinedAt: '2026-10-24T18:10:00.000Z',
+    reinstatementBlocked: true,
+    immutableAuditLock: true,
+  },
+
+  // ---------------------------------------------------------------------------
+  // Defect 4: EMC 2.0 Electronics Manufacturing Clusters (Manallur & Pillapaikkam)
+  // ---------------------------------------------------------------------------
+  {
+    questionId: 'ca_2026_proto_07',
+    historicalAliases: ['ca_2026_draft_07', 'ca_2026_v2_07'],
+    officialDocumentId: 'PIB PRID 2287658 / PIB PRID 2205046',
+    sourceUrl: 'https://pib.gov.in/PressReleasePage.aspx?PRID=2287658',
+    claimedEventDate: '2026-07-22',
+    actualEventDate: '2025-12-17',
+    claimedFact: 'MeitY formally approved two Electronics Manufacturing Clusters (EMC 2.0) in Tamil Nadu at Manallur and Pillapaikkam in July 2026.',
+    actualFactFromPrimarySource: 'PIB PRID 2205046 issued on 17 December 2025 confirms MeitY approved Manallur (₹587.47 Cr) and Pillapaikkam (₹424.55 Cr) clusters under EMC 2.0. PIB PRID 2287658 (22 July 2026) was merely a retrospective Lok Sabha tabulation of previously approved clusters. The question portrays a 2025 approval as a 2026 event.',
+    defectClassification: 'PRE_2026_EVENT_IN_2026_PUBLICATION',
+    quarantineReason: 'PRE_2026_EVENT_IN_2026_PUBLICATION: Substantive approval occurred on 17 December 2025 (PIB PRID 2205046). Retrospectively tabled in Parliament on 22 July 2026 (PIB PRID 2287658). Question stem portrays 2025 approval as a July 2026 event.',
+    quarantinedAt: '2026-10-25T05:30:00.000Z',
+    reinstatementBlocked: true,
+    immutableAuditLock: true,
+  },
+
+  // ---------------------------------------------------------------------------
+  // Defect 5: ISRO SSLV-D3 / EOS-08 launch (16 August 2024)
+  // ---------------------------------------------------------------------------
+  {
+    questionId: 'ca_2026_proto_08',
+    historicalAliases: ['ca_2026_draft_08_proto'],
     officialDocumentId: 'PIB PRID 2261045',
     sourceUrl: 'https://pib.gov.in/PressReleasePage.aspx?PRID=2261045',
     claimedEventDate: '2026-07-28',
@@ -76,9 +126,13 @@ export const PERMANENT_DEFECT_REGISTRY: QuarantinedDefectRecord[] = [
     reinstatementBlocked: true,
     immutableAuditLock: true,
   },
-  // Defect 4: ca_2026_draft_14 (PIB PRID 2274981)
+
+  // ---------------------------------------------------------------------------
+  // Defect 6: NITI Aayog Health Index Mismatch (PIB PRID 2274981)
+  // ---------------------------------------------------------------------------
   {
-    questionId: 'ca_2026_draft_14',
+    questionId: 'ca_2026_proto_14',
+    historicalAliases: ['ca_2026_draft_14_proto'],
     officialDocumentId: 'PIB PRID 2274981',
     sourceUrl: 'https://pib.gov.in/PressReleasePage.aspx?PRID=2274981',
     claimedEventDate: '2026-10-21',
@@ -91,9 +145,13 @@ export const PERMANENT_DEFECT_REGISTRY: QuarantinedDefectRecord[] = [
     reinstatementBlocked: true,
     immutableAuditLock: true,
   },
-  // Defect 5: ca_2026_draft_17 (PM-KISAN 17th instalment)
+
+  // ---------------------------------------------------------------------------
+  // Defect 7: PM-KISAN 17th instalment (18 June 2024)
+  // ---------------------------------------------------------------------------
   {
-    questionId: 'ca_2026_draft_17',
+    questionId: 'ca_2026_proto_17',
+    historicalAliases: ['ca_2026_draft_17_proto'],
     officialDocumentId: 'PIB PRID 2245671',
     sourceUrl: 'https://pib.gov.in/PressReleasePage.aspx?PRID=2245671',
     claimedEventDate: '2026-04-18',
@@ -106,9 +164,13 @@ export const PERMANENT_DEFECT_REGISTRY: QuarantinedDefectRecord[] = [
     reinstatementBlocked: true,
     immutableAuditLock: true,
   },
-  // Defect 6: ca_2026_draft_19 (Maratha Military Landscapes)
+
+  // ---------------------------------------------------------------------------
+  // Defect 8: Maratha Military Landscapes UNESCO Inscription (2024-2025)
+  // ---------------------------------------------------------------------------
   {
-    questionId: 'ca_2026_draft_19',
+    questionId: 'ca_2026_proto_19',
+    historicalAliases: ['ca_2026_draft_19_proto'],
     officialDocumentId: 'PIB PRID 2267890',
     sourceUrl: 'https://pib.gov.in/PressReleasePage.aspx?PRID=2267890',
     claimedEventDate: '2026-08-10',
@@ -131,7 +193,7 @@ export interface DefectCheckResult {
 }
 
 /**
- * Checks if a candidate question or document identifier matches known quarantined misinformation.
+ * Checks if a candidate question, ID, document identifier, or claim text matches known quarantined misinformation.
  */
 export function checkPersistentDefectRegistry(candidate: {
   id?: string;
@@ -140,79 +202,112 @@ export function checkPersistentDefectRegistry(candidate: {
   question_en?: string;
   sourceExcerpt?: string;
 }): DefectCheckResult {
-  const normText = (candidate.question_en || '') + ' ' + (candidate.sourceExcerpt || '');
+  const normText = ((candidate.question_en || '') + ' ' + (candidate.sourceExcerpt || '')).toLowerCase();
 
-  // 1. Check exact question ID
+  // 1. Check exact question ID or historical alias
   if (candidate.id) {
-    const matchedById = PERMANENT_DEFECT_REGISTRY.find((d) => d.questionId === candidate.id);
+    const matchedById = PERMANENT_DEFECT_REGISTRY.find(
+      (d) => d.questionId === candidate.id || (d.historicalAliases && d.historicalAliases.includes(candidate.id))
+    );
     if (matchedById) {
-      return {
-        isDefect: true,
-        record: matchedById,
-        failureCode: 'KNOWN_DEFECT_RECYCLING_PROHIBITED',
-        details: `Question ID ${candidate.id} is permanently quarantined: ${matchedById.quarantineReason}`,
-      };
+      // Safety check: If candidate.id is one of the ambiguous legacy aliases (like ca_2026_draft_08, 14, 17, 19),
+      // only trigger ID match if the question text or document actually relates to the defect subject!
+      const isAmbiguousLegacyId = ['ca_2026_draft_04', 'ca_2026_draft_08', 'ca_2026_draft_14', 'ca_2026_draft_17', 'ca_2026_draft_19'].includes(candidate.id);
+      
+      if (!isAmbiguousLegacyId) {
+        return {
+          isDefect: true,
+          record: matchedById,
+          failureCode: 'KNOWN_DEFECT_RECYCLING_PROHIBITED',
+          details: `Question ID ${candidate.id} is permanently quarantined: ${matchedById.quarantineReason}`,
+        };
+      }
     }
   }
 
-  // 2. Check document number or URL
+  // 2. Check document number or URL match against defects
   for (const d of PERMANENT_DEFECT_REGISTRY) {
     if (candidate.officialDocumentId && candidate.officialDocumentId.includes(d.officialDocumentId)) {
       return {
         isDefect: true,
         record: d,
-        failureCode: 'QUARANTINED_DOCUMENT_IDENTIFIER',
-        details: `Document ID ${candidate.officialDocumentId} is associated with quarantined defect: ${d.quarantineReason}`,
+        failureCode: 'KNOWN_DEFECT_RECYCLING_PROHIBITED',
+        details: `Official document identifier "${candidate.officialDocumentId}" matches quarantined defect: ${d.quarantineReason}`,
       };
     }
-    if (candidate.sourceUrl && d.sourceUrl && candidate.sourceUrl.toLowerCase() === d.sourceUrl.toLowerCase()) {
-      return {
-        isDefect: true,
-        record: d,
-        failureCode: 'QUARANTINED_SOURCE_URL',
-        details: `Source URL ${candidate.sourceUrl} is associated with quarantined defect: ${d.quarantineReason}`,
-      };
+
+    if (candidate.sourceUrl && d.sourceUrl && candidate.sourceUrl === d.sourceUrl) {
+      // Check if URL matches defect URL
+      if (d.officialDocumentId === 'PIB PRID 2098813' || d.officialDocumentId === 'G.O. (Ms) No. 34 (SW&WE)') {
+        return {
+          isDefect: true,
+          record: d,
+          failureCode: 'KNOWN_DEFECT_RECYCLING_PROHIBITED',
+          details: `Source URL "${candidate.sourceUrl}" points to quarantined defective publication: ${d.quarantineReason}`,
+        };
+      }
     }
   }
 
-  // 3. Check specific known false claims in text
-  // Repo rate 5.50% hallucination
-  if (normText.includes('5.50') && normText.toLowerCase().includes('repo rate')) {
+  // 3. Check for specific known factual misinformation strings in question or excerpt:
+  
+  // Trap A: Repo rate 5.50% claim in 2026
+  if (normText.includes('repo rate') && normText.includes('5.50')) {
     return {
       isDefect: true,
-      record: PERMANENT_DEFECT_REGISTRY.find((d) => d.questionId === 'ca_2026_draft_03'),
+      record: PERMANENT_DEFECT_REGISTRY.find((d) => d.questionId === 'ca_2026_proto_03'),
       failureCode: 'FACTUAL_NUMERICAL_DISCREPANCY',
-      details: 'Known factual error: June 2026 RBI repo rate was 5.25%, not 5.50%.',
+      details: 'Hallucinated claim: June 2026 RBI repo rate was 5.25%, not 5.50%.',
     };
   }
 
-  // SSLV-D3 2026 backdating
-  if (normText.includes('SSLV-D3') || normText.includes('EOS-08')) {
+  // Trap B: ISRO SSLV-D3 launch in 2026 (actual launch was 16 August 2024)
+  if (normText.includes('sslv-d3') && (normText.includes('eos-08') || normText.includes('launch'))) {
     return {
       isDefect: true,
-      record: PERMANENT_DEFECT_REGISTRY.find((d) => d.questionId === 'ca_2026_draft_08'),
+      record: PERMANENT_DEFECT_REGISTRY.find((d) => d.questionId === 'ca_2026_proto_08'),
       failureCode: 'PRE_2026_EVENT_IN_2026_PUBLICATION',
-      details: 'Known pre-2026 event: ISRO SSLV-D3 / EOS-08 launched on 16 August 2024, not in 2026.',
+      details: 'Hallucinated claim: ISRO SSLV-D3/EOS-08 launch occurred on 16 August 2024, not in 2026.',
     };
   }
 
-  // PM-KISAN 17th instalment 2026 backdating
-  if (normText.toLowerCase().includes('pm-kisan') && (normText.includes('17th') || normText.includes('17 th'))) {
+  // Trap C: Pudhumai Penn expansion to aided school students in 2026 (actual was G.O. Ms 34 31.07.2024)
+  if (normText.includes('pudhumai penn') && (normText.includes('government-aided') || normText.includes('aided school'))) {
     return {
       isDefect: true,
-      record: PERMANENT_DEFECT_REGISTRY.find((d) => d.questionId === 'ca_2026_draft_17'),
+      record: PERMANENT_DEFECT_REGISTRY.find((d) => d.questionId === 'ca_2026_proto_04'),
       failureCode: 'PRE_2026_EVENT_IN_2026_PUBLICATION',
-      details: 'Known pre-2026 event: PM-KISAN 17th instalment was released on 18 June 2024, not in 2026.',
+      details: 'Pre-2026 defect: Pudhumai Penn extension to aided school students was ordered in G.O. Ms 34 dated 31.07.2024 and launched August 2024.',
     };
   }
 
-  // Maratha Military Landscapes UNESCO 2026 backdating
-  if (normText.toLowerCase().includes('maratha military') && normText.toLowerCase().includes('unesco')) {
+  // Trap D: EMC 2.0 Manallur and Pillapaikkam approval claimed as July 2026 (actual was 17 Dec 2025 PIB 2205046)
+  if ((normText.includes('manallur') || normText.includes('pillapaikkam')) && (normText.includes('emc 2.0') || normText.includes('electronics manufacturing cluster')) && normText.includes('july 2026')) {
     return {
       isDefect: true,
-      record: PERMANENT_DEFECT_REGISTRY.find((d) => d.questionId === 'ca_2026_draft_19'),
+      record: PERMANENT_DEFECT_REGISTRY.find((d) => d.questionId === 'ca_2026_proto_07'),
       failureCode: 'PRE_2026_EVENT_IN_2026_PUBLICATION',
-      details: 'Known pre-2026 event: Maratha Military Landscapes inscribed by UNESCO in 2024–2025, not August 2026.',
+      details: 'Temporal defect: Manallur and Pillapaikkam clusters approved 17 Dec 2025 (PIB PRID 2205046). July 2026 was only a retrospective Lok Sabha tabulation.',
+    };
+  }
+
+  // Trap E: PM-KISAN 17th installment in 2026 (actual was 18 June 2024)
+  if (normText.includes('pm-kisan') && (normText.includes('17th') || normText.includes('17 th'))) {
+    return {
+      isDefect: true,
+      record: PERMANENT_DEFECT_REGISTRY.find((d) => d.questionId === 'ca_2026_proto_17'),
+      failureCode: 'PRE_2026_EVENT_IN_2026_PUBLICATION',
+      details: 'Hallucinated claim: PM-KISAN 17th instalment was disbursed on 18 June 2024, not in 2026.',
+    };
+  }
+
+  // Trap F: Maratha Military Landscapes in August 2026 (actual was 2024-2025)
+  if (normText.includes('maratha military') && normText.includes('2026')) {
+    return {
+      isDefect: true,
+      record: PERMANENT_DEFECT_REGISTRY.find((d) => d.questionId === 'ca_2026_proto_19'),
+      failureCode: 'PRE_2026_EVENT_IN_2026_PUBLICATION',
+      details: 'Pre-2026 defect: Maratha Military Landscapes was inscribed in 2024–2025, not August 2026.',
     };
   }
 

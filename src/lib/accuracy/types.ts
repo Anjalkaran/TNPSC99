@@ -68,6 +68,7 @@ export interface QuestionAccuracyCandidate {
   explanation_ta: string;
   
   // Provenance & Source Evidence
+  officialDocumentId?: string;
   sourceUrl?: string;
   sourcePublisher?: string;
   sourceExcerpt?: string;

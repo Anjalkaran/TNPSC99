@@ -63,10 +63,7 @@ export interface ShadowEvaluationSummary {
 const CONFIRMED_DEFECT_IDS = new Set([
   'ca_2026_draft_02',
   'ca_2026_draft_03',
-  'ca_2026_draft_08',
-  'ca_2026_draft_14',
-  'ca_2026_draft_17',
-  'ca_2026_draft_19',
+  'ca_2026_draft_07',
 ]);
 
 export function buildNegativeDefectTraps(genuineBaseline: QuestionAccuracyCandidate): QuestionAccuracyCandidate[] {
