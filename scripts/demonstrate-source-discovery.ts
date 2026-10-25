@@ -154,11 +154,19 @@ async function main() {
     const checksum = computeContentChecksum(doc.rawText);
     const is2026 = doc.publicationDate.startsWith('2026');
     const isDuplicate = existingKnownChecksums.has(checksum);
+    const defectCheck = checkPersistentDefectRegistry({
+      officialDocumentId: doc.officialDocumentId,
+      sourceUrl: doc.canonicalUrl,
+      question_en: doc.title + ' ' + doc.rawText,
+    });
 
-    let decision: 'INGESTED' | 'DUPLICATE_SKIPPED' | 'PRE_2026_EXCLUDED' = 'INGESTED';
+    let decision: 'INGESTED' | 'DUPLICATE_SKIPPED' | 'PRE_2026_EXCLUDED' | 'HISTORICAL_DEFECT_QUARANTINED' = 'INGESTED';
     let reason = 'Authentic 2026 government document with verified event date.';
 
-    if (!is2026) {
+    if (defectCheck.isDefect) {
+      decision = 'HISTORICAL_DEFECT_QUARANTINED';
+      reason = defectCheck.details || 'Known defect: historical pre-2026 event falsely attributed to 2026.';
+    } else if (!is2026) {
       decision = 'PRE_2026_EXCLUDED';
       reason = `Publication date ${doc.publicationDate} fails mandatory 2026-only policy.`;
     } else if (isDuplicate) {

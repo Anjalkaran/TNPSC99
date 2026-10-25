@@ -183,6 +183,25 @@ export const PERMANENT_DEFECT_REGISTRY: QuarantinedDefectRecord[] = [
     reinstatementBlocked: true,
     immutableAuditLock: true,
   },
+
+  // ---------------------------------------------------------------------------
+  // Defect 9: Ramanathapuram Mundu Chilli GI Tag (Claimed October 2026; Actual Feb 2023)
+  // ---------------------------------------------------------------------------
+  {
+    questionId: 'ca_2026_defect_ramnad_chilli',
+    historicalAliases: ['PIB_2329410_ramnad_chilli'],
+    officialDocumentId: 'PIB PRID 2329410 / GI Application 720',
+    sourceUrl: 'https://pib.gov.in/PressReleasePage.aspx?PRID=2329410',
+    claimedEventDate: '2026-10-24',
+    actualEventDate: '2023-02-22',
+    claimedFact: 'Geographical Indications Registry accorded GI tag to Ramanathapuram Mundu Chilli on 24 October 2026.',
+    actualFactFromPrimarySource: 'The Geographical Indications (GI) certificate for Ramanathapuram Mundu Chilli (Application No. 720) was officially granted in February 2023 (Certificate issued 22 February 2023). It is not an October 2026 development.',
+    defectClassification: 'PRE_2026_EVENT_IN_2026_PUBLICATION',
+    quarantineReason: 'Historical GI recognition from February 2023 falsely presented as an October 2026 development.',
+    quarantinedAt: '2026-10-25T13:50:00.000Z',
+    reinstatementBlocked: true,
+    immutableAuditLock: true,
+  },
 ];
 
 export interface DefectCheckResult {
@@ -308,6 +327,16 @@ export function checkPersistentDefectRegistry(candidate: {
       record: PERMANENT_DEFECT_REGISTRY.find((d) => d.questionId === 'ca_2026_proto_19'),
       failureCode: 'PRE_2026_EVENT_IN_2026_PUBLICATION',
       details: 'Pre-2026 defect: Maratha Military Landscapes was inscribed in 2024–2025, not August 2026.',
+    };
+  }
+
+  // Trap G: Ramanathapuram Mundu Chilli GI registration claimed in 2026 (actual was February 2023)
+  if ((normText.includes('ramanathapuram') || normText.includes('ramnad')) && (normText.includes('mundu') || normText.includes('chilli') || normText.includes('chili')) && (normText.includes('gi tag') || normText.includes('geographical indication'))) {
+    return {
+      isDefect: true,
+      record: PERMANENT_DEFECT_REGISTRY.find((d) => d.questionId === 'ca_2026_defect_ramnad_chilli'),
+      failureCode: 'PRE_2026_EVENT_IN_2026_PUBLICATION',
+      details: 'Historical defect: Ramanathapuram Mundu Chilli received GI recognition in February 2023 (Application No. 720). Falsely presented as a 2026 development.',
     };
   }
 
