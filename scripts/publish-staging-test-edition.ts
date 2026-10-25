@@ -111,34 +111,39 @@ async function main() {
   await batch.commit();
   console.log(`  ✓ Successfully persisted ${v2Active.length} questions to currentAffairsQuestions.`);
 
-  // 3. Persist Daily Manifest (manifest_daily_20261025)
-  console.log('\n[STAGE 3] PERSISTING 2026-10-25 DAILY MANIFEST TO FIRESTORE (ca_manifests)...');
-  const dailyDate = '2026-10-25';
-  const dailyManifestRef = db.collection('ca_manifests').doc(`manifest_daily_${dailyDate.replace(/-/g, '')}`);
+  // 3. Persist October 2026 Revision Practice Manifest (manifest_daily_20261018)
+  console.log('\n[STAGE 3] PERSISTING OCTOBER 2026 REVISION PRACTICE MANIFEST (ca_manifests)...');
+  // Clean up any incorrect manifest presenting 12-18 Oct events as 25 Oct
+  await db.collection('ca_manifests').doc('manifest_daily_20261025').delete();
+
+  const originalEditionDate = '2026-10-18';
+  const dailyManifestRef = db.collection('ca_manifests').doc(`manifest_daily_${originalEditionDate.replace(/-/g, '')}`);
   await dailyManifestRef.set({
-    id: `manifest_daily_${dailyDate.replace(/-/g, '')}`,
+    id: `manifest_daily_${originalEditionDate.replace(/-/g, '')}`,
     type: 'daily',
     status: 'published',
-    periodStart: dailyDate,
-    periodEnd: dailyDate,
+    periodStart: '2026-10-12',
+    periodEnd: originalEditionDate,
     questionIds: dailyCandidates.map((q) => q.canonicalId),
     questionCount: dailyCandidates.length,
     durationMinutes: 10,
-    title_en: `Daily Current Affairs (${dailyCandidates.length} Questions) — 25 October 2026`,
-    title_ta: `தினசரி நடப்பு நிகழ்வுகள் (${dailyCandidates.length} வினாக்கள்) — 25 அக்டோபர் 2026`,
-    subtitle_en: `Officially Verified · 25 October 2026 Edition`,
-    subtitle_ta: `அங்கீகரிக்கப்பட்ட பதிப்பு · 25 அக்டோபர் 2026`,
+    title_en: `Daily Current Affairs — October 2026 Revision Practice (${dailyCandidates.length} Questions)`,
+    title_ta: `தினசரி நடப்பு நிகழ்வுகள் — அக்டோபர் 2026 மீள்பார்வைப் பயிற்சி (${dailyCandidates.length} வினாக்கள்)`,
+    subtitle_en: `Revision Practice · 12–18 October 2026 Edition`,
+    subtitle_ta: `மீள்பார்வைப் பயிற்சி · 12–18 அக்டோபர் 2026 பதிப்பு`,
+    revisionNotice_en: `October 2026 Revision Practice — Verified 12–18 October Developments`,
+    revisionNotice_ta: `அக்டோபர் 2026 மீள்பார்வைப் பயிற்சி — சரிபார்க்கப்பட்ட 12–18 அக்டோபர் நிகழ்வுகள்`,
     syllabusCategory: 'Current Affairs',
     examGroup: 'Group II',
     tier: 'free',
     isFree: true,
     accessLevel: 'free',
     isRetracted: false,
-    isRevision: false,
+    isRevision: true,
     publishedAt: admin.firestore.FieldValue.serverTimestamp(),
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
   }, { merge: true });
-  console.log(`  ✓ Successfully persisted manifest_daily_20261025 with ${dailyCandidates.length} October questions.`);
+  console.log(`  ✓ Successfully persisted manifest_daily_20261018 labeled as October 2026 Revision Practice.`);
 
   // 4. Persist Revision Manifest (manifest_revision_2026_bank)
   console.log('\n[STAGE 4] PERSISTING 2026 REVISION MANIFEST TO FIRESTORE (ca_manifests)...');
@@ -178,6 +183,9 @@ async function main() {
   });
   console.log(`  HTTP Status: ${apiRes.status}`);
   const apiBody = await apiRes.json();
+  console.log('--- COMPLETE PUBLIC API JSON START ---');
+  console.log(JSON.stringify(apiBody, null, 2));
+  console.log('--- COMPLETE PUBLIC API JSON END ---');
 
   console.log(`  hasApprovedEdition: ${apiBody.hasApprovedEdition}`);
   console.log(`  tier: ${apiBody.tier}`);
